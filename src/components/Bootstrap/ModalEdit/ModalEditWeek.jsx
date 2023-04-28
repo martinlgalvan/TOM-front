@@ -1,0 +1,54 @@
+import React, { useState } from 'react';
+import { useEffect } from 'react';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import * as WeekServices from '../../../services/week.services'
+import * as ObjectId from 'bson-objectid';
+
+
+function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
+
+  const [name, setName] = useState("")
+  let objectId = new ObjectId()
+  let id = objectId.toHexString();
+
+  function changeName(e){
+      setName(e.target.value)
+  }
+
+  function onSubmit(e){
+    e.preventDefault()
+    WeekServices.editWeek(weekID, {name: name})
+    refresh(id)
+    handleClose()
+  }
+    
+  return (
+    <>
+    
+      <Modal size="m" centered show={showEditWeek} onHide={handleClose}>
+        <Modal.Header className='' closeButton>
+          <Modal.Title className='text-center'>Editar semana</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className='text-center'>
+          <form onSubmit={onSubmit} className="row my-4">
+
+            <div className="input-group">
+
+                <input onChange={changeName} className="form-control ms-5" type="text" name="name" id="name" defaultValue={nameWeek} placeholder="Nombre"/>
+                <button type='submit' className=' btn border me-5 buttonColor'>Editar</button>
+            </div>
+
+          </form>
+        </Modal.Body>
+        <Modal.Footer>
+          <button className='btn BlackBGtextWhite' onClick={handleClose}>
+            Cerrar
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+}
+
+export default ModalEditWeek
