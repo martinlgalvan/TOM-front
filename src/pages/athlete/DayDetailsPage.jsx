@@ -6,8 +6,6 @@ import Logo from '../../components/Logo'
 
 import * as _ from 'lodash'
 
-import LeftArrow from '@rsuite/icons/PagePrevious';
-import RigthArrow from '@rsuite/icons/PageNext';
 
 import { Steps, Panel, Placeholder, ButtonGroup, Button } from 'rsuite';
 import ModalViewWarmup from '../../components/Bootstrap/ModalAthletes/ModalViewWarmup.jsx';
@@ -136,11 +134,11 @@ const handleClose = () => {
                 </Panel>
                 <div className='row  justify-content-around'>
                         <Button onClick={onPrevious} className='col-5 col-md-1 BlackBGtextWhite btn text-center' disabled={step === 0}>
-                                <LeftArrow className='fs-2' />
+                                Izquierda
                         </Button>
 
                         <Button  disabled={step == maxStep - 1} onClick={onNext} className='col-5 BlackBGtextWhite btn col-md-1 text-center'>
-                            <RigthArrow className='fs-2' />
+                            Derecha
                         </Button>
                     </div>       
             
