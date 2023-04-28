@@ -10,9 +10,6 @@ async function login(email, password) {
             if (response.ok) {
                 return response.json()
             }
-            else if (response.status === 400) {
-                throw await response.json()
-            }
             else {
                 throw Error('La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.')
             }
