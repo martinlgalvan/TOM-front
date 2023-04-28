@@ -1,4 +1,4 @@
-import {img} from '../assets/img/logo.png'
+import * as img from '../assets/img/logo.png'
 
 function Logo(){
     console.log(img)
