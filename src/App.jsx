@@ -15,17 +15,17 @@ import '../src/assets/styles.css';
 
 import {useState, useEffect} from 'react'
 
-import HomePage from "./pages/HomePage"
-import LoginPage from "./pages/login/LoginPage"
+import HomePage from "./pages/HomePage.jsx"
+import LoginPage from "./pages/login/LoginPage.jsx"
 
-import UserRoutinePage from "./pages/athlete/UserRoutinePage"
-import DayDetailsPage from "./pages/athlete/DayDetailsPage"
+import UserRoutinePage from "./pages/athlete/UserRoutinePage.jsx"
+import DayDetailsPage from "./pages/athlete/DayDetailsPage.jsx"
 
-import UsersListPage from "./pages/coach/UsersListPage"
-import UserRoutineEditPage from "./pages/coach/UserRoutineEditPage"
-import DayEditDetailsPage from "./pages/coach/DayEditDetailsPage"
+import UsersListPage from "./pages/coach/UsersListPage.jsx"
+import UserRoutineEditPage from "./pages/coach/UserRoutineEditPage.jsx"
+import DayEditDetailsPage from "./pages/coach/DayEditDetailsPage.jsx"
 
-import * as authService from "./services/auth.services"
+import * as authService from "./services/auth.services.js"
 import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
 
 
@@ -109,7 +109,7 @@ function App(){
                             <Link className='nav-link' to="/">Home</Link>
                         </li>
                         <li className="nav-item">
-                        {<Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link>}
+                        {isAdmin() && <><Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link></>}
                         </li>
                         <li className="nav-item">
                         {isAutenticated && !isAdmin() && <><Link className='nav-link' to={`/routine/${id}`}>Ver rutina</Link></>}
@@ -128,7 +128,7 @@ function App(){
             <Routes>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
-                <Route path="/users/:id" element={<RoutePrivate ><UsersListPage/></RoutePrivate>}/>
+                <Route path="/users/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UsersListPage/></RoutePrivate>}/>
 
                 <Route path="/user/routine/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutineEditPage/></RoutePrivate>}/>
                 <Route path="/routine/week/:week_id/day/:day_id" element={<RoutePrivate isAutenticate={isAutenticated}><DayEditDetailsPage/></RoutePrivate>}/>

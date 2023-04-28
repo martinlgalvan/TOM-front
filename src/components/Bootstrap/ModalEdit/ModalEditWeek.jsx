@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import * as WeekServices from '../../../services/week.services'
+import * as WeekServices from '../../../services/week.services.js'
 import * as ObjectId from 'bson-objectid';
 
 

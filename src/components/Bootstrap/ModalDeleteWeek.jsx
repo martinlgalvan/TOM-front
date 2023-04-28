@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import * as ObjectId from 'bson-objectid';
 
-import * as WeekService from '../../services/week.services';
+import * as WeekService from '../../services/week.services.js';
 
 
 function ModalDeleteWeek({show, handleClose, name, weekID,refresh}) {

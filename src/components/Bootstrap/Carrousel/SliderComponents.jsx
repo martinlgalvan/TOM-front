@@ -1,6 +1,6 @@
 import Carousel from 'react-bootstrap/Carousel';
-import AddExercise from '../../AddExercise';
-import AddCircuit from '../../AddCircuit';
+import AddExercise from '../../AddExercise.jsx';
+import AddCircuit from '../../AddCircuit.jsx';
 import { useState } from 'react';
 
 function SliderComponents({refreshToDad}) {

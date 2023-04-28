@@ -5,7 +5,7 @@ import * as UsersService from '../../services/users.services.js';
 import * as ObjectId from 'bson-objectid';
 
 import UserRegister from '../../components/Users/UserRegister.jsx';
-import Logo from '../../components/Logo'
+import Logo from '../../components/Logo.jsx'
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';

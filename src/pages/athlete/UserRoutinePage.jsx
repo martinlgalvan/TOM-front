@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import {Link, useParams} from 'react-router-dom';
 import * as WeekService from '../../services/week.services.js';
-import Logo from '../../components/Logo'
+import Logo from '../../components/Logo.jsx'
 
 function UserRoutinePage(){
     const {id} = useParams()

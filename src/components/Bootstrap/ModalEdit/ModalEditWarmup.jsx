@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { InputNumber } from 'primereact/inputnumber';
 
-import * as WarmupServices from '../../../services/warmup.services';
+import * as WarmupServices from '../../../services/warmup.services.js';
 
 function ModalEditWarmup({showEditWarmup, handleClose, nameWarmup, setsWarmup, repsWarmup, pesoWarmup, videoWarmup, notasWarmup, week_id, day_id, warmup_id}) {
 

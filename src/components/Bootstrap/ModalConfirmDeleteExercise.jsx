@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
-import * as WeekService from '../../services/week.services';
-import * as ExercisesService from '../../services/exercises.services';
+import * as WeekService from '../../services/week.services.js';
+import * as ExercisesService from '../../services/exercises.services.js';
 
 
 function ModalConfirmDeleteExercise({show, handleClose, week_id, day_id, exercise_id, name}) {

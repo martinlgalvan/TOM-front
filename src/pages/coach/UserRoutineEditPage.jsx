@@ -7,10 +7,10 @@ import * as WeekService from '../../services/week.services.js';
 import * as DayService from '../../services/day.services.js';
 import * as ObjectId from 'bson-objectid';
 
-import Logo from '../../components/Logo'
+import Logo from '../../components/Logo.jsx'
 import ModalConfirm from '../../components/Bootstrap/ModalDeleteWeek.jsx';
-import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay';
-import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek';
+import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
+import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
 
 
 import { InputSwitch } from "primereact/inputswitch";

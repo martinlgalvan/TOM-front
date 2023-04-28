@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/Modal";
 import { InputNumber } from "primereact/inputnumber";
 import * as ObjectId from "bson-objectid";
 
-import * as ExercisesService from "../../../services/exercises.services";
+import * as ExercisesService from "../../../services/exercises.services.js";
 
 function ModalEditExercise({
   showEditExercise,

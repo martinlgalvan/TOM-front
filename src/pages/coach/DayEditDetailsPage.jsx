@@ -13,8 +13,8 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
 import { ToastContainer, toast } from 'react-toastify';
 
-import Logo from '../../components/Logo'
-import AddExercise from '../../components/AddExercise'
+import Logo from '../../components/Logo.jsx'
+import AddExercise from '../../components/AddExercise.jsx'
 import ModalConfirmDeleteExercise from '../../components/Bootstrap/ModalConfirmDeleteExercise.jsx';
 import ModalEditExercise from '../../components/Bootstrap/ModalEdit/ModalEditExercise.jsx';
 import ModalCreateWarmup from '../../components/Bootstrap/ModalCreateWarmup.jsx';

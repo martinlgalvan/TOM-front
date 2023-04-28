@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import * as DayServices from '../../../services/day.services'
+import * as DayServices from '../../../services/day.services.js'
 import * as ObjectId from 'bson-objectid';
 
 function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refresh}) {

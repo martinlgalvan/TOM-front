@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
-import * as WeekService from '../../services/week.services';
-import * as WarmupServices from '../../services/warmup.services';
+import * as WeekService from '../../services/week.services.js';
+import * as WarmupServices from '../../services/warmup.services.js';
 
 
 function ModalConfirmDeleteWarmup({showModalDeleteWarmup, handleClose, week_id, day_id, warmup_id, name}) {
