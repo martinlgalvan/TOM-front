@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import * as DayServices from '../../../services/day.services'
-import * as WeekService from '../../../services/week.services'
+import * as DayServices from '../../../services/day.services.js'
+import * as WeekService from '../../../services/week.services.js'
 
 function ModalViewWarmup({showWarmup, handleClose, user_id,day_id}) {
 

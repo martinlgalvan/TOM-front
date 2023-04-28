@@ -1,6 +1,6 @@
 import {useState} from 'react'
 import * as authService from '../../services/auth.services.js'
-import Logo from '../../components/Logo'
+import Logo from '../../components/Logo.jsx'
 
 function LoginPage({onLogin}){
     const [email, setEmail] = useState('')
@@ -13,9 +13,9 @@ function LoginPage({onLogin}){
         .then(({user, token}) =>{
             onLogin(user, token)
         })
-        .catch(err =>{
+        /*.catch(err =>{
             setError(err.message)
-        })
+        })*/
 
     }
 
