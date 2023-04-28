@@ -1,5 +1,5 @@
 async function login(email, password) {
-    return fetch('http://localhost:2022/api/users/login', {
+    return fetch('https://tom-api-martinlgalvan.vercel.app/api/users/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -20,7 +20,7 @@ async function login(email, password) {
 }
 
 async function logout() {
-    return fetch('http://localhost:2022/api/users/logout', {
+    return fetch('https://tom-api-martinlgalvan.vercel.app/api/users/logout', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
