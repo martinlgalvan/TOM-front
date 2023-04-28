@@ -1,5 +1,5 @@
 async function findWarmup(week_id, warmup_id) {
-    return fetch(`https://tom-api-serverless.vercel.app/api/week/${week_id}/warmup/${warmup_id}`, {
+    return fetch(`http://tom-api-serverless.vercel.app/api/week/${week_id}/warmup/${warmup_id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -18,7 +18,7 @@ async function findWarmup(week_id, warmup_id) {
 
 //Crea un dia
 async function createWarmup(week_id, day_id, warmup) {
-  return fetch(`https://tom-api-serverless.vercel.app/api/week/${week_id}/day/${day_id}/warmup`, {
+  return fetch(`http://tom-api-serverless.vercel.app/api/week/${week_id}/day/${day_id}/warmup`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ async function createWarmup(week_id, day_id, warmup) {
 //Editar un día
 
 async function editWarmup(week_id, day_id, warmup_id, warmup) {
-  return fetch(`https://tom-api-serverless.vercel.app/api/week/${week_id}/day/${day_id}/warmup/${warmup_id}`, {
+  return fetch(`http://tom-api-serverless.vercel.app/api/week/${week_id}/day/${day_id}/warmup/${warmup_id}`, {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ async function editWarmup(week_id, day_id, warmup_id, warmup) {
 }
 
 async function deleteWarmup(week_id, day_id, warmup_id) {
-  return fetch(`https://tom-api-serverless.vercel.app/api/week/${week_id}/day/${day_id}/warmup/${warmup_id}`, {
+  return fetch(`http://tom-api-serverless.vercel.app/api/week/${week_id}/day/${day_id}/warmup/${warmup_id}`, {
       method: 'DELETE',
       headers: {
           'Content-Type': 'application/json',
