@@ -1,5 +1,5 @@
 async function login(email, password) {
-    return fetch('http://tom-api.vercel.app/api/users/login', {
+    return fetch('https://tom-api.vercel.app/api/users/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
