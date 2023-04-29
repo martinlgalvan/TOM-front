@@ -17,8 +17,7 @@ function UsersListPage() {
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState(0);
     const navigate = useNavigate()
-    let objectId = new ObjectId()
-    let refreshId = objectId.toHexString();
+
   
     useEffect(() => {
         UsersService.find(id)

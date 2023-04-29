@@ -3,14 +3,13 @@ import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import * as WeekServices from '../../../services/week.services.js'
-import * as ObjectId from 'bson-objectid';
+
 
 
 function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
 
   const [name, setName] = useState("")
-  let objectId = new ObjectId()
-  let id = objectId.toHexString();
+
 
   function changeName(e){
       setName(e.target.value)
@@ -19,7 +18,7 @@ function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
   function onSubmit(e){
     e.preventDefault()
     WeekServices.editWeek(weekID, {name: name})
-    refresh(id)
+    refresh(weekID)
     handleClose()
   }
     

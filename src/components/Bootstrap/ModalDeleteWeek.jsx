@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import * as ObjectId from 'bson-objectid';
 
 import * as WeekService from '../../services/week.services.js';
 
@@ -14,10 +13,8 @@ function ModalDeleteWeek({show, handleClose, name, weekID,refresh}) {
     function deleteWeek() {
 
         WeekService.deleteWeek(weekID)
-        let objectId = new ObjectId()
-        let id = objectId.toHexString();
         
-        refresh(id)
+        refresh(weekID)
         handleClose()
 
     }

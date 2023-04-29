@@ -3,13 +3,12 @@ import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import * as DayServices from '../../../services/day.services.js'
-import * as ObjectId from 'bson-objectid';
+
 
 function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refresh}) {
 
   const [name, setName] = useState('')
-  let objectId = new ObjectId()
-  let refreshId = objectId.toHexString();
+
 
   useEffect(() => {setName(nameExercise)},[nameExercise])
 
@@ -20,8 +19,7 @@ function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refres
 
   function deleteDay(){
     DayServices.deleteDay(weekID, dayID)
-    console.log(refreshId)
-    refresh(refreshId)
+    refresh(dayID)
     handleClose()
     
 }
@@ -30,8 +28,8 @@ function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refres
     e.preventDefault()
 
     DayServices.editDay(weekID, dayID, {name: name})
-    console.log(refreshId)
-    refresh(refreshId)
+
+    refresh(dayID)
     handleClose()
   }
     

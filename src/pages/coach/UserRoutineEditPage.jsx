@@ -5,7 +5,7 @@ import {Link, useParams, useNavigate} from 'react-router-dom';
 import * as UsersService from '../../services/users.services.js';
 import * as WeekService from '../../services/week.services.js';
 import * as DayService from '../../services/day.services.js';
-import * as ObjectId from 'bson-objectid';
+
 
 import Logo from '../../components/Logo.jsx'
 import ModalConfirm from '../../components/Bootstrap/ModalDeleteWeek.jsx';
@@ -65,15 +65,15 @@ function UserRoutineEditPage(){
         if(copyWeek == true){
             WeekService.createClonWeek(id)
             .then(() => {
-                setStatus(refreshId)
-                console.log(refreshId)
+                setStatus(id)
+
             })
     
         } else {
             WeekService.createWeek({name: number}, id)
             .then(() => {   
-                setStatus(refreshId)
-                console.log(refreshId)
+                setStatus(id)
+
             })
         }
     }
@@ -87,8 +87,8 @@ function UserRoutineEditPage(){
             .then(data => {   
                 let dayNumber = data[0].routine.length + 1
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
-                setStatus(refreshId)
-                console.log(refreshId)
+                setStatus(dayNumber)
+
             })
     }
 
