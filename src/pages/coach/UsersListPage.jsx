@@ -17,8 +17,7 @@ function UsersListPage() {
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState(0);
     const navigate = useNavigate()
-    let objectId = ObjectId()
-    let refreshId = objectId.toHexString();
+
   
     useEffect(() => {
         UsersService.find(id)
@@ -32,9 +31,7 @@ function UsersListPage() {
     }, [status]) 
 
 
-    const refresh = (refresh) => {
-        setStatus(refresh);
-    }
+
 
 
     const reject = () => {};
@@ -62,7 +59,7 @@ function UsersListPage() {
             blockScroll: true,
             dismissableMask: true,
         });
-        refresh(refreshId)
+
     };
 
     //Función de búsqueda
@@ -88,7 +85,7 @@ function UsersListPage() {
             <article className='row justify-content-center'>
 
                 <div className='col-10 col-lg-3 text-center mb-5'>
-                    <UserRegister refresh={refresh} />
+                    <UserRegister  />
                 </div>
 
                 <div className='col-12 col-lg-8 text-center mb-5'>
