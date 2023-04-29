@@ -7,8 +7,8 @@ async function login(email, password) {
         body: JSON.stringify({ email, password })
     })
         .then(async response => {
-            if (response.ok) {
-                return response.json()
+            if (response.status == 200) {
+                return response.status(200).json()
             }
             else {
                 throw Error('La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.')

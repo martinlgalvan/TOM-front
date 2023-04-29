@@ -13,9 +13,9 @@ function LoginPage({onLogin}){
         .then(({user, token}) =>{
             onLogin(user, token)
         })
-        /*.catch(err =>{
+        .catch(err =>{
             setError(err.message)
-        })*/
+        })
 
     }
 
