@@ -36,7 +36,7 @@ function UserRoutineEditPage(){
 
     const [copyWeek, setCopyWeek] = useState();
 
-    let objectId = new ObjectId()
+    let objectId = ObjectId()
     let refreshId = objectId.toHexString();
 
     //Routine - API

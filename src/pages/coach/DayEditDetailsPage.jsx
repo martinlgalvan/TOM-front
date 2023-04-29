@@ -61,7 +61,7 @@ function DayEditDetailsPage(){
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
 
-    let objectId = new ObjectId()
+    let objectId = ObjectId()
     let refreshId = objectId.toHexString();
 
     useEffect(() => {
