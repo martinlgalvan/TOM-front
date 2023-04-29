@@ -38,7 +38,17 @@ function UserRoutineEditPage(){
     const [copyWeek, setCopyWeek] = useState();
 
 
-    let refreshId = 1
+    function generateUUID() {
+        var d = new Date().getTime();
+        var uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    }
+
+    let idRefresh = generateUUID()
 
     //Routine - API
     useEffect(() => {
@@ -66,14 +76,14 @@ function UserRoutineEditPage(){
         if(copyWeek == true){
             WeekService.createClonWeek(id)
             .then(() => {
-                setStatus(weekNumber)
+                setStatus(idRefresh)
 
             })
     
         } else {
             WeekService.createWeek({name: number}, id)
             .then(() => {   
-                setStatus(weekNumber)
+                setStatus(idRefresh)
 
             })
         }
@@ -89,7 +99,7 @@ function UserRoutineEditPage(){
                 let dayNumber = data[0].routine.length + 1
                 let sumNumber = data[index].routine.length
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
-                setStatus(sumNumber)
+                setStatus(idRefresh)
 
             })
     }
