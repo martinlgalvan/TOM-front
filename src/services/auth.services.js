@@ -1,5 +1,5 @@
 async function login(email, password) {
-    return fetch('https://tom-api.vercel.app/api/users/login', {
+    return fetch('http://tom-api.vercel.app/api/users/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -7,8 +7,8 @@ async function login(email, password) {
         body: JSON.stringify({ email, password })
     })
         .then(async response => {
-            if (response.status == 200) {
-                return response.status(200).json()
+            if (response.ok) {
+                return response.json()
             }
             else {
                 throw Error('La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.')
