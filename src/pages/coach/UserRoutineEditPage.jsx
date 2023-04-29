@@ -65,14 +65,14 @@ function UserRoutineEditPage(){
         if(copyWeek == true){
             WeekService.createClonWeek(id)
             .then(() => {
-                setStatus(id)
+                setStatus(weekNumber)
 
             })
     
         } else {
             WeekService.createWeek({name: number}, id)
             .then(() => {   
-                setStatus(id)
+                setStatus(weekNumber)
 
             })
         }
