@@ -18,7 +18,7 @@ function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
   function onSubmit(e){
     e.preventDefault()
     WeekServices.editWeek(weekID, {name: name})
-    refresh(weekID)
+    refresh(name)
     handleClose()
   }
     

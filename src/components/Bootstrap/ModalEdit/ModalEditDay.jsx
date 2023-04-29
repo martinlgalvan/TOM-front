@@ -29,7 +29,7 @@ function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refres
 
     DayServices.editDay(weekID, dayID, {name: name})
 
-    refresh(dayID)
+    refresh(name)
     handleClose()
   }
     

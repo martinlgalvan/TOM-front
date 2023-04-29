@@ -24,6 +24,7 @@ function UserRoutineEditPage(){
 
     const [routine, setRoutine] = useState([])
     const [weekNumber, setWeekNumber] = useState(0)
+    const [refreshNumber, setRefreshNumber] = useState(0)
 
     const [show, setShow] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
@@ -82,12 +83,13 @@ function UserRoutineEditPage(){
         setStatus(refresh)
     }
 
-    function addDayToWeek(week_id){
+    function addDayToWeek(week_id, index){
         WeekService.findByWeekId(week_id)
             .then(data => {   
                 let dayNumber = data[0].routine.length + 1
+                let sumNumber = data[index].routine.length
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
-                setStatus(dayNumber)
+                setStatus(sumNumber)
 
             })
     }
@@ -148,7 +150,7 @@ function UserRoutineEditPage(){
                 <div className='col-10'>
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
-                        {routine.length > 0 && routine.map(elemento =>
+                        {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
                         key={elemento._id}
                         timeout={500}
@@ -182,7 +184,7 @@ function UserRoutineEditPage(){
                                         </CSSTransition>
                                     )}
                                 </TransitionGroup>
-                                    <button onClick={(e) => addDayToWeek(elemento._id)} className='input-group-text btn border buttonColor mt-3'>+</button>
+                                    <button onClick={(e) => addDayToWeek(elemento._id, index)} className='input-group-text btn border buttonColor mt-3'>+</button>
 
                             </div>
                             
