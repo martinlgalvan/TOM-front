@@ -5,7 +5,7 @@ import * as UsersService from '../../services/users.services.js';
 import * as ObjectId from 'bson-objectid';
 
 import UserRegister from '../../components/Users/UserRegister.jsx';
-import Logo from '../../components/Logo.jsx'
+import Logo from '../../components/Logo'
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
@@ -17,7 +17,8 @@ function UsersListPage() {
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState(0);
     const navigate = useNavigate()
-
+    let objectId = new ObjectId()
+    let refreshId = objectId.toHexString();
   
     useEffect(() => {
         UsersService.find(id)
@@ -31,7 +32,9 @@ function UsersListPage() {
     }, [status]) 
 
 
-
+    const refresh = (refresh) => {
+        setStatus(refresh);
+    }
 
 
     const reject = () => {};
@@ -59,7 +62,7 @@ function UsersListPage() {
             blockScroll: true,
             dismissableMask: true,
         });
-
+        setStatus(id)
     };
 
     //Función de búsqueda
@@ -85,7 +88,7 @@ function UsersListPage() {
             <article className='row justify-content-center'>
 
                 <div className='col-10 col-lg-3 text-center mb-5'>
-                    <UserRegister  />
+                    <UserRegister refresh={refresh} />
                 </div>
 
                 <div className='col-12 col-lg-8 text-center mb-5'>
