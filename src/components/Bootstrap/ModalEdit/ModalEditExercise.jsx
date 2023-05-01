@@ -7,25 +7,7 @@ import * as ObjectId from "bson-objectid";
 
 import * as ExercisesService from "../../../services/exercises.services.js";
 
-function ModalEditExercise({
-  showEditExercise,
-  handleClose,
-  refresh,
-  week_id,
-  day_id,
-  exercise_id,
-  nameModal,
-  setsModal,
-  repsModal,
-  pesoModal,
-  videoModal,
-  notasModal,
-  numberExerciseModal,
-  valueExerciseModal,
-}) {
-  let objectId = new ObjectId();
-  let refreshId = objectId.toHexString();
-  const [status, setStatus] = useState(refreshId);
+function ModalEditExercise({ showEditExercise, handleClose, week_id, day_id, exercise_id, nameModal, setsModal, repsModal, pesoModal, videoModal, notasModal, numberExerciseModal, valueExerciseModal, }) {
 
   const [name, setNameEdit] = useState();
   const [sets, setSetsEdit] = useState();
@@ -37,6 +19,7 @@ function ModalEditExercise({
   const [valueExercise, setValueExerciseEdit] = useState();
 
   useEffect(() => {
+
     setNameEdit(nameModal);
     setSetsEdit(setsModal);
     setRepsEdit(repsModal);
@@ -45,6 +28,7 @@ function ModalEditExercise({
     setNotasEdit(notasModal);
     setNumberExerciseEdit(numberExerciseModal);
     setValueExerciseEdit(valueExerciseModal);
+    
   }, [showEditExercise]);
 
   function changeNameEdit(e) {
@@ -64,21 +48,12 @@ function ModalEditExercise({
   }
 
   function edit() {
-    ExercisesService.editExercise(week_id, day_id, exercise_id, {
-      type: "exercise",
-      name,
-      sets,
-      reps,
-      peso,
-      video,
-      notas,
-      numberExercise,
-      valueExercise,
-    });
+    ExercisesService.editExercise(week_id, day_id, exercise_id, { type: "exercise", name, sets, reps, peso, video, notas, numberExercise, valueExercise })
+      .then(() => {
+        notify(name);
+        handleClose();
+      });
 
-    notify(name);
-    refresh(refreshId);
-    handleClose();
   }
 
   return (

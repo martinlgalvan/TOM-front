@@ -8,15 +8,13 @@ import * as ObjectId from 'bson-objectid';
 //import * as JsonExercises from "../../services/jsonExercises.services.js";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
+import { confirmDialog } from 'primereact/confirmdialog';
 
 import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { classNames } from "primereact/utils";
 
 function ModalCreateWarmup({showCreateWarmup, handleClose, week_id, day_id}) {
 
@@ -24,6 +22,18 @@ function ModalCreateWarmup({showCreateWarmup, handleClose, week_id, day_id}) {
   const [confirm, setConfirm] = useState()
   const toastId = useRef();
   const [warmup, setWarmup] = useState()
+
+  function generateUUID() {
+    let d = new Date().getTime();
+    let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        let r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+}
+
+let idRefresh = generateUUID()
 
   useEffect(() => {
         
@@ -45,8 +55,6 @@ function ModalCreateWarmup({showCreateWarmup, handleClose, week_id, day_id}) {
 },[status])
 
   //---variables para la carga
-
-
 
   const [name, setName] = useState("");
   const [sets, setSets] = useState(1);
@@ -70,14 +78,11 @@ function ModalCreateWarmup({showCreateWarmup, handleClose, week_id, day_id}) {
 
   function onSubmit(e) {
       e.preventDefault()
-	    WarmupServices.createWarmup(week_id, day_id, { name, sets, reps, peso, video });
-
-      let objectId = new ObjectId()
-      let id = objectId.toHexString();
-      setStatus(id)
-
+	    WarmupServices.createWarmup(week_id, day_id, { name, sets, reps, peso, video })
+        .then(() => {
+          setStatus(idRefresh)
+        })
   }
-
 
 function changeNameWarmup(e){
   setName(e.target.value)
@@ -99,27 +104,23 @@ function changeNotasWarmup(e){
 function editWarmup(warmup_id, name, sets, reps,peso, video, notas, numberWarmup){
 
   WarmupServices.editWarmup(week_id, day_id, warmup_id, {name, sets, reps, peso, video, notas, numberWarmup})
-  notify(name)
-  let objectId = new ObjectId()
-  let id = objectId.toHexString();
-  setStatus(id)
+    .then(() => {
+      notify(name)
+      setStatus(idRefresh)
+    })
+
 }
   
 
-    // Confirm dialog
-
-    function acceptDeleteWarmup(id) {
-
-      WarmupServices.deleteWarmup(week_id, day_id, id)
-
-          setStatus(id)
+  function acceptDeleteWarmup(id) {
+    WarmupServices.deleteWarmup(week_id, day_id, id)
+      .then(() => {
+        setStatus(idRefresh)
+      })
   };
 
 
-  const reject = () => {
-    
-};
-
+  const reject = () => {};
 
   const deleteWarmup = (event,id,name) => {
         
@@ -173,9 +174,7 @@ const notify = (name) => {
           
           })
     }
- 
   }
-
 
   return (
 
@@ -393,13 +392,8 @@ const notify = (name) => {
                         </tbody>
                     </table>
                 </article>}
-
         </Modal.Body>
-
-
       </Modal>
-
-    
   );
 }
 

@@ -19,8 +19,10 @@ function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refres
 
   function deleteDay(){
     DayServices.deleteDay(weekID, dayID)
-    refresh(dayID)
-    handleClose()
+      .then(() => {
+        handleClose()
+      })
+
     
 }
 
@@ -28,9 +30,9 @@ function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refres
     e.preventDefault()
 
     DayServices.editDay(weekID, dayID, {name: name})
-
-    refresh(name)
-    handleClose()
+      .then(() => {
+        handleClose()
+      })
   }
     
   return (

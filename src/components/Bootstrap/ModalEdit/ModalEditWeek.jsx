@@ -4,12 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import * as WeekServices from '../../../services/week.services.js'
 
-
-
 function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
 
   const [name, setName] = useState("")
-
 
   function changeName(e){
       setName(e.target.value)
@@ -18,8 +15,9 @@ function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
   function onSubmit(e){
     e.preventDefault()
     WeekServices.editWeek(weekID, {name: name})
-    refresh(name)
-    handleClose()
+      .then(() => {
+        handleClose()
+      })
   }
     
   return (

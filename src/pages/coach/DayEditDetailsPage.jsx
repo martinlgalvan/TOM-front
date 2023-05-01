@@ -2,9 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 import * as ExercisesService from '../../services/exercises.services.js';
-import * as WarmupService from '../../services/warmup.services.js';
-import * as WeekService from '../../services/week.services.js';
-import * as ObjectId from 'bson-objectid';
+import * as WeekService from '../../services/week.services.js'; 
 
 import { InputNumber } from 'primereact/inputnumber';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
@@ -18,9 +16,8 @@ import AddExercise from '../../components/AddExercise.jsx'
 import ModalConfirmDeleteExercise from '../../components/Bootstrap/ModalConfirmDeleteExercise.jsx';
 import ModalEditExercise from '../../components/Bootstrap/ModalEdit/ModalEditExercise.jsx';
 import ModalCreateWarmup from '../../components/Bootstrap/ModalCreateWarmup.jsx';
-import ModalEditWarmup from '../../components/Bootstrap/ModalEdit/ModalEditWarmup.jsx';
 import Formulas from '../../components/Formulas.jsx';
-import ModalEditAmrap from '../../components/Bootstrap/ModalEdit/ModalEditAmrap.jsx';
+import ModalEditCircuit from '../../components/Bootstrap/ModalEdit/ModalEditCircuit.jsx';
 import AddCircuit from '../../components/AddCircuit.jsx';
 
 function DayEditDetailsPage(){
@@ -40,8 +37,7 @@ function DayEditDetailsPage(){
 
     const [show, setShow] = useState(false)
     const [showEditExercise, setShowEditExercise] = useState(false)
-    const [showEditAmrap, setShowEditAmrap] = useState(false)
-    const [showEditWarmup, setShowEditWarmup] = useState(false)
+    const [showEditCircuit, setShowEditCircuit] = useState(false)
     const [showCreateWarmup, setShowCreateWarmup] = useState(false)
 
     const [CanvasFormulas, setCanvasFormulas] = useState(false);
@@ -61,30 +57,41 @@ function DayEditDetailsPage(){
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
 
-    let objectId = ObjectId()
-    let refreshId = objectId.toHexString();
+    function generateUUID() {
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    }
 
-    useEffect(() => {
-            WeekService.findByWeekId(week_id)
-            .then(data => {
-                //Encuentro el index del día, y luego seteo el día con el que corresponde.
-                let indexDay = data[0].routine.findIndex(dia => dia._id === day_id)
-                let day = data[0].routine[indexDay].exercises
-                let exercises = day.filter(exercise => exercise.type == 'exercise')
-                let circuit = day.filter(circuito => circuito.type != 'exercise')
-                console.log(circuit)
-
-                setExercises(exercises)
-                setCircuit(circuit)
-                setDay(day)
-                setUserId(data[0].user_id)
-
-            })
-    }, [status])
+    let idRefresh = generateUUID()
 
     const refresh = (refresh) => {
         setStatus(refresh)
     }
+
+    useEffect(() => {
+
+            WeekService.findByWeekId(week_id)
+                .then(data => {
+                    //Encuentro el index del día, y luego seteo el día con el que corresponde.
+                    let indexDay = data[0].routine.findIndex(dia => dia._id === day_id)
+                    let day = data[0].routine[indexDay].exercises
+                    let exercises = day.filter(exercise => exercise.type == 'exercise')
+                    let circuit = day.filter(circuito => circuito.type != 'exercise')
+                    console.log(circuit)
+
+                    setExercises(exercises)
+                    setCircuit(circuit)
+                    setDay(day)
+                    setUserId(data[0].user_id)
+
+                })
+    }, [status])
+
 
     // EDIT EXERCISES
 
@@ -134,7 +141,7 @@ function DayEditDetailsPage(){
 
     function handleShowEditAmrap(id, type, typeOfSets, circuit, numberExercise){
 
-        setShowEditAmrap(true)
+        setShowEditCircuit(true)
         setExercise_id(id)
         setNotasExercise(notas)
         setTypeOfSets(typeOfSets)
@@ -148,27 +155,9 @@ function DayEditDetailsPage(){
         setShow(false);
         setShowEditExercise(false)
         setShowCreateWarmup(false)
-        setShowEditAmrap(false)
-
+        setShowEditCircuit(false)
+        setStatus(idRefresh)
     } 
-  
-    const notify = (name) => {
-        if(! toast.isActive(toastId.current)) {
-            toastId.current = toast.success(`${name} editado con éxito!`, {
-        
-                position: "bottom-center",
-                autoClose: 300,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                limit: 1,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                })
-          }
-          setStatus(refreshId)
-        }
 
     const deleteExercise = (event,id,name) => {
         confirmDialog({
@@ -186,7 +175,7 @@ function DayEditDetailsPage(){
             dismissableMask: true,
 
         });
-        setStatus(id)
+
     };
 
     const reject = () => {};
@@ -194,7 +183,9 @@ function DayEditDetailsPage(){
     function acceptDeleteExercise(id) {
 
         ExercisesService.deleteExercise(week_id, day_id, id)
-        setStatus(refreshId)
+            .then(() => {
+                setStatus(idRefresh)
+            })
   
     };
 
@@ -215,6 +206,25 @@ function DayEditDetailsPage(){
         {value:14, name: 14, extras: [{value: 14, name: "14-A"},{value: 14, name: "14-B"},{value: 14, name: "14-C"},{value: 14, name: "14-D"},{value: 14, name: "14-F"}]},
         {value:15, name: 15, extras: [{value: 15, name: "15-A"},{value: 15, name: "15-B"},{value: 15, name: "15-C"},{value: 15, name: "15-D"},{value: 15, name: "15-F"}]}
     ]
+
+      
+    const notify = (name) => {
+        if(! toast.isActive(toastId.current)) {
+            toastId.current = toast.success(`${name} editado con éxito!`, {
+        
+                position: "bottom-center",
+                autoClose: 300,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                limit: 1,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                })
+          }
+
+        }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
@@ -432,14 +442,12 @@ function DayEditDetailsPage(){
 
 
                 <ModalConfirmDeleteExercise show={show}  handleClose={handleClose} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
-                <ModalEditExercise showEditExercise={showEditExercise}  handleClose={handleClose} refresh={refresh}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
+                <ModalEditExercise showEditExercise={showEditExercise}  handleClose={handleClose}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
 
-                <ModalEditAmrap showEditAmrap={showEditAmrap}  handleClose={handleClose} refresh={refresh}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} numberExercise={numberExercise}/>
+                <ModalEditCircuit showEditCircuit={showEditCircuit}  handleClose={handleClose} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} numberExercise={numberExercise}/>
 
                 <ModalCreateWarmup showCreateWarmup={showCreateWarmup}  handleClose={handleClose} week_id={week_id} day_id={day_id} warmup={warmup}/>
              
-
-
                 <ToastContainer
                     position="bottom-center"
                     autoClose={1000}
@@ -459,8 +467,6 @@ function DayEditDetailsPage(){
                     <Formulas />
                 </Sidebar>
         </section>
-
-
     )
 }
 

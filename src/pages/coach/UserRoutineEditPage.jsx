@@ -8,7 +8,7 @@ import * as DayService from '../../services/day.services.js';
 
 
 import Logo from '../../components/Logo.jsx'
-import ModalConfirm from '../../components/Bootstrap/ModalDeleteWeek.jsx';
+import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
 
@@ -18,7 +18,7 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 function UserRoutineEditPage(){
     const {id} = useParams()
-    const [status, setStatus] = useState(0)
+    const [status, setStatus] = useState()
     const navigate = useNavigate()
     
 
@@ -39,9 +39,9 @@ function UserRoutineEditPage(){
 
 
     function generateUUID() {
-        var d = new Date().getTime();
-        var uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = (d + Math.random() * 16) % 16 | 0;
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (d + Math.random() * 16) % 16 | 0;
             d = Math.floor(d / 16);
             return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
@@ -49,6 +49,7 @@ function UserRoutineEditPage(){
     }
 
     let idRefresh = generateUUID()
+   
 
     //Routine - API
     useEffect(() => {
@@ -56,52 +57,44 @@ function UserRoutineEditPage(){
             .then(data => {   
                 setRoutine(data)
                 setWeekNumber(data.length + 1)
-            })
-    }, [status])
 
-    useEffect(() => {
-        WeekService.findRoutineByUserId(id)
-            .then(data => {
                 if(data.length == 0){
                     setCopyWeek(false)
                 } else if(data.length > 0){
                     setCopyWeek(true)
                 }
-             })
-    },[routine])
+            })
+    }, [status])
 
     //Botón para clonar semana
     function createWeek(){
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
-            .then(() => {
-                setStatus(idRefresh)
-
-            })
+                .then(() => {
+                    setStatus(idRefresh)
+                })
     
         } else {
             WeekService.createWeek({name: number}, id)
-            .then(() => {   
-                setStatus(idRefresh)
-
-            })
+                .then(() => {   
+                    setStatus(idRefresh)
+                })
         }
     }
-    
-    const refresh = (refresh) => {
-        setStatus(refresh)
-    }
 
-    function addDayToWeek(week_id, index){
-        WeekService.findByWeekId(week_id)
+    async function addDayToWeek(week_id, index){
+
+        await WeekService.findByWeekId(week_id)
             .then(data => {   
+                
                 let dayNumber = data[0].routine.length + 1
-                let sumNumber = data[index].routine.length
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
-                setStatus(idRefresh)
-
+                setStatus(dayNumber + 1)
+                
             })
+
+
     }
 
     function handleDeleteWeek(week_id,week_name){
@@ -132,7 +125,9 @@ function UserRoutineEditPage(){
         setShow(false);
         setShowEdit(false)
         setShowEditWeek(false)
+        setStatus(idRefresh)
     } 
+    console.log(status)
 
     return (
 
@@ -177,7 +172,7 @@ function UserRoutineEditPage(){
                                     {elemento.routine.map(element => 
                                     <CSSTransition
                                         key={element._id}
-                                        timeout={500}
+                                        timeout={400}
                                         classNames="item"
                                     >
                                         <div key={element._id} className='row justify-content-center mx-0 py-1 border-bottom'>
@@ -222,9 +217,9 @@ function UserRoutineEditPage(){
                 <Link className='btn BlackBGtextWhite' to={`/users/${user_id}`}>Volver atrás</Link>
             </div>
             
-            <ModalEditDay showEdit={showEdit} handleClose={handleClose} weekID={weekID} dayID={dayID} nameExercise={name} refresh={refresh}/>
-            <ModalEditWeek showEditWeek={showEditWeek} nameWeek={name} handleClose={handleClose} weekID={weekID} refresh={refresh} />
-            <ModalConfirm show={show}  handleClose={handleClose} name={name} weekID={weekID} refresh={refresh}/>
+            <ModalEditDay showEdit={showEdit} handleClose={handleClose} weekID={weekID} dayID={dayID} nameExercise={name}/>
+            <ModalEditWeek showEditWeek={showEditWeek} nameWeek={name} handleClose={handleClose} weekID={weekID} />
+            <ModalDeleteWeek show={show} handleClose={handleClose} name={name} weekID={weekID}/>
 
         </section>
     )

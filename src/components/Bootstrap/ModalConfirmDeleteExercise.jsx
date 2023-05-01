@@ -9,17 +9,13 @@ import * as ExercisesService from '../../services/exercises.services.js';
 
 function ModalConfirmDeleteExercise({show, handleClose, week_id, day_id, exercise_id, name}) {
 
-    const [status, setStatus] = useState(1)
-
     function deleteExercise() {
 
       ExercisesService.deleteExercise(week_id, day_id, exercise_id)
           .then(() => {
-            setStatus(status + 1)
-          handleClose()
+            handleClose()
           })
           
-
     }
 
 // VER POR QUE NO EDITA AHORA LAS SEMANAS, Y POR QUE AL EDITAR 2 VECES SE CRASHEA ((NO TENGO IDEA, ESTUVE PROBANDO EN EL BACK PERO NO ECONTRE NADA CONCRETO))

@@ -32,9 +32,17 @@ function AddExercise({refresh}) {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [filteredExercises, setFilteredExercises] = useState(null);
 
+  function generateUUID() {
+    let d = new Date().getTime();
+    let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        let r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+}
 
-  let objectId = new ObjectId()
-  let refreshId = objectId.toHexString();
+let idRefresh = generateUUID()
 
   function changeVideo(e) {
     setVideo(e.target.value);
@@ -47,12 +55,11 @@ function AddExercise({refresh}) {
   function onSubmit(e) {
   e.preventDefault()
 
-	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, peso, video });
-
-  
-  notify(name)
-  refresh(refreshId)
-  
+	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, peso, video })
+    .then(() => {
+      notify(name)
+      refresh(idRefresh)
+    })
   }
 
   const notify = (name) => {
@@ -70,8 +77,6 @@ function AddExercise({refresh}) {
             theme: "light",
             })
       }
-      refresh(refreshId)
-   
     }
 
   //-----------------------------------------------------//

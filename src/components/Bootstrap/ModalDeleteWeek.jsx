@@ -5,17 +5,14 @@ import Modal from 'react-bootstrap/Modal';
 
 import * as WeekService from '../../services/week.services.js';
 
-
-function ModalDeleteWeek({show, handleClose, name, weekID,refresh}) {
-
-    const [status, setStatus] = useState(0)
+function ModalDeleteWeek({show, handleClose, name, weekID}) {
 
     function deleteWeek() {
 
-        WeekService.deleteWeek(weekID)
-        
-        refresh(weekID)
-        handleClose()
+      WeekService.deleteWeek(weekID)
+        .then(() => {
+          handleClose()
+        })
 
     }
 

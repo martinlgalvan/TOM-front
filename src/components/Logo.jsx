@@ -1,7 +1,7 @@
 import * as img from '../assets/img/logo.png'
 
 function Logo(){
-    console.log(img.default)
+
     return (
         <div className='row justify-content-center align-items-center y-2'>
             <h1 className="d-none">TOM</h1>
