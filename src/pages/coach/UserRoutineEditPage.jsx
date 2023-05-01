@@ -11,7 +11,7 @@ import Logo from '../../components/Logo.jsx'
 import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
-import Spinner from '../../components/Bootstrap/Spinner/Spinner.jsx'
+import Spinner from '../../components/Bootstrap/Spinner/SpinnerLoad.jsx'
 
 
 import { InputSwitch } from "primereact/inputswitch";
