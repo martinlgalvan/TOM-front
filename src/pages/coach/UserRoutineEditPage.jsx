@@ -23,7 +23,7 @@ function UserRoutineEditPage(){
     const [loading, setLoading] = useState(false)
 
     if(loading){
-        return ( <Spinner /> )
+        return <Spinner /> 
     }
     const navigate = useNavigate()
     
