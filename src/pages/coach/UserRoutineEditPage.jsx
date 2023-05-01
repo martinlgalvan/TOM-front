@@ -156,6 +156,7 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
+                    {loading == true ? loading : 
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
@@ -171,7 +172,7 @@ function UserRoutineEditPage(){
                                     <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
               
                                 </div>
-                                {loading == true ? loading :  
+                                 
                                 <TransitionGroup component={null} className="todo-list">
                                     {elemento.routine.map(element => 
                                     <CSSTransition
@@ -192,7 +193,7 @@ function UserRoutineEditPage(){
                                         </div>
                                         </CSSTransition>
                                     )}
-                                </TransitionGroup>}
+                                </TransitionGroup>
                                     <button onClick={(e) => addDayToWeek(elemento._id, index)} className='input-group-text btn border buttonColor mt-3'>+</button>
 
                             </div>
@@ -211,7 +212,7 @@ function UserRoutineEditPage(){
                         </CSSTransition>
                         )}
                         </TransitionGroup>
-                    </div>
+                    </div>}
 
                 </div> 
 
