@@ -11,7 +11,6 @@ import Logo from '../../components/Logo.jsx'
 import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
-import Spinner from '../../components/Bootstrap/Spinner/SpinnerLoad.jsx'
 
 
 import { InputSwitch } from "primereact/inputswitch";
@@ -21,10 +20,6 @@ function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
-
-    if(loading){
-        return ( <Spinner /> )
-    }
     const navigate = useNavigate()
     
 
@@ -176,6 +171,7 @@ function UserRoutineEditPage(){
                                     <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
               
                                 </div>
+                                {loading == true ? loading :  
                                 <TransitionGroup component={null} className="todo-list">
                                     {elemento.routine.map(element => 
                                     <CSSTransition
@@ -196,7 +192,7 @@ function UserRoutineEditPage(){
                                         </div>
                                         </CSSTransition>
                                     )}
-                                </TransitionGroup>
+                                </TransitionGroup>}
                                     <button onClick={(e) => addDayToWeek(elemento._id, index)} className='input-group-text btn border buttonColor mt-3'>+</button>
 
                             </div>
