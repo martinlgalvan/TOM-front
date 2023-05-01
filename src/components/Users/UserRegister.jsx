@@ -11,7 +11,18 @@ function RegisterPage({refresh}){
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState()
     const [error, setError] = useState()
+    
+    function generateUUID() {
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    }
 
+    let idRefresh = generateUUID()
     
     function changeName(e){
         setName(e.target.value)
@@ -29,7 +40,7 @@ function RegisterPage({refresh}){
         e.preventDefault()
         UsersService.createAlumno(id, {name, email, password})
             .then(() => {
-                refresh(email)
+                refresh(idRefresh)
             })
             .catch(err =>{
                 setError(err.message)
@@ -70,7 +81,6 @@ function RegisterPage({refresh}){
             </div>
         </div>
                
-
 
     )
 }

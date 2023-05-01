@@ -11,6 +11,7 @@ import Logo from '../../components/Logo.jsx'
 import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
+import Spinner from '../../components/Bootstrap/Spinner/Spinner.jsx'
 
 
 import { InputSwitch } from "primereact/inputswitch";
@@ -19,6 +20,11 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
+    const [loading, setLoading] = useState(false)
+
+    if(loading){
+        return ( <Spinner /> )
+    }
     const navigate = useNavigate()
     
 
@@ -53,6 +59,7 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
+        setLoading(true)
         WeekService.findRoutineByUserId(id)
             .then(data => {   
                 setRoutine(data)
@@ -63,6 +70,7 @@ function UserRoutineEditPage(){
                 } else if(data.length > 0){
                     setCopyWeek(true)
                 }
+                setLoading(false)
             })
     }, [status])
 

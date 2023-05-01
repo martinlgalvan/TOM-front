@@ -18,7 +18,18 @@ function UsersListPage() {
     const [status, setStatus] = useState(0);
     const navigate = useNavigate()
 
-  
+    function generateUUID() {
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    }
+
+    let idRefresh = generateUUID()
+    
     useEffect(() => {
         UsersService.find(id)
         .then(data => {
@@ -41,7 +52,7 @@ function UsersListPage() {
     function acceptDeleteUser(id) {
 
         UsersService.deleteUser(id)
-        setStatus(id)
+        setStatus(idRefresh)
   
     };
     
@@ -60,8 +71,7 @@ function UsersListPage() {
             rejectClassName: "closeDialog",
             blockScroll: true,
             dismissableMask: true,
-        });
-        setStatus(id)
+        })
     };
 
     //Función de búsqueda
