@@ -11,11 +11,11 @@ import Logo from '../../components/Logo.jsx'
 import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
-import Spinner from '../../components/Bootstrap/Spinner/SpinnerLoad.jsx'
 
 
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { BarLoader } from 'react-spinners/BarLoader';
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -23,7 +23,7 @@ function UserRoutineEditPage(){
     const [loading, setLoading] = useState(false)
 
     if(loading){
-        return <Spinner /> 
+        return 
     }
     const navigate = useNavigate()
     
@@ -176,6 +176,11 @@ function UserRoutineEditPage(){
                                     <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
               
                                 </div>
+                                {loading ? <BarLoader 
+                                            size={30}
+                                            color={'#00000'}
+                                            loading={loading}
+                                            />: <>
                                 <TransitionGroup component={null} className="todo-list">
                                     {elemento.routine.map(element => 
                                     <CSSTransition
@@ -197,6 +202,7 @@ function UserRoutineEditPage(){
                                         </CSSTransition>
                                     )}
                                 </TransitionGroup>
+                                </>}
                                     <button onClick={(e) => addDayToWeek(elemento._id, index)} className='input-group-text btn border buttonColor mt-3'>+</button>
 
                             </div>
