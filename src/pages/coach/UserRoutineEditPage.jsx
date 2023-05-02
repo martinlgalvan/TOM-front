@@ -158,10 +158,10 @@ function UserRoutineEditPage(){
 
                 <div className='col-10'>
                     {loading == true ? 
-                    <div className="card">
-                        <ProgressBar mode="indeterminate" style={{ height: '6px' }}></ProgressBar>
+                    <div className="w-50">
+                        <ProgressBar className='spinnerColor' mode="indeterminate" style={{ height: '8px', color: '#2CBDC7' }}></ProgressBar>
                     </div> : 
-                    
+
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
