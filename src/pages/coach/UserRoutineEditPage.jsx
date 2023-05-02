@@ -159,7 +159,7 @@ function UserRoutineEditPage(){
                 <div className='col-10'>
                     {loading == true ? 
                     <div className="w-50">
-                        <ProgressBar className='spinnerColor' mode="indeterminate" style={{ height: '8px', color: '#2CBDC7' }}></ProgressBar>
+                        <SpinnerDiamond size={77} thickness={122} speed={138} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 0.44)" />
                     </div> : 
 
                     <div className='row justify-content-center'>
