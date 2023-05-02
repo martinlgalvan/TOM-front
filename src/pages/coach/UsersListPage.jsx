@@ -8,7 +8,7 @@ import Logo from '../../components/Logo'
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
-import { SpinnerDiamond } from 'spinners-react';
+import { BarLoader } from 'react-spinners';
 
 function UsersListPage() {
 
@@ -113,7 +113,7 @@ function UsersListPage() {
                                 </thead>
                                 <tbody>
                                 {loading == true ? 
-                                <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
+                                <tr><BarLoader color="#2CBDC7" height={5} width={300} /></tr> : 
                                     <TransitionGroup component={null} className="todo-list">
                                     {results.map(({_id, name, email}) =>
                                     

@@ -10,7 +10,7 @@ import { Sidebar } from 'primereact/sidebar';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
 import { ToastContainer, toast } from 'react-toastify';
-import { SpinnerDiamond } from 'spinners-react';
+import { BarLoader } from 'react-spinners';
 
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
@@ -284,9 +284,10 @@ function DayEditDetailsPage(){
                                     <th scope="col">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
                             {loading == true ? 
-                            <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
+                            <BarLoader color="#2CBDC7" height={5} width={300} /> : 
+                            <tbody>
+                            
                                 <TransitionGroup component={null} className="todo-list">
                                 {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}) =>
                                 <CSSTransition
@@ -433,10 +434,9 @@ function DayEditDetailsPage(){
                                     </CSSTransition>
                                 )}
                                 </TransitionGroup>
-                            }
-                            
 
                             </tbody>
+                            }
                         </table>
                     </div>
                     </div>

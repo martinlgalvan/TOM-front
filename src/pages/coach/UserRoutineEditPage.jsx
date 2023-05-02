@@ -15,7 +15,7 @@ import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.js
 
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { SpinnerDiamond } from 'spinners-react';
+import { BarLoader } from 'react-spinners';
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -160,7 +160,7 @@ function UserRoutineEditPage(){
 
                     <div className='row justify-content-center'>
                     {loading == true ? 
-                    <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
+                    <BarLoader color="#2CBDC7" height={5} width={300} /> : 
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
