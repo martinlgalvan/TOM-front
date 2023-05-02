@@ -37,6 +37,9 @@ dependencies:
   react-dom:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
+  react-loading-skeleton:
+    specifier: ^3.2.1
+    version: 3.2.1(react@18.2.0)
   react-numeric-input:
     specifier: ^2.2.3
     version: 2.2.3(react@18.2.0)
@@ -1141,6 +1144,14 @@ packages:
 
   /react-lifecycles-compat@3.0.4:
     resolution: {integrity: sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==}
+    dev: false
+
+  /react-loading-skeleton@3.2.1(react@18.2.0):
+    resolution: {integrity: sha512-e1KwEOuBa1REXWoseELIJXlsqWTCHL5IQnqhVhI33WmnuTK7LK1DXl4mmcOLsWVcwqXeOATU9VFJEjz2ytZSng==}
+    peerDependencies:
+      react: '>=16.8.0'
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /react-numeric-input@2.2.3(react@18.2.0):

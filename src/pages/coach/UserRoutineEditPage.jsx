@@ -15,7 +15,8 @@ import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.js
 
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { ProgressBar } from 'primereact/progressbar';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -157,10 +158,7 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
-                    {loading == true ? 
-                    <div className="w-50">
-                        <ProgressBar className='spinnerColor' mode="indeterminate" style={{ height: '8px', color: '#2CBDC7' }}></ProgressBar>
-                    </div> : 
+
 
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
@@ -174,7 +172,7 @@ function UserRoutineEditPage(){
                             <div className="card-body m-0 p-0">
                                 <div className="menuColor py-1 row justify-content-center" >
 
-                                    <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
+                                    <h2 className='FontTitles m-0 py-2'>{elemento.name || <Skeleton />}</h2>
               
                                 </div>
                                  
@@ -217,7 +215,7 @@ function UserRoutineEditPage(){
                         </CSSTransition>
                         )}
                         </TransitionGroup>
-                    </div>}
+                    </div>
 
                 </div> 
 
