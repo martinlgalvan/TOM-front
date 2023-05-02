@@ -15,8 +15,7 @@ import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.js
 
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import Skeleton from 'react-loading-skeleton'
-import 'react-loading-skeleton/dist/skeleton.css'
+import { SpinnerDiamond } from 'spinners-react';
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -158,7 +157,8 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
-
+                    {loading == true ? 
+                    <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
 
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
@@ -172,7 +172,7 @@ function UserRoutineEditPage(){
                             <div className="card-body m-0 p-0">
                                 <div className="menuColor py-1 row justify-content-center" >
 
-                                    <h2 className='FontTitles m-0 py-2'>{elemento.name || <Skeleton />}</h2>
+                                    <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
               
                                 </div>
                                  
@@ -215,7 +215,7 @@ function UserRoutineEditPage(){
                         </CSSTransition>
                         )}
                         </TransitionGroup>
-                    </div>
+                    </div>}
 
                 </div> 
 
