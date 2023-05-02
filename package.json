@@ -25,13 +25,12 @@
     "react-toastify": "^9.1.2",
     "react-tooltip": "^5.10.0",
     "react-transition-group": "^4.4.5",
-    "rsuite": "^5.31.0",
-    "spinners-react": "^1.0.7"
+    "rsuite": "^5.31.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.10",
-    "@vitejs/plugin-react": "^2.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
     "primereact": "^9.2.3",
     "vite": "^4.3.3"
   }
