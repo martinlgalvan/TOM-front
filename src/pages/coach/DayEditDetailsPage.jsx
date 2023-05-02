@@ -10,6 +10,7 @@ import { Sidebar } from 'primereact/sidebar';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
 import { ToastContainer, toast } from 'react-toastify';
+import { SpinnerDiamond } from 'spinners-react';
 
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
@@ -20,10 +21,12 @@ import Formulas from '../../components/Formulas.jsx';
 import ModalEditCircuit from '../../components/Bootstrap/ModalEdit/ModalEditCircuit.jsx';
 import AddCircuit from '../../components/AddCircuit.jsx';
 
+
 function DayEditDetailsPage(){
     const {week_id} = useParams()
     const {day_id} = useParams()
     const [status, setStatus] = useState(1)
+    const [loading, setLoading] = useState(false)
     const toastId = useRef();
 
     const [warmup, setWarmup] = useState()
@@ -282,152 +285,155 @@ function DayEditDetailsPage(){
                                 </tr>
                             </thead>
                             <tbody>
-                            <TransitionGroup component={null} className="todo-list">
-                            {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}) =>
-                            <CSSTransition
-                            key={exercise_id}
-                            timeout={500}
-                            classNames="item"
-                            >
-                                <tr key={exercise_id}>
-                                    <th className='TableResponsiveDayEditDetailsPage' scope="row">
-                                    {type != 'exercise' ? <span>{numberExercise}</span> : <select  defaultValue={numberExercise} onChange={(e) =>{ editExercise(exercise_id, name, sets, reps, peso, video, e.target.value, e.target.value)}}>
-                                        {options.map(option =>
-                                        <optgroup key={option.value} label={option.name} >
-                                            <option value={option.value}>{option.name}</option>
+                            {loading == true ? 
+                            <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
+                                <TransitionGroup component={null} className="todo-list">
+                                {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}) =>
+                                <CSSTransition
+                                key={exercise_id}
+                                timeout={500}
+                                classNames="item"
+                                >
+                                    <tr key={exercise_id}>
+                                        <th className='TableResponsiveDayEditDetailsPage' scope="row">
+                                        {type != 'exercise' ? <span>{numberExercise}</span> : <select  defaultValue={numberExercise} onChange={(e) =>{ editExercise(exercise_id, name, sets, reps, peso, video, e.target.value, e.target.value)}}>
+                                            {options.map(option =>
+                                            <optgroup key={option.value} label={option.name} >
+                                                <option value={option.value}>{option.name}</option>
 
-                                            {option.extras.map(element => 
+                                                {option.extras.map(element => 
 
-                                                <option key={element.name} >{element.name}</option>
+                                                    <option key={element.name} >{element.name}</option>
 
+                                                )}
+
+                                            </optgroup>
                                             )}
+                                            </select>}
+                                        </th>
+                                        {type != 'exercise' ? <td colSpan={window.screen.width > 600 ? 5 : 3} >
+                                                                <table className='table align-middle'>
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th colSpan={3}>{type} x {typeOfSets}</th>
+                                                                        </tr>
+                                                                        <tr>
 
-                                        </optgroup>
-                                        )}
-                                        </select>}
-                                    </th>
-                                    {type != 'exercise' ? <td colSpan={window.screen.width > 600 ? 5 : 3} >
-                                                            <table className='table align-middle'>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th colSpan={3}>{type} x {typeOfSets}</th>
-                                                                    </tr>
-                                                                    <tr>
+                                                                            <th scope='col' className='mx-2'>Ejercicio</th>
+                                                                            <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col' >Reps</th>
+                                                                            <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col' >Peso</th>
+                                                                        </tr>
+                                                                        </thead>
+                                                                    <tbody>
+                                                                        {circuit.map(element =>
+                                                                        <tr key={element.name}>
 
-                                                                        <th scope='col' className='mx-2'>Ejercicio</th>
-                                                                        <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col' >Reps</th>
-                                                                        <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col' >Peso</th>
-                                                                    </tr>
-                                                                    </thead>
-                                                                <tbody>
-                                                                    {circuit.map(element =>
-                                                                    <tr key={element.name}>
-
-                                                                        <td >{element.name}</td>
-                                                                        <td className='TableResponsiveDayEditDetailsPage'>{element.reps}</td>
-                                                                        <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
-                                                                    </tr>)}
-                                                                </tbody>
-                                                            </table> 
-                                                        </td> : 
-                                <td>
-                                    <input 
-                                    id='name' 
-                                    className='form-control border-0' 
-                                    type="text" 
-                                    defaultValue={name} 
-                                    onKeyDown={event => {
-                                        if (event.key === 'Enter') {
-                                            editExercise(exercise_id, event.target.value, sets, reps, peso, video, notas, numberExercise, valueExercise)
-                                        }}} 
-                                        onChange={changeNameEdit}/>
-                                </td>}
-                                {sets === undefined ? null :
-                                <td >
-                                       
-                                    <InputNumber 
-                                        value={sets} 
-                                        onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)} 
-                                        showButtons 
-                                        buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
-                                        size={1} 
-                                        min={1} 
-                                        decrementButtonClassName="ButtonsInputNumber" 
-                                        incrementButtonClassName="ButtonsInputNumber" 
-                                        incrementButtonIcon="pi pi-plus" 
-                                        decrementButtonIcon="pi pi-minus"
-                                        className="WidthInputsWhenIsMobile" 
-                                    />     
-                                </td>} 
-                                {reps === undefined ? null  : 
+                                                                            <td >{element.name}</td>
+                                                                            <td className='TableResponsiveDayEditDetailsPage'>{element.reps}</td>
+                                                                            <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
+                                                                        </tr>)}
+                                                                    </tbody>
+                                                                </table> 
+                                                            </td> : 
                                     <td>
+                                        <input 
+                                        id='name' 
+                                        className='form-control border-0' 
+                                        type="text" 
+                                        defaultValue={name} 
+                                        onKeyDown={event => {
+                                            if (event.key === 'Enter') {
+                                                editExercise(exercise_id, event.target.value, sets, reps, peso, video, notas, numberExercise, valueExercise)
+                                            }}} 
+                                            onChange={changeNameEdit}/>
+                                    </td>}
+                                    {sets === undefined ? null :
+                                    <td >
                                         
                                         <InputNumber 
-                                                value={reps} 
-                                                onValueChange={(e) => editExercise(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)} 
-                                                showButtons 
-                                                buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
-                                                size={1} 
-                                                min={1} 
-                                                decrementButtonClassName="ButtonsInputNumber" 
-                                                incrementButtonClassName="ButtonsInputNumber" 
-                                                incrementButtonIcon="pi pi-plus" 
-                                                decrementButtonIcon="pi pi-minus"
-                                                className="WidthInputsWhenIsMobile" 
-                                            />
-                                    </td> 
-                                }
-                                    
-                                {peso === undefined ? null :
+                                            value={sets} 
+                                            onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)} 
+                                            showButtons 
+                                            buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
+                                            size={1} 
+                                            min={1} 
+                                            decrementButtonClassName="ButtonsInputNumber" 
+                                            incrementButtonClassName="ButtonsInputNumber" 
+                                            incrementButtonIcon="pi pi-plus" 
+                                            decrementButtonIcon="pi pi-minus"
+                                            className="WidthInputsWhenIsMobile" 
+                                        />     
+                                    </td>} 
+                                    {reps === undefined ? null  : 
+                                        <td>
+                                            
+                                            <InputNumber 
+                                                    value={reps} 
+                                                    onValueChange={(e) => editExercise(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)} 
+                                                    showButtons 
+                                                    buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
+                                                    size={1} 
+                                                    min={1} 
+                                                    decrementButtonClassName="ButtonsInputNumber" 
+                                                    incrementButtonClassName="ButtonsInputNumber" 
+                                                    incrementButtonIcon="pi pi-plus" 
+                                                    decrementButtonIcon="pi pi-minus"
+                                                    className="WidthInputsWhenIsMobile" 
+                                                />
+                                        </td> 
+                                    }
+                                        
+                                    {peso === undefined ? null :
 
-                                    <td className='TableResponsiveDayEditDetailsPage'>
+                                        <td className='TableResponsiveDayEditDetailsPage'>
+                                            
+                                            <input 
+                                            className='form-control border-0' 
+                                            type="text" 
+                                            defaultValue={peso}
+                                            onKeyDown={event => {
+                                                if (event.key === 'Enter') {
+                                                    editExercise(exercise_id, name, sets, reps, event.target.value, video, notas, numberExercise, valueExercise)
+                                                }}}  
+                                            onChange={changePesoEdit}/>
                                         
-                                        <input 
-                                        className='form-control border-0' 
-                                        type="text" 
-                                        defaultValue={peso}
-                                        onKeyDown={event => {
-                                            if (event.key === 'Enter') {
-                                                editExercise(exercise_id, name, sets, reps, event.target.value, video, notas, numberExercise, valueExercise)
-                                            }}}  
-                                        onChange={changePesoEdit}/>
+                                        </td> 
+                                    }
                                     
-                                    </td> 
-                                }
-                                
-                                {video === undefined ? null : 
-                                
-                                    <td className='TableResponsiveDayEditDetailsPage' >
+                                    {video === undefined ? null : 
+                                    
+                                        <td className='TableResponsiveDayEditDetailsPage' >
+                                            
+                                            <input 
+                                            className='form-control border-0' 
+                                            type="text" 
+                                            defaultValue={video}
+                                            onKeyDown={event => {
+                                                if (event.key === 'Enter') {
+                                                    editExercise(exercise_id, name, sets, reps, peso, event.target.value, notas, numberExercise, valueExercise)
+                                                }}}  
+                                            onChange={changeVideoEdit}/>
                                         
-                                        <input 
-                                        className='form-control border-0' 
-                                        type="text" 
-                                        defaultValue={video}
-                                        onKeyDown={event => {
-                                            if (event.key === 'Enter') {
-                                                editExercise(exercise_id, name, sets, reps, peso, event.target.value, notas, numberExercise, valueExercise)
-                                            }}}  
-                                        onChange={changeVideoEdit}/>
-                                    
+                                        </td>
+                                    }
+                                    <td>
+                                        <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
+                                            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+                                            </svg>
+                                        </button>
+                                        <button onClick={() => type != 'exercise' ? handleShowEditAmrap(exercise_id, type, typeOfSets, circuit,  numberExercise) : handleShowEditExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)} className='btn'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                            <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                            </svg>
+                                        </button>
                                     </td>
-                                }
-                                <td>
-                                    <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
-                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                                        </svg>
-                                    </button>
-                                    <button onClick={() => type != 'exercise' ? handleShowEditAmrap(exercise_id, type, typeOfSets, circuit,  numberExercise) : handleShowEditExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)} className='btn'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
-                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                                        <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                                </CSSTransition>
-                            )}
-                            </TransitionGroup>
+                                </tr>
+                                    </CSSTransition>
+                                )}
+                                </TransitionGroup>
+                            }
                             
 
                             </tbody>

@@ -157,10 +157,10 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
-                    {loading == true ? 
-                    <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
 
                     <div className='row justify-content-center'>
+                    {loading == true ? 
+                    <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
@@ -214,8 +214,8 @@ function UserRoutineEditPage(){
                         </div>
                         </CSSTransition>
                         )}
-                        </TransitionGroup>
-                    </div>}
+                        </TransitionGroup>}
+                    </div>
 
                 </div> 
 

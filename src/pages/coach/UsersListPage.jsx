@@ -8,6 +8,7 @@ import Logo from '../../components/Logo'
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
+import { SpinnerDiamond } from 'spinners-react';
 
 function UsersListPage() {
 
@@ -15,6 +16,7 @@ function UsersListPage() {
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState(0);
+    const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
     function generateUUID() {
@@ -30,13 +32,11 @@ function UsersListPage() {
     let idRefresh = generateUUID()
     
     useEffect(() => {
+        setLoading(true)
         UsersService.find(id)
         .then(data => {
             setUsers(data)
-            
-        })
-        .catch(res =>{
-            navigate("/")
+            setLoading(false)
         })
     }, [status]) 
 
@@ -112,6 +112,8 @@ function UsersListPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                {loading == true ? 
+                                <SpinnerDiamond size={74} thickness={98} speed={137} color="rgba(44, 189, 199, 1)" secondaryColor="rgba(0, 0, 0, 1)" /> : 
                                     <TransitionGroup component={null} className="todo-list">
                                     {results.map(({_id, name, email}) =>
                                     
@@ -142,7 +144,7 @@ function UsersListPage() {
                                             </tr>
                                         </CSSTransition>
                                     )}
-                                    </TransitionGroup>
+                                    </TransitionGroup>}
                                 </tbody>
                             </table>
                         </div>
