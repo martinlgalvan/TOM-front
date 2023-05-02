@@ -4,7 +4,6 @@ import Modal from 'react-bootstrap/Modal';
 
 import * as WeekService from '../../services/week.services.js'
 import * as WarmupServices from "../../services/warmup.services.js";
-import * as ObjectId from 'bson-objectid';
 //import * as JsonExercises from "../../services/jsonExercises.services.js";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { useEffect } from "react";

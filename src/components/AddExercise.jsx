@@ -2,8 +2,6 @@ import { useState,useRef } from "react";
 import * as ExercisesServices from "../services/exercises.services.js";
 import * as JsonExercises from "../services/jsonExercises.services.js";
 
-
-import * as ObjectId from 'bson-objectid';
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 

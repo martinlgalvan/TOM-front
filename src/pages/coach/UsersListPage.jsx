@@ -2,7 +2,6 @@ import {useState, useEffect} from 'react'
 import {Link, useParams, useNavigate} from 'react-router-dom'
 
 import * as UsersService from '../../services/users.services.js';
-import * as ObjectId from 'bson-objectid';
 
 import UserRegister from '../../components/Users/UserRegister.jsx';
 import Logo from '../../components/Logo'
