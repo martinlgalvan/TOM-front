@@ -17,6 +17,9 @@ import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { BarLoader } from 'react-spinners';
 
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+
 function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
@@ -61,14 +64,22 @@ function UserRoutineEditPage(){
                 setRoutine(data)
                 setWeekNumber(data.length + 1)
 
+                
+                setLoading(false)
+            })
+    }, [status])
+
+    //creo que solucione
+    useEffect(() => {
+        WeekService.findRoutineByUserId(id)
+            .then(data => {   
                 if(data.length == 0){
                     setCopyWeek(false)
                 } else if(data.length > 0){
                     setCopyWeek(true)
                 }
-                setLoading(false)
             })
-    }, [status])
+    }, [routine])
 
     //Botón para clonar semana
     function createWeek(){
@@ -157,10 +168,11 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
+                    <Skeleton />
 
                     <div className='row justify-content-center'>
                     {loading == true ? 
-                    <BarLoader color="#2CBDC7" height={5} width={300} /> : 
+                    <BarLoader  color="#2CBDC7" height={5} width={300} /> : 
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
