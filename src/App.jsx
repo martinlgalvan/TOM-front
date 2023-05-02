@@ -5,8 +5,6 @@ import "primeicons/primeicons.css";
 import 'primereact/resources/primereact.css';    
 //rsuit styles
 import '../src/assets/rsuiteStyles.css'
-//Tooltip styles
-import 'react-tooltip/dist/react-tooltip.css'
 //Bootstrapstyles
 import 'bootstrap/dist/css/bootstrap.min.css';
 //Propios styles
