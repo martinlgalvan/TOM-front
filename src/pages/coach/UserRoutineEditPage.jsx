@@ -15,7 +15,7 @@ import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.js
 
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Triangle } from  'react-loader-spinner'
+import { ProgressBar } from 'primereact/progressbar';
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -158,14 +158,8 @@ function UserRoutineEditPage(){
 
                 <div className='col-10'>
                     {loading == true ? 
-                    <div className="text-center">
-                        <Triangle
-                            height="80"
-                            width="80"
-                            color="#2CBDC7"
-                            ariaLabel="triangle-loading"
-                            visible={true}
-                            />
+                    <div className="w-50">
+                        <ProgressBar className='spinnerColor' mode="indeterminate" style={{ height: '8px', color: '#2CBDC7' }}></ProgressBar>
                     </div> : 
 
                     <div className='row justify-content-center'>
