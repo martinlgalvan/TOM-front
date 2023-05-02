@@ -172,7 +172,7 @@ function UserRoutineEditPage(){
 
                     <div className='row justify-content-center'>
                     {loading == true ? 
-                    <Skeleton /> : 
+                    <Skeleton week={weekNumber} /> : 
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
