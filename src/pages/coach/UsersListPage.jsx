@@ -113,7 +113,7 @@ function UsersListPage() {
                                 </thead>
                                 <tbody>
                                 {loading == true ? 
-                                <tr><BarLoader color="#2CBDC7" height={5} width={300} /></tr> : 
+                                <tr colSpan={3}><td><BarLoader color="#2CBDC7" height={5} width={300} /></td></tr> : 
                                     <TransitionGroup component={null} className="todo-list">
                                     {results.map(({_id, name, email}) =>
                                     

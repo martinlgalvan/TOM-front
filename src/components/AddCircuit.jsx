@@ -8,11 +8,13 @@ import { useParams } from "react-router-dom";
 
 import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
+import { BarLoader } from 'react-spinners';
 
 function AddCircuit({refresh}) {
   //---variables para la carga
   const { week_id } = useParams();
   const { day_id } = useParams();
+  const [loading, setLoading] = useState(false)
 
   const [type, setType] = useState("");
   const [name, setName] = useState("");
@@ -21,21 +23,35 @@ function AddCircuit({refresh}) {
   const [peso, setPeso] = useState(""); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [video, setVideo] = useState("");
 
-  var objectId = new ObjectId()
-  let idAmrap = objectId.toHexString();
-
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [filteredExercises, setFilteredExercises] = useState(null);
   const [exercisesAmrap, setExercisesAmrap] = useState([]);
 
-  const addExerciseToAmrap = (exercise) => {
+  function generateUUID() {
+    let d = new Date().getTime();
+    let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        let r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+}
 
-     setExercisesAmrap([...exercisesAmrap, exercise]); //esto debería de funcionar
-     setName('')
-     setReps(1)
-     setPeso('')
-     setVideo('')
+let idRefresh = generateUUID()
+
+  const addExerciseToAmrap = (exercise) => {
+    setLoading(true)
+
+    setTimeout(() => {     
+      setExercisesAmrap([...exercisesAmrap, exercise]); //esto debería de funcionar
+      setName('')
+      setReps(1)
+      setPeso('')
+      setVideo('')
+      setLoading(false)
+    },(300))
+    
   };
 
 
@@ -66,9 +82,12 @@ function AddCircuit({refresh}) {
 
   function createAmrap() {
 
-	ExercisesServices.addAmrap(week_id, day_id, { type,typeOfSets, circuit: exercisesAmrap  });
-  refresh(idAmrap)
-  setExercisesAmrap([])
+	ExercisesServices.addAmrap(week_id, day_id, { type,typeOfSets, circuit: exercisesAmrap  })
+    .then(() => {
+      refresh(idRefresh)
+      setExercisesAmrap([])
+    })
+
 }
   
 
@@ -202,7 +221,7 @@ useEffect(() => {
                 />   
             </div>
             <div className="col-6 text-center">
-              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idAmrap})} className='input-group-text btn border BlackBGtextWhite mt-3'>Añadir ejercicio</button>
+              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className='input-group-text btn border BlackBGtextWhite mt-3'>Añadir ejercicio</button>
             </div>      
           </div>
 
@@ -218,6 +237,9 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
+          {loading == true ? 
+          <BarLoader color="#2CBDC7" height={5} width={300} /> :
+          <>
           {exercisesAmrap.map(element=> 
             <tr>
               <td>{element.name}</td>
@@ -225,6 +247,8 @@ useEffect(() => {
               <td>{element.peso}</td>
               <td>{element.reps}</td>
             </tr>)}
+          </>
+          }
           </tbody>
         </table>
       </article>}

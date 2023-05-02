@@ -77,7 +77,7 @@ function DayEditDetailsPage(){
     }
 
     useEffect(() => {
-
+            setLoading(true)
             WeekService.findByWeekId(week_id)
                 .then(data => {
                     //Encuentro el index del día, y luego seteo el día con el que corresponde.
@@ -91,6 +91,7 @@ function DayEditDetailsPage(){
                     setCircuit(circuit)
                     setDay(day)
                     setUserId(data[0].user_id)
+                    setLoading(false)
 
                 })
     }, [status])
@@ -284,10 +285,10 @@ function DayEditDetailsPage(){
                                     <th scope="col">Acciones</th>
                                 </tr>
                             </thead>
+
+                            <tbody>
                             {loading == true ? 
                             <BarLoader color="#2CBDC7" height={5} width={300} /> : 
-                            <tbody>
-                            
                                 <TransitionGroup component={null} className="todo-list">
                                 {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}) =>
                                 <CSSTransition
@@ -433,10 +434,10 @@ function DayEditDetailsPage(){
                                 </tr>
                                     </CSSTransition>
                                 )}
-                                </TransitionGroup>
+                                </TransitionGroup>}
 
                             </tbody>
-                            }
+                            
                         </table>
                     </div>
                     </div>
