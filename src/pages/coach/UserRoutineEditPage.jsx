@@ -168,11 +168,11 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
-                    <Skeleton />
+                    
 
                     <div className='row justify-content-center'>
                     {loading == true ? 
-                    <BarLoader  color="#2CBDC7" height={5} width={300} /> : 
+                    <Skeleton /> : 
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
