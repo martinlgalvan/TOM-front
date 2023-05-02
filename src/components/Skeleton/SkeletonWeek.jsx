@@ -10,3 +10,5 @@ const SkeletonWeek = ({weeks}) => {
     </div>
   ))
 }
+
+export default SkeletonWeek
