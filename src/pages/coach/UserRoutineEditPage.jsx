@@ -15,6 +15,7 @@ import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.js
 
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { ProgressBar } from 'primereact/progressbar';
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -156,7 +157,11 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
-                    {loading == true ? <span className="loader">ss</span> : 
+                    {loading == true ? 
+                    <div className="card">
+                        <ProgressBar mode="indeterminate" style={{ height: '6px' }}></ProgressBar>
+                    </div> : 
+                    
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
