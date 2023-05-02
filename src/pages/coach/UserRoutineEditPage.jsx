@@ -156,7 +156,7 @@ function UserRoutineEditPage(){
                 </div>
 
                 <div className='col-10'>
-                    {loading == true ? <h1>CARGANDOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO</h1> : 
+                    {loading == true ? <span class="loader"></span> : 
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
