@@ -11,6 +11,7 @@ import Logo from '../../components/Logo.jsx'
 import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
+import SkeletonWeek from '../../components/Skeleton/SkeletonWeek.js' 
 
 
 import { InputSwitch } from "primereact/inputswitch";
@@ -172,7 +173,7 @@ function UserRoutineEditPage(){
 
                     <div className='row justify-content-center'>
                     {loading == true ? 
-                    <Skeleton week={4} /> : 
+                    <SkeletonWeek week={weekNumber} /> : 
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
