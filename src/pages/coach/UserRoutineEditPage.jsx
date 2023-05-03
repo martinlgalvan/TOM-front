@@ -60,7 +60,7 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
-        notifyA("Cargando recursos...")
+        setLoading(0)
 
         WeekService.findRoutineByUserId(id)
             .then(data => {   
@@ -72,14 +72,14 @@ function UserRoutineEditPage(){
                     setCopyWeek(true)
                 }
                 
-               updateToast()
+                setLoading(false)
             })
     }, [status])
 
 
     //Botón para clonar semana
     function createWeek(){
-        notifyA("Agregando semana...")
+        setLoading(1)
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
@@ -96,7 +96,7 @@ function UserRoutineEditPage(){
     }
 
     function addDayToWeek(week_id){
-        notifyA("Agregando día...")
+        setLoading(2)
         WeekService.findByWeekId(week_id)
             .then(data => {   
             
@@ -104,7 +104,6 @@ function UserRoutineEditPage(){
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                     .then(() => {
                         setStatus(idRefresh)
-
                     })
                 })
     }
@@ -160,7 +159,7 @@ function UserRoutineEditPage(){
 
         const notifyA = (message) => {
             toast(message, {
-                position: "bottom-center",
+                position: "bottom-right",
                 toastId: TOASTID, 
                 autoClose: false, 
                 position: toast.POSITION.BOTTOM_RIGHT,
@@ -175,6 +174,18 @@ function UserRoutineEditPage(){
             autoClose: 1000, 
             limit: 1,
             className: 'rotateY animated'});
+
+        const showLoadingToast = () => {
+            if(loading == 0){
+                notifyA("Cargando recursos...")
+            }else if (loading == 1){
+                notifyA("Cargando nueva semana...")
+            }else if(loading == 2){
+                notifyA("Cargando nuevo día...")
+            }else{
+                updateToast()
+            }
+        }
 
 
     return (
@@ -204,6 +215,7 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
+                        {showLoadingToast()}
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
@@ -273,7 +285,6 @@ function UserRoutineEditPage(){
             <ModalDeleteWeek show={show} handleClose={handleClose} name={name} weekID={weekID}/>
             
             <ToastContainer
-                    toastId= {TOASTID}
                     position="bottom-center"
                     autoClose={1000}
                     hideProgressBar={false}
