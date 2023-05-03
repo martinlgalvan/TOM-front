@@ -158,7 +158,7 @@ function UserRoutineEditPage(){
         }
 
         const notifyA = () => toastId.current = toast("Cargando...", { autoClose: false });
-        const updateToast = () => toast.update(toastId.current, { render: "", type: toast.TYPE.SUCCESS, autoClose: 1000, className: 'rotateY animated'});
+        const updateToast = () => toast.update(toastId.current, { render: "Listo!", type: toast.TYPE.SUCCESS, autoClose: 1000, className: 'rotateY animated'});
 
         const showLoadingToast = () => {
             if(loading == true){
