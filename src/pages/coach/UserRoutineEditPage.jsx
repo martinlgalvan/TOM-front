@@ -100,7 +100,7 @@ function UserRoutineEditPage(){
                 
                 let dayNumber = data[0].routine.length + 1
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
-                setStatus(dayNumber + 1)
+                setStatus(idRefresh)
                 setLoading(false)
                 
             })
@@ -137,7 +137,6 @@ function UserRoutineEditPage(){
         setShowEdit(false)
         setShowEditWeek(false)
         setStatus(idRefresh)
-        loading == true ? loadingNotify("hola") : notify("chau")
     } 
 
     const notify = (name,progressBar) => {
@@ -203,7 +202,7 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-                        {loading == true && loadingNotify("CARGA")}
+                        {loading == true ? loadingNotify("CARGA") : null }
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
