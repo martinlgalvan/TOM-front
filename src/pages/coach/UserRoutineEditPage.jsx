@@ -175,6 +175,8 @@ function UserRoutineEditPage(){
     
             }
 
+            const dismiss = () =>  toast.dismiss();
+
     return (
 
         <section className='container'>
@@ -202,7 +204,7 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-                        {loading == true ? loadingNotify("CARGA") : null }
+                        {loading == true ? loadingNotify("CARGA") : dismiss }
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
