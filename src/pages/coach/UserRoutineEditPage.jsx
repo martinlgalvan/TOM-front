@@ -60,7 +60,7 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
-        setLoading(true)
+        notifyA()
         WeekService.findRoutineByUserId(id)
             .then(data => {   
                 setRoutine(data)
@@ -71,7 +71,7 @@ function UserRoutineEditPage(){
                     setCopyWeek(true)
                 }
                 
-                setLoading(false)
+                updateToast()
             })
     }, [status])
 
@@ -94,15 +94,15 @@ function UserRoutineEditPage(){
     }
 
     function addDayToWeek(week_id){
-
+        notifyA()
         WeekService.findByWeekId(week_id)
             .then(data => {   
-                setLoading(true)
+                
                 let dayNumber = data[0].routine.length + 1
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                     .then(() => {
                         setStatus(idRefresh)
-                        setLoading(false)
+                        updateToast()
                     })
 
             })
@@ -161,18 +161,18 @@ function UserRoutineEditPage(){
         const updateToast = () => toast.update(toastId.current, { 
             render: "Listo!", 
             type: toast.TYPE.SUCCESS, 
-            autoClose: 1000, 
+            autoClose: 1500, 
             limit: 1,
             className: 'rotateY animated'});
 
-        const showLoadingToast = () => {
+        /*const showLoadingToast = () => {
             if(loading == true){
                 notifyA()
             } else{
                 updateToast()
             }
             
-        }
+        }*/
         
 
     return (
@@ -202,7 +202,6 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-                        {showLoadingToast()}
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
