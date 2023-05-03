@@ -161,6 +161,7 @@ function DayEditDetailsPage(){
         setShowCreateWarmup(false)
         setShowEditCircuit(false)
         setStatus(idRefresh)
+        loading == true ? notify("hola", false) : notify("chau", true)
     } 
 
     const deleteExercise = (event,id,name) => {
@@ -212,13 +213,13 @@ function DayEditDetailsPage(){
     ]
 
       
-    const notify = (name) => {
+    const notify = (name,progressBar) => {
         if(! toast.isActive(toastId.current)) {
             toastId.current = toast.success(`${name} editado con éxito!`, {
         
                 position: "bottom-center",
                 autoClose: 300,
-                hideProgressBar: true,
+                hideProgressBar: progressBar,
                 closeOnClick: true,
                 pauseOnHover: true,
                 limit: 1,
@@ -287,8 +288,6 @@ function DayEditDetailsPage(){
                             </thead>
 
                             <tbody>
-                            {loading == true ? 
-                            <BarLoader color="#2CBDC7" height={5} width={300} /> : 
                                 <TransitionGroup component={null} className="todo-list">
                                 {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}) =>
                                 <CSSTransition
@@ -434,7 +433,7 @@ function DayEditDetailsPage(){
                                 </tr>
                                     </CSSTransition>
                                 )}
-                                </TransitionGroup>}
+                                </TransitionGroup>
 
                             </tbody>
                             
