@@ -157,29 +157,14 @@ function UserRoutineEditPage(){
 
         }
 
-        const loadingNotify = () => {
-            if(! toast.isActive(toastId.current)) {
-                toastId.current = toast.success(`CARGANDO...`, {
-            
-                    position: "bottom-center",
-                    autoClose: 300,
-                    hideProgressBar: true,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    limit: 1,
-                    draggable: true,
-                    progress: 1,
-                    theme: "light",
-                    })
-              }
-    
-            }
-            const load = toast.loading("Please wait...")
+        const notifyA = () => toastId.current = toast("Hello", { autoClose: false });
+        const updateToast = () => toast.update(toastId.current, { type: toast.TYPE.INFO, autoClose: 5000, transition: Rotate });
+
         const showLoadingToast = () => {
             if(loading == true){
-                toast.loading("Please wait...")
+                notifyA()
             } else{
-                toast.update(load, { render: "All is good", type: "success", isLoading: false });
+                updateToast()
             }
             
         }
