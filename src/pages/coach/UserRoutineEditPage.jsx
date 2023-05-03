@@ -26,6 +26,7 @@ function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
+    const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
     const navigate = useNavigate()
     
@@ -60,6 +61,7 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
+        loading == true ? null : setLoading(true)
 
         WeekService.findRoutineByUserId(id)
             .then(data => {   
@@ -78,7 +80,8 @@ function UserRoutineEditPage(){
 
     //Botón para clonar semana
     function createWeek(){
-        setLoading(1)
+        setLoading(true)
+        setNumberToast(1)
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
@@ -95,7 +98,8 @@ function UserRoutineEditPage(){
     }
 
     function addDayToWeek(week_id){
-        setLoading(2)
+        setLoading(true)
+        setNumberToast(2)
         WeekService.findByWeekId(week_id)
             .then(data => {   
             
@@ -175,13 +179,9 @@ function UserRoutineEditPage(){
             className: 'rotateY animated'});
 
         const showLoadingToast = () => {
-            if(loading == 0){
-                notifyA("Cargando recursos...")
-            }else if (loading == 1){
-                notifyA("Cargando nueva semana...")
-            }else if(loading == 2){
-                notifyA("Cargando nuevo día...")
-            }else if(loading == false){
+            if(loading == true){
+                notifyA(numberToast == 1 || numberToast == 2 ? "Cargando nuevo recurso..." : "Cargando recursos...")
+            }else{
                 updateToast()
             }
         }
