@@ -25,7 +25,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
-    const [loading, setLoading] = useState()
+    const [loading, setLoading] = useState(false)
     const TOASTID = "LOADER_ID"
     const navigate = useNavigate()
     
