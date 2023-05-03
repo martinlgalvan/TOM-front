@@ -139,7 +139,7 @@ function UserRoutineEditPage(){
         setStatus(idRefresh)
     } 
 
-    const notify = (name,progressBar) => {
+    /*const notify = (name,progressBar) => {
         if(! toast.isActive(toastId.current)) {
             toastId.current = toast.success(`${name} editado con éxito!`, {
         
@@ -155,10 +155,15 @@ function UserRoutineEditPage(){
                 })
           }
 
-        }
+        }*/
 
-        const notifyA = () => toastId.current = toast("Cargando...", { autoClose: false });
-        const updateToast = () => toast.update(toastId.current, { render: "Listo!", type: toast.TYPE.SUCCESS, autoClose: 1000, className: 'rotateY animated'});
+        const notifyA = () => toastId.current = toast("Cargando...", { autoClose: false, limit: 1 });
+        const updateToast = () => toast.update(toastId.current, { 
+            render: "Listo!", 
+            type: toast.TYPE.SUCCESS, 
+            autoClose: 1000, 
+            limit: 1,
+            className: 'rotateY animated'});
 
         const showLoadingToast = () => {
             if(loading == true){
