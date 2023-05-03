@@ -61,8 +61,8 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
-        loading == 1 || loading == 2 ? null : setLoading(true)
-
+        loading == 1 || loading == 2 ? setLoading(true) : null
+        console.log(numberToast)
         WeekService.findRoutineByUserId(id)
             .then(data => {   
                 setRoutine(data)
