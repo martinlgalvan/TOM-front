@@ -93,14 +93,15 @@ function UserRoutineEditPage(){
         }
     }
 
-    async function addDayToWeek(week_id, index){
-
-        await WeekService.findByWeekId(week_id)
+    function addDayToWeek(week_id, index){
+        setLoading(true)
+        WeekService.findByWeekId(week_id)
             .then(data => {   
                 
                 let dayNumber = data[0].routine.length + 1
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                 setStatus(dayNumber + 1)
+                setLoading(false)
                 
             })
 
@@ -136,10 +137,10 @@ function UserRoutineEditPage(){
         setShowEdit(false)
         setShowEditWeek(false)
         setStatus(idRefresh)
-        loading == true ? notify("hola", false) : notify("chau", true)
+        loading == true ? notify("hola", 0) : notify("chau", 1)
     } 
 
-    const notify = (name) => {
+    const notify = (name,progressBar) => {
         if(! toast.isActive(toastId.current)) {
             toastId.current = toast.success(`${name} editado con éxito!`, {
         
@@ -150,12 +151,30 @@ function UserRoutineEditPage(){
                 pauseOnHover: true,
                 limit: 1,
                 draggable: true,
-                progress: undefined,
+                progress: progressBar,
                 theme: "light",
                 })
           }
 
         }
+
+        const loadingNotify = (name) => {
+            if(! toast.isActive(toastId.current)) {
+                toastId.current = toast.success(`${name} editado con éxito!`, {
+            
+                    position: "bottom-center",
+                    autoClose: 300,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    limit: 1,
+                    draggable: true,
+                    progress: 1,
+                    theme: "light",
+                    })
+              }
+    
+            }
 
     return (
 
@@ -184,7 +203,7 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-
+                        {loading == true && loadingNotify("CARGA")}
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
