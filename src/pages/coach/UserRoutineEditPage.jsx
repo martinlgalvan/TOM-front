@@ -61,7 +61,7 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
-        loading == true ? null : setLoading(true)
+        loading == 1 || loading == 2 ? null : setLoading(true)
 
         WeekService.findRoutineByUserId(id)
             .then(data => {   
