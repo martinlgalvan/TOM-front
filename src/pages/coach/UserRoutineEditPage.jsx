@@ -174,7 +174,7 @@ function UserRoutineEditPage(){
               }
     
             }
-        
+            const load = toast.loading("Please wait...")
         const showLoadingToast = () => {
             toast.promise(
                 new Promise((resolve,reject) => {
@@ -216,7 +216,7 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-                        {loading == true ? showLoadingToast() : dismiss }
+                        {loading == true ? load : dismiss }
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
