@@ -79,6 +79,7 @@ function UserRoutineEditPage(){
 
     //Botón para clonar semana
     function createWeek(){
+        setLoading(true)
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
