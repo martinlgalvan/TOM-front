@@ -93,18 +93,19 @@ function UserRoutineEditPage(){
         }
     }
 
-    function addDayToWeek(week_id, i){
-        console.log(i)
-        let dayNumber = 0 
+    function addDayToWeek(week_id){
 
-        notifyA()
-                    
+        WeekService.findByWeekId(week_id)
+            .then(data => {   
+                
+                let dayNumber = data[0].routine.length + 1
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                     .then(() => {
                         setStatus(idRefresh)
-                        updateToast()
+
                     })
 
+            })
     }
 
     function handleDeleteWeek(week_id,week_name){
