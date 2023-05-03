@@ -180,7 +180,14 @@ function UserRoutineEditPage(){
 
         const showLoadingToast = () => {
             if(loading == true){
-                notifyA(numberToast == 1 || numberToast == 2 ? "Cargando nuevo recurso..." : "Cargando recursos...")
+                if(numberToast == 1){
+                    notifyA("Cargando nueva semana...")
+                } else if(numberToast == 2){
+                    notifyA("Cargando nuevo día...")
+                } else{
+                    notifyA("Cargando recursos...")
+                }
+
             }else{
                 updateToast()
             }
