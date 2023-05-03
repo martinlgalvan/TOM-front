@@ -168,6 +168,14 @@ function UserRoutineEditPage(){
             limit: 1,
             className: 'rotateY animated'});
 
+        const showLoadingToast = () => {
+            if(loading == true){
+                notifyA()
+            }else{
+                updateToast()
+            }
+        }
+
 
     return (
 
