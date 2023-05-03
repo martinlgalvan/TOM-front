@@ -158,7 +158,7 @@ function UserRoutineEditPage(){
         }
 
         const notifyA = () => toastId.current = toast("Hello", { autoClose: false });
-        const updateToast = () => toast.update(toastId.current, { type: toast.TYPE.INFO, autoClose: 5000, transition: Rotate });
+        const updateToast = () => toast.update(toastId.current, { type: toast.TYPE.INFO, autoClose: 5000, className: 'rotateY animated'});
 
         const showLoadingToast = () => {
             if(loading == true){
