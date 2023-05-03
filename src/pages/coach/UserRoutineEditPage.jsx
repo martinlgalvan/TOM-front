@@ -26,7 +26,7 @@ function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
-    const toastId = useRef();
+    const TOASTID = "LOADER_ID"
     const navigate = useNavigate()
     
 
@@ -96,17 +96,13 @@ function UserRoutineEditPage(){
 
     function addDayToWeek(week_id, index){
         setLoading(true)
-        WeekService.findByWeekId(week_id)
-            .then(data => {   
-                
-                let dayNumber = data[0].routine.length + 1
+
+                let dayNumber = 2
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                     .then(() => {
                         setStatus(idRefresh)
                     })
 
-                
-            })
     }
 
     function handleDeleteWeek(week_id,week_name){
@@ -158,23 +154,20 @@ function UserRoutineEditPage(){
 
         }*/
 
-        const notifyA = () => toastId.current = toast("Cargando...", { autoClose: false, limit: 1 });
-        const updateToast = () => toast.update(toastId.current, { 
+        const notifyA = () => {
+            toast("Cargando...", {
+                toastId: TOASTID, 
+                autoClose: false, 
+                limit: 1 })};
+
+        const updateToast = () => 
+            toast.update(TOASTID, { 
             render: "Listo!", 
             type: toast.TYPE.SUCCESS, 
             autoClose: 1000, 
             limit: 1,
             className: 'rotateY animated'});
 
-        const showLoadingToast = () => {
-            if(loading == true){
-                notifyA()
-            } else{
-                updateToast()
-            }
-            
-        }
-        
 
     return (
 
@@ -218,7 +211,7 @@ function UserRoutineEditPage(){
                                     <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
               
                                 </div>
-                                 
+                                 {loading == true ? notifyA : updateToast}
                                 <TransitionGroup component={null} className="todo-list">
                                     {elemento.routine.map(element => 
                                     <CSSTransition
