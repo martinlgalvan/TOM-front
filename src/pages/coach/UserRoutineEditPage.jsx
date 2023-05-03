@@ -60,7 +60,7 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
-        notifyA()
+        notifyA("Cargando recursos...")
 
         WeekService.findRoutineByUserId(id)
             .then(data => {   
@@ -79,7 +79,7 @@ function UserRoutineEditPage(){
 
     //Botón para clonar semana
     function createWeek(){
-        setLoading(true)
+        notifyA("Agregando semana...")
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
@@ -104,7 +104,7 @@ function UserRoutineEditPage(){
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                     .then(() => {
                         setStatus(idRefresh)
-                        notify
+
                     })
                 })
     }
@@ -160,7 +160,7 @@ function UserRoutineEditPage(){
 
         const notifyA = (message) => {
             toast(message, {
-                position: "bottom-right",
+                position: "bottom-center",
                 toastId: TOASTID, 
                 autoClose: false, 
                 position: toast.POSITION.BOTTOM_RIGHT,
@@ -175,14 +175,6 @@ function UserRoutineEditPage(){
             autoClose: 1000, 
             limit: 1,
             className: 'rotateY animated'});
-
-        const showLoadingToast = () => {
-            if(loading == true){
-                notifyA()
-            }else{
-                updateToast()
-            }
-        }
 
 
     return (
