@@ -60,7 +60,7 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
-        loading == true ? null : setLoading(true)
+        notifyA()
 
         WeekService.findRoutineByUserId(id)
             .then(data => {   
@@ -72,7 +72,7 @@ function UserRoutineEditPage(){
                     setCopyWeek(true)
                 }
                 
-                setLoading(false)
+               updateToast()
             })
     }, [status])
 
@@ -96,7 +96,7 @@ function UserRoutineEditPage(){
     }
 
     function addDayToWeek(week_id){
-        setLoading(true)
+        notifyA("Agregando día...")
         WeekService.findByWeekId(week_id)
             .then(data => {   
             
@@ -104,6 +104,7 @@ function UserRoutineEditPage(){
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                     .then(() => {
                         setStatus(idRefresh)
+                        notify
                     })
                 })
     }
@@ -157,8 +158,8 @@ function UserRoutineEditPage(){
 
         }*/
 
-        const notifyA = () => {
-            toast("Cargando...", {
+        const notifyA = (message) => {
+            toast(message, {
                 position: "bottom-right",
                 toastId: TOASTID, 
                 autoClose: false, 
@@ -211,7 +212,6 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-                        {showLoadingToast()}
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
@@ -281,6 +281,7 @@ function UserRoutineEditPage(){
             <ModalDeleteWeek show={show} handleClose={handleClose} name={name} weekID={weekID}/>
             
             <ToastContainer
+                    toastId= {TOASTID}
                     position="bottom-center"
                     autoClose={1000}
                     hideProgressBar={false}
