@@ -60,29 +60,19 @@ function UserRoutineEditPage(){
 
     //Routine - API
     useEffect(() => {
-        const showLoadingToast = () => {
-            toast.promise(
-                new Promise((resolve,reject) => {
-                    WeekService.findRoutineByUserId(id)
-                        .then(data => {   
-                            setRoutine(data)
-                            setWeekNumber(data.length + 1)
-                            if(data.length == 0){
-                                setCopyWeek(false)
-                            } else if(data.length > 0){
-                                setCopyWeek(true)
-                            }
-                            resolve()
-                            setLoading(false)
-                        })
-                }),
-                {pending: "Loading",
-                success: "Cargó con exito"},
-                {}
-            )
-        }
-
-        
+        setLoading(true)
+        WeekService.findRoutineByUserId(id)
+            .then(data => {   
+                setRoutine(data)
+                setWeekNumber(data.length + 1)
+                if(data.length == 0){
+                    setCopyWeek(false)
+                } else if(data.length > 0){
+                    setCopyWeek(true)
+                }
+                
+                setLoading(false)
+            })
     }, [status])
 
 
@@ -184,20 +174,16 @@ function UserRoutineEditPage(){
               }
     
             }
-            //const load = toast.loading("Please wait...")
-        /*const showLoadingToast = () => {
-            toast.promise(
-                new Promise((resolve,reject) => {
-                    if(loading != true){
-                        resolve()
-                    }
-                }),
-                {pending: "Loading",
-            success: "Cargó con exito"},
-            {}
-            )
-        }*/
-            const dismiss = () =>  toast.dismiss();
+            const load = toast.loading("Please wait...")
+        const showLoadingToast = () => {
+            if(loading == true){
+                toast.loading("Please wait...")
+            } else{
+                toast.update(load, { render: "All is good", type: "success", isLoading: false });
+            }
+            
+        }
+        
 
     return (
 
