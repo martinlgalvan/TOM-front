@@ -137,7 +137,7 @@ function UserRoutineEditPage(){
         setShowEdit(false)
         setShowEditWeek(false)
         setStatus(idRefresh)
-        loading == true ? notify("hola", 0) : notify("chau", 1)
+        loading == true ? loadingNotify("hola") : notify("chau")
     } 
 
     const notify = (name,progressBar) => {
@@ -151,20 +151,20 @@ function UserRoutineEditPage(){
                 pauseOnHover: true,
                 limit: 1,
                 draggable: true,
-                progress: progressBar,
+                progress: undefined,
                 theme: "light",
                 })
           }
 
         }
 
-        const loadingNotify = (name) => {
+        const loadingNotify = () => {
             if(! toast.isActive(toastId.current)) {
-                toastId.current = toast.success(`${name} editado con éxito!`, {
+                toastId.current = toast.success(`CARGANDO...`, {
             
                     position: "bottom-center",
                     autoClose: 300,
-                    hideProgressBar: false,
+                    hideProgressBar: true,
                     closeOnClick: true,
                     pauseOnHover: true,
                     limit: 1,
