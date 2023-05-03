@@ -100,12 +100,12 @@ function UserRoutineEditPage(){
                 
                 let dayNumber = data[0].routine.length + 1
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
-                setStatus(idRefresh)
-                setLoading(false)
-                
+                    .then(() => {
+                        setStatus(idRefresh)
+                        setLoading(false)
+                    })
+
             })
-
-
     }
 
     function handleDeleteWeek(week_id,week_name){
