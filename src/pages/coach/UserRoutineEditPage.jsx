@@ -159,8 +159,12 @@ function UserRoutineEditPage(){
 
         const notifyA = () => {
             toast("Cargando...", {
+                position: "bottom-right",
                 toastId: TOASTID, 
                 autoClose: false, 
+                transition: slide,
+                pauseOnFocusLoss: false,
+                type: toast.TYPE.INFO, 
                 limit: 1 })};
 
         const updateToast = () => 
