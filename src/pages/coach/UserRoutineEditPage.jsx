@@ -25,7 +25,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState()
     const TOASTID = "LOADER_ID"
     const navigate = useNavigate()
     
@@ -56,11 +56,15 @@ function UserRoutineEditPage(){
     }
 
     let idRefresh = generateUUID()
+
+    const charge = (number) =>{
+        setLoading(number)
+    }
    
 
     //Routine - API
     useEffect(() => {
-        setLoading(0)
+        charge(0)
 
         WeekService.findRoutineByUserId(id)
             .then(data => {   
@@ -79,7 +83,7 @@ function UserRoutineEditPage(){
 
     //Botón para clonar semana
     function createWeek(){
-        setLoading(1)
+        charge(1)
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
@@ -96,7 +100,7 @@ function UserRoutineEditPage(){
     }
 
     function addDayToWeek(week_id){
-        setLoading(2)
+        charge(2)
         WeekService.findByWeekId(week_id)
             .then(data => {   
             
@@ -182,7 +186,7 @@ function UserRoutineEditPage(){
                 notifyA("Cargando nueva semana...")
             }else if(loading == 2){
                 notifyA("Cargando nuevo día...")
-            }else{
+            }else if(loading == false){
                 updateToast()
             }
         }
