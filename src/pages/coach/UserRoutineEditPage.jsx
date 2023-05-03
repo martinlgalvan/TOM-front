@@ -76,7 +76,7 @@ function UserRoutineEditPage(){
                     setCopyWeek(true)
                 }
                 
-                setLoading(false)
+                charge(false)
             })
     }, [status])
 
