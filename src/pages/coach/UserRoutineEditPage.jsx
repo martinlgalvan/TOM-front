@@ -93,11 +93,11 @@ function UserRoutineEditPage(){
         }
     }
 
-    function addDayToWeek(week_id, index){
-        setLoading(true)
+    function addDayToWeek(week_id){
+
         WeekService.findByWeekId(week_id)
             .then(data => {   
-                
+                setLoading(true)
                 let dayNumber = data[0].routine.length + 1
                 DayService.createDay({name: `Día ${dayNumber}`}, week_id)
                     .then(() => {
