@@ -7,15 +7,13 @@ const SkeletonWeek = ({weeks}) => {
       <div className="card-body m-0 p-0">
         <div className="menuColor py-1 row justify-content-center" >
 
-          <h2 className='FontTitles m-0 py-2'><Skeleton /></h2>
+          <h2 className='FontTitles m-0 py-2 mx-5'><Skeleton /></h2>
               
         </div>
 
           <div className='row justify-content-center mx-0 py-1 border-bottom'>
-
-            <span className='LinkDays col-10 ClassBGHover pt-2'><Skeleton /></span>
-                                            
-            <span className=' col-2 btn ClassBGHover'>
+ 
+            <span className='col-10 btn ClassBGHover'>
               <Skeleton count={4} style={{marginBottom: "20px"}} />
             </span>
           </div>

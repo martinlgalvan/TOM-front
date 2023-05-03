@@ -30,7 +30,6 @@ function UserRoutineEditPage(){
 
     const [routine, setRoutine] = useState([])
     const [weekNumber, setWeekNumber] = useState(0)
-    const [refreshNumber, setRefreshNumber] = useState(0)
 
     const [show, setShow] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
@@ -64,23 +63,16 @@ function UserRoutineEditPage(){
             .then(data => {   
                 setRoutine(data)
                 setWeekNumber(data.length + 1)
-
-                
-                setLoading(false)
-            })
-    }, [status])
-
-    //creo que solucione
-    useEffect(() => {
-        WeekService.findRoutineByUserId(id)
-            .then(data => {   
                 if(data.length == 0){
                     setCopyWeek(false)
                 } else if(data.length > 0){
                     setCopyWeek(true)
                 }
+                
+                setLoading(false)
             })
-    }, [routine])
+    }, [status])
+
 
     //Botón para clonar semana
     function createWeek(){
@@ -173,7 +165,7 @@ function UserRoutineEditPage(){
 
                     <div className='row justify-content-center'>
                     {loading == true ? 
-                    <SkeletonWeek weeks={weekNumber} /> : 
+                    <SkeletonWeek weeks={4} /> : 
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
