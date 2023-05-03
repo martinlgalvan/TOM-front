@@ -162,7 +162,7 @@ function UserRoutineEditPage(){
                 position: "bottom-right",
                 toastId: TOASTID, 
                 autoClose: false, 
-                transition: slide,
+                position: toast.POSITION.BOTTOM_RIGHT,
                 pauseOnFocusLoss: false,
                 type: toast.TYPE.INFO, 
                 limit: 1 })};
