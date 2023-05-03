@@ -56,15 +56,10 @@ function UserRoutineEditPage(){
     }
 
     let idRefresh = generateUUID()
-
-    const charge = (number) =>{
-        setLoading(number)
-    }
    
 
     //Routine - API
     useEffect(() => {
-        charge(0)
 
         WeekService.findRoutineByUserId(id)
             .then(data => {   
@@ -76,14 +71,14 @@ function UserRoutineEditPage(){
                     setCopyWeek(true)
                 }
                 
-                charge(false)
+                setLoading(false)
             })
     }, [status])
 
 
     //Botón para clonar semana
     function createWeek(){
-        charge(1)
+        setLoading(1)
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
@@ -100,7 +95,7 @@ function UserRoutineEditPage(){
     }
 
     function addDayToWeek(week_id){
-        charge(2)
+        setLoading(2)
         WeekService.findByWeekId(week_id)
             .then(data => {   
             
