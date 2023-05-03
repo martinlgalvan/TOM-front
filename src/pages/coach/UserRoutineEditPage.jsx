@@ -174,7 +174,19 @@ function UserRoutineEditPage(){
               }
     
             }
-
+        
+        const showLoadingToast = () => {
+            toast.promise(
+                new Promise((resolve,reject) => {
+                    if(loading != true){
+                        resolve()
+                    }
+                }),
+                {pending: "Loading",
+            success: "Cargó con exito"},
+            {}
+            )
+        }
             const dismiss = () =>  toast.dismiss();
 
     return (
@@ -204,7 +216,7 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-                        {loading == true ? loadingNotify("CARGA") : dismiss }
+                        {loading == true ? showLoadingToast() : dismiss }
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
