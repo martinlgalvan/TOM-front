@@ -161,7 +161,7 @@ function DayEditDetailsPage(){
         setShowCreateWarmup(false)
         setShowEditCircuit(false)
         setStatus(idRefresh)
-        loading == true ? notify("hola", false) : notify("chau", true)
+        
     } 
 
     const deleteExercise = (event,id,name) => {

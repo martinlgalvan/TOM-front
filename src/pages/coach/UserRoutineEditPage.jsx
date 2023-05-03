@@ -17,6 +17,7 @@ import SkeletonWeek from '../../components/Skeleton/SkeletonWeek.jsx'
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { BarLoader } from 'react-spinners';
+import { ToastContainer, toast } from 'react-toastify';
 
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
@@ -25,6 +26,7 @@ function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
+    const toastId = useRef();
     const navigate = useNavigate()
     
 
@@ -134,8 +136,26 @@ function UserRoutineEditPage(){
         setShowEdit(false)
         setShowEditWeek(false)
         setStatus(idRefresh)
+        loading == true ? notify("hola", false) : notify("chau", true)
     } 
-    console.log(status)
+
+    const notify = (name) => {
+        if(! toast.isActive(toastId.current)) {
+            toastId.current = toast.success(`${name} editado con éxito!`, {
+        
+                position: "bottom-center",
+                autoClose: 300,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                limit: 1,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                })
+          }
+
+        }
 
     return (
 
@@ -164,8 +184,7 @@ function UserRoutineEditPage(){
                     
 
                     <div className='row justify-content-center'>
-                    {loading == true ? 
-                    <SkeletonWeek weeks={4} /> : 
+
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
@@ -219,7 +238,7 @@ function UserRoutineEditPage(){
                         </div>
                         </CSSTransition>
                         )}
-                        </TransitionGroup>}
+                        </TransitionGroup>
                     </div>
 
                 </div> 
@@ -233,7 +252,19 @@ function UserRoutineEditPage(){
             <ModalEditDay showEdit={showEdit} handleClose={handleClose} weekID={weekID} dayID={dayID} nameExercise={name}/>
             <ModalEditWeek showEditWeek={showEditWeek} nameWeek={name} handleClose={handleClose} weekID={weekID} />
             <ModalDeleteWeek show={show} handleClose={handleClose} name={name} weekID={weekID}/>
-
+            
+            <ToastContainer
+                    position="bottom-center"
+                    autoClose={1000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="light"
+                    />
         </section>
     )
 }
