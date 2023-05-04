@@ -228,14 +228,12 @@ function DayEditDetailsPage(){
 
 
         const notifyA = (message) => {
-            toast(message, {
+            toast.loading(message, {
                 position: "bottom-center",
                 toastId: TOASTID, 
                 autoClose: false, 
-                icon: ({theme, type}) =>  <div><div id="loading"></div></div>,
                 hideProgressBar: true,
                 pauseOnFocusLoss: false,
-                type: toast.TYPE.INFO, 
                 limit: 1 })};
 
         const updateToast = () => 
@@ -243,7 +241,7 @@ function DayEditDetailsPage(){
                 render: "Listo!", 
                 type: toast.TYPE.SUCCESS, 
                 autoClose: 1000, 
-                icon: ({theme, type}) =>  <div><div id="loading"></div></div>,
+                isLoading: false,
                 hideProgressBar: true,
                 limit: 1,
                 className: 'rotateY animated'});

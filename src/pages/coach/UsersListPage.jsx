@@ -92,7 +92,6 @@ function UsersListPage() {
             autoClose: false, 
             hideProgressBar: true,
             pauseOnFocusLoss: false,
-            type: toast.TYPE.INFO, 
             limit: 1 })};
 
     const updateToast = () => 
@@ -131,7 +130,7 @@ function UsersListPage() {
             <article className='row justify-content-center'>
 
                 <div className='col-10 col-lg-3 text-center mb-5'>
-                    <UserRegister refresh={refresh} /><div id="loading"></div>
+                    <UserRegister refresh={refresh} />
                 </div>
 
                 <div className='col-12 col-lg-8 text-center mb-5'>
