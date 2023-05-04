@@ -98,7 +98,7 @@ function UsersListPage() {
     const updateToast = () => 
         toast.update(TOASTID, { 
         render: "Carga completa", 
-        icon: ({theme, type}) =>  <div className='me-3 ms-1'  id="loading"></div>,
+        icon: ({theme, type}) =>  <div id="loading"></div>,
         type: toast.TYPE.SUCCESS,
         hideProgressBar: true,
         autoClose: 1000, 
