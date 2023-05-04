@@ -135,6 +135,12 @@ function UserRoutineEditPage(){
 
     }
 
+    const actionConfirm = () => {
+        setShow(false);
+        setShowEdit(false)
+        setShowEditWeek(false)
+    } 
+
     const handleClose = () => {
         setShow(false);
         setShowEdit(false)
@@ -279,9 +285,9 @@ function UserRoutineEditPage(){
                 <Link className='btn BlackBGtextWhite' to={`/users/${user_id}`}>Volver atrás</Link>
             </div>
             
-            <ModalEditDay showEdit={showEdit} handleClose={handleClose} weekID={weekID} dayID={dayID} nameExercise={name}/>
-            <ModalEditWeek showEditWeek={showEditWeek} nameWeek={name} handleClose={handleClose} weekID={weekID} />
-            <ModalDeleteWeek show={show} handleClose={handleClose} name={name} weekID={weekID}/>
+            <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} weekID={weekID} dayID={dayID} nameExercise={name}/>
+            <ModalEditWeek showEditWeek={showEditWeek} handleClose={handleClose} actionConfirm={actionConfirm} nameWeek={name} weekID={weekID} />
+            <ModalDeleteWeek show={show} handleClose={handleClose} actionConfirm={actionConfirm} name={name} weekID={weekID}/>
             
             <ToastContainer
                     position="bottom-center"

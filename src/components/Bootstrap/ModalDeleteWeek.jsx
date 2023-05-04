@@ -5,7 +5,7 @@ import Modal from 'react-bootstrap/Modal';
 
 import * as WeekService from '../../services/week.services.js';
 
-function ModalDeleteWeek({show, handleClose, name, weekID}) {
+function ModalDeleteWeek({show, handleClose,actionConfirm, name, weekID}) {
 
     function deleteWeek() {
 
@@ -27,7 +27,7 @@ function ModalDeleteWeek({show, handleClose, name, weekID}) {
         </Modal.Header>
         <Modal.Body className='text-center'>¡Cuidado! Estás por eliminar <b>"{name}"</b>. ¿Estás seguro?</Modal.Body>
         <Modal.Footer>
-          <button className='btn BGmodalClose' onClick={handleClose}>
+          <button className='btn BGmodalClose' onClick={actionConfirm}>
             Cerrar
           </button>
           <Button variant="danger" onClick={deleteWeek}>
