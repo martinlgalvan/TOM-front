@@ -82,6 +82,7 @@ function DayEditDetailsPage(){
 
     useEffect(() => {
             setLoading(true)
+            setNumberToast(true)
             WeekService.findByWeekId(week_id)
                 .then(data => {
                     //Encuentro el index del día, y luego seteo el día con el que corresponde.
@@ -124,7 +125,7 @@ function DayEditDetailsPage(){
 
         ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
             .then(() => {
-                setStatus(refreshId)
+                setStatus(idRefresh)
             })
 
     }
@@ -231,6 +232,7 @@ function DayEditDetailsPage(){
                 position: "bottom-center",
                 toastId: TOASTID, 
                 autoClose: false, 
+                icon: ({theme, type}) =>  <div id="loading"></div>,
                 hideProgressBar: true,
                 pauseOnFocusLoss: false,
                 type: toast.TYPE.INFO, 
@@ -241,6 +243,7 @@ function DayEditDetailsPage(){
                 render: "Listo!", 
                 type: toast.TYPE.SUCCESS, 
                 autoClose: 1000, 
+                icon: ({theme, type}) =>  <div id="loading"></div>,
                 hideProgressBar: true,
                 limit: 1,
                 className: 'rotateY animated'});

@@ -67,7 +67,7 @@ function UsersListPage() {
         confirmDialog({
             trigger: event.currentTarget,
             message: `¡Cuidado! Estás por eliminar ${name}. ¿Estás seguro?`,
-            icon: 'pi pi-exclamation-triangle',
+            icon: ({theme, type}) =>  <div id="loading"></div>,
             header:`Eliminar ${name}`,
             accept: () => acceptDeleteUser(id),
             reject,
@@ -130,7 +130,7 @@ function UsersListPage() {
             <article className='row justify-content-center'>
 
                 <div className='col-10 col-lg-3 text-center mb-5'>
-                    <UserRegister refresh={refresh} />
+                    <UserRegister refresh={refresh} /><div id="loading"></div>
                 </div>
 
                 <div className='col-12 col-lg-8 text-center mb-5'>
@@ -157,7 +157,7 @@ function UsersListPage() {
                                         >
                                             <tr key={_id}>
                                                 <td className='text-center'><Link className="btn LinkDays ClassBGHover" to={`/user/routine/${_id}`}>{name}</Link></td>
-                                                <td className='text-center responsiveEmail'>{email}</td>
+                                                <td className='text-center responsiveEmail'><Link className="btn LinkDays ClassBGHover" to={`/user/routine/${_id}`}>{email}</Link></td>
                                                 <td className='text-center'>
 
                                                     
