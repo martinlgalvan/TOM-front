@@ -267,7 +267,19 @@ function UserRoutineEditPage(){
             <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} weekID={weekID} dayID={dayID} nameExercise={name}/>
             <ModalEditWeek showEditWeek={showEditWeek} handleClose={handleClose} actionConfirm={actionConfirm} nameWeek={name} weekID={weekID} />
             <ModalDeleteWeek show={show} handleClose={handleClose} actionConfirm={actionConfirm} name={name} weekID={weekID}/>
-
+            
+            <ToastContainer
+                    position="bottom-center"
+                    autoClose={1000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="light"
+                    />
         </section>
     )
 }
