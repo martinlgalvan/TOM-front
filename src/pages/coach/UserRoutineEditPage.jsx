@@ -141,6 +141,7 @@ function UserRoutineEditPage(){
         setShow(false);
         setShowEdit(false)
         setShowEditWeek(false)
+        setNumberToast(false)
         setStatus(idRefresh)
     } 
 

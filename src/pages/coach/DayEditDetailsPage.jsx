@@ -117,14 +117,14 @@ function DayEditDetailsPage(){
         setVideoExercise(e.target.value)
     }
 
-    function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
+    async function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
         setLoading(true)
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
         parsedValue = numberExercise 
         notas == undefined ? "" : notas
 
-        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+        await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
             .then(() => {
                 setStatus(idRefresh)
             })
