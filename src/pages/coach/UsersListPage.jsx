@@ -98,6 +98,7 @@ function UsersListPage() {
     const updateToast = () => 
         toast.update(TOASTID, { 
         render: "Carga completa", 
+        isLoading: false,
         type: toast.TYPE.SUCCESS,
         hideProgressBar: true,
         autoClose: 1000, 
