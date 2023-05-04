@@ -117,6 +117,14 @@ function DayEditDetailsPage(){
         setVideoExercise(e.target.value)
     }
 
+    function changeSetsEdit(e){
+        setSetsExercise(e.target.value)
+    }
+
+    function changeRepsEdit(e){
+        setRepsExercise(e.target.value)
+    }
+
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
         setLoading(true)
         setNumberToast(1)
@@ -384,8 +392,9 @@ function DayEditDetailsPage(){
                                         
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)} 
+                                            onValueChange={changeSetsEdit} 
                                             showButtons 
+                                            onFocus={console.log("FOCUS")}
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
@@ -403,6 +412,7 @@ function DayEditDetailsPage(){
                                                     value={reps} 
                                                     onValueChange={(e) => editExercise(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)} 
                                                     showButtons 
+                                                    onFocus={console.log("FOCUS")}
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
