@@ -149,7 +149,7 @@ function UserRoutineEditPage(){
                 position: "bottom-center",
                 toastId: TOASTID, 
                 autoClose: false, 
-                hideProgressBar,
+                hideProgressBar: true,
                 pauseOnFocusLoss: false,
                 type: toast.TYPE.INFO, 
                 limit: 1 })};
@@ -159,7 +159,7 @@ function UserRoutineEditPage(){
                 render: "Listo!", 
                 type: toast.TYPE.SUCCESS, 
                 autoClose: 1000, 
-                hideProgressBar,
+                hideProgressBar: true,
                 limit: 1,
                 className: 'rotateY animated'});
 

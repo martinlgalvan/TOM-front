@@ -90,7 +90,7 @@ function UsersListPage() {
             position: "bottom-center",
             toastId: TOASTID, 
             autoClose: false, 
-            hideProgressBar,
+            hideProgressBar: true,
             pauseOnFocusLoss: false,
             type: toast.TYPE.INFO, 
             limit: 1 })};
@@ -99,7 +99,7 @@ function UsersListPage() {
         toast.update(TOASTID, { 
         render: "Carga completa", 
         type: toast.TYPE.SUCCESS,
-        hideProgressBar,
+        hideProgressBar: true,
         autoClose: 1000, 
         limit: 1,
         className: 'rotateY animated'});
