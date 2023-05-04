@@ -14,7 +14,7 @@ import Formulas from "./Formulas.jsx";
 // PUEDE QUE EL PROBLEMA DE QUE NO RECARGE SEA EL NOTIFY ****************
 
 
-function AddExercise({refresh}) {
+function AddExercise({refresh, closeDialog}) {
   //---variables para la carga
   const { week_id } = useParams();
   const { day_id } = useParams();
@@ -57,6 +57,7 @@ let idRefresh = generateUUID()
     .then(() => {
       notify(name)
       refresh(idRefresh)
+      closeDialog(false)
     })
   }
 

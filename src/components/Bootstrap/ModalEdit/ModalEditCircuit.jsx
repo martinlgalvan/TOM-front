@@ -5,7 +5,7 @@ import { InputNumber } from 'primereact/inputnumber';
 
 import * as ExercisesService from '../../../services/exercises.services.js';
 
-function ModalEditCircuit({showEditCircuit, handleClose, refresh, week_id, day_id, exercise_id, type, typeOfSets, circuitExercises, numberExercise }) {
+function ModalEditCircuit({showEditCircuit, handleClose, closeModal, week_id, day_id, exercise_id, type, typeOfSets, circuitExercises, numberExercise }) {
 
   const [status, setStatus] = useState(0)
   const [name, setName] = useState("")
@@ -67,7 +67,7 @@ function editAmrap(){
     
   return (
     <>
-      <Modal size="lg" centered show={showEditCircuit} onHide={handleClose}>
+      <Modal size="lg" centered show={showEditCircuit} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title><h2 className='text-center'>Editar ejecicio</h2></Modal.Title>
         </Modal.Header>
@@ -122,7 +122,7 @@ function editAmrap(){
                        
         </Modal.Body>
         <Modal.Footer>
-          <button className='btn BGmodalClose' onClick={handleClose}>
+          <button className='btn BGmodalClose' onClick={closeModal}>
             Cerrar
           </button>
           <button className='btn BlackBGtextWhite' onClick={editAmrap}>

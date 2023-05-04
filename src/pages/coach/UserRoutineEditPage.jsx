@@ -16,11 +16,8 @@ import SkeletonWeek from '../../components/Skeleton/SkeletonWeek.jsx'
 
 import { InputSwitch } from "primereact/inputswitch";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { BarLoader } from 'react-spinners';
 import { ToastContainer, toast } from 'react-toastify';
 
-import Skeleton from 'react-loading-skeleton'
-import 'react-loading-skeleton/dist/skeleton.css'
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -62,7 +59,6 @@ function UserRoutineEditPage(){
     //Routine - API
     useEffect(() => {
         setLoading(true)
-        console.log(numberToast)
         WeekService.findRoutineByUserId(id)
             .then(data => {   
                 setRoutine(data)
@@ -148,41 +144,24 @@ function UserRoutineEditPage(){
         setStatus(idRefresh)
     } 
 
-    /*const notify = (name,progressBar) => {
-        if(! toast.isActive(toastId.current)) {
-            toastId.current = toast.success(`${name} editado con éxito!`, {
-        
-                position: "bottom-center",
-                autoClose: 300,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                limit: 1,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                })
-          }
-
-        }*/
-
         const notifyA = (message) => {
             toast(message, {
-                position: "bottom-right",
+                position: "bottom-center",
                 toastId: TOASTID, 
                 autoClose: false, 
-                position: toast.POSITION.BOTTOM_RIGHT,
+                hideProgressBar,
                 pauseOnFocusLoss: false,
                 type: toast.TYPE.INFO, 
                 limit: 1 })};
 
         const updateToast = () => 
             toast.update(TOASTID, { 
-            render: "Listo!", 
-            type: toast.TYPE.SUCCESS, 
-            autoClose: 1000, 
-            limit: 1,
-            className: 'rotateY animated'});
+                render: "Listo!", 
+                type: toast.TYPE.SUCCESS, 
+                autoClose: 1000, 
+                hideProgressBar,
+                limit: 1,
+                className: 'rotateY animated'});
 
         const showLoadingToast = () => {
             if(loading == true){
@@ -235,7 +214,7 @@ function UserRoutineEditPage(){
                                     <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
               
                                 </div>
-                                 {loading == true ? notifyA : updateToast}
+                                
                                 <TransitionGroup component={null} className="todo-list">
                                     {elemento.routine.map(element => 
                                     <CSSTransition
@@ -288,19 +267,7 @@ function UserRoutineEditPage(){
             <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} weekID={weekID} dayID={dayID} nameExercise={name}/>
             <ModalEditWeek showEditWeek={showEditWeek} handleClose={handleClose} actionConfirm={actionConfirm} nameWeek={name} weekID={weekID} />
             <ModalDeleteWeek show={show} handleClose={handleClose} actionConfirm={actionConfirm} name={name} weekID={weekID}/>
-            
-            <ToastContainer
-                    position="bottom-center"
-                    autoClose={1000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                    />
+
         </section>
     )
 }

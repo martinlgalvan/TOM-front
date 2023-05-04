@@ -6,7 +6,7 @@ import { InputNumber } from "primereact/inputnumber";
 
 import * as ExercisesService from "../../../services/exercises.services.js";
 
-function ModalEditExercise({ showEditExercise, handleClose, week_id, day_id, exercise_id, nameModal, setsModal, repsModal, pesoModal, videoModal, notasModal, numberExerciseModal, valueExerciseModal, }) {
+function ModalEditExercise({ showEditExercise, handleClose,closeModal, week_id, day_id, exercise_id, nameModal, setsModal, repsModal, pesoModal, videoModal, notasModal, numberExerciseModal, valueExerciseModal, }) {
 
   const [name, setNameEdit] = useState();
   const [sets, setSetsEdit] = useState();
@@ -49,7 +49,6 @@ function ModalEditExercise({ showEditExercise, handleClose, week_id, day_id, exe
   function edit() {
     ExercisesService.editExercise(week_id, day_id, exercise_id, { type: "exercise", name, sets, reps, peso, video, notas, numberExercise, valueExercise })
       .then(() => {
-        notify(name);
         handleClose();
       });
 
@@ -57,7 +56,7 @@ function ModalEditExercise({ showEditExercise, handleClose, week_id, day_id, exe
 
   return (
     <>
-      <Modal size="m" centered show={showEditExercise} onHide={handleClose}>
+      <Modal size="m" centered show={showEditExercise} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>
             <h2 className="text-center">Editar ejecicio</h2>
@@ -158,7 +157,7 @@ function ModalEditExercise({ showEditExercise, handleClose, week_id, day_id, exe
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={closeModal}>
             Cerrar
           </Button>
           <button className="btn BlackBGtextWhite" onClick={edit}>

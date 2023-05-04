@@ -7,7 +7,7 @@ import * as WeekService from '../../services/week.services.js';
 import * as ExercisesService from '../../services/exercises.services.js';
 
 
-function ModalConfirmDeleteExercise({show, handleClose, week_id, day_id, exercise_id, name}) {
+function ModalConfirmDeleteExercise({show, handleClose, closeModal, week_id, day_id, exercise_id, name}) {
 
     function deleteExercise() {
 
@@ -29,7 +29,7 @@ function ModalConfirmDeleteExercise({show, handleClose, week_id, day_id, exercis
         </Modal.Header>
         <Modal.Body className='text-center'>¿Estás seguro que deseas eliminar el ejercicio '<b>{name}</b>'?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={closeModal}>
             Cerrar
           </Button>
           <Button variant="danger" onClick={deleteExercise}>

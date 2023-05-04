@@ -15,7 +15,7 @@ import { AutoComplete } from "primereact/autocomplete";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function ModalCreateWarmup({showCreateWarmup, handleClose, week_id, day_id}) {
+function ModalCreateWarmup({showCreateWarmup, handleClose,closeModal, week_id, day_id}) {
 
   const [status, setStatus] = useState()
   const [confirm, setConfirm] = useState()
@@ -177,8 +177,8 @@ const notify = (name) => {
 
   return (
 
-    <Modal size="xl" centered show={showCreateWarmup} onHide={handleClose} scrollable>
-        <Modal.Header className='' closeButton>
+    <Modal size="xl" centered show={showCreateWarmup} onHide={closeModal} scrollable>
+        <Modal.Header closeButton>
           <Modal.Title className='text-center'></Modal.Title>
         </Modal.Header>
         <Modal.Body className='text-center'>

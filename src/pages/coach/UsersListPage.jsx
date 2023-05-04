@@ -8,7 +8,7 @@ import Logo from '../../components/Logo'
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
-import { BarLoader } from 'react-spinners';
+import { ToastContainer, toast } from 'react-toastify';
 
 function UsersListPage() {
 
@@ -17,6 +17,9 @@ function UsersListPage() {
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState(0);
     const [loading, setLoading] = useState(false)
+    const [numberToast, setNumberToast] = useState(0)
+    const TOASTID = "LOADER_ID"
+
     const navigate = useNavigate()
 
     function generateUUID() {
@@ -33,11 +36,12 @@ function UsersListPage() {
     
     useEffect(() => {
         setLoading(true)
+        
         UsersService.find(id)
-        .then(data => {
-            setUsers(data)
-            setLoading(false)
-        })
+            .then(data => {
+                setUsers(data)
+                setLoading(false)
+            })
     }, [status]) 
 
 
@@ -49,9 +53,12 @@ function UsersListPage() {
     const reject = () => {};
     
     function acceptDeleteUser(id) {
-
+        setLoading(1)
         UsersService.deleteUser(id)
-        setStatus(idRefresh)
+            .then(() => {
+                setStatus(idRefresh)
+            })
+
   
     };
     
@@ -77,6 +84,33 @@ function UsersListPage() {
     const searcher = (e) => {
         setSearch(e.target.value)   
     }  
+
+    const notifyA = (message) => {
+        toast(message, {
+            position: "bottom-center",
+            toastId: TOASTID, 
+            autoClose: false, 
+            hideProgressBar,
+            pauseOnFocusLoss: false,
+            type: toast.TYPE.INFO, 
+            limit: 1 })};
+
+    const updateToast = () => 
+        toast.update(TOASTID, { 
+        render: "Carga completa", 
+        type: toast.TYPE.SUCCESS,
+        hideProgressBar,
+        autoClose: 1000, 
+        limit: 1,
+        className: 'rotateY animated'});
+
+    const showLoadingToast = () => {
+        if(loading == true){
+            notifyA(numberToast == 1 ? "Eliminando usuario..." : "Cargando...")
+        }else{
+            updateToast()
+        }
+    }
 
     const results = !search ? users : users.filter((dato)=> dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
 
@@ -112,8 +146,7 @@ function UsersListPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {loading == true ? 
-                                <tr colSpan={3}><td><BarLoader color="#2CBDC7" height={5} width={300} /></td></tr> : 
+                                {showLoadingToast()} 
                                     <TransitionGroup component={null} className="todo-list">
                                     {results.map(({_id, name, email}) =>
                                     
@@ -123,16 +156,11 @@ function UsersListPage() {
                                         classNames="item"
                                         >
                                             <tr key={_id}>
-                                                <td className='text-center'>{name}</td>
+                                                <td className='text-center'><Link className="btn LinkDays ClassBGHover" to={`/user/routine/${_id}`}>{name}</Link></td>
                                                 <td className='text-center responsiveEmail'>{email}</td>
                                                 <td className='text-center'>
 
-                                                    <Link className="btn" to={`/user/routine/${_id}`}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="bi bi-eye" viewBox="0 0 16 16">
-                                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
-                                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
-                                                        </svg>
-                                                    </Link>
+                                                    
 
                                                     <button onClick={(event) => deleteUser(event,_id,name) } className='btn'>
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
@@ -144,7 +172,7 @@ function UsersListPage() {
                                             </tr>
                                         </CSSTransition>
                                     )}
-                                    </TransitionGroup>}
+                                    </TransitionGroup>
                                 </tbody>
                             </table>
                         </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import {Link, useParams, useNavigate} from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
 
 import * as ExercisesService from '../../services/exercises.services.js';
 import * as WeekService from '../../services/week.services.js'; 
@@ -10,7 +10,6 @@ import { Sidebar } from 'primereact/sidebar';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
 import { ToastContainer, toast } from 'react-toastify';
-import { BarLoader } from 'react-spinners';
 
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
@@ -27,6 +26,8 @@ function DayEditDetailsPage(){
     const {day_id} = useParams()
     const [status, setStatus] = useState(1)
     const [loading, setLoading] = useState(false)
+    const [numberToast, setNumberToast] = useState(0)
+    const TOASTID = "LOADER_ID"
     const toastId = useRef();
 
     const [warmup, setWarmup] = useState()
@@ -56,7 +57,6 @@ function DayEditDetailsPage(){
     const [numberExercise, setNumberExercise] = useState()
     const [valueExercise, setValueExercise] = useState()
 
-    let [circuitArray, setCircuitArray] = useState([])
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
 
@@ -74,6 +74,10 @@ function DayEditDetailsPage(){
 
     const refresh = (refresh) => {
         setStatus(refresh)
+    }
+
+    const closeDialog = (close) => {
+        setVisibleExercises(close)
     }
 
     useEffect(() => {
@@ -112,14 +116,14 @@ function DayEditDetailsPage(){
     }
 
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
-
+        setLoading(true)
+        setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
         parsedValue = numberExercise 
         notas == undefined ? "" : notas
 
         ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
             .then(() => {
-                notify(name)
                 setStatus(refreshId)
             })
 
@@ -164,6 +168,14 @@ function DayEditDetailsPage(){
         
     } 
 
+    const closeModal = () => {
+        setShow(false);
+        setShowEditExercise(false)
+        setShowCreateWarmup(false)
+        setShowEditCircuit(false)
+        
+    } 
+
     const deleteExercise = (event,id,name) => {
         confirmDialog({
             trigger: event.currentTarget,
@@ -186,7 +198,8 @@ function DayEditDetailsPage(){
     const reject = () => {};
     
     function acceptDeleteExercise(id) {
-
+        setLoading(true)
+        setNumberToast(2)
         ExercisesService.deleteExercise(week_id, day_id, id)
             .then(() => {
                 setStatus(idRefresh)
@@ -212,24 +225,33 @@ function DayEditDetailsPage(){
         {value:15, name: 15, extras: [{value: 15, name: "15-A"},{value: 15, name: "15-B"},{value: 15, name: "15-C"},{value: 15, name: "15-D"},{value: 15, name: "15-F"}]}
     ]
 
-      
-    const notify = (name,progressBar) => {
-        if(! toast.isActive(toastId.current)) {
-            toastId.current = toast.success(`${name} editado con éxito!`, {
-        
-                position: "bottom-center",
-                autoClose: 300,
-                hideProgressBar: progressBar,
-                closeOnClick: true,
-                pauseOnHover: true,
-                limit: 1,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                })
-          }
 
-        }
+        const notifyA = (message) => {
+            toast(message, {
+                position: "bottom-center",
+                toastId: TOASTID, 
+                autoClose: false, 
+                hideProgressBar,
+                pauseOnFocusLoss: false,
+                type: toast.TYPE.INFO, 
+                limit: 1 })};
+
+        const updateToast = () => 
+            toast.update(TOASTID, { 
+                render: "Listo!", 
+                type: toast.TYPE.SUCCESS, 
+                autoClose: 1000, 
+                hideProgressBar,
+                limit: 1,
+                className: 'rotateY animated'});
+
+        const showLoadingToast = () => {
+            if(loading == true){
+                notifyA(numberToast == 1 || numberToast == true ? "Cargando" : "Eliminando ejercicio...")
+            }else{
+                updateToast()
+            }
+        }    
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
@@ -250,7 +272,7 @@ function DayEditDetailsPage(){
 
                 <div className='row justify-content-center'>
                     <Dialog className='col-12 col-lg-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'}  header="Header" visible={visibleCircuit} modal={false} onHide={() => setVisibleCircuit(false)}>
-                        <AddCircuit refresh={refresh}/>
+                        <AddCircuit closeDialog={closeDialog} refresh={refresh}/>
                     </Dialog>
                     <Dialog className='col-12 col-lg-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'} header="Header" visible={visibleExercises} modal={false} onHide={() => setVisibleExercises(false)}>
                         <AddExercise refresh={refresh}/>
@@ -288,6 +310,7 @@ function DayEditDetailsPage(){
                             </thead>
 
                             <tbody>
+                                {showLoadingToast()}
                                 <TransitionGroup component={null} className="todo-list">
                                 {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}) =>
                                 <CSSTransition
@@ -447,25 +470,13 @@ function DayEditDetailsPage(){
                 </div>
 
 
-                <ModalConfirmDeleteExercise show={show}  handleClose={handleClose} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
-                <ModalEditExercise showEditExercise={showEditExercise}  handleClose={handleClose}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
+                <ModalConfirmDeleteExercise show={show} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
+                <ModalEditExercise showEditExercise={showEditExercise} handleClose={handleClose} closeModal={closeModal}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
 
-                <ModalEditCircuit showEditCircuit={showEditCircuit}  handleClose={handleClose} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} numberExercise={numberExercise}/>
+                <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} numberExercise={numberExercise}/>
 
-                <ModalCreateWarmup showCreateWarmup={showCreateWarmup}  handleClose={handleClose} week_id={week_id} day_id={day_id} warmup={warmup}/>
+                <ModalCreateWarmup showCreateWarmup={showCreateWarmup} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} warmup={warmup}/>
              
-                <ToastContainer
-                    position="bottom-center"
-                    autoClose={1000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                    />
 
                 <ConfirmDialog />
 

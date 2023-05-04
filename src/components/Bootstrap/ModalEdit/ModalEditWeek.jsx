@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import * as WeekServices from '../../../services/week.services.js'
 
-function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
+function ModalEditWeek({showEditWeek, handleClose, actionConfirm, weekID, nameWeek}) {
 
   const [name, setName] = useState("")
 
@@ -23,7 +23,7 @@ function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
   return (
     <>
     
-      <Modal size="m" centered show={showEditWeek} onHide={handleClose}>
+      <Modal size="m" centered show={showEditWeek} onHide={actionConfirm}>
         <Modal.Header className='' closeButton>
           <Modal.Title className='text-center'>Editar semana</Modal.Title>
         </Modal.Header>
@@ -39,7 +39,7 @@ function ModalEditWeek({showEditWeek, handleClose,weekID, nameWeek, refresh}) {
           </form>
         </Modal.Body>
         <Modal.Footer>
-          <button className='btn BlackBGtextWhite' onClick={handleClose}>
+          <button className='btn BlackBGtextWhite' onClick={actionConfirm}>
             Cerrar
           </button>
         </Modal.Footer>

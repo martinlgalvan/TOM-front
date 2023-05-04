@@ -5,7 +5,7 @@ import Modal from 'react-bootstrap/Modal';
 import * as DayServices from '../../../services/day.services.js'
 
 
-function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refresh}) {
+function ModalEditDay({showEdit, handleClose, actionConfirm, weekID, dayID,nameExercise, refresh}) {
 
   const [name, setName] = useState('')
 
@@ -37,7 +37,7 @@ function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refres
     
   return (
     <>
-      <Modal size="m" centered show={showEdit} onHide={handleClose}>
+      <Modal size="m" centered show={showEdit} onHide={actionConfirm}>
         <Modal.Header closeButton>
           <Modal.Title></Modal.Title>
         </Modal.Header>
@@ -53,7 +53,7 @@ function ModalEditDay({showEdit, handleClose, weekID, dayID,nameExercise, refres
           </form>
 
           <button className='col-5 mx-4 my-2 btn border btn-danger text-center' onClick={deleteDay}>Eliminar dia</button>
-          <button type='submit' className='col-5 mx-4 my-2 btn border btn-outline' onClick={handleClose}>Cerrar</button>
+          <button type='submit' className='col-5 mx-4 my-2 btn border btn-outline' onClick={actionConfirm}>Cerrar</button>
   
         </Modal.Body>
       </Modal>

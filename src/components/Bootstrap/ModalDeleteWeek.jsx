@@ -21,7 +21,7 @@ function ModalDeleteWeek({show, handleClose,actionConfirm, name, weekID}) {
   return (
     <>
 
-      <Modal size="m" centered show={show} onHide={handleClose}>
+      <Modal size="m" centered show={show} onHide={actionConfirm}>
         <Modal.Header className='' closeButton>
           <Modal.Title className='text-center'>Eliminar {name}</Modal.Title>
         </Modal.Header>
