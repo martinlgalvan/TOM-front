@@ -132,7 +132,7 @@ function DayEditDetailsPage(){
                 setStatus(idRefresh)
             })
     
-        }, 500);
+        }, 1500);
 
 
     }
