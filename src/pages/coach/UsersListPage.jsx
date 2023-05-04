@@ -86,7 +86,7 @@ function UsersListPage() {
     }  
 
     const notifyA = (message) => {
-        toast(message, {
+        toast.loading(message, {
             position: "bottom-center",
             toastId: TOASTID, 
             autoClose: false, 
@@ -98,7 +98,6 @@ function UsersListPage() {
     const updateToast = () => 
         toast.update(TOASTID, { 
         render: "Carga completa", 
-        icon: ({theme, type}) =>  <div id="loading"></div>,
         type: toast.TYPE.SUCCESS,
         hideProgressBar: true,
         autoClose: 1000, 
