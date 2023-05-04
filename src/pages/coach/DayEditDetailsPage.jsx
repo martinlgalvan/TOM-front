@@ -77,6 +77,7 @@ function DayEditDetailsPage(){
     }
 
     const closeDialog = (close) => {
+        console.log(close)
         setVisibleExercises(close)
     }
 

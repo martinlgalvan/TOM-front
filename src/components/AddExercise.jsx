@@ -8,7 +8,6 @@ import { useParams } from "react-router-dom";
 
 import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
-import { ToastContainer, toast } from 'react-toastify';
 import Formulas from "./Formulas.jsx";
 
 // PUEDE QUE EL PROBLEMA DE QUE NO RECARGE SEA EL NOTIFY ****************
@@ -18,7 +17,7 @@ function AddExercise({refresh, closeDialog}) {
   //---variables para la carga
   const { week_id } = useParams();
   const { day_id } = useParams();
-  const toastId = useRef();
+
 
   const [name, setName] = useState("");
   const [sets, setSets] = useState(1);
@@ -55,28 +54,10 @@ let idRefresh = generateUUID()
 
 	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, peso, video })
     .then(() => {
-      notify(name)
       refresh(idRefresh)
       closeDialog(false)
     })
   }
-
-  const notify = (name) => {
-    if(! toast.isActive(toastId.current)) {
-        toastId.current = toast.success(`El ejercicio ${name} se creó con éxito!`, {
-    
-            position: "bottom-center",
-            autoClose: 300,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            limit: 1,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-            })
-      }
-    }
 
   //-----------------------------------------------------//
 
@@ -201,18 +182,6 @@ useEffect(() => {
 
         </form>
       </article>
-                  <ToastContainer
-                    position="bottom-center"
-                    autoClose={1000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                    />
 
     </section>
   );
