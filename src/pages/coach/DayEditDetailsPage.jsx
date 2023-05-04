@@ -117,17 +117,23 @@ function DayEditDetailsPage(){
         setVideoExercise(e.target.value)
     }
 
-    async function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
+    function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
         setLoading(true)
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
         parsedValue = numberExercise 
         notas == undefined ? "" : notas
 
-        await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+        //Este timeout, es en caso de que el usuario clickee muchas veces seguidas, para que no se colapse.
+        setTimeout(() => {
+            
+            ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
             .then(() => {
                 setStatus(idRefresh)
             })
+    
+        }, 500);
+
 
     }
 
