@@ -119,6 +119,7 @@ function DayEditDetailsPage(){
 
     function changeSetsEdit(e){
         setSetsExercise(e.target.value)
+        console.log(e.target.value)
     }
 
     function changeRepsEdit(e){
@@ -392,7 +393,7 @@ function DayEditDetailsPage(){
                                         
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={changeSetsEdit} 
+                                            onChange={changeSetsEdit} 
                                             showButtons 
                                             onFocus={console.log("FOCUS")}
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
@@ -412,7 +413,6 @@ function DayEditDetailsPage(){
                                                     value={reps} 
                                                     onValueChange={(e) => editExercise(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)} 
                                                     showButtons 
-                                                    onFocus={console.log("FOCUS")}
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
