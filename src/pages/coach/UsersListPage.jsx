@@ -156,8 +156,8 @@ function UsersListPage() {
                                         classNames="item"
                                         >
                                             <tr key={_id}>
-                                                <td className='text-center'><Link className="btn LinkDays ClassBGHover" to={`/user/routine/${_id}`}>{name}</Link></td>
-                                                <td className='text-center responsiveEmail'><Link className="btn LinkDays ClassBGHover" to={`/user/routine/${_id}`}>{email}</Link></td>
+                                            <Link className="btn LinkDays ClassBGHover" to={`/user/routine/${_id}`}><td className='text-center'>{name}</td></Link>
+                                            <Link className="btn LinkDays ClassBGHover" to={`/user/routine/${_id}`}><td className='text-center responsiveEmail'>{email}</td></Link>
                                                 <td className='text-center'>
 
                                                     

@@ -77,7 +77,6 @@ function DayEditDetailsPage(){
     }
 
     const closeDialog = (close) => {
-        console.log(close)
         setVisibleExercises(close)
     }
 
@@ -119,7 +118,6 @@ function DayEditDetailsPage(){
 
     function changeSetsEdit(e){
         setSetsExercise(e.target.value)
-        console.log(e.target.value)
     }
 
     function changeRepsEdit(e){
@@ -384,7 +382,7 @@ function DayEditDetailsPage(){
                                         defaultValue={name} 
                                         onKeyDown={event => {
                                             if (event.key === 'Enter') {
-                                                editExercise(exercise_id, event.target.value, sets, reps, peso, video, notas, numberExercise, valueExercise)
+                                                editExercise(exercise_id, event.target.value || null, sets, reps, peso, video, notas, numberExercise, valueExercise)
                                             }}} 
                                             onChange={changeNameEdit}/>
                                     </td>}
