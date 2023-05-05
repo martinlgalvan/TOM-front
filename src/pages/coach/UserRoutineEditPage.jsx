@@ -191,14 +191,14 @@ function UserRoutineEditPage(){
                 </div>
                     {routine.length > 0 &&
                     
-                    <div className='col-4'> 
+                    <div className='col-3'> 
                         <div className='row justify-content-center'>
 
-                            <div className='col-8'>
+                            <div className='col-8 text-center'>
                                 <InputSwitch checked={copyWeek} onChange={(e) => setCopyWeek(e.value)} />
                             </div>
 
-                            <div className='col-4'>
+                            <div className='col-4 text-start'>
                                 <Tooltip target=".custom-target-icon" />
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
                                 className="bi bi-question-circle custom-target-icon"
