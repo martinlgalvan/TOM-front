@@ -123,9 +123,9 @@ function DayEditDetailsPage(){
     function changeRepsEdit(e){
         setRepsExercise(e.target.value)
     }
-    let clicks = 0
+    const [clicks, setClicks] = useState(0)
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
-        clicks++
+        setClicks(clicks++)
         setLoading(true)
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
