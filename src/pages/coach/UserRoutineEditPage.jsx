@@ -194,7 +194,7 @@ function UserRoutineEditPage(){
                     <div className='col-3 mt-4'> 
                         <div className='row justify-content-center'>
 
-                            <div className='col-6 text-end'>
+                            <div className='col-6 text-end p-0 fs-5'>
                                 <InputSwitch checked={copyWeek} onChange={(e) => setCopyWeek(e.value)} />
                             </div>
 
