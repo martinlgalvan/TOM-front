@@ -126,7 +126,6 @@ function DayEditDetailsPage(){
     let clicks = 0
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
         clicks++
-        console.log(clicks)
         setLoading(true)
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
@@ -309,7 +308,7 @@ function DayEditDetailsPage(){
 
                     
                     <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 mb-5'>Administrar bloque de entrada en calor</button>
-
+                    {clicks}
 
                     <div className="table-responsive col-10">
                         <table className="table align-middle table-bordered caption-top">
@@ -395,7 +394,6 @@ function DayEditDetailsPage(){
                                             value={sets} 
                                             onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)} 
                                             showButtons 
-                                            onFocus={console.log("FOCUS")}
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
