@@ -205,7 +205,7 @@ function UserRoutineEditPage(){
                                 data-pr-tooltip="Copiar automaticamente una plantilla de la última semana. ¡Podés desactivarla en cualquier momento y crear una semana de 0!"
                                 data-pr-position="right"
                                 data-pr-at="right+5 top"
-                                data-pr-my="left center-5"
+                                data-pr-my="left center-20"
                                 data-pr-classname='largoTooltip'
                                 style={{ fontSize: '2rem', cursor: 'pointer' }} viewBox="0 0 16 16">
                                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
