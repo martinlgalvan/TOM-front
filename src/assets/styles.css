@@ -21,6 +21,8 @@
 
 .largoTooltip{
   max-width: 300px;
+  margin-bottom: 20px;
+  top: -20px;
 }
 
 
