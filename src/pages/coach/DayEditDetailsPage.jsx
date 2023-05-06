@@ -124,23 +124,31 @@ function DayEditDetailsPage(){
         setRepsExercise(e.target.value)
     }
     const [clicks, setClicks] = useState(0)
+
+
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
-        setClicks(clicks + 1)
+
         setLoading(true)
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
         parsedValue = numberExercise 
         notas == undefined ? "" : notas
-
-        //Este timeout, es en caso de que el usuario clickee muchas veces seguidas, para que no se colapse.
-        setTimeout(() => {
+        
+        console.log(sets)
+        
+        if(sets != sets){
+            console.log("cambio")
+        } else{
+            console.log("sigue el mismo")
+        }
+        /*setTimeout(() => {
             
             ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
             .then(() => {
                 setStatus(idRefresh)
             })
     
-        }, 2000);
+        }, 2000);*/
 
 
     }
