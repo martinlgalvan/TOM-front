@@ -204,7 +204,7 @@ function UserRoutineEditPage(){
                                 className="bi bi-question-circle custom-target-icon"
                                 data-pr-tooltip="Copiar automaticamente una plantilla de la última semana. ¡Podés desactivarla en cualquier momento y crear una semana de 0!"
                                 data-pr-position="right"
-                                data-pr-at="right+5 top+4"
+                                data-pr-at="right+5 top-4"
                                 data-pr-my="left center-2"
                                 data-pr-classname='largoTooltip'
                                 style={{ fontSize: '2rem', cursor: 'pointer' }} viewBox="0 0 16 16">
