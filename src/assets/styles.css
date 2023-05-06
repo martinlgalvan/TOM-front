@@ -19,6 +19,10 @@
   box-shadow: none;
 }
 
+.largoTooltip{
+  max-width: 300px;
+}
+
 
   .Largo{
     max-width: 500px;
