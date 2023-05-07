@@ -279,6 +279,12 @@ function DayEditDetailsPage(){
         };
 
         const confirm1 = (event, exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
+            setLoading(true)
+            setNumberToast(1)
+            let valueExercise = parseInt(parsedValue)
+            parsedValue = numberExercise 
+            notas == undefined ? "" : notas
+
             confirmPopup({
                 target: event.currentTarget,
                 message: 'Are you sure you want to proceed?',
