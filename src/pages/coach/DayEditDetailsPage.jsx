@@ -286,7 +286,7 @@ function DayEditDetailsPage(){
                 target: e.currentTarget,
                 message: 'Are you sure you want to proceed?',
                 icon: 'pi pi-exclamation-triangle',
-                acceptEdit: () => editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue),
+                acceptEdit: editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue),
                 ee
             });
         };
