@@ -31,7 +31,7 @@ function DayEditDetailsPage(){
     const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
     const [visible, setVisible] = useState(false);
-    const toast = useRef(null);
+    const toastPop = useRef(null);
     const buttonEl = useRef(null);
 
     const [warmup, setWarmup] = useState()
@@ -130,7 +130,7 @@ function DayEditDetailsPage(){
     const [clicks, setClicks] = useState(0)
 
 
-        setTimeout(() => {
+
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
 
         setLoading(true)
@@ -146,9 +146,7 @@ function DayEditDetailsPage(){
                 setStatus(idRefresh) // Este id refresh es el que activa el aceptado
             })
         
-
-
-    }}, 4000)
+        }
 
     //Modal Edit Exercise
     function handleShowEditExercise(id, name, sets, reps,peso, video, notas){
@@ -402,7 +400,7 @@ function DayEditDetailsPage(){
                                     </td>}
                                     {sets === undefined ? null :
                                     <td >
-                                        <Toast ref={toast} />
+                                        <Toast ref={toastPop} />
                                         <ConfirmPopup target={buttonEl.current} visible={visible} onHide={() => setVisible(false)} 
                                         message="Are you sure you want to proceed?" icon="pi pi-exclamation-triangle" accept={aa} reject={ee} />
                                         <InputNumber
