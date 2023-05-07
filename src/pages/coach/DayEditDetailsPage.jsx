@@ -10,6 +10,7 @@ import { Sidebar } from 'primereact/sidebar';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
 import { ToastContainer, toast } from 'react-toastify';
+import { Toast } from 'primereact/toast';
 
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
@@ -28,7 +29,7 @@ function DayEditDetailsPage(){
     const [loading, setLoading] = useState(false)
     const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
-    const toastId = useRef();
+    const toast = useRef(null);
 
     const [warmup, setWarmup] = useState()
     const [exercises, setExercises] = useState([])
@@ -126,6 +127,7 @@ function DayEditDetailsPage(){
     const [clicks, setClicks] = useState(0)
 
 
+        setTimeout(() => {
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
 
         setLoading(true)
@@ -136,15 +138,14 @@ function DayEditDetailsPage(){
         
         console.log(sets)
 
-        setTimeout(() => {
             ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                 .then(() => {
                 setStatus(idRefresh) // Este id refresh es el que activa el aceptado
             })
-        }, 4000)
+        
 
 
-    }
+    }}, 4000)
 
     //Modal Edit Exercise
     function handleShowEditExercise(id, name, sets, reps,peso, video, notas){
@@ -270,6 +271,20 @@ function DayEditDetailsPage(){
             }
         }    
 
+        const accept = () => {
+            toast.current.show({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
+        };
+
+        const confirm1 = (event) => {
+            confirmPopup({
+                target: event.currentTarget,
+                message: 'Are you sure you want to proceed?',
+                icon: 'pi pi-exclamation-triangle',
+                accept,
+                reject
+            });
+        };
+
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
 
@@ -325,7 +340,8 @@ function DayEditDetailsPage(){
                                     <th scope="col">Acciones</th>
                                 </tr>
                             </thead>
-
+                            <Toast ref={toast} />
+                            <ConfirmPopup />
                             <tbody>
                                 {showLoadingToast()}
                                 <TransitionGroup component={null} className="todo-list">
@@ -393,6 +409,7 @@ function DayEditDetailsPage(){
                                         
                                         <InputNumber 
                                             value={sets} 
+                                            onClick={confirm1}
                                             onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)} 
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
