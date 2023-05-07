@@ -128,7 +128,7 @@ function DayEditDetailsPage(){
     const [clicks, setClicks] = useState(0)
 
 
-        setTimeout(() => {
+
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
 
         setLoading(true)
@@ -143,10 +143,8 @@ function DayEditDetailsPage(){
                 .then(() => {
                 setStatus(idRefresh) // Este id refresh es el que activa el aceptado
             })
-        
+    }
 
-
-    }}, 4000)
 
     //Modal Edit Exercise
     function handleShowEditExercise(id, name, sets, reps,peso, video, notas){
@@ -272,7 +270,7 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const aa = () => {
+        const acceptEdit = () => {
             toast.current.show({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
         };
 
@@ -280,12 +278,12 @@ function DayEditDetailsPage(){
             toast.current.show({ severity: 'warn', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
         };
 
-        const confirm1 = (event) => {
+        const confirm1 = (event, exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
             confirmPopup({
                 target: event.currentTarget,
                 message: 'Are you sure you want to proceed?',
                 icon: 'pi pi-exclamation-triangle',
-                aa,
+                acceptEdit: () => editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue),
                 ee
             });
         };
@@ -414,8 +412,7 @@ function DayEditDetailsPage(){
                                         <ConfirmPopup />
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={confirm1}
-                                            onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)} 
+                                            onClick={(e) => confirm1(e,exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue)}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
