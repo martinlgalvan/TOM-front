@@ -135,20 +135,13 @@ function DayEditDetailsPage(){
         notas == undefined ? "" : notas
         
         console.log(sets)
-        
-        if(sets != sets){
-            console.log("cambio")
-        } else{
-            console.log("sigue el mismo")
-        }
-        /*setTimeout(() => {
-            
+
+        setTimeout(() => {
             ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-            .then(() => {
-                setStatus(idRefresh)
+                .then(() => {
+                setStatus(idRefresh) // Este id refresh es el que activa el aceptado
             })
-    
-        }, 2000);*/
+        }, 4000)
 
 
     }
