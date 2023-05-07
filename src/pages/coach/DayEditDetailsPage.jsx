@@ -341,8 +341,7 @@ function DayEditDetailsPage(){
                                     <th scope="col">Acciones</th>
                                 </tr>
                             </thead>
-                            <Toast ref={toast} />
-                            <ConfirmPopup />
+
                             <tbody>
                                 {showLoadingToast()}
                                 <TransitionGroup component={null} className="todo-list">
@@ -407,7 +406,8 @@ function DayEditDetailsPage(){
                                     </td>}
                                     {sets === undefined ? null :
                                     <td >
-                                        
+                                        <Toast ref={toast} />
+                                        <ConfirmPopup />
                                         <InputNumber 
                                             value={sets} 
                                             onClick={confirm1}
