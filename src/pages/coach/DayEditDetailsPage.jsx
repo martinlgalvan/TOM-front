@@ -418,7 +418,7 @@ function DayEditDetailsPage(){
                                         <ConfirmPopup />
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => confirm1(e,exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue)}
+                                            onClick={(e) => confirm1(e,exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
