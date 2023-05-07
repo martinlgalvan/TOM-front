@@ -30,7 +30,9 @@ function DayEditDetailsPage(){
     const [loading, setLoading] = useState(false)
     const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
+    const [visible, setVisible] = useState(false);
     const toast = useRef(null);
+    const buttonEl = useRef(null);
 
     const [warmup, setWarmup] = useState()
     const [exercises, setExercises] = useState([])
@@ -280,16 +282,6 @@ function DayEditDetailsPage(){
             toast.current.show({ severity: 'warn', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
         };
 
-        const confirm1 = (event) => {
-            confirmPopup({
-                target: event.currentTarget,
-                message: 'Are you sure you want to proceed?',
-                icon: 'pi pi-exclamation-triangle',
-                aa,
-                ee
-            });
-        };
-
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
 
@@ -411,10 +403,12 @@ function DayEditDetailsPage(){
                                     {sets === undefined ? null :
                                     <td >
                                         <Toast ref={toast} />
-                                        <ConfirmPopup />
-                                        <InputNumber 
+                                        <ConfirmPopup target={buttonEl.current} visible={visible} onHide={() => setVisible(false)} 
+                                        message="Are you sure you want to proceed?" icon="pi pi-exclamation-triangle" accept={aa} reject={ee} />
+                                        <InputNumber
+                                            ref={buttonEl} 
+                                            onClick={() => setVisible(true)}
                                             value={sets} 
-                                            onClick={confirm1}
                                             onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)} 
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
