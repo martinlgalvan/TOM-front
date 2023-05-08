@@ -396,6 +396,7 @@ function DayEditDetailsPage(){
                                             value={sets} 
                                             onChange={(e) => foco(e)}
                                             onFocus={(e) => {console.log(e)}}
+                                            autoFocus
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
