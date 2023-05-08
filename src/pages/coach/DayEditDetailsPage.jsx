@@ -131,7 +131,7 @@ function DayEditDetailsPage(){
 
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
 
-        setLoading(true)
+
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
         parsedValue = numberExercise 
@@ -141,7 +141,7 @@ function DayEditDetailsPage(){
 
             ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                 .then(() => {
-                setTimeout(() =>{setStatus(idRefresh)},2000) // Este id refresh es el que activa el aceptado})
+                setStatus(idRefresh)
 
             })
     }
