@@ -269,8 +269,8 @@ function DayEditDetailsPage(){
         }    
 
         const foco = (e) => {
-            console.log(e.focus + "FOCUS")
-            console.log(e.bubbles + "BUBBLES")
+            console.log(e.target.focus + "FOCUS")
+            console.log(e.target.bubbles + "BUBBLES")
 
         }
 
@@ -397,7 +397,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onChange={(e) => foco(e)}
-                                            onFocus={(e) => {console.log(e.bubbles)}}
+                                            onFocus={(e) => {console.log(e.bubbles + exercise_id)}}
                                             autoFocus
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
