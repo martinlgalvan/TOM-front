@@ -268,6 +268,9 @@ function DayEditDetailsPage(){
             }
         }    
 
+        const foco = (e) => {
+            console.log(e)
+        }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
@@ -391,7 +394,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
+                                            onValueChange={(e) => foco(e)}
                                             onFocus={console.log(focus)}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
