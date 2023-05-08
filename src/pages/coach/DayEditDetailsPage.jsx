@@ -395,6 +395,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onValueChange={(e) => editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
+                                            onFocus={console.log(e, focus)}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
