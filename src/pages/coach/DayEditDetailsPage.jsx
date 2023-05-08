@@ -269,7 +269,9 @@ function DayEditDetailsPage(){
         }    
 
         const foco = (e) => {
-            console.log(e)
+            console.log(e.focus + "FOCUS")
+            console.log(e.bubbles + "BUBBLES")
+
         }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
