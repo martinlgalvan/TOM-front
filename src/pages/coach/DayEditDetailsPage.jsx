@@ -278,13 +278,13 @@ function DayEditDetailsPage(){
             toast.current.show({ severity: 'warn', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
         };
 
-        const confirm1 = (e, exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
+        const confirm1 = (event, exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
             setLoading(true)
             setNumberToast(1)
             console.log(e)
             console.log(name, sets, numberExercise)
             confirmPopup({
-                target: e,
+                target: event.currentTarget,
                 message: 'Are you sure you want to proceed?',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue),
@@ -416,7 +416,7 @@ function DayEditDetailsPage(){
                                         <ConfirmPopup />
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={(e) => confirm1(e,exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
+                                            onValueChange={(event) => confirm1(event,exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
