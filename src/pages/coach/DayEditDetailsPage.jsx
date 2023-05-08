@@ -281,7 +281,8 @@ function DayEditDetailsPage(){
         const confirm1 = (e, exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
             setLoading(true)
             setNumberToast(1)
-
+            console.log(e)
+            console.log(name, sets, numberExercise)
             confirmPopup({
                 target: e.currentTarget,
                 message: 'Are you sure you want to proceed?',
