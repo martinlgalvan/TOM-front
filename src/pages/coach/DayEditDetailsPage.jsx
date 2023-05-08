@@ -395,7 +395,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onChange={(e) => foco(e)}
-                                            onFocus={(e) => {console.log(e)}}
+                                            onFocus={(e) => {console.log(e.currentTarget, e.bubbles)}}
                                             autoFocus
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
