@@ -13,7 +13,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 
-import Popup from 'reactjs-popup';
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
 import ModalConfirmDeleteExercise from '../../components/Bootstrap/ModalConfirmDeleteExercise.jsx';
@@ -271,26 +270,6 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const acceptEdit = () => {
-            toast.current.show({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
-        };
-
-        const ee = () => {
-            toast.current.show({ severity: 'warn', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
-        };
-
-        const confirm1 = (event, exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
-            setNumberToast(1)
-            console.log(event)
-            console.log(name, sets, numberExercise)
-            confirmPopup({
-                target: event.currentTarget, // Se abre 1 por cada ejercicio, pensar una forma mejor porque se complica bastante esta.
-                message: 'Are you sure you want to proceed?',
-                icon: 'pi pi-exclamation-triangle',
-                accept: () => editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue),
-                reject
-            });
-        };
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
@@ -412,17 +391,9 @@ function DayEditDetailsPage(){
                                     </td>}
                                     {sets === undefined ? null :
                                     <td >
-
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={ 
-                                            <Popup
-                                                trigger={<button className="button"> Trigger 1 </button>}
-                                                position="top center"
-                                                nested
-                                              >
-                                                {<button onClick={(event) => confirm1(event,exercise_id, name, event.value, reps, peso, video, notas, numberExercise, valueExercise)}>Editar</button>}
-                                                </Popup>}
+                                            onValueChange={(e) => editExercise(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
