@@ -394,8 +394,8 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={(e) => foco(e)}
-                                            onFocus={console.log(focus)}
+                                            onChange={(e) => foco(e)}
+                                            onFocus={(e) => {console.log(e)}}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
