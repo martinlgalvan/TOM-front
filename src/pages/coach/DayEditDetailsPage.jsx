@@ -284,7 +284,7 @@ function DayEditDetailsPage(){
             console.log(e)
             console.log(name, sets, numberExercise)
             confirmPopup({
-                target: e.target,
+                target: e,
                 message: 'Are you sure you want to proceed?',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue),
