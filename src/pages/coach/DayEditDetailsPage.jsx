@@ -269,8 +269,7 @@ function DayEditDetailsPage(){
         }    
 
         const foco = (e) => {
-            console.log(e.target.focus + "FOCUS")
-            console.log(e.target.bubbles + "BUBBLES")
+
 
         }
 
@@ -397,7 +396,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onChange={(e) => foco(e)}
-                                            onFocus={(e) => {console.log(e.bubbles + exercise_id)}}
+                                            onFocus={(e) => {e.bubbles == false ? editExercise(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise) : console.log("ESTÁ EN FOCUS")}}
                                             autoFocus
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
