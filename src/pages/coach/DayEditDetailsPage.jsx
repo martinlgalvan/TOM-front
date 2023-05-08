@@ -279,12 +279,11 @@ function DayEditDetailsPage(){
         };
 
         const confirm1 = (event, exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
-            setLoading(true)
             setNumberToast(1)
             console.log(event)
             console.log(name, sets, numberExercise)
             confirmPopup({
-                target: event.currentTarget,
+                target: event.currentTarget, // Se abre 1 por cada ejercicio, pensar una forma mejor porque se complica bastante esta.
                 message: 'Are you sure you want to proceed?',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue),
@@ -412,8 +411,7 @@ function DayEditDetailsPage(){
                                     </td>}
                                     {sets === undefined ? null :
                                     <td >
-                                        <Toast ref={toastPop} />
-                                        <ConfirmPopup />
+
                                         <InputNumber 
                                             value={sets} 
                                             onValueChange={(event) => confirm1(event,exercise_id, name, event.value, reps, peso, video, notas, numberExercise, valueExercise)}
