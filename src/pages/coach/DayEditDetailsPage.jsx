@@ -13,6 +13,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 
+import Popup from 'reactjs-popup';
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
 import ModalConfirmDeleteExercise from '../../components/Bootstrap/ModalConfirmDeleteExercise.jsx';
@@ -414,7 +415,14 @@ function DayEditDetailsPage(){
 
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={(event) => confirm1(event,exercise_id, name, event.value, reps, peso, video, notas, numberExercise, valueExercise)}
+                                            onValueChange={ 
+                                            <Popup
+                                                trigger={<button className="button"> Trigger 1 </button>}
+                                                position="top center"
+                                                nested
+                                              >
+                                                {<button onClick={(event) => confirm1(event,exercise_id, name, event.value, reps, peso, video, notas, numberExercise, valueExercise)}>Editar</button>}
+                                                </Popup>}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
