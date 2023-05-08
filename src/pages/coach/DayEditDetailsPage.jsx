@@ -129,8 +129,7 @@ function DayEditDetailsPage(){
 
 
 
-    function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
-
+    async function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
 
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
@@ -139,7 +138,7 @@ function DayEditDetailsPage(){
         
         console.log(sets)
 
-            ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+            await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                 .then(() => {
                 setStatus(idRefresh)
 
