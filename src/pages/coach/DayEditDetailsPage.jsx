@@ -141,7 +141,8 @@ function DayEditDetailsPage(){
 
             ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                 .then(() => {
-                setStatus(idRefresh) // Este id refresh es el que activa el aceptado
+                setTimeout(() =>{setStatus(idRefresh)},2000) // Este id refresh es el que activa el aceptado})
+
             })
     }
 
