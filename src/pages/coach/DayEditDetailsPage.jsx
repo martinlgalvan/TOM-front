@@ -62,7 +62,7 @@ function DayEditDetailsPage(){
 
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
-    setBoolFocus(false)
+
     function generateUUID() {
         let d = new Date().getTime();
         let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -100,7 +100,7 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
-                    setBoolFocus(false)
+                    setBoolFocus(2)
 
                 })
     }, [status])
@@ -271,10 +271,8 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {setBoolFocus(e), console.log(e)}
-
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-            setBoolFocus(2)
+
             setNumberToast(1)
             let valueExercise = parseInt(parsedValue)
             let sets = parseInt(StrSets)
