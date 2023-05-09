@@ -271,7 +271,6 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const [fieldValue, setFieldValue] = useState('')
         const handleBlur = (exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
             setNumberToast(1)
             let valueExercise = parseInt(parsedValue)
@@ -285,8 +284,7 @@ function DayEditDetailsPage(){
                     setStatus(idRefresh)
 
                 })
-            setFieldValue(e.target.value);
-            console.log(e, name)    
+
         }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
