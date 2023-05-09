@@ -269,7 +269,10 @@ function DayEditDetailsPage(){
         }    
 
         const [fieldValue, setFieldValue] = useState('')
-        const handleBlur = (e) => setFieldValue(e.target.value);
+        const handleBlur = (e, name) => {
+            setFieldValue(e.target.value);
+            console.log(e, name)    
+        }
         console.log(fieldValue);
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
@@ -394,8 +397,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onChange={(e) => foco(e)}
-                                            onFocus={console.log("esta con el foco")}
-                                            onBlur={handleBlur}
+                                            onBlur={(e) => handleBlur(e, name)}
                                             autoFocus
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
