@@ -129,7 +129,7 @@ function DayEditDetailsPage(){
 
 
 
-    async function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
+    function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
 
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
@@ -138,8 +138,11 @@ function DayEditDetailsPage(){
         
         console.log(sets)
 
-            await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+            .then(() =>{
                 setStatus(idRefresh)
+
+            })
 
     }
 
@@ -269,7 +272,19 @@ function DayEditDetailsPage(){
         }    
 
         const [fieldValue, setFieldValue] = useState('')
-        const handleBlur = (e, name) => {
+        const handleBlur = (exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
+            setNumberToast(1)
+            let valueExercise = parseInt(parsedValue)
+            parsedValue = numberExercise 
+            notas == undefined ? "" : notas
+        
+            console.log(sets)
+
+            ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                .then(() =>{
+                    setStatus(idRefresh)
+
+                })
             setFieldValue(e.target.value);
             console.log(e, name)    
         }
@@ -396,7 +411,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onBlur={(e) => handleBlur(e, name)}
+                                            onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
