@@ -49,6 +49,7 @@ function DayEditDetailsPage(){
     const [CanvasFormulas, setCanvasFormulas] = useState(false);
     const [visibleCircuit, setVisibleCircuit] = useState(false);
     const [visibleExercises, setVisibleExercises] = useState(false);
+    const [boolFocus, setBoolFocus] = useState(false)
 
     const [name, setNameExercise] = useState()
     const [sets, setSetsExercise] = useState()
@@ -270,6 +271,7 @@ function DayEditDetailsPage(){
         }    
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+            setBoolFocus(true)
             setNumberToast(1)
             let valueExercise = parseInt(parsedValue)
             let sets = parseInt(StrSets)
@@ -428,8 +430,8 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
-                                                    autoFocus
+                                                    onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
+                                                    autoFocus={boolFocus}
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
