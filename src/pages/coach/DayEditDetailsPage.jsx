@@ -272,8 +272,8 @@ function DayEditDetailsPage(){
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setNumberToast(1)
             let valueExercise = parseInt(parsedValue)
-            let sets = parsedInt(StrSets)
-            let reps = parsedInt(StrReps)
+            let sets = parseInt(StrSets)
+            let reps = parseInt(StrReps)
 
             parsedValue = numberExercise 
             notas == undefined ? "" : notas
