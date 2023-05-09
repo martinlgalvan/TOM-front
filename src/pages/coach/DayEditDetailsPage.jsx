@@ -417,7 +417,7 @@ function DayEditDetailsPage(){
                                             value={sets} 
                                             onChange={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
-                                            focus={true}
+                                            focus={(e) => console.log(e)}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
