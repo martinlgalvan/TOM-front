@@ -270,7 +270,7 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {setBoolFocus(true), console.log(e)}
+        const handleBoolFocus = (e) => {setBoolFocus(e), console.log(e)}
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(2)
@@ -331,7 +331,7 @@ function DayEditDetailsPage(){
 
                     
                     <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 mb-5'>Administrar bloque de entrada en calor</button>
-                    {clicks}
+                    {boolFocus}
 
                     <div className="table-responsive col-10">
                         <table className="table align-middle table-bordered caption-top">
@@ -414,7 +414,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onValueChange={(e) => handleBoolFocus(e.value)}
+                                            onClick={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             showButtons 
