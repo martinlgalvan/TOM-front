@@ -46,12 +46,15 @@ dependencies:
   react-transition-group:
     specifier: ^4.4.5
     version: 4.4.5(react-dom@18.2.0)(react@18.2.0)
+  reactjs-popup:
+    specifier: ^2.0.5
+    version: 2.0.5(react-dom@18.2.0)(react@18.2.0)
   rsuite:
     specifier: ^5.31.0
     version: 5.31.0(react-dom@18.2.0)(react@18.2.0)
   spinners-react:
     specifier: ^1.0.7
-    version: 1.0.7(@types/react-dom@18.0.10)(@types/react@18.0.28)(react-dom@18.2.0)(react@18.2.0)
+    version: 1.0.7(@types/react-dom@18.0.11)(@types/react@18.0.28)(react-dom@18.2.0)(react@18.2.0)
   yarn:
     specifier: ^1.22.19
     version: 1.22.19
@@ -62,7 +65,7 @@ devDependencies:
     version: 18.0.28
   '@types/react-dom':
     specifier: ^18.0.10
-    version: 18.0.10
+    version: 18.0.11
   '@vitejs/plugin-react':
     specifier: ^4.0.0
     version: 4.0.0(vite@4.3.3)
@@ -267,8 +270,8 @@ packages:
       '@babel/helper-plugin-utils': 7.20.2
     dev: true
 
-  /@babel/runtime@7.20.13:
-    resolution: {integrity: sha512-gt3PKXs0DBoL9xCvOIIZ2NEqAGZqHjAnmVbfQtB620V0uReIQutpel14KcneZuer7UioY8ALKZ7iocavvzTNFA==}
+  /@babel/runtime@7.21.0:
+    resolution: {integrity: sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==}
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.11
@@ -582,7 +585,7 @@ packages:
       react: '>=16.14.0'
       react-dom: '>=16.14.0'
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       '@popperjs/core': 2.11.6
       '@react-aria/ssr': 3.4.1(react@18.2.0)
       '@restart/hooks': 0.4.9(react@18.2.0)
@@ -623,15 +626,15 @@ packages:
     resolution: {integrity: sha512-KnRanxnpfpjUTqTCXslZSEdLfXExwgNxYPdiO2WGUj8+HDjFi8R3k5RVKPeSCzLjCcshCAtVO2QBbVuAV4kTnw==}
     dev: false
 
-  /@types/lodash@4.14.192:
-    resolution: {integrity: sha512-km+Vyn3BYm5ytMO13k9KTp27O75rbQ0NFw+U//g+PX7VZyjCioXaRFisqSIJRECljcTv73G3i6BpglNGHgUQ5A==}
+  /@types/lodash@4.14.191:
+    resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
     dev: false
 
   /@types/prop-types@15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
 
-  /@types/react-dom@18.0.10:
-    resolution: {integrity: sha512-E42GW/JA4Qv15wQdqJq8DL4JhNpB3prJgjgapN3qJT9K2zO5IIAQh4VXvCEDupoqAwnz0cY4RlXeC/ajX5SFHg==}
+  /@types/react-dom@18.0.11:
+    resolution: {integrity: sha512-O38bPbI2CWtgw/OoQoY+BRelw7uysmXbWvw3nLWO21H1HSh+GOlqPuXshJfjmpNlKiiSDG9cc1JZAaMmVdcTlw==}
     dependencies:
       '@types/react': 18.0.28
 
@@ -791,13 +794,13 @@ packages:
   /dom-helpers@5.2.1:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       csstype: 3.1.1
 
   /dom-lib@3.1.6:
     resolution: {integrity: sha512-xXEhStHDoAyfhnz8mqDwZ9rnqdqz/9BcrKd1UEw6BlA/l17emFb2dK7q8IX8ArU31pScSU9otEnL6wzvpoT5aw==}
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
     dev: false
 
   /electron-to-chromium@1.4.379:
@@ -1055,7 +1058,7 @@ packages:
       '@types/react':
         optional: true
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       '@restart/hooks': 0.4.9(react@18.2.0)
       '@restart/ui': 1.6.1(react-dom@18.2.0)(react@18.2.0)
       '@types/react': 18.0.28
@@ -1161,7 +1164,7 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.8.1
@@ -1175,7 +1178,7 @@ packages:
       react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
       react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       memoize-one: 5.2.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -1186,6 +1189,17 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
+
+  /reactjs-popup@2.0.5(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-b5hv9a6aGsHEHXFAgPO5s1Jw1eSkopueyUVxQewGdLgqk2eW0IVXZrPRpHR629YcgIpC2oxtX8OOZ8a7bQJbxA==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
 
   /regenerator-runtime@0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
@@ -1198,14 +1212,14 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /rsuite-table@5.10.3(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-GNOnjDp2vBHcPliVxC1kpAlUaXRSIbk1qtPt9FYCAU9Wq5aRAIktJPDvE0qWitzaaGUuiV2a4amZj9ui6Sd4NA==}
+  /rsuite-table@5.10.4(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-hUJTSxKYEywjvyCg4V0xsmkbhxDhSj6lxjn9AO0FMB7rxNbjM2W/NWKMGYHcnV3Bk0z7FiPnqPrpZtnIeoXWrw==}
     peerDependencies:
       prop-types: ^15.7.2
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       '@juggle/resize-observer': 3.4.0
       '@rsuite/icons': 1.0.2(react-dom@18.2.0)(react@18.2.0)
       classnames: 2.3.2
@@ -1223,11 +1237,11 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       '@juggle/resize-observer': 3.4.0
       '@rsuite/icons': 1.0.2(react-dom@18.2.0)(react@18.2.0)
       '@types/chai': 4.3.4
-      '@types/lodash': 4.14.192
+      '@types/lodash': 4.14.191
       '@types/prop-types': 15.7.5
       '@types/react-window': 1.8.5
       classnames: 2.3.2
@@ -1238,7 +1252,7 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-window: 1.8.8(react-dom@18.2.0)(react@18.2.0)
-      rsuite-table: 5.10.3(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
+      rsuite-table: 5.10.4(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
       schema-typed: 2.1.2
     dev: false
 
@@ -1269,7 +1283,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /spinners-react@1.0.7(@types/react-dom@18.0.10)(@types/react@18.0.28)(react-dom@18.2.0)(react@18.2.0):
+  /spinners-react@1.0.7(@types/react-dom@18.0.11)(@types/react@18.0.28)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Xcgpc7Ybm6HOrpCVJjbH1G/NV852HaV4Zc9T1sJ2+S2hn05lGiBZS1dBOKGLc1kp8wv2sd3wtt94I/NNqDjs3Q==}
     peerDependencies:
       '@types/react': ^16.x || ^17.x || ^18.x
@@ -1278,7 +1292,7 @@ packages:
       react-dom: ^16.x || ^17.x || ^18.x
     dependencies:
       '@types/react': 18.0.28
-      '@types/react-dom': 18.0.10
+      '@types/react-dom': 18.0.11
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
@@ -1304,7 +1318,7 @@ packages:
     peerDependencies:
       react: '>=15.0.0'
     dependencies:
-      '@babel/runtime': 7.20.13
+      '@babel/runtime': 7.21.0
       '@types/react': 18.0.28
       invariant: 2.2.4
       react: 18.2.0
