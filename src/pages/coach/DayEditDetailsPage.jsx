@@ -273,7 +273,7 @@ function DayEditDetailsPage(){
             setFieldValue(e.target.value);
             console.log(e, name)    
         }
-        console.log(fieldValue);
+
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
 
@@ -396,7 +396,6 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onChange={(e) => foco(e)}
                                             onBlur={(e) => handleBlur(e, name)}
                                             autoFocus
                                             showButtons 
