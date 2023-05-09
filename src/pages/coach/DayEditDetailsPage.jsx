@@ -412,6 +412,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
+                                            onValueChange={setBoolFocus(true)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             showButtons 
@@ -430,6 +431,7 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
+                                                    onValueChange={setBoolFocus(true)}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     autoFocus={boolFocus == 1 ? false : true}
                                                     showButtons 
