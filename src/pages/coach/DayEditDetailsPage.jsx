@@ -62,7 +62,7 @@ function DayEditDetailsPage(){
 
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
-
+    setBoolFocus(false)
     function generateUUID() {
         let d = new Date().getTime();
         let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -100,6 +100,7 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
+                    setBoolFocus(false)
 
                 })
     }, [status])
