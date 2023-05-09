@@ -135,8 +135,6 @@ function DayEditDetailsPage(){
         let valueExercise = parseInt(parsedValue)
         parsedValue = numberExercise 
         notas == undefined ? "" : notas
-        
-        console.log(sets)
 
         ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
             .then(() =>{
@@ -271,9 +269,12 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBlur = (exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue) => {
+        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setNumberToast(1)
             let valueExercise = parseInt(parsedValue)
+            let sets = parsedInt(StrSets)
+            let reps = parsedInt(StrReps)
+
             parsedValue = numberExercise 
             notas == undefined ? "" : notas
         
