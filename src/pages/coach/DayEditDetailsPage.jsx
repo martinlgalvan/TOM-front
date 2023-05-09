@@ -396,7 +396,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onChange={(e) => foco(e)}
-                                            onFocus={(e) => {e.onFocus == true ? console.log("ESTÁ EN FOCUS") : console.log("NO ESTÁ EN FOCUS")}}
+                                            onFocus={(e) => {e.onblur == true ? console.log("ESTÁ EN FOCUS") : console.log("NO ESTÁ EN FOCUS")}}
                                             autoFocus
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
