@@ -100,7 +100,7 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
-                    setBoolFocus(2)
+                    
 
                 })
     }, [status])
@@ -271,8 +271,10 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+        const handleBoolFocus = (e) => {setBoolFocus(e), console.log(e)}
 
+        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+            setBoolFocus(2)
             setNumberToast(1)
             let valueExercise = parseInt(parsedValue)
             let sets = parseInt(StrSets)
@@ -413,7 +415,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => handleBoolFocus(e.value)}
+                                            onChange={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             showButtons 
