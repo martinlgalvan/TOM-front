@@ -427,7 +427,8 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onValueChange={(e) => editExercise(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)} 
+                                                    onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
+                                                    autoFocus
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
