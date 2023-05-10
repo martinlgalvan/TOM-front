@@ -23,6 +23,7 @@ function AddExercise({refresh, closeDialog}) {
   const [sets, setSets] = useState(1);
   const [reps, setReps] = useState(1);
   const [peso, setPeso] = useState(0); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
+  const [notas, setNotas] = useState();
   const [video, setVideo] = useState();
 
   const [exercises, setExercises] = useState([]);
@@ -49,10 +50,14 @@ let idRefresh = generateUUID()
     setPeso(e.target.value);
   }
 
+  function changeNotas(e) {
+    setNotas(e.target.value);
+  }
+
   function onSubmit(e) {
   e.preventDefault()
 
-	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, peso, video })
+	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, peso, video, notas })
     .then(() => {
       refresh(idRefresh)
       closeDialog(false)
@@ -173,6 +178,19 @@ useEffect(() => {
                 defaultValue={peso}
                 onChange={changePeso}
                 placeholder="Kg / RPE / etc"
+              />
+          </div>
+          <div className="col-12  my-2 text-center">
+            <label htmlFor="peso" className="form-label d-block">
+              Anotaciones
+            </label>
+              <input
+                type="text"
+                className="form-control rounded-0"
+                id="notas"
+                name="notas"
+                defaultValue={notas}
+                onChange={changeNotas}
               />
           </div>
 

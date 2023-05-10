@@ -467,7 +467,7 @@ function DayEditDetailsPage(){
                                             defaultValue={peso}
                                             onKeyDown={event => {
                                                 if (event.key === 'Enter') {
-                                                    editExercise(exercise_id, name, sets, reps, event.target.value, video, notas, numberExercise, valueExercise)
+                                                    editExercise(exercise_id, name, sets, reps, event.target.value || null, video, notas, numberExercise, valueExercise)
                                                 }}}  
                                             onChange={changePesoEdit}/>
                                         
@@ -484,7 +484,7 @@ function DayEditDetailsPage(){
                                             defaultValue={notas}
                                             onKeyDown={event => {
                                                 if (event.key === 'Enter') {
-                                                    editExercise(exercise_id, name, sets, reps, peso, video, event.target.value, numberExercise, valueExercise)
+                                                    editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
                                                 }}}  
                                             onChange={changeNotasEdit}/>
 
@@ -501,7 +501,7 @@ function DayEditDetailsPage(){
                                             defaultValue={video}
                                             onKeyDown={event => {
                                                 if (event.key === 'Enter') {
-                                                    editExercise(exercise_id, name, sets, reps, peso, event.target.value, notas, numberExercise, valueExercise)
+                                                    editExercise(exercise_id, name, sets, reps, peso, event.target.value || null, notas, numberExercise, valueExercise)
                                                 }}}  
                                             onChange={changeVideoEdit}/>
                                         
