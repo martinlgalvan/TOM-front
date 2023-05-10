@@ -23,8 +23,7 @@
   max-width: 300px;
 }
 .styleFocusInputNumber:focus{
-  text-decoration: none;
-  color: red;
+  border: none;
 
 }
 
