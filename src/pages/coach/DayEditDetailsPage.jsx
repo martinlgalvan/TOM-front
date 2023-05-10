@@ -380,7 +380,7 @@ function DayEditDetailsPage(){
                                             )}
                                             </select>}
                                         </th>
-                                        {type != 'exercise' ? <><td colSpan={window.screen.width > 600 ? 5 : 3} >
+                                        {type != 'exercise' ? <td colSpan={window.screen.width > 600 ? 5 : 3} >
                                                                 <table className='table align-middle'>
                                                                     <thead>
                                                                         <tr>
@@ -400,10 +400,12 @@ function DayEditDetailsPage(){
                                                                             <td >{element.name}</td>
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.reps}</td>
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
+                                                                            <td className='TableResponsiveDayEditDetailsPage'>{notas}</td>
                                                                         </tr>)}
+                                                                        <tr>{notas}</tr>
                                                                     </tbody>
                                                                 </table> 
-                                                            </td><td>{notas}</td> </>: 
+                                                            </td>: 
                                     <td>
                                         <input 
                                         id='name' 
