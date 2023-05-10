@@ -380,11 +380,11 @@ function DayEditDetailsPage(){
                                             )}
                                             </select>}
                                         </th>
-                                        {type != 'exercise' ? <td colSpan={window.screen.width > 600 ? 5 : 3} >
+                                        {type != 'exercise' ? <><td colSpan={window.screen.width > 600 ? 5 : 3} >
                                                                 <table className='table align-middle'>
                                                                     <thead>
                                                                         <tr>
-                                                                            <th colSpan={3}>{type} x {typeOfSets}</th>
+                                                                            <th colSpan={4}>{type} x {typeOfSets}</th>
                                                                         </tr>
                                                                         <tr>
 
@@ -403,7 +403,7 @@ function DayEditDetailsPage(){
                                                                         </tr>)}
                                                                     </tbody>
                                                                 </table> 
-                                                            </td> : 
+                                                            </td><td>{notas}</td> </>: 
                                     <td>
                                         <input 
                                         id='name' 

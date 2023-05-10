@@ -80,9 +80,15 @@ let idRefresh = generateUUID()
     setPeso(e.target.value)
   }
 
+  function changeNotas(e) {
+    e.preventDefault()
+
+    setNotas(e.target.value)
+  }
+
   function createAmrap() {
 
-	ExercisesServices.addAmrap(week_id, day_id, { type,typeOfSets, circuit: exercisesAmrap  })
+	ExercisesServices.addAmrap(week_id, day_id, { type,typeOfSets, notas, circuit: exercisesAmrap  })
     .then(() => {
       refresh(idRefresh)
       setExercisesAmrap([])
@@ -220,6 +226,22 @@ useEffect(() => {
                   
                 />   
             </div>
+
+            <div className="col-12 col-md-9 text-center mb-3">
+              <label htmlFor="notas" className="form-label visually-hidden">
+                Notas
+              </label>
+              <input
+                type="text"
+                className="form-control rounded-0"
+                id="notas"
+                name="notas"
+                value={notas}
+                onChange={changeNotas(e.target.value)}
+                placeholder="Notas"
+              />
+            </div>
+
             <div className="col-6 text-center">
               <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className='input-group-text btn border BlackBGtextWhite mt-3'>Añadir ejercicio</button>
             </div>      
@@ -253,7 +275,7 @@ useEffect(() => {
         </table>
       </article>}
       <div className="row justify-content-center my-4  pb-5 mb-5">
-      <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear "{type}"</button>
+      <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear  "{type}"</button>
 
       </div>
     </section>
