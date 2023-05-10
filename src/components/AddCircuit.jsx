@@ -64,26 +64,18 @@ let idRefresh = generateUUID()
 
   
   function changeTypeOfSets(e) {
-    e.preventDefault()
-
     setTypeOfSets(e.target.value)
   }
 
   function changeVideo(e) {
-    e.preventDefault()
-
     setVideo(e.target.value);
   }
 
   function changePeso(e) {
-    e.preventDefault()
-
     setPeso(e.target.value)
   }
 
   function changeNotas(e) {
-    e.preventDefault()
-
     setNotas(e.target.value)
   }
 
@@ -238,7 +230,7 @@ useEffect(() => {
                 id="notas"
                 name="notas"
                 value={notas}
-                onChange={changeNotas(e.target.value)}
+                onChange={changeNotas}
                 placeholder="Notas"
               />
             </div>
