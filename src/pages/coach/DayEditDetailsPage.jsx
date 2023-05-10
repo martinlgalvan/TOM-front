@@ -348,8 +348,8 @@ function DayEditDetailsPage(){
                                     <th scope="col">Series</th>
                                     <th scope="col">Reps</th>
                                     <th className='TableResponsiveDayEditDetailsPage' scope="col">Peso</th>
-                                    <th scope="col">Notas</th>
                                     <th className='TableResponsiveDayEditDetailsPage' scope="col">Video</th>
+                                    <th scope="col">Notas</th>
                                     <th scope="col">Acciones</th>
                                 </tr>
                             </thead>
@@ -384,7 +384,7 @@ function DayEditDetailsPage(){
                                                                 <table className='table align-middle'>
                                                                     <thead>
                                                                         <tr>
-                                                                            <th colSpan={4}>{type} x {typeOfSets}</th>
+                                                                            <th colSpan={3}>{type} x {typeOfSets}</th>
                                                                         </tr>
                                                                         <tr>
 
@@ -473,23 +473,6 @@ function DayEditDetailsPage(){
                                         
                                         </td> 
                                     }
-
-                                    {notas === undefined ? null :
-
-                                        <td className='TableResponsiveDayEditDetailsPage'>
-                                            
-                                            <input 
-                                            className='form-control border-0' 
-                                            type="text" 
-                                            defaultValue={notas}
-                                            onKeyDown={event => {
-                                                if (event.key === 'Enter') {
-                                                    editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
-                                                }}}  
-                                            onChange={changeNotasEdit}/>
-
-                                        </td> 
-                                        }
                                     
                                     {video === undefined ? null : 
                                     
@@ -506,6 +489,23 @@ function DayEditDetailsPage(){
                                             onChange={changeVideoEdit}/>
                                         
                                         </td>
+                                    }
+
+                                    {notas === undefined ? null :
+
+                                    <td className='TableResponsiveDayEditDetailsPage'>
+                                        
+                                        <input 
+                                        className='form-control border-0' 
+                                        type="text" 
+                                        defaultValue={notas}
+                                        onKeyDown={event => {
+                                            if (event.key === 'Enter') {
+                                                editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
+                                            }}}  
+                                        onChange={changeNotasEdit}/>
+
+                                    </td> 
                                     }
                                     <td>
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
