@@ -274,7 +274,7 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {setBoolFocus(5)}
+        const handleBoolFocus = (number) => {setBoolFocus(number)}
 
         const handleBlur = async (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             if(boolFocus != 2) {
@@ -418,7 +418,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onChange={(e) => handleBoolFocus(e.value)}
+                                            onChange={(e) => handleBoolFocus(2)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             inputClassName={'styleFocusInputNumber'}
@@ -438,7 +438,7 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onChange={(e) => handleBoolFocus(e.value)}
+                                                    onChange={(e) => handleBoolFocus(2)}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     autoFocus={boolFocus == 1 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
