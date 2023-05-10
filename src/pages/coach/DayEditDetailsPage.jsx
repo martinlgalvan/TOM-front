@@ -93,7 +93,6 @@ function DayEditDetailsPage(){
                     let day = data[0].routine[indexDay].exercises
                     let exercises = day.filter(exercise => exercise.type == 'exercise')
                     let circuit = day.filter(circuito => circuito.type != 'exercise')
-                    console.log(circuit)
 
                     setExercises(exercises)
                     setCircuit(circuit)
@@ -292,7 +291,6 @@ function DayEditDetailsPage(){
                     })
             }
 
-            console.log(boolFocus)
         }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>

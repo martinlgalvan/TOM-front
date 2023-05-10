@@ -22,7 +22,11 @@
 .largoTooltip{
   max-width: 300px;
 }
+.styleFocusInputNumber:focus{
+  text-decoration: none;
+  color: red;
 
+}
 
   .Largo{
     max-width: 500px;
