@@ -298,6 +298,8 @@ function DayEditDetailsPage(){
 
         }
 
+        const consol = (exercise_id, name, sets, reps, peso, video, notas, numberExercise) => {console.log(exercise_id, name, sets, reps, peso, video, notas, numberExercise)}
+
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
 
@@ -510,7 +512,7 @@ function DayEditDetailsPage(){
                                     }
                                     <td>
                                         {type == 'exercise' ? 
-                                        <button onClick={() => type != 'exercise' ? handleShowEditAmrap(exercise_id, type, typeOfSets, circuit,  numberExercise) : handleShowEditExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)} className='btn'>
+                                        <button onClick={consol(exercise_id, name, sets, reps, peso, video, notas, numberExercise)} className='btn'>
                                         edit
                                         </button> : null
                                         }
