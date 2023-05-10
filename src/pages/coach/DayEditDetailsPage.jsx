@@ -401,7 +401,6 @@ function DayEditDetailsPage(){
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.reps}</td>
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
                                                                         </tr>)}
-                                                                        <tr>{notas}</tr>
                                                                     </tbody>
                                                                 </table> 
                                                             </td>: 
