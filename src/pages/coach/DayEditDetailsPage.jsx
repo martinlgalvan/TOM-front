@@ -384,7 +384,7 @@ function DayEditDetailsPage(){
                                                                 <table className='table align-middle'>
                                                                     <thead>
                                                                         <tr>
-                                                                            <th colSpan={3}>{type} x {typeOfSets}</th>
+                                                                            <th colSpan={4}>{type} x {typeOfSets}</th>
                                                                         </tr>
                                                                         <tr>
 
@@ -400,7 +400,6 @@ function DayEditDetailsPage(){
                                                                             <td >{element.name}</td>
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.reps}</td>
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
-                                                                            <td className='TableResponsiveDayEditDetailsPage'>{notas}</td>
                                                                         </tr>)}
                                                                         <tr>{notas}</tr>
                                                                     </tbody>
