@@ -275,7 +275,7 @@ function DayEditDetailsPage(){
         }    
 
 
-        const handleBlur = async (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(2)
             if(boolFocus != 2) {
                 setNumberToast(1)
@@ -286,7 +286,7 @@ function DayEditDetailsPage(){
                 parsedValue = numberExercise 
                 notas == undefined ? "" : notas
     
-                await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
     
