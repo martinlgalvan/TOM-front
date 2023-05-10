@@ -271,26 +271,28 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {setBoolFocus(e), console.log(e)}
+        const handleBoolFocus = (e) => {setBoolFocus(5), console.log(e)}
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(2)
-            setNumberToast(1)
-            let valueExercise = parseInt(parsedValue)
-            let sets = parseInt(StrSets)
-            let reps = parseInt(StrReps)
+            if(boolFocus != 1) {
+                setBoolFocus(2)
+                setNumberToast(1)
+                let valueExercise = parseInt(parsedValue)
+                let sets = parseInt(StrSets)
+                let reps = parseInt(StrReps)
+    
+                parsedValue = numberExercise 
+                notas == undefined ? "" : notas
+    
+                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                    .then(() =>{
+                        setStatus(idRefresh)
+    
+                    })
+            }
 
-            parsedValue = numberExercise 
-            notas == undefined ? "" : notas
-        
-            console.log(sets)
-
-            ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                .then(() =>{
-                    setStatus(idRefresh)
-
-                })
-
+            console.log(boolFocus)
         }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
