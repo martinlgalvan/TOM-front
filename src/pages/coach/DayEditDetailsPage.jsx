@@ -115,6 +115,10 @@ function DayEditDetailsPage(){
         setPesoExercise(e.target.value)
     }
 
+    function changeNotasEdit(e){
+        setNotasExercise(e.target.value)
+    }
+
     function changeVideoEdit(e){
         setVideoExercise(e.target.value)
     }
@@ -344,6 +348,7 @@ function DayEditDetailsPage(){
                                     <th scope="col">Series</th>
                                     <th scope="col">Reps</th>
                                     <th className='TableResponsiveDayEditDetailsPage' scope="col">Peso</th>
+                                    <th scope="col">Notas</th>
                                     <th className='TableResponsiveDayEditDetailsPage' scope="col">Video</th>
                                     <th scope="col">Acciones</th>
                                 </tr>
@@ -468,6 +473,23 @@ function DayEditDetailsPage(){
                                         
                                         </td> 
                                     }
+
+                                    {notas === undefined ? null :
+
+                                        <td className='TableResponsiveDayEditDetailsPage'>
+                                            
+                                            <input 
+                                            className='form-control border-0' 
+                                            type="text" 
+                                            defaultValue={notas}
+                                            onKeyDown={event => {
+                                                if (event.key === 'Enter') {
+                                                    editExercise(exercise_id, name, sets, reps, peso, video, event.target.value, numberExercise, valueExercise)
+                                                }}}  
+                                            onChange={changeNotasEdit}/>
+
+                                        </td> 
+                                        }
                                     
                                     {video === undefined ? null : 
                                     
