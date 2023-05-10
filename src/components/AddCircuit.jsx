@@ -21,6 +21,7 @@ function AddCircuit({refresh}) {
   const [typeOfSets, setTypeOfSets] = useState(1);
   const [reps, setReps] = useState(1);
   const [peso, setPeso] = useState(""); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
+  const [notas, setNotas] = useState(""); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [video, setVideo] = useState("");
 
   const [exercises, setExercises] = useState([]);
