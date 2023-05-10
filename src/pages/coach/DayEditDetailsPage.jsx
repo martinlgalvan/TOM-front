@@ -277,7 +277,10 @@ function DayEditDetailsPage(){
         const handleBoolFocus = (e) => {setBoolFocus(5)}
 
         const handleBlur = async (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+            console.log(boolFocus + " click afuera del if ")
             if(boolFocus != 2) {
+                console.log(boolFocus + " click ADENTRO del if ")
+
                 setNumberToast(1)
                 let valueExercise = parseInt(parsedValue)
                 let sets = parseInt(StrSets)
