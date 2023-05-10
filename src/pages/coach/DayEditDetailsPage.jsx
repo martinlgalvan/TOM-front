@@ -526,7 +526,7 @@ function DayEditDetailsPage(){
                                             </svg>
                                         </button>
                                     </td>
-                                </tr>{name}{sets}{reps}{notas}{video}
+                                </tr>
                                     </CSSTransition>
                                 )}
                                 </TransitionGroup>
