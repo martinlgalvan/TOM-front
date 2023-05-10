@@ -495,7 +495,7 @@ function DayEditDetailsPage(){
 
                                     <td className='TableResponsiveDayEditDetailsPage'>
                                         
-                                        <input 
+                                        <textarea 
                                         className='form-control border-0' 
                                         type="text" 
                                         defaultValue={notas}
