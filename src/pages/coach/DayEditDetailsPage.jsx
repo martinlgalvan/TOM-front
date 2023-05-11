@@ -478,7 +478,7 @@ function DayEditDetailsPage(){
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
-                                                    disabled={(activeButton && activeButton !== inputRefs.current[index])}
+                                                    disabled={activeButton && activeButton !== inputRefs.current[index]}
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
