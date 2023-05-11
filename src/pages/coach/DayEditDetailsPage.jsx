@@ -282,32 +282,29 @@ function DayEditDetailsPage(){
 
 
         }
+        const [d,setD] = useState()
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-                let valueExercise
-                let sets
-                let reps
-                clearTimeout(timer);
+                setLoading(true)
+                setNumberToast(1)
 
-                setTimer(setTimeout(() => 
-                    setLoading(true),
-                    setNumberToast(1),
-                    
-                    valueExercise = parseInt(parsedValue),
-                    sets = parseInt(StrSets),
-                    reps = parseInt(StrReps),
-        
-                    parsedValue = numberExercise,
-                    notas == undefined ? "" : notas,
-                    
+                let valueExercise = parseInt(parsedValue)
+                let sets = parseInt(StrSets)
+                let reps = parseInt(StrReps)
+    
+                parsedValue = numberExercise 
+                notas == undefined ? "" : notas
+                clearTimeout(timer);
+                setTimer(setTimeout(() => setD(true), 1000));
+                
+                if(d == true){
                     ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
-
-                }), 1000));
-                
     
-                
+                    })
+                }
+
 
             /*if(boolFocus != 2) {
                 console.log(boolFocus + " click ADENTRO del if ")
@@ -455,7 +452,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
-                                            onValueChange={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
+                                            onChange={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             inputClassName={'styleFocusInputNumber'}
                                             showButtons 
