@@ -279,7 +279,6 @@ function DayEditDetailsPage(){
 
         const handleBoolFocus = (e) => {
             setBoolFocus(5)
-            setButtonPressed(true);
 
             clearTimeout(timer);
             setTimer(setTimeout(() => console.log("El botón ha estado inactivo por 2 segundos"), 2000));
