@@ -277,9 +277,24 @@ function DayEditDetailsPage(){
 
         const handleBoolFocus = (e) => {setBoolFocus(5)}
 
-        const handleBlur = async (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-            console.log(boolFocus + " click afuera del if ")
-            if(boolFocus != 2) {
+        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+            setLoading(true)
+            setNumberToast(1)
+
+                let valueExercise = parseInt(parsedValue)
+                let sets = parseInt(StrSets)
+                let reps = parseInt(StrReps)
+    
+                parsedValue = numberExercise 
+                notas == undefined ? "" : notas
+    
+                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                    .then(() =>{
+
+    
+                    })
+
+            /*if(boolFocus != 2) {
                 console.log(boolFocus + " click ADENTRO del if ")
 
                 setNumberToast(1)
@@ -290,12 +305,12 @@ function DayEditDetailsPage(){
                 parsedValue = numberExercise 
                 notas == undefined ? "" : notas
     
-                await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
     
                     })
-            }
+            }*/
 
         }
 
