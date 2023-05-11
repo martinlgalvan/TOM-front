@@ -277,22 +277,21 @@ function DayEditDetailsPage(){
 
         const handleBoolFocus = (e) => {setBoolFocus(5)}
 
-        const handleBlur = async (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-            try {
-              let valueExercise = parseInt(parsedValue)
-              let sets = parseInt(StrSets)
-              let reps = parseInt(StrReps)
-              parsedValue = numberExercise 
-              notas == undefined ? "" : notas
-          
-              await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
-              setNumberToast(1)
-              setStatus(idRefresh)
-
-            } catch (error) {
-              console.error(error)
-            }
-          }
+        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+            setLoading(true)
+                setNumberToast(1)
+                let valueExercise = parseInt(parsedValue)
+                let sets = parseInt(StrSets)
+                let reps = parseInt(StrReps)
+    
+                parsedValue = numberExercise 
+                notas == undefined ? "" : notas
+    
+                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                    .then(() =>{
+                        setStatus(idRefresh)
+    
+                    })
 
             /*if(boolFocus != 2) {
                 console.log(boolFocus + " click ADENTRO del if ")
@@ -312,7 +311,7 @@ function DayEditDetailsPage(){
                     })
             }*/
 
-        
+        }
 
         const consol = (exercise_id, name, sets, reps, peso, video, notas, numberExercise) => {console.log(exercise_id, name, sets, reps, peso, video, notas, numberExercise)}
 
@@ -449,7 +448,7 @@ function DayEditDetailsPage(){
                                             min={1} 
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
-                                            incrementButtonIcon="pi pi-plus" 
+                                            incrementButtonIcon={loading == false ? 'pi pi-plus' : 'pi pi-minus'} 
                                             decrementButtonIcon="pi pi-minus"
                                             className="WidthInputsWhenIsMobile" 
                                         />     
