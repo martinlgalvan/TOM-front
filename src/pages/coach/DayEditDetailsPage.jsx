@@ -49,7 +49,7 @@ function DayEditDetailsPage(){
     const [CanvasFormulas, setCanvasFormulas] = useState(false);
     const [visibleCircuit, setVisibleCircuit] = useState(false);
     const [visibleExercises, setVisibleExercises] = useState(false);
-    const [boolFocus, setBoolFocus] = useState(2)
+    const [boolFocus, setBoolFocus] = useState(1)
 
     const [name, setNameExercise] = useState()
     const [sets, setSetsExercise] = useState()
@@ -276,12 +276,12 @@ function DayEditDetailsPage(){
         }    
 
         const handleBoolFocus = () => {
-            setBoolFocus(2)
+            setBoolFocus(3)
         }
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
      
-            if(boolFocus != 2) {
+            if(boolFocus != 1) {
 
                 setNumberToast(1)
                 let valueExercise = parseInt(parsedValue)
