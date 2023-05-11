@@ -280,7 +280,7 @@ function DayEditDetailsPage(){
         }
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-     
+            setBoolFocus(2)
             if(boolFocus != 1) {
 
                 setNumberToast(1)
@@ -444,7 +444,7 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onClick={(e) => handleBoolFocus(e.value)}
+                                                    onChange={(e) => handleBoolFocus(e.value)}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     autoFocus={boolFocus == 1 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
