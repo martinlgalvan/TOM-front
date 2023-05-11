@@ -275,18 +275,14 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const [buttonPressed, setButtonPressed] = useState(false);
+        const [timer, setTimer] = useState(null);
 
         const handleBoolFocus = (e) => {
             setBoolFocus(5)
             setButtonPressed(true);
 
-            setTimeout(() => {
-                setButtonPressed(false);
-            }, 1000);
-            if(buttonPressed == false){
-                console.log("no apretó el boton por 1 seg")
-            }
+            clearTimeout(timer);
+            setTimer(setTimeout(() => console.log("El botón ha estado inactivo por 2 segundos"), 2000));
             
         }
 
