@@ -278,6 +278,7 @@ function DayEditDetailsPage(){
         const handleBoolFocus = (e) => {setBoolFocus(5)}
 
         const inputRefs = useRef([]);
+        const [activeButton, setActiveButton] = useState(null);
         
         function disableButtons(event) {
             inputRefs.current.forEach((inputRef) => {
