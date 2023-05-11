@@ -512,7 +512,7 @@ function DayEditDetailsPage(){
                                     }
                                     <td>
                                         
-                                        <button onClick={console.log(exercise_id, name, sets, reps, peso, video, notas, numberExercise)} className='btn'>
+                                        <button onClick={(e) => {console.log(exercise_id, name, sets, reps, peso, video, notas, numberExercise, e)}} className='btn'>
                                         edit
                                         </button>
                                         
