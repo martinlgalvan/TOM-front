@@ -275,15 +275,26 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {
-            setBoolFocus(5) 
-            disableButtons();
-        
-        }
-        const [buttonsEnabled, setButtonsEnabled] = useState(true);
+        const handleBoolFocus = (e) => {setBoolFocus(5)}
 
-        function disableButtons() {
-            setButtonsEnabled(false);
+        const inputRefs = useRef([]);
+        
+        function disableButtons(event) {
+            inputRefs.current.forEach((inputRef) => {
+              if (inputRef !== event.target) {
+                inputRef.current.disabled = true;
+              } else {
+                setActiveButton(inputRef.current);
+              }
+            });
+          }
+
+          function enableButtons() {
+            inputRefs.current.forEach((inputRef) => {
+              if (inputRef.current !== activeButton) {
+                inputRef.current.disabled = false;
+              }
+            });
           }
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
@@ -430,10 +441,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => {
-                                                handleBoolFocus(e.value);
-                                                disableButtons();
-                                              }}
+                                            onClick={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             inputClassName={'styleFocusInputNumber'}
@@ -441,7 +449,7 @@ function DayEditDetailsPage(){
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
-                                            disabled={!buttonsEnabled}
+                                            
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonIcon='pi pi-plus'
@@ -454,7 +462,14 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onChange={(e) => handleBoolFocus(e.value)}
+                                                    onClick={(e) => {
+                                                        handleBoolFocus(e.value);
+                                                        disableButtons(e);
+                                                      }}
+                                                      onChange={(e) => {
+                                                        handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise);
+                                                        setActiveButton(null);
+                                                      }}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     autoFocus={boolFocus == 1 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
@@ -462,7 +477,7 @@ function DayEditDetailsPage(){
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
-                                                   
+                                                    disabled={(activeButton && activeButton !== inputRefs.current[index])}
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
