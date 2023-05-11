@@ -86,7 +86,7 @@ function DayEditDetailsPage(){
     useEffect(() => {
         
         setLoading(true)
-
+        setNumberToast(true)
             WeekService.findByWeekId(week_id)
                 .then(data => {
                     //Encuentro el index del día, y luego seteo el día con el que corresponde.
@@ -107,10 +107,9 @@ function DayEditDetailsPage(){
 
 
     // EDIT EXERCISES
-    const [nom,setNom] = useState()
+
     function changeNameEdit(e){
         setNameExercise(e.target.value)
-        setNom(e.target.value)
     }
 
     function changePesoEdit(e){
@@ -427,16 +426,16 @@ function DayEditDetailsPage(){
                                             value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
-                                            autoFocus={boolFocus == 2 ? false : true}
+                                            autoFocus={boolFocus == 1 ? false : true}
                                             inputClassName={'styleFocusInputNumber'}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
-                                            disabled={loading}
+                                            
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
-                                            incrementButtonIcon={'pi pi-plus'} 
+                                            incrementButtonIcon='pi pi-plus'
                                             decrementButtonIcon="pi pi-minus"
                                             className="WidthInputsWhenIsMobile" 
                                         />     
@@ -448,13 +447,13 @@ function DayEditDetailsPage(){
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)}
-                                                    autoFocus={boolFocus == 2 ? false : true}
+                                                    autoFocus={boolFocus == 1 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
-                                                    disabled={loading}
+                                                   
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
@@ -515,10 +514,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        
-                                        <button onClick={(e) => {console.log(nom)}} className='btn'>
-                                        edit
-                                        </button>
+                                    
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
