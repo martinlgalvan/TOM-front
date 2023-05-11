@@ -303,7 +303,7 @@ function DayEditDetailsPage(){
                     .then(() =>{
                         setStatus(idRefresh)
     
-                    })}, 1000));
+                    })}, 250));
 
 
             /*if(boolFocus != 2) {
