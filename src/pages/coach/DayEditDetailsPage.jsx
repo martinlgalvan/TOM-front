@@ -275,7 +275,16 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {setBoolFocus(5)}
+        const handleBoolFocus = (e) => {
+            setBoolFocus(5) 
+            disableButtons();
+        
+        }
+        const [buttonsEnabled, setButtonsEnabled] = useState(true);
+
+        function disableButtons() {
+            setButtonsEnabled(false);
+          }
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(2)
@@ -421,7 +430,10 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => handleBoolFocus(e.value)}
+                                            onClick={(e) => {
+                                                handleBoolFocus(e.value);
+                                                disableButtons();
+                                              }}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             inputClassName={'styleFocusInputNumber'}
@@ -429,7 +441,7 @@ function DayEditDetailsPage(){
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
-                                            
+                                            disabled={!buttonsEnabled}
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonIcon='pi pi-plus'
