@@ -55,7 +55,7 @@ function DayEditDetailsPage(){
     const [sets, setSetsExercise] = useState()
     const [reps, setRepsExercise] = useState()
     const [peso, setPesoExercise] = useState()
-    const [video, setVideoExercise] = useState()
+    const [videoO, setVideoExercise] = useState()
     const [notas, setNotasExercise] = useState()
     const [numberExercise, setNumberExercise] = useState()
     const [valueExercise, setValueExercise] = useState()
@@ -512,7 +512,7 @@ function DayEditDetailsPage(){
                                     }
                                     <td>
                                         
-                                        <button onClick={(e) => {console.log(exercise_id, name, sets, reps, peso, video, notas, numberExercise, e)}} className='btn'>
+                                        <button onClick={(e) => {console.log(videoO)}} className='btn'>
                                         edit
                                         </button>
                                         
