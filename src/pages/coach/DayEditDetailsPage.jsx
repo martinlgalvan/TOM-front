@@ -287,51 +287,44 @@ function DayEditDetailsPage(){
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
                 
 
-                clearTimeout(timer);
-                    
-                let valueExercise = parseInt(parsedValue)
-                let sets = parseInt(StrSets)
-                let reps = parseInt(StrReps)
-    
-                parsedValue = numberExercise 
-                notas == undefined ? "" : notas
+            clearTimeout(timer);
+            setTimer(setTimeout(() => {
                 
-                    setLoading(true)
-                    setNumberToast(1)
+            let valueExercise = parseInt(parsedValue)
+            let sets = parseInt(StrSets)
+            let reps = parseInt(StrReps)
 
-                    setTimer(setTimeout(() => ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                        .then(() =>{
-                            setStatus(idRefresh)
-                            setLoading(false);
-                        }) , 350));
-
-
-
-            /*                    ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                    .then(() =>{
-                        setStatus(idRefresh)
-                        setLoading(false);
-                    })}, 350));*/
-
-            /*if(boolFocus != 2) {
-                console.log(boolFocus + " click ADENTRO del if ")
-
+            parsedValue = numberExercise 
+            notas == undefined ? "" : notas
+            
+                setLoading(true)
                 setNumberToast(1)
-                let valueExercise = parseInt(parsedValue)
-                let sets = parseInt(StrSets)
-                let reps = parseInt(StrReps)
-    
-                parsedValue = numberExercise 
-                notas == undefined ? "" : notas
-    
                 ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                    .then(() =>{
-                        setStatus(idRefresh)
-    
-                    })
-            }*/
+                .then(() =>{
+                    setStatus(idRefresh)
+                    setLoading(false);
+                })}, 350));
 
-        }
+
+        /*if(boolFocus != 2) {
+            console.log(boolFocus + " click ADENTRO del if ")
+
+            setNumberToast(1)
+            let valueExercise = parseInt(parsedValue)
+            let sets = parseInt(StrSets)
+            let reps = parseInt(StrReps)
+
+            parsedValue = numberExercise 
+            notas == undefined ? "" : notas
+
+            ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                .then(() =>{
+                    setStatus(idRefresh)
+
+                })
+        }*/
+
+    }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
