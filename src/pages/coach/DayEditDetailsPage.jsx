@@ -49,7 +49,7 @@ function DayEditDetailsPage(){
     const [CanvasFormulas, setCanvasFormulas] = useState(false);
     const [visibleCircuit, setVisibleCircuit] = useState(false);
     const [visibleExercises, setVisibleExercises] = useState(false);
-    const [boolFocus, setBoolFocus] = useState(1)
+    const [boolFocus, setBoolFocus] = useState(2)
 
     const [name, setNameExercise] = useState()
     const [sets, setSetsExercise] = useState()
