@@ -98,7 +98,7 @@ function DayEditDetailsPage(){
                     setCircuit(circuit)
                     setDay(day)
                     setUserId(data[0].user_id)
-                    setLoading(false)
+
                     
 
                 })
@@ -282,7 +282,6 @@ function DayEditDetailsPage(){
 
 
         }
-        const [d,setD] = useState()
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
                 
@@ -302,7 +301,7 @@ function DayEditDetailsPage(){
                     ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
-    
+                        setLoading(false);
                     })}, 350));
 
 
@@ -325,8 +324,6 @@ function DayEditDetailsPage(){
             }*/
 
         }
-
-        const consol = (exercise_id, name, sets, reps, peso, video, notas, numberExercise) => {console.log(exercise_id, name, sets, reps, peso, video, notas, numberExercise)}
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
