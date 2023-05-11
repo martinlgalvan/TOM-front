@@ -287,25 +287,23 @@ function DayEditDetailsPage(){
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
                 
 
+                clearTimeout(timer);
+                setTimer(setTimeout(() => {
+                    
                 let valueExercise = parseInt(parsedValue)
                 let sets = parseInt(StrSets)
                 let reps = parseInt(StrReps)
     
                 parsedValue = numberExercise 
                 notas == undefined ? "" : notas
-                clearTimeout(timer);
-                setTimer(setTimeout(() => setD(true), 1000));
                 
-                if(d == true){
-
                     setLoading(true)
                     setNumberToast(1)
                     ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
     
-                    })
-                }
+                    })}, 1000));
 
 
             /*if(boolFocus != 2) {
