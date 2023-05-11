@@ -49,7 +49,7 @@ function DayEditDetailsPage(){
     const [CanvasFormulas, setCanvasFormulas] = useState(false);
     const [visibleCircuit, setVisibleCircuit] = useState(false);
     const [visibleExercises, setVisibleExercises] = useState(false);
-    const [boolFocus, setBoolFocus] = useState(1)
+    const [boolFocus, setBoolFocus] = useState(2)
 
     const [name, setNameExercise] = useState()
     const [sets, setSetsExercise] = useState()
@@ -275,13 +275,11 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = () => {
-            setBoolFocus(3)
-        }
+        const handleBoolFocus = (e) => {setBoolFocus(5)}
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(2)
-            if(boolFocus != 1) {
+            if(boolFocus != 2) {
 
                 setNumberToast(1)
                 let valueExercise = parseInt(parsedValue)
@@ -423,7 +421,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => handleBoolFocus(3)}
+                                            onClick={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             autoFocus={boolFocus == 1 ? false : true}
                                             inputClassName={'styleFocusInputNumber'}
