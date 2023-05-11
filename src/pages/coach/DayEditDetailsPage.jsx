@@ -286,9 +286,9 @@ function DayEditDetailsPage(){
               notas == undefined ? "" : notas
           
               await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
-          
-              setLoading(false)
               setNumberToast(1)
+              setStatus(idRefresh)
+
             } catch (error) {
               console.error(error)
             }
