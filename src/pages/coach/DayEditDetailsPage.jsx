@@ -285,8 +285,7 @@ function DayEditDetailsPage(){
         const [d,setD] = useState()
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-                setLoading(true)
-                setNumberToast(1)
+                
 
                 let valueExercise = parseInt(parsedValue)
                 let sets = parseInt(StrSets)
@@ -298,6 +297,9 @@ function DayEditDetailsPage(){
                 setTimer(setTimeout(() => setD(true), 1000));
                 
                 if(d == true){
+
+                    setLoading(true)
+                    setNumberToast(1)
                     ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
