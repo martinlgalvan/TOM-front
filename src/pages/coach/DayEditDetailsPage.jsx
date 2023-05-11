@@ -452,8 +452,8 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
-                                            onChange={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
-                                            autoFocus={boolFocus == 1 ? false : true}
+                                            onChange={(e) => handleBlur(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
+
                                             inputClassName={'styleFocusInputNumber'}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
@@ -473,8 +473,8 @@ function DayEditDetailsPage(){
                                             <InputNumber 
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
-                                                    onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
-                                                    autoFocus={boolFocus == 1 ? false : true}
+                                                    onBlur={(e) => handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)}
+
                                                     inputClassName={'styleFocusInputNumber'}
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
