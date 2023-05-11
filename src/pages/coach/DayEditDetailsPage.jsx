@@ -277,22 +277,22 @@ function DayEditDetailsPage(){
 
         const handleBoolFocus = (e) => {setBoolFocus(5)}
 
-        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-            setLoading(true)
-            setNumberToast(1)
-
-                let valueExercise = parseInt(parsedValue)
-                let sets = parseInt(StrSets)
-                let reps = parseInt(StrReps)
-    
-                parsedValue = numberExercise 
-                notas == undefined ? "" : notas
-    
-                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                    .then(() =>{
-
-    
-                    })
+        const handleBlur = async (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+            try {
+              let valueExercise = parseInt(parsedValue)
+              let sets = parseInt(StrSets)
+              let reps = parseInt(StrReps)
+              parsedValue = numberExercise 
+              notas == undefined ? "" : notas
+          
+              await ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
+          
+              setLoading(false)
+              setNumberToast(1)
+            } catch (error) {
+              console.error(error)
+            }
+          }
 
             /*if(boolFocus != 2) {
                 console.log(boolFocus + " click ADENTRO del if ")
@@ -312,7 +312,7 @@ function DayEditDetailsPage(){
                     })
             }*/
 
-        }
+        
 
         const consol = (exercise_id, name, sets, reps, peso, video, notas, numberExercise) => {console.log(exercise_id, name, sets, reps, peso, video, notas, numberExercise)}
 
