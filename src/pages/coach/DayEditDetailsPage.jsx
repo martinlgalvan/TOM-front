@@ -275,7 +275,18 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {setBoolFocus(5)}
+        const [buttonPressed, setButtonPressed] = useState(false);
+
+        const handleBoolFocus = (e) => {
+            setBoolFocus(5)
+            setButtonPressed(true);
+
+            setTimeout(() => {
+                setButtonPressed(false);
+                console.log("no apreto por más de 1 segundos")
+            }, 1000);
+            
+        }
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setLoading(true)
