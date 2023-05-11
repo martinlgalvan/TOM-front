@@ -84,6 +84,8 @@ function DayEditDetailsPage(){
     }
 
     useEffect(() => {
+        
+        setLoading(true)
 
             WeekService.findByWeekId(week_id)
                 .then(data => {
@@ -97,7 +99,7 @@ function DayEditDetailsPage(){
                     setCircuit(circuit)
                     setDay(day)
                     setUserId(data[0].user_id)
-
+                    setLoading(false)
                     
 
                 })
@@ -282,50 +284,28 @@ function DayEditDetailsPage(){
 
         }
 
-        const [isProcessing, setIsProcessing] = useState(false);
-const [requestQueue, setRequestQueue] = useState([]);
+        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+                
 
-const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-    let valueExercise = parseInt(parsedValue);
-    let sets = parseInt(StrSets);
-    let reps = parseInt(StrReps);
-    parsedValue = numberExercise;
-    notas == undefined ? "" : notas;
-  
-    setLoading(true);
-    setNumberToast(1);
-  
-    // Agrega la solicitud a la cola
-    setRequestQueue((prevQueue) => [...prevQueue, { exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise }]);
-  };
+                clearTimeout(timer);
+                    
+                let valueExercise = parseInt(parsedValue)
+                let sets = parseInt(StrSets)
+                let reps = parseInt(StrReps)
+    
+                parsedValue = numberExercise 
+                notas == undefined ? "" : notas
+                
+                    setLoading(true)
+                    setNumberToast(1)
 
-  const processRequest = () => {
-    if (requestQueue.length > 0) {
-      const request = requestQueue[0];
-      ExercisesService.editExercise(week_id, day_id, request.exercise_id, {
-        type: "exercise",
-        name: request.name,
-        sets: request.sets,
-        reps: request.reps,
-        peso: request.peso,
-        video: request.video,
-        notas: request.notas,
-        numberExercise: request.numberExercise,
-        valueExercise: request.valueExercise,
-      }).then(() => {
-        // Elimina la solicitud actual de la cola y procesa la siguiente
-        setRequestQueue((prevQueue) => prevQueue.slice(1));
-        processRequest();
-      });
-    } else {
-      setLoading(false);
-      setStatus(idRefresh);
-    }
-  };
+                        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                        .then(() =>{
+                            setStatus(idRefresh)
+                            setLoading(false);
+                        }) 
 
-  useEffect(() => {
-    processRequest();
-  }, [requestQueue]);
+
 
             /*                    ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
@@ -351,7 +331,7 @@ const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, num
                     })
             }*/
 
-        
+        }
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
@@ -484,7 +464,7 @@ const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, num
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
-                                            autoFocus={true}
+                                            disabled={loading}
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonIcon={'pi pi-plus'} 
@@ -498,14 +478,14 @@ const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, num
                                             <InputNumber 
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
-                                                    onBlur={(e) => handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)}
+                                                    onChange={(e) => handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)}
 
                                                     inputClassName={'styleFocusInputNumber'}
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
-                                                    autoFocus={true}
+                                                    disabled={loading}
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
