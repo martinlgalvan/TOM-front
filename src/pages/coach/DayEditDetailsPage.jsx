@@ -283,8 +283,10 @@ function DayEditDetailsPage(){
 
             setTimeout(() => {
                 setButtonPressed(false);
-                console.log("no apreto por más de 1 segundos")
             }, 1000);
+            if(buttonPressed == false){
+                console.log("no apretó el boton por 1 seg")
+            }
             
         }
 
