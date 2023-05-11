@@ -55,7 +55,7 @@ function DayEditDetailsPage(){
     const [sets, setSetsExercise] = useState()
     const [reps, setRepsExercise] = useState()
     const [peso, setPesoExercise] = useState()
-    const [videoO, setVideoExercise] = useState()
+    const [video, setVideoExercise] = useState()
     const [notas, setNotasExercise] = useState()
     const [numberExercise, setNumberExercise] = useState()
     const [valueExercise, setValueExercise] = useState()
@@ -106,9 +106,10 @@ function DayEditDetailsPage(){
 
 
     // EDIT EXERCISES
-
+    const [nom,setNom] = useState()
     function changeNameEdit(e){
         setNameExercise(e.target.value)
+        setNom(e.target.value)
     }
 
     function changePesoEdit(e){
@@ -512,7 +513,7 @@ function DayEditDetailsPage(){
                                     }
                                     <td>
                                         
-                                        <button onClick={(e) => {console.log(videoO)}} className='btn'>
+                                        <button onClick={(e) => {console.log(nom)}} className='btn'>
                                         edit
                                         </button>
                                         
