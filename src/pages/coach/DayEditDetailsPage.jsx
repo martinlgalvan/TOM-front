@@ -286,29 +286,46 @@ function DayEditDetailsPage(){
 const [requestQueue, setRequestQueue] = useState([]);
 
 const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-  let valueExercise = parseInt(parsedValue);
-  let sets = parseInt(StrSets);
-  let reps = parseInt(StrReps);
-  parsedValue = numberExercise;
-  notas == undefined ? "" : notas;
-
-  setRequestQueue((prevQueue) => [...prevQueue, { exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise }]);
+    let valueExercise = parseInt(parsedValue);
+    let sets = parseInt(StrSets);
+    let reps = parseInt(StrReps);
+    parsedValue = numberExercise;
+    notas == undefined ? "" : notas;
   
-  if (!isProcessing) {
-    setIsProcessing(true);
-    const request = requestQueue.shift();
-    ExercisesService.editExercise(week_id, day_id, request.exercise_id, { type: 'exercise', name: request.name, sets: request.sets, reps: request.reps, peso: request.peso, video: request.video, notas: request.notas, numberExercise: request.numberExercise, valueExercise: request.valueExercise })
-      .then(() => {
-        setStatus(idRefresh);
-        setIsProcessing(false);
-        if (requestQueue.length > 0) {
-          const nextRequest = requestQueue.shift();
-          handleBlur(nextRequest.exercise_id, nextRequest.name, nextRequest.sets, nextRequest.reps, nextRequest.peso, nextRequest.video, nextRequest.notas, nextRequest.numberExercise, nextRequest.valueExercise);
-        }
-      });
-  }
-}
+    setLoading(true);
+    setNumberToast(1);
+  
+    // Agrega la solicitud a la cola
+    setRequestQueue((prevQueue) => [...prevQueue, { exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise }]);
+  };
 
+  const processRequest = () => {
+    if (requestQueue.length > 0) {
+      const request = requestQueue[0];
+      ExercisesService.editExercise(week_id, day_id, request.exercise_id, {
+        type: "exercise",
+        name: request.name,
+        sets: request.sets,
+        reps: request.reps,
+        peso: request.peso,
+        video: request.video,
+        notas: request.notas,
+        numberExercise: request.numberExercise,
+        valueExercise: request.valueExercise,
+      }).then(() => {
+        // Elimina la solicitud actual de la cola y procesa la siguiente
+        setRequestQueue((prevQueue) => prevQueue.slice(1));
+        processRequest();
+      });
+    } else {
+      setLoading(false);
+      setStatus(idRefresh);
+    }
+  };
+
+  useEffect(() => {
+    processRequest();
+  }, [requestQueue]);
 
             /*                    ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
@@ -467,7 +484,7 @@ const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, num
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
-
+                                            autoFocus={true}
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonIcon={'pi pi-plus'} 
@@ -488,7 +505,7 @@ const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, num
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
-
+                                                    autoFocus={true}
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
