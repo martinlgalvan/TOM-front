@@ -276,38 +276,14 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const [timer, setTimer] = useState(null);
-
         const handleBoolFocus = (e) => {
             setBoolFocus(5)
-
-
         }
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
                 
 
-            clearTimeout(timer);
-            setTimer(setTimeout(() => {
-                
-            let valueExercise = parseInt(parsedValue)
-            let sets = parseInt(StrSets)
-            let reps = parseInt(StrReps)
-
-            parsedValue = numberExercise 
-            notas == undefined ? "" : notas
-            
-                setLoading(true)
-                setNumberToast(1)
-                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                .then(() =>{
-                    setStatus(idRefresh)
-                    setLoading(false);
-                })}, 350));
-
-
-        /*if(boolFocus != 2) {
-            console.log(boolFocus + " click ADENTRO del if ")
+        if(boolFocus != 2) {
 
             setNumberToast(1)
             let valueExercise = parseInt(parsedValue)
@@ -322,7 +298,7 @@ function DayEditDetailsPage(){
                     setStatus(idRefresh)
 
                 })
-        }*/
+        }
 
     }
 
@@ -450,8 +426,8 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
-                                            onChange={(e) => handleBlur(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
-
+                                            onBlur={(e) => handleBlur(exercise_id, name, e.value, reps, peso, video, notas, numberExercise, valueExercise)}
+                                            autoFocus={boolFocus == 2 ? false : true}
                                             inputClassName={'styleFocusInputNumber'}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
@@ -471,8 +447,8 @@ function DayEditDetailsPage(){
                                             <InputNumber 
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
-                                                    onChange={(e) => handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)}
-
+                                                    onBlur={(e) => handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise)}
+                                                    autoFocus={boolFocus == 2 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
