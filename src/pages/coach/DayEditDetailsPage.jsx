@@ -285,8 +285,6 @@ function DayEditDetailsPage(){
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
                 
 
-                clearTimeout(timer);
-                setTimer(setTimeout(() => {
                     
                 let valueExercise = parseInt(parsedValue)
                 let sets = parseInt(StrSets)
@@ -297,12 +295,21 @@ function DayEditDetailsPage(){
                 
                     setLoading(true)
                     setNumberToast(1)
-                    ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                    if(loading == false){
+                        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                        .then(() =>{
+                            setStatus(idRefresh)
+                            setLoading(false);
+                        })
+                    }
+
+
+
+            /*                    ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
                         setLoading(false);
-                    })}, 350));
-
+                    })}, 350));*/
 
             /*if(boolFocus != 2) {
                 console.log(boolFocus + " click ADENTRO del if ")
