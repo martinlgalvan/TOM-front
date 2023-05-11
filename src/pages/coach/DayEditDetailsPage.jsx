@@ -446,9 +446,10 @@ function DayEditDetailsPage(){
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
+                                            disabled={loading}
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
-                                            incrementButtonIcon={loading == false ? 'pi pi-plus' : 'pi pi-minus'} 
+                                            incrementButtonIcon={'pi pi-plus'} 
                                             decrementButtonIcon="pi pi-minus"
                                             className="WidthInputsWhenIsMobile" 
                                         />     
@@ -466,6 +467,7 @@ function DayEditDetailsPage(){
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
+                                                    disabled={loading}
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
