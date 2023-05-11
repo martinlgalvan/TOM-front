@@ -299,11 +299,11 @@ function DayEditDetailsPage(){
                     setLoading(true)
                     setNumberToast(1)
 
-                        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+                    setTimer(setTimeout(() => ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                         .then(() =>{
                             setStatus(idRefresh)
                             setLoading(false);
-                        }) 
+                        }) , 350));
 
 
 
