@@ -282,27 +282,32 @@ function DayEditDetailsPage(){
 
         }
 
-        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-                
+        const [isProcessing, setIsProcessing] = useState(false);
+const [requestQueue, setRequestQueue] = useState([]);
 
-                    
-                let valueExercise = parseInt(parsedValue)
-                let sets = parseInt(StrSets)
-                let reps = parseInt(StrReps)
-    
-                parsedValue = numberExercise 
-                notas == undefined ? "" : notas
-                
-                    setLoading(true)
-                    setNumberToast(1)
-                    if(loading == false){
-                        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                        .then(() =>{
-                            setStatus(idRefresh)
-                            setLoading(false);
-                        })
-                    }
+const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+  let valueExercise = parseInt(parsedValue);
+  let sets = parseInt(StrSets);
+  let reps = parseInt(StrReps);
+  parsedValue = numberExercise;
+  notas == undefined ? "" : notas;
 
+  setRequestQueue((prevQueue) => [...prevQueue, { exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise }]);
+  
+  if (!isProcessing) {
+    setIsProcessing(true);
+    const request = requestQueue.shift();
+    ExercisesService.editExercise(week_id, day_id, request.exercise_id, { type: 'exercise', name: request.name, sets: request.sets, reps: request.reps, peso: request.peso, video: request.video, notas: request.notas, numberExercise: request.numberExercise, valueExercise: request.valueExercise })
+      .then(() => {
+        setStatus(idRefresh);
+        setIsProcessing(false);
+        if (requestQueue.length > 0) {
+          const nextRequest = requestQueue.shift();
+          handleBlur(nextRequest.exercise_id, nextRequest.name, nextRequest.sets, nextRequest.reps, nextRequest.peso, nextRequest.video, nextRequest.notas, nextRequest.numberExercise, nextRequest.valueExercise);
+        }
+      });
+  }
+}
 
 
             /*                    ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
@@ -329,7 +334,7 @@ function DayEditDetailsPage(){
                     })
             }*/
 
-        }
+        
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
