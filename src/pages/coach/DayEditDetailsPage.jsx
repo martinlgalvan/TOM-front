@@ -108,7 +108,7 @@ function DayEditDetailsPage(){
     }, [status])
 
     useEffect(() => {
-        if (loading == false && effectInput == 1) {
+        if (effectInput == 1) {
           setInputEnFoco(null)
         }
       }, [loading]);
@@ -300,7 +300,7 @@ function DayEditDetailsPage(){
 
                 ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
-                        setStatus(idRefresh)
+                        setEffectInput(1)
 
                     })
             }
