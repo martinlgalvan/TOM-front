@@ -278,9 +278,9 @@ function DayEditDetailsPage(){
         const handleBoolFocus = (e) => {setBoolFocus(5)}
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-            setBoolFocus(2)
+            setBoolFocus(1)
             if(boolFocus != 2) {
-                setBoolFocus(2)
+                setBoolFocus(1)
                 setNumberToast(1)
                 let valueExercise = parseInt(parsedValue)
                 let sets = parseInt(StrSets)
@@ -430,7 +430,7 @@ function DayEditDetailsPage(){
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             inputClassName={'styleFocusInputNumber'}
                                             showButtons 
-                                            autoFocus={boolFocus == 1 ? false : true}
+                                            autoFocus={boolFocus == 2 ? false : true}
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
@@ -449,7 +449,7 @@ function DayEditDetailsPage(){
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
-                                                    autoFocus={boolFocus == 1 ? false : true}
+                                                    autoFocus={boolFocus == 2 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
