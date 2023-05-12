@@ -301,9 +301,13 @@ function DayEditDetailsPage(){
 
     const [inputEnFoco, setInputEnFoco] = useState(null);
     const inputRefs = useRef([]);
-
+    
     const handleInputFocus = (index) => {
         setInputEnFoco(index);
+      };
+
+    const hanleResetInput = () => {
+        setInputEnFoco(null);
       };
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
@@ -519,7 +523,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        
+                                        <button onClick={hanleResetInput}>Edit</button>
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
