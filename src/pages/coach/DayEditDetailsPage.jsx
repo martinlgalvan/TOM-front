@@ -108,7 +108,7 @@ function DayEditDetailsPage(){
     }, [status])
 
     useEffect(() => {
-        if (loading == true && inputEnFoco == true) {
+        if (loading == false && inputEnFoco == true) {
           setInputEnFoco(null)
         }
       }, [loading]);
