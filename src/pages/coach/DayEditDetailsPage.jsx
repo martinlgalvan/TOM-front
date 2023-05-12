@@ -298,6 +298,13 @@ function DayEditDetailsPage(){
 
     }
 
+    const [inputEnFoco, setInputEnFoco] = useState(null);
+    const inputRefs = useRef([]);
+
+    const handleInputFocus = (index) => {
+        setInputEnFoco(index);
+      };
+
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     return (
 
@@ -419,7 +426,8 @@ function DayEditDetailsPage(){
                                             value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
-                                            autoFocus={boolFocus == 1 ? false : true}
+                                            onFocus={() => handleInputFocus(index)}
+                                            ref={(input) => (inputRefs.current[index] = input)}
                                             inputClassName={'styleFocusInputNumber'}
                                             showButtons 
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
@@ -438,6 +446,7 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
+                                                    onClick={(e) => handleBoolFocus(e.value)}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     autoFocus={boolFocus == 1 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
