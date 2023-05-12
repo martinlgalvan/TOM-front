@@ -87,7 +87,7 @@ function DayEditDetailsPage(){
         
         setLoading(true)
         setNumberToast(true)
-        setBoolFocus(1)
+
             WeekService.findByWeekId(week_id)
                 .then(data => {
                     //Encuentro el index del día, y luego seteo el día con el que corresponde.
@@ -101,7 +101,7 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
-                    
+                    setBoolFocus(1)
 
                 })
     }, [status])
