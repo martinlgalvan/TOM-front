@@ -450,12 +450,15 @@ function DayEditDetailsPage(){
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
+                                                    onFocus={() => handleInputFocus(index)}
+                                                    ref={(input) => (inputRefs.current[index] = input)}
                                                     autoFocus={boolFocus == 2 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
                                                     showButtons 
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
+                                                    disabled={inputEnFoco !== null && inputEnFoco !== index}
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
@@ -516,7 +519,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                    
+                                        <button onClick={setInputEnFoco(null)}>Edit</button>
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
