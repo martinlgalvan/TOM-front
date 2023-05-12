@@ -108,7 +108,7 @@ function DayEditDetailsPage(){
     }, [status])
 
     useEffect(() => {
-        if (!loading && inputEnFoco != null) {
+        if (!loading && inputEnFoco == 1) {
           setInputEnFoco(null)
         }
       }, [loading]);
@@ -316,7 +316,7 @@ function DayEditDetailsPage(){
       };
 
     const hanleResetInput = () => {
-        setInputEnFoco(null);
+        setInputEnFoco(1);
 
 
       };
