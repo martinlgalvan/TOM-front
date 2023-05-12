@@ -108,7 +108,7 @@ function DayEditDetailsPage(){
     }, [status])
 
     useEffect(() => {
-        if (loading == false && inputEnFoco == null) {
+        if (loading == false && effectInput == 1) {
           setInputEnFoco(null)
         }
       }, [loading]);
@@ -307,7 +307,9 @@ function DayEditDetailsPage(){
 
     }
 
-    const [inputEnFoco, setInputEnFoco] = useState("a");
+    const [inputEnFoco, setInputEnFoco] = useState(null);
+    const [effectInput, setEffectInput] = useState(null);
+
     const inputRefs = useRef([]);
     
     const handleInputFocus = (index) => {
@@ -317,6 +319,7 @@ function DayEditDetailsPage(){
 
     const hanleResetInput = () => {
         setInputEnFoco(null);
+        setEffectInput(1)
 
 
       };
