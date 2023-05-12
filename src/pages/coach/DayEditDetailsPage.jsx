@@ -444,7 +444,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => handleBoolFocus(e.value)}
+                                            onClick={(e) => {handleBoolFocus(e.value), console.log(inputRefs.current[index]),console.log((input) => inputRefs.current[index]) = input}}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
