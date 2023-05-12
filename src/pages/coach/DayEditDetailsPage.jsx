@@ -27,7 +27,7 @@ function DayEditDetailsPage(){
     const {week_id} = useParams()
     const {day_id} = useParams()
     const [status, setStatus] = useState(1)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(null)
     const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
     const toastPop = useRef(null);
@@ -84,9 +84,10 @@ function DayEditDetailsPage(){
     }
 
     useEffect(() => {
-        
-        setLoading(true)
-        setNumberToast(true)
+        if(loading == null){
+            setLoading(true)
+            setNumberToast(true)
+        }
 
             WeekService.findByWeekId(week_id)
                 .then(data => {
@@ -137,7 +138,7 @@ function DayEditDetailsPage(){
 
 
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
-
+        setLoading(true)
         setNumberToast(1)
         let valueExercise = parseInt(parsedValue)
         parsedValue = numberExercise 
@@ -282,6 +283,7 @@ function DayEditDetailsPage(){
             setBoolFocus(1)
             if(boolFocus != 2) {
                 setBoolFocus(1)
+                setLoading(true)
                 setNumberToast(1)
                 let valueExercise = parseInt(parsedValue)
                 let sets = parseInt(StrSets)
@@ -307,7 +309,10 @@ function DayEditDetailsPage(){
       };
 
     const hanleResetInput = () => {
-        setInputEnFoco(null);
+        if(loading == false){
+            setInputEnFoco(null);
+        } 
+
       };
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
@@ -423,8 +428,12 @@ function DayEditDetailsPage(){
                                             if (event.key === 'Enter') {
                                                 editExercise(exercise_id, event.target.value || null, sets, reps, peso, video, notas, numberExercise, valueExercise)
                                             }}} 
-                                            onChange={changeNameEdit}/>
+                                        onChange={changeNameEdit}
+                                        ref={(input) => (inputRefs.current[index] = input)}
+                                        disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                        />
                                     </td>}
+
                                     {sets === undefined ? null :
                                     <td >
                                         <InputNumber 
@@ -433,13 +442,13 @@ function DayEditDetailsPage(){
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
-                                            inputClassName={'styleFocusInputNumber'}
-                                            showButtons 
+                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
                                             autoFocus={boolFocus == 2 ? false : true}
-                                            buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
+                                            showButtons
                                             size={1} 
                                             min={1} 
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            inputClassName={'styleFocusInputNumber'}
+                                            buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             decrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonClassName="ButtonsInputNumber" 
                                             incrementButtonIcon='pi pi-plus'
@@ -456,13 +465,13 @@ function DayEditDetailsPage(){
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     onFocus={() => handleInputFocus(index)}
                                                     ref={(input) => (inputRefs.current[index] = input)}
+                                                    disabled={inputEnFoco !== null && inputEnFoco !== index}
                                                     autoFocus={boolFocus == 2 ? false : true}
-                                                    inputClassName={'styleFocusInputNumber'}
                                                     showButtons 
-                                                    buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
-                                                    disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                                    inputClassName={'styleFocusInputNumber'}
+                                                    buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
@@ -484,7 +493,11 @@ function DayEditDetailsPage(){
                                                 if (event.key === 'Enter') {
                                                     editExercise(exercise_id, name, sets, reps, event.target.value || null, video, notas, numberExercise, valueExercise)
                                                 }}}  
-                                            onChange={changePesoEdit}/>
+                                            onChange={changePesoEdit}
+                                            ref={(input) => (inputRefs.current[index] = input)}
+                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            />
+                                            
                                         
                                         </td> 
                                     }
@@ -501,7 +514,10 @@ function DayEditDetailsPage(){
                                                 if (event.key === 'Enter') {
                                                     editExercise(exercise_id, name, sets, reps, peso, event.target.value || null, notas, numberExercise, valueExercise)
                                                 }}}  
-                                            onChange={changeVideoEdit}/>
+                                            onChange={changeVideoEdit}
+                                            ref={(input) => (inputRefs.current[index] = input)}
+                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            />
                                         
                                         </td>
                                     }
@@ -518,7 +534,10 @@ function DayEditDetailsPage(){
                                             if (event.key === 'Enter') {
                                                 editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
                                             }}}  
-                                        onChange={changeNotasEdit}/>
+                                        onChange={changeNotasEdit}
+                                        ref={(input) => (inputRefs.current[index] = input)}
+                                        disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                        />
 
                                     </td> 
                                     }
