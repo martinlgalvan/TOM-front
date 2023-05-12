@@ -107,6 +107,12 @@ function DayEditDetailsPage(){
                 })
     }, [status])
 
+    useEffect(() => {
+        if (!loading) {
+          setInputEnFoco(null)
+        }
+      }, [loading]);
+
 
     // EDIT EXERCISES
 
