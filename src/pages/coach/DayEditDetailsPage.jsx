@@ -280,7 +280,7 @@ function DayEditDetailsPage(){
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(2)
             if(boolFocus != 2) {
-
+                setBoolFocus(2)
                 setNumberToast(1)
                 let valueExercise = parseInt(parsedValue)
                 let sets = parseInt(StrSets)
