@@ -361,7 +361,7 @@ function DayEditDetailsPage(){
                             <tbody>
                                 {showLoadingToast()}
                                 <TransitionGroup component={null} className="todo-list">
-                                {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}) =>
+                                {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}, index) =>
                                 <CSSTransition
                                 key={exercise_id}
                                 timeout={500}
