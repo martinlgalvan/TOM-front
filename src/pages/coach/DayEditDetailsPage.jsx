@@ -519,7 +519,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        <button onClick={setInputEnFoco(null)}>Edit</button>
+                                        
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
