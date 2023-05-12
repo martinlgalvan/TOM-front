@@ -277,27 +277,6 @@ function DayEditDetailsPage(){
 
         const handleBoolFocus = (e) => {setBoolFocus(5)}
 
-        const inputRefs = useRef([]);
-        const [activeButton, setActiveButton] = useState(null);
-        
-        function disableButtons(event) {
-            inputRefs.current.forEach((inputRef) => {
-              if (inputRef !== event.target) {
-                inputRef.current.disabled = true;
-              } else {
-                setActiveButton(inputRef.current);
-              }
-            });
-          }
-
-          function enableButtons() {
-            inputRefs.current.forEach((inputRef) => {
-              if (inputRef.current !== activeButton) {
-                inputRef.current.disabled = false;
-              }
-            });
-          }
-
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(2)
             if(boolFocus != 2) {
@@ -351,12 +330,8 @@ function DayEditDetailsPage(){
 
             <article className='col-12 justify-content-center'>
 
-                
-
-
                 <div className='row justify-content-center align-items-center text-center mt-5'>
 
-                    
                     <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 mb-5'>Administrar bloque de entrada en calor</button>
                     {boolFocus}
 
@@ -463,14 +438,6 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onClick={(e) => {
-                                                        handleBoolFocus(e.value);
-                                                        disableButtons(e);
-                                                      }}
-                                                      onChange={(e) => {
-                                                        handleBlur(exercise_id, name, sets, e.value, peso, video, notas, numberExercise, valueExercise);
-                                                        setActiveButton(null);
-                                                      }}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     autoFocus={boolFocus == 1 ? false : true}
                                                     inputClassName={'styleFocusInputNumber'}
@@ -478,7 +445,6 @@ function DayEditDetailsPage(){
                                                     buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                                     size={1} 
                                                     min={1} 
-                                                    disabled={activeButton && activeButton !== inputRefs.current[index]}
                                                     decrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonClassName="ButtonsInputNumber" 
                                                     incrementButtonIcon="pi pi-plus" 
