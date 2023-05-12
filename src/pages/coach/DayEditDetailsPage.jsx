@@ -430,6 +430,7 @@ function DayEditDetailsPage(){
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             inputClassName={'styleFocusInputNumber'}
                                             showButtons 
+                                            autoFocus={boolFocus == 1 ? false : true}
                                             buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
                                             size={1} 
                                             min={1} 
