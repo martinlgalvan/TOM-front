@@ -101,7 +101,7 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
-                    setBoolFocus(1)
+                    setTimeout(() => {setBoolFocus(1)},1500)
 
                 })
     }, [status])
