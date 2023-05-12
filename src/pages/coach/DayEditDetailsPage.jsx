@@ -311,6 +311,7 @@ function DayEditDetailsPage(){
     const inputRefs = useRef([]);
     
     const handleInputFocus = (index) => {
+        console.log(index)
         setInputEnFoco(index);
       };
 
@@ -444,7 +445,7 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => {handleBoolFocus(e.value), console.log(inputRefs.current[index]),console.log((input) => inputRefs.current[index] = input)}}
+                                            onClick={(e) => handleBoolFocus(e.value)}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
