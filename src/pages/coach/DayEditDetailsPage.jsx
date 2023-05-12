@@ -108,7 +108,7 @@ function DayEditDetailsPage(){
     }, [status])
 
     useEffect(() => {
-        if (loading == false && inputEnFoco == true) {
+        if (loading == false && inputEnFoco == 3) {
           setInputEnFoco(null)
         }
       }, [loading]);
@@ -311,12 +311,12 @@ function DayEditDetailsPage(){
     const inputRefs = useRef([]);
     
     const handleInputFocus = (index) => {
-        console.log(index)
+        console.log(inputEnFoco)
         setInputEnFoco(index);
       };
 
     const hanleResetInput = () => {
-        setInputEnFoco(true);
+        setInputEnFoco(3);
 
 
       };
