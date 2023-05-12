@@ -307,7 +307,7 @@ function DayEditDetailsPage(){
 
     }
 
-    const [inputEnFoco, setInputEnFoco] = useState(null);
+    const [inputEnFoco, setInputEnFoco] = useState("a");
     const inputRefs = useRef([]);
     
     const handleInputFocus = (index) => {
