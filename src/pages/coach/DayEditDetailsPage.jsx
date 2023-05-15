@@ -102,16 +102,17 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
+                    setInputEnFoco(null)
                     setTimeout(() => {setBoolFocus(1)},1500)
 
                 })
     }, [status])
 
-    useEffect(() => {
+    /*useEffect(() => {
         if (effectInput == 1) {
           setInputEnFoco(null)
         }
-      }, [loading]);
+      }, [loading]);*/
 
 
     // EDIT EXERCISES
@@ -317,7 +318,7 @@ function DayEditDetailsPage(){
         setInputEnFoco(index);
       };
 
-    const hanleResetInput = () => {
+    const handleResetInput = () => {
         setInputEnFoco(null);
         setEffectInput(1)
 
@@ -551,7 +552,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        <button onClick={hanleResetInput}>Edit</button>
+                                        <button onClick={handleResetInput}>Edit</button>
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
