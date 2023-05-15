@@ -85,6 +85,8 @@ function DayEditDetailsPage(){
 
     useEffect(() => {
             setLoading(true)
+            setNumberToast(true)
+
             WeekService.findByWeekId(week_id)
                 .then(data => {
                     //Encuentro el index del día, y luego seteo el día con el que corresponde.
