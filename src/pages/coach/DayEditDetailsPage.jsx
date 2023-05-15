@@ -102,17 +102,17 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
-                    setInputEnFoco(null)
                     setTimeout(() => {setBoolFocus(1)},1500)
 
                 })
     }, [status])
 
-    /*useEffect(() => {
+    useEffect(() => {
         if (effectInput == 1) {
           setInputEnFoco(null)
+          setStatus(idRefresh)
         }
-      }, [loading]);*/
+      }, [loading]);
 
 
     // EDIT EXERCISES
