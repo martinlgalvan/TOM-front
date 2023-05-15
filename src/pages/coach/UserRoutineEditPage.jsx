@@ -259,7 +259,7 @@ function UserRoutineEditPage(){
                                         </CSSTransition>
                                     )}
                                 </TransitionGroup>
-                                    <button disabled={loading} onClick={(e) => addDayToWeek(elemento._id, index)} className='input-group-text btn border buttonColor mt-3'>{loading == true ? <div class="loader"></div> : '+'}</button>
+                                    <button disabled={loading} onClick={(e) => addDayToWeek(elemento._id, index)} className='input-group-text btn border buttonColor mt-3'>+</button>
 
                             </div>
                             
