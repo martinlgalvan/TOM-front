@@ -105,13 +105,6 @@ function DayEditDetailsPage(){
                 })
     }, [status])
 
-    useEffect(() => {
-        if (effectInput == 1) {
-          setInputEnFoco(null)
-          setStatus(idRefresh)
-        }
-      }, [loading]);
-
 
     // EDIT EXERCISES
 
@@ -299,7 +292,6 @@ function DayEditDetailsPage(){
 
                 ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
-                        setEffectInput(1)
                         setStatus(idRefresh)
 
                     })
@@ -308,7 +300,6 @@ function DayEditDetailsPage(){
     }
 
     const [inputEnFoco, setInputEnFoco] = useState(null);
-    const [effectInput, setEffectInput] = useState(null);
 
     const inputRefs = useRef([]);
     
@@ -319,8 +310,6 @@ function DayEditDetailsPage(){
 
     const handleResetInput = () => {
         setInputEnFoco(null);
-        setEffectInput(1)
-
 
       };
 
