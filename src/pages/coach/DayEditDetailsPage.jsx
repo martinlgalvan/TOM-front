@@ -52,8 +52,8 @@ function DayEditDetailsPage(){
     const [boolFocus, setBoolFocus] = useState(2)
 
     const [name, setNameExercise] = useState()
-    const [sets, setSetsExercise] = useState()
-    const [reps, setRepsExercise] = useState()
+    const [setsE, setSetsEExercise] = useState()
+    const [repsE, setRepsEExercise] = useState()
     const [peso, setPesoExercise] = useState()
     const [video, setVideoExercise] = useState()
     const [notas, setNotasExercise] = useState()
@@ -157,8 +157,8 @@ function DayEditDetailsPage(){
         setShowEditExercise(true)
         setNameExercise(name)
         setExercise_id(id)
-        setSetsExercise(sets)
-        setRepsExercise(reps)
+        setSetsEExercise(sets)
+        setRepsEExercise(reps)
         setPesoExercise(peso)
         setVideoExercise(video)
         setNotasExercise(notas)
@@ -437,6 +437,7 @@ function DayEditDetailsPage(){
                                         <InputNumber 
                                             value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
+                                            onChange={changeSetsEdit}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
@@ -460,6 +461,7 @@ function DayEditDetailsPage(){
                                             <InputNumber 
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
+                                                    onChange={changeRepsEdit}
                                                     onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     onFocus={() => handleInputFocus(index)}
                                                     ref={(input) => (inputRefs.current[index] = input)}
@@ -540,7 +542,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        <button onClick={handleResetInput}>Edit</button>
+                                        <button onClick={console.log(repsE,setsE)}>Edit</button>
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
