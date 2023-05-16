@@ -108,6 +108,8 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
+
+                    setInputEnFoco(null)
                     setTimeout(() => {setBoolFocus(1)},1500)
 
                 })
@@ -449,10 +451,9 @@ function DayEditDetailsPage(){
                                         <InputNumber
                                             value={sets} 
                                             onChange={changeSetsEdit}
-                                            onFocus={() => handleInputFocus(index)}
+                                            onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                            autoFocus={boolFocus == 2 ? false : true}
                                             showButtons
                                             size={1} 
                                             min={1} 
