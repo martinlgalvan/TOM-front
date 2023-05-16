@@ -139,7 +139,7 @@ function DayEditDetailsPage(){
     const [clicks, setClicks] = useState(0)
 
     function handleConsole(){
-        console.log(setsE,repsE)
+        console.log(sets,reps)
     }
 
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
@@ -164,8 +164,8 @@ function DayEditDetailsPage(){
         setShowEditExercise(true)
         setNameExercise(name)
         setExercise_id(id)
-        setSetsEExercise(sets)
-        setRepsEExercise(reps)
+        setSetsExercise(sets)
+        setRepsExercise(reps)
         setPesoExercise(peso)
         setVideoExercise(video)
         setNotasExercise(notas)
