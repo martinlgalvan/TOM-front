@@ -51,6 +51,11 @@ function DayEditDetailsPage(){
     const [visibleExercises, setVisibleExercises] = useState(false);
     const [boolFocus, setBoolFocus] = useState(2)
 
+
+    const [sets, setSetsExercise] = useState()
+    const [reps, setRepsExercise] = useState()
+
+
     const [name, setNameExercise] = useState()
     const [setsE, setSetsEExercise] = useState()
     const [repsE, setRepsEExercise] = useState()
@@ -125,11 +130,11 @@ function DayEditDetailsPage(){
     }
 
     function changeSetsEdit(e){
-        setSetsExercise(e.target.value)
+        setSetsEExercise(e.target.value)
     }
 
     function changeRepsEdit(e){
-        setRepsExercise(e.target.value)
+        setRepsEExercise(e.target.value)
     }
     const [clicks, setClicks] = useState(0)
 
