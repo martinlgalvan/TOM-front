@@ -279,6 +279,7 @@ function DayEditDetailsPage(){
 
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
+            console.log(exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue)
             setBoolFocus(1)
             if(boolFocus != 2) {
                 setBoolFocus(1)
