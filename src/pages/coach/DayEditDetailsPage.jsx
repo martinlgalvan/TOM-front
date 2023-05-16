@@ -52,13 +52,12 @@ function DayEditDetailsPage(){
     const [boolFocus, setBoolFocus] = useState(2)
 
 
-    const [sets, setSetsExercise] = useState()
-    const [reps, setRepsExercise] = useState()
+
 
 
     const [name, setNameExercise] = useState()
-    const [setsE, setSetsEExercise] = useState()
-    const [repsE, setRepsEExercise] = useState()
+    const [sets, setSetsExercise] = useState()
+    const [reps, setRepsExercise] = useState()
     const [peso, setPesoExercise] = useState()
     const [video, setVideoExercise] = useState()
     const [notas, setNotasExercise] = useState()
@@ -130,12 +129,12 @@ function DayEditDetailsPage(){
     }
 
     function changeSetsEdit(e){
-        setSetsEExercise(e.target.value)
+        setSetsExercise(e.target.value)
         console.log(e.target.value)
     }
 
     function changeRepsEdit(e){
-        setRepsEExercise(e.target.value)
+        setRepsExercise(e.target.value)
     }
     const [clicks, setClicks] = useState(0)
 
@@ -443,7 +442,7 @@ function DayEditDetailsPage(){
                                     {sets === undefined ? null :
                                     <td >
                                         <InputNumber 
-                                            value={setsE} 
+                                            value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
                                             onChange={changeSetsEdit}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
