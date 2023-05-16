@@ -131,6 +131,7 @@ function DayEditDetailsPage(){
 
     function changeSetsEdit(e){
         setSetsEExercise(e.target.value)
+        console.log(e.target.value)
     }
 
     function changeRepsEdit(e){
@@ -138,7 +139,9 @@ function DayEditDetailsPage(){
     }
     const [clicks, setClicks] = useState(0)
 
-
+    function handleConsole(){
+        console.log(setsE,repsE)
+    }
 
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
         setLoading(true)
@@ -547,7 +550,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        <button onClick={console.log(repsE,setsE)}>Edit</button>
+                                        <button onClick={handleConsole}>Edit</button>
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
