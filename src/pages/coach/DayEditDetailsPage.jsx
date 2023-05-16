@@ -447,7 +447,7 @@ function DayEditDetailsPage(){
                                     {sets === undefined ? null :
                                     <td >
                                         <InputNumber 
-                                            value={sets} 
+                                            value={newSet == null ? sets : newSet} 
                                             onChange={changeSetsEdit}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
@@ -550,7 +550,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        <button onClick={(e) => handleBlur(exercise_id, newName == undefined ? name : newName, newSet, newRep, newPeso, newVideo, newNotas, numberExercise, valueExercise)}>Edit</button>
+                                        <button onClick={(e) => handleBlur(exercise_id, newName == undefined ? name : newName  == undefined ? name : newName, newSet == undefined ? sets : newSet, newRep == undefined ? reps : newRep, newPeso == undefined ? peso : newPeso, newVideo == undefined ? video : newVideo, newNotas == undefined ? notas : newNotas, numberExercise, valueExercise)}>Edit</button>
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
