@@ -446,13 +446,12 @@ function DayEditDetailsPage(){
 
                                     {sets === undefined ? null :
                                     <td >
-                                        <InputNumber 
-                                            value={newSet == null ? sets : newSet} 
+                                        <InputNumber
+                                            value={inputEnFoco !== null && inputEnFoco !== index ? sets : newSet} 
                                             onChange={changeSetsEdit}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                            autoFocus={boolFocus == 2 ? false : true}
                                             showButtons
                                             size={1} 
                                             min={1} 
@@ -474,7 +473,6 @@ function DayEditDetailsPage(){
                                                     onFocus={() => handleInputFocus(index)}
                                                     ref={(input) => (inputRefs.current[index] = input)}
                                                     disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                                    autoFocus={boolFocus == 2 ? false : true}
                                                     showButtons 
                                                     size={1} 
                                                     min={1} 
