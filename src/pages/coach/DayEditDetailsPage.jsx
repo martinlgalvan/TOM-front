@@ -109,7 +109,7 @@ function DayEditDetailsPage(){
                     setUserId(data[0].user_id)
                     setLoading(false)
 
-                    setInputEnFoco(null)
+                    
                     setTimeout(() => {setBoolFocus(1)},1500)
 
                 })
@@ -275,9 +275,8 @@ function DayEditDetailsPage(){
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             console.log(exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue)
-            setBoolFocus(1)
-            if(boolFocus != 2) {
-                setBoolFocus(1)
+
+
                 setLoading(true)
                 setNumberToast(1)
                 let valueExercise = parseInt(parsedValue)
@@ -289,10 +288,11 @@ function DayEditDetailsPage(){
 
                 ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
+                        setInputEnFoco(null)
                         setStatus(idRefresh)
 
                     })
-            }
+            
 
     }
 
