@@ -447,7 +447,7 @@ function DayEditDetailsPage(){
                                     {sets === undefined ? null :
                                     <td >
                                         <InputNumber
-                                            value={newSet == null && inputEnFoco !== index ? sets : newSet} 
+                                            value={inputEnFoco !== null && inputEnFoco !== index ? sets : newSet} 
                                             onChange={changeSetsEdit}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
