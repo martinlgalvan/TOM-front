@@ -129,8 +129,8 @@ function DayEditDetailsPage(){
     }
 
     function changeSetsEdit(e){
-        setSetsExercise(e.target.value)
-        console.log(e.target.value)
+        setSetsExercise(e.value)
+        console.log(e.value)
     }
 
     function changeRepsEdit(e){
