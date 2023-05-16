@@ -288,9 +288,8 @@ function DayEditDetailsPage(){
 
                 ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
-                        setInputEnFoco(null)
                         setStatus(idRefresh)
-
+                        setInputEnFoco(null)
                     })
             
 
@@ -471,11 +470,10 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onChange={changeRepsEdit}
-                                                    onFocus={() => handleInputFocus(index)}
+                                                    onChange={changeSetsEdit}
+                                                    onValueChange={() => handleInputFocus(index)}
                                                     ref={(input) => (inputRefs.current[index] = input)}
                                                     disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                                    autoFocus={boolFocus == 2 ? false : true}
                                                     showButtons 
                                                     size={1} 
                                                     min={1} 
