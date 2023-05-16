@@ -444,7 +444,6 @@ function DayEditDetailsPage(){
                                             value={sets} 
                                             onClick={(e) => handleBoolFocus(e.value)}
                                             onChange={changeSetsEdit}
-                                            onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
@@ -468,7 +467,6 @@ function DayEditDetailsPage(){
                                                     value={reps} 
                                                     onClick={(e) => handleBoolFocus(e.value)}
                                                     onChange={changeRepsEdit}
-                                                    onBlur={(e) => handleBlur(exercise_id, name, sets, e.target.value, peso, video, notas, numberExercise, valueExercise)}
                                                     onFocus={() => handleInputFocus(index)}
                                                     ref={(input) => (inputRefs.current[index] = input)}
                                                     disabled={inputEnFoco !== null && inputEnFoco !== index}
