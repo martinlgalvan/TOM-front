@@ -137,10 +137,6 @@ function DayEditDetailsPage(){
     }
     const [clicks, setClicks] = useState(0)
 
-    function handleConsole(){
-        console.log(sets,reps)
-    }
-
     function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
         setLoading(true)
         setNumberToast(1)
@@ -281,7 +277,6 @@ function DayEditDetailsPage(){
             }
         }    
 
-        const handleBoolFocus = (e) => {setBoolFocus(5)}
 
         const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
             setBoolFocus(1)
@@ -310,7 +305,6 @@ function DayEditDetailsPage(){
     const inputRefs = useRef([]);
     
     const handleInputFocus = (index) => {
-        console.log(inputEnFoco)
         setInputEnFoco(index);
       };
 
@@ -442,7 +436,6 @@ function DayEditDetailsPage(){
                                     <td >
                                         <InputNumber 
                                             value={sets} 
-                                            onClick={(e) => handleBoolFocus(e.value)}
                                             onChange={changeSetsEdit}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
@@ -465,7 +458,6 @@ function DayEditDetailsPage(){
                                             
                                             <InputNumber 
                                                     value={reps} 
-                                                    onClick={(e) => handleBoolFocus(e.value)}
                                                     onChange={changeRepsEdit}
                                                     onFocus={() => handleInputFocus(index)}
                                                     ref={(input) => (inputRefs.current[index] = input)}
