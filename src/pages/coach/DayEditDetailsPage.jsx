@@ -128,12 +128,19 @@ function DayEditDetailsPage(){
         setVideoExercise(e.target.value)
     }
 
+    const [newSet, setNewSet] = useState()
+    const [newRep, setNewRep] = useState()
+
     function changeSetsEdit(e){
         setSetsExercise(e.value)
+        setNewSet(e.value)
+        console.log(e.value)
     }
 
     function changeRepsEdit(e){
         setRepsExercise(e.value)
+        setNewRep(e.value)
+        console.log(e.value)
     }
     const [clicks, setClicks] = useState(0)
 
@@ -539,7 +546,7 @@ function DayEditDetailsPage(){
                                     </td> 
                                     }
                                     <td>
-                                        <button onClick={(e) => handleBlur(exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)}>Edit</button>
+                                        <button onClick={(e) => handleBlur(exercise_id, name, newSet, newRep, peso, video, notas, numberExercise, valueExercise)}>Edit</button>
                                         
                                         <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
