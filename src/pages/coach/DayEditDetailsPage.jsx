@@ -443,7 +443,7 @@ function DayEditDetailsPage(){
                                     {sets === undefined ? null :
                                     <td >
                                         <InputNumber 
-                                            value={sets} 
+                                            value={setsE} 
                                             onClick={(e) => handleBoolFocus(e.value)}
                                             onChange={changeSetsEdit}
                                             onBlur={(e) => handleBlur(exercise_id, name, e.target.value, reps, peso, video, notas, numberExercise, valueExercise)}
