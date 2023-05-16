@@ -51,10 +51,6 @@ function DayEditDetailsPage(){
     const [visibleExercises, setVisibleExercises] = useState(false);
     const [boolFocus, setBoolFocus] = useState(2)
 
-
-
-
-
     const [name, setNameExercise] = useState()
     const [sets, setSetsExercise] = useState()
     const [reps, setRepsExercise] = useState()
@@ -63,6 +59,14 @@ function DayEditDetailsPage(){
     const [notas, setNotasExercise] = useState()
     const [numberExercise, setNumberExercise] = useState()
     const [valueExercise, setValueExercise] = useState()
+
+    //Variables para cambiar individualmente los ejercicios
+    const [newName, setNewName] = useState()
+    const [newSet, setNewSet] = useState()
+    const [newRep, setNewRep] = useState()
+    const [newPeso, setNewPeso] = useState()
+    const [newVideo, setNewVideo] = useState()
+    const [newNotas, setNewNotas] = useState()
 
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
@@ -127,9 +131,6 @@ function DayEditDetailsPage(){
     function changeVideoEdit(e){
         setVideoExercise(e.target.value)
     }
-
-    const [newSet, setNewSet] = useState()
-    const [newRep, setNewRep] = useState()
 
     function changeSetsEdit(e){
         setSetsExercise(e.value)
