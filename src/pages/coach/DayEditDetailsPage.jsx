@@ -121,18 +121,18 @@ function DayEditDetailsPage(){
 
     function changeNameEdit(e){
         setNameExercise(e.target.value)
-        setNewName(e.value)
+        setNewName(e.target.value)
 
     }
 
     function changePesoEdit(e){
         setPesoExercise(e.target.value)
-        setNewPeso(e.value)
+        setNewPeso(e.target.value)
     }
 
     function changeNotasEdit(e){
         setNotasExercise(e.target.value)
-        setNewNotas(e.value)
+        setNewNotas(e.target.value)
     }
 
     function changeVideoEdit(e){
@@ -466,25 +466,24 @@ function DayEditDetailsPage(){
                                         />     
                                     </td>} 
                                     {reps === undefined ? null  : 
-                                        <td>
+                                    <td>
                                             
-                                            <InputNumber 
-                                                    value={reps} 
-                                                    onChange={changeSetsEdit}
-                                                    onValueChange={() => handleInputFocus(index)}
-                                                    ref={(input) => (inputRefs.current[index] = input)}
-                                                    disabled={inputEnFoco !== null && inputEnFoco !== index}
-
-                                                    showButtons 
-                                                    size={1} 
-                                                    min={1} 
-                                                    inputClassName={'styleFocusInputNumber'}
-                                                    buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
-                                                    decrementButtonClassName="ButtonsInputNumber" 
-                                                    incrementButtonClassName="ButtonsInputNumber" 
-                                                    incrementButtonIcon="pi pi-plus" 
-                                                    decrementButtonIcon="pi pi-minus"
-                                                    className="WidthInputsWhenIsMobile" 
+                                        <InputNumber 
+                                            value={reps} 
+                                            onChange={changeRepsEdit}
+                                            onValueChange={() => handleInputFocus(index)}
+                                            ref={(input) => (inputRefs.current[index] = input)}
+                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            showButtons 
+                                            size={1} 
+                                            min={1} 
+                                            inputClassName={'styleFocusInputNumber'}
+                                            buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
+                                            decrementButtonClassName="ButtonsInputNumber" 
+                                            incrementButtonClassName="ButtonsInputNumber" 
+                                            incrementButtonIcon="pi pi-plus" 
+                                            decrementButtonIcon="pi pi-minus"
+                                            className="WidthInputsWhenIsMobile" 
                                                 />
                                         </td> 
                                     }
