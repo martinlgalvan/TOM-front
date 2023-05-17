@@ -108,6 +108,7 @@ function DayEditDetailsPage(){
                     setDay(day)
                     setUserId(data[0].user_id)
                     setLoading(false)
+                    setInputEnFoco(null)
 
                     
                     setTimeout(() => {setBoolFocus(1)},1500)
@@ -289,7 +290,6 @@ function DayEditDetailsPage(){
                 ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
                     .then(() =>{
                         setStatus(idRefresh)
-                        setInputEnFoco(null)
                     })
             
 
@@ -474,6 +474,7 @@ function DayEditDetailsPage(){
                                                     onValueChange={() => handleInputFocus(index)}
                                                     ref={(input) => (inputRefs.current[index] = input)}
                                                     disabled={inputEnFoco !== null && inputEnFoco !== index}
+
                                                     showButtons 
                                                     size={1} 
                                                     min={1} 
