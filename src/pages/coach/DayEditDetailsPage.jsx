@@ -137,6 +137,7 @@ function DayEditDetailsPage(){
 
     function changeVideoEdit(e){
         setVideoExercise(e.target.value)
+        setNewVideo(e.target.value)
     }
 
     function changeSetsEdit(e){
@@ -440,6 +441,7 @@ function DayEditDetailsPage(){
                                                 editExercise(exercise_id, event.target.value || null, sets, reps, peso, video, notas, numberExercise, valueExercise)
                                             }}} 
                                         onChange={changeNameEdit}
+                                        onFocus={() => handleInputFocus(index)}
                                         ref={(input) => (inputRefs.current[index] = input)}
                                         disabled={inputEnFoco !== null && inputEnFoco !== index}
                                         />
@@ -501,6 +503,7 @@ function DayEditDetailsPage(){
                                                     editExercise(exercise_id, name, sets, reps, event.target.value || null, video, notas, numberExercise, valueExercise)
                                                 }}}  
                                             onChange={changePesoEdit}
+                                            onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
                                             />
@@ -522,6 +525,7 @@ function DayEditDetailsPage(){
                                                     editExercise(exercise_id, name, sets, reps, peso, event.target.value || null, notas, numberExercise, valueExercise)
                                                 }}}  
                                             onChange={changeVideoEdit}
+                                            onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
                                             />
@@ -542,6 +546,7 @@ function DayEditDetailsPage(){
                                                 editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
                                             }}}  
                                         onChange={changeNotasEdit}
+                                        onFocus={() => handleInputFocus(index)}
                                         ref={(input) => (inputRefs.current[index] = input)}
                                         disabled={inputEnFoco !== null && inputEnFoco !== index}
                                         />
