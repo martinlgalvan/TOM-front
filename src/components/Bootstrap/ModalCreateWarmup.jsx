@@ -110,11 +110,11 @@ function changeRepsWarmup(e){
 
 function editWarmup(warmup_id, name, StrSets, StrReps,peso, video, notas, numberWarmup){
 
-  let valueExercise = parseInt(parsedValue)
+
         let sets = parseInt(StrSets)
         let reps = parseInt(StrReps)
 
-        parsedValue = numberWarmup 
+
         notas == undefined ? "" : notas
 
   WarmupServices.editWarmup(week_id, day_id, warmup_id, {name, sets, reps, peso, video, notas, numberWarmup})
