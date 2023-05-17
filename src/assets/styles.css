@@ -421,7 +421,10 @@
   background: #2CBDC7;
 }
 
+.buttonsEdit{
+  padding: 8px;
+}
+
 .buttonsEdit:hover{
   background-color: #dbdbdb;
-  padding: 10px;
 }
