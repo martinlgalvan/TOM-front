@@ -103,6 +103,8 @@ function changePesoWarmup(e){
 
 function changeVideoWarmup(e){
   setNewVideo(e.target.value)
+  console.log(e.target.value)
+
 }
 
 function changeNotasWarmup(e){
@@ -111,10 +113,13 @@ function changeNotasWarmup(e){
 
 function changeSetsWarmup(e){
   setNewSet(e.value)
+  console.log(e.value)
 }
 
 function changeRepsWarmup(e){
   setNewRep(e.value)
+  console.log(e.value)
+
 }
 
 
