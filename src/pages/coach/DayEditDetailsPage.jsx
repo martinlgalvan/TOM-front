@@ -464,10 +464,6 @@ function DayEditDetailsPage(){
                                             className='form-control border-0' 
                                             type="text" 
                                             defaultValue={peso}
-                                            onKeyDown={event => {
-                                                if (event.key === 'Enter') {
-                                                    editExercise(exercise_id, name, sets, reps, event.target.value || null, video, notas, numberExercise, valueExercise)
-                                                }}}  
                                             onChange={changePesoEdit}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
