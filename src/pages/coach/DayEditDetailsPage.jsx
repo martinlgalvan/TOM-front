@@ -30,7 +30,6 @@ function DayEditDetailsPage(){
     const [loading, setLoading] = useState(null)
     const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
-    const toastPop = useRef(null);
 
     const [warmup, setWarmup] = useState()
     const [exercises, setExercises] = useState([])
@@ -51,14 +50,6 @@ function DayEditDetailsPage(){
     const [visibleExercises, setVisibleExercises] = useState(false);
     const [boolFocus, setBoolFocus] = useState(2)
 
-    const [name, setNameExercise] = useState()
-    const [sets, setSetsExercise] = useState()
-    const [reps, setRepsExercise] = useState()
-    const [peso, setPesoExercise] = useState()
-    const [video, setVideoExercise] = useState()
-    const [notas, setNotasExercise] = useState()
-    const [numberExercise, setNumberExercise] = useState()
-    const [valueExercise, setValueExercise] = useState()
 
     //Variables para cambiar individualmente los ejercicios
     const [newName, setNewName] = useState()
@@ -67,6 +58,8 @@ function DayEditDetailsPage(){
     const [newPeso, setNewPeso] = useState()
     const [newVideo, setNewVideo] = useState()
     const [newNotas, setNewNotas] = useState()
+    const [numberExercise, setNumberExercise] = useState()
+    const [valueExercise, setValueExercise] = useState()
 
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
@@ -120,51 +113,29 @@ function DayEditDetailsPage(){
     // EDIT EXERCISES
 
     function changeNameEdit(e){
-        setNameExercise(e.target.value)
         setNewName(e.target.value)
 
     }
 
     function changePesoEdit(e){
-        setPesoExercise(e.target.value)
         setNewPeso(e.target.value)
     }
 
     function changeNotasEdit(e){
-        setNotasExercise(e.target.value)
         setNewNotas(e.target.value)
     }
 
     function changeVideoEdit(e){
-        setVideoExercise(e.target.value)
         setNewVideo(e.target.value)
     }
 
     function changeSetsEdit(e){
-        setSetsExercise(e.value)
         setNewSet(e.value)
     }
 
     function changeRepsEdit(e){
-        setRepsExercise(e.value)
         setNewRep(e.value)
     }
-
-    function editExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, parsedValue){
-        setLoading(true)
-        setNumberToast(1)
-        let valueExercise = parseInt(parsedValue)
-        parsedValue = numberExercise 
-        notas == undefined ? "" : notas
-
-        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-            .then(() =>{
-                setStatus(idRefresh)
-
-            })
-
-    }
-
 
     //Modal Edit Exercise
     function handleShowEditExercise(id, name, sets, reps,peso, video, notas){
@@ -245,55 +216,48 @@ function DayEditDetailsPage(){
     };
 
 
+    const notifyA = (message) => {
+        toast.loading(message, {
+            position: "bottom-center",
+            toastId: TOASTID, 
+            autoClose: false, 
+            hideProgressBar: true,
+            pauseOnFocusLoss: false,
+            limit: 1 })};
+
+    const updateToast = () => 
+        toast.update(TOASTID, { 
+            render: "Listo!", 
+            type: toast.TYPE.SUCCESS, 
+            autoClose: 1000, 
+            isLoading: false,
+            hideProgressBar: true,
+            limit: 1,
+            className: 'rotateY animated'});
+
+    const showLoadingToast = () => {
+        if(loading == true){
+            notifyA(numberToast == 1 || numberToast == true ? "Cargando" : "Eliminando ejercicio...")
+        }else{
+            updateToast()
+        }
+    }    
 
 
-        const notifyA = (message) => {
-            toast.loading(message, {
-                position: "bottom-center",
-                toastId: TOASTID, 
-                autoClose: false, 
-                hideProgressBar: true,
-                pauseOnFocusLoss: false,
-                limit: 1 })};
+    const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
 
-        const updateToast = () => 
-            toast.update(TOASTID, { 
-                render: "Listo!", 
-                type: toast.TYPE.SUCCESS, 
-                autoClose: 1000, 
-                isLoading: false,
-                hideProgressBar: true,
-                limit: 1,
-                className: 'rotateY animated'});
+        let valueExercise = parseInt(parsedValue)
+        let sets = parseInt(StrSets)
+        let reps = parseInt(StrReps)
 
-        const showLoadingToast = () => {
-            if(loading == true){
-                notifyA(numberToast == 1 || numberToast == true ? "Cargando" : "Eliminando ejercicio...")
-            }else{
-                updateToast()
-            }
-        }    
+        parsedValue = numberExercise 
+        notas == undefined ? "" : notas
 
-
-        const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
-            console.log(exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue)
-
-
-                setLoading(true)
-                setNumberToast(1)
-                let valueExercise = parseInt(parsedValue)
-                let sets = parseInt(StrSets)
-                let reps = parseInt(StrReps)
-
-                parsedValue = numberExercise 
-                notas == undefined ? "" : notas
-
-                ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-                    .then(() =>{
-                        setStatus(idRefresh)
-                    })
+        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
+            .then(() =>{
+                setStatus(idRefresh)
+            })
             
-
     }
 
     const [inputEnFoco, setInputEnFoco] = useState(null);
@@ -304,10 +268,6 @@ function DayEditDetailsPage(){
         setInputEnFoco(index);
       };
 
-    const handleResetInput = () => {
-        setInputEnFoco(null);
-
-      };
 
       const options = [
         {value:1, name: 1, extras: [{value: 1, name: "1-A"},{value: 1, name: "1-B"},{value: 1, name: "1-C"},{value: 1, name: "1-D"},{value: 1, name: "1-F"}]},
