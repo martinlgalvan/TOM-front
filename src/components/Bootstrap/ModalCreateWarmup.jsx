@@ -46,6 +46,7 @@ let idRefresh = generateUUID()
             if(exists != undefined){
 
                 setConfirm(1)
+                setInputEnFoco(null)
             } else{
                 setConfirm(null)
             }
