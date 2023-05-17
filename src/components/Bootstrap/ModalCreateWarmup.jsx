@@ -313,7 +313,7 @@ const notify = (name) => {
                         </thead>
                         <tbody>
                         <TransitionGroup component={null} className="todo-list">
-                        {warmup != null && warmup.map(({name,sets,reps,peso,video,notas,numberWarmup}, index) =>
+                        {warmup != null && warmup.map(({ warmup_id, name, sets, reps, peso, video, notas, numberWarmup }, index) =>
                          <CSSTransition
                          key={warmup_id}
                          timeout={500}
