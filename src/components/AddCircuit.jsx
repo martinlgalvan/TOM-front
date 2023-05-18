@@ -6,6 +6,7 @@ import * as JsonExercises from "../services/jsonExercises.services.js";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
+import { InputSwitch } from "primereact/inputswitch";
 import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
 import { BarLoader } from 'react-spinners';
@@ -84,8 +85,12 @@ let idRefresh = generateUUID()
 	ExercisesServices.addAmrap(week_id, day_id, { type,typeOfSets, notas, circuit: exercisesAmrap  })
     .then(() => {
       refresh(idRefresh)
-      setExercisesAmrap([])
-      handleCloseDialog()
+      if(closeAfterCreate == true){
+        handleCloseDialog()
+      } else{
+        setExercisesAmrap([])
+      }
+
     })
 
 }
@@ -127,10 +132,13 @@ useEffect(() => {
   }
 }, [selectedExercise]);
 
+const [closeAfterCreate, setCloseAfterCreate] = useState();
+
   return (
     <section className="row justify-content-center border-bottom">
 
       <h2 className="text-center my-3">Agregar circuito</h2>
+      <InputSwitch checked={closeAfterCreate} onChange={(e) => setCloseAfterCreate(e.value)} />
       <article className="col-10  pb-3 border-bottom">
       
           

@@ -103,7 +103,6 @@ function changePesoWarmup(e){
 
 function changeVideoWarmup(e){
   setNewVideo(e.target.value)
-  console.log(e.target.value)
 
 }
 
@@ -113,24 +112,20 @@ function changeNotasWarmup(e){
 
 function changeSetsWarmup(e){
   setNewSet(e.value)
-  console.log(e.value)
+
 }
 
 function changeRepsWarmup(e){
   setNewRep(e.value)
-  console.log(e.value)
 
 }
 
 
 function editWarmup(warmup_id, name, StrSets, StrReps,peso, video, notas, numberWarmup){
-console.log(warmup_id, name, StrSets, StrReps,peso, video, notas, numberWarmup)
 
-        let sets = parseInt(StrSets)
-        let reps = parseInt(StrReps)
-
-
-        notas == undefined ? "" : notas
+  let sets = parseInt(StrSets)
+  let reps = parseInt(StrReps)
+  notas == undefined ? "" : notas
 
   WarmupServices.editWarmup(week_id, day_id, warmup_id, {name, sets, reps, peso, video, notas, numberWarmup})
     .then(() => {
