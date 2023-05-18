@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 
 import * as WeekService from '../../services/week.services.js'
 import * as WarmupServices from "../../services/warmup.services.js";
-//import * as JsonExercises from "../../services/jsonExercises.services.js";
+import * as JsonExercises from "../../services/jsonExercises.services.js";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { useEffect } from "react";
 import { confirmDialog } from 'primereact/confirmdialog';
@@ -53,6 +53,11 @@ let idRefresh = generateUUID()
 
          })
 },[status])
+
+
+  const [exercises, setExercises] = useState([]);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [filteredExercises, setFilteredExercises] = useState(null);
 
   //---variables para la carga
 
@@ -208,6 +213,40 @@ const notify = (name) => {
     }
   }
 
+
+  useEffect(() => {
+    JsonExercises.findJsonExercises().then((data) => setExercises(data));
+}, []);
+
+  const search = (event) => {
+
+
+        let filteredExercises;
+
+        if (!event.query.trim().length) {
+            _filteredExercises = [...exercises];
+        }
+        else {
+            filteredExercises = exercises.filter((exercise) => {
+                return exercise.name.toLowerCase().startsWith(event.query.toLowerCase());
+            });
+        }
+
+        setFilteredExercises(filteredExercises);
+
+
+}
+
+// Dependiendo el ejercicio elegido, se pone automaticamente el video en el input.
+useEffect(() => {
+  if(selectedExercise != null && selectedExercise.length == undefined){
+    setName(selectedExercise.name)
+    setVideo(selectedExercise.video)
+  } else{
+    setName(selectedExercise)
+  }
+}, [selectedExercise]);
+
   return (
 
     <Modal size="xl" centered show={showCreateWarmup} onHide={closeModal} scrollable>
@@ -220,17 +259,10 @@ const notify = (name) => {
             <form className="row justify-content-center align-items-center" onSubmit={onSubmit}>
               <h2 className="text-center my-3">Agregar entrada en calor</h2>
               <div className="col-10 col-xl-6 mb-3">
-                <label htmlFor="video" className="form-label visually-hidden">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  className="form-control rounded-0"
-                  id="name"
-                  name="name"
-                  onChange={changeNameWarmup}
-                  placeholder="Nombre"
-                />
+                <span className="p-float-label p-fluid">
+                  <AutoComplete appendTo={null} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
+                  <label htmlFor="name">Nombre del ejercicio</label>
+                </span>
               </div>
 
               <div className="col-10 col-xl-6 mb-1">
