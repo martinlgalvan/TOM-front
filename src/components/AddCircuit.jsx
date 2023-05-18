@@ -22,7 +22,7 @@ function AddCircuit({refresh, handleCloseDialog}) {
   const [type, setType] = useState("");
   const [name, setName] = useState("");
   const [typeOfSets, setTypeOfSets] = useState(1);
-  const [reps, setReps] = useState(1);
+  const [reps, setReps] = useState();
   const [peso, setPeso] = useState(""); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [notas, setNotas] = useState(""); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [video, setVideo] = useState("");
@@ -161,7 +161,7 @@ useEffect(() => {
               </svg>
           </div>
                             
-      </div>
+        </div>
         <article className="col-10  pb-3 border-bottom">
       
           
@@ -219,7 +219,7 @@ useEffect(() => {
             </div>
 
             <div className="col-12 col-md-4 text-center mb-3">
-              <label htmlFor="peso" className="form-label visually-hidden">
+              <label htmlFor="peso" className="form-label">
                 Peso
               </label>
               <input
@@ -253,7 +253,7 @@ useEffect(() => {
             </div>
 
             <div className="col-12 col-md-9 text-center mb-3">
-              <label htmlFor="notas" className="form-label visually-hidden">
+              <label htmlFor="notas" className="form-label">
                 Notas
               </label>
               <input

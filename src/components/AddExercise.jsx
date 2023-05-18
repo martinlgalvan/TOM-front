@@ -5,7 +5,8 @@ import * as JsonExercises from "../services/jsonExercises.services.js";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-
+import { InputSwitch } from "primereact/inputswitch";
+import { Tooltip } from 'primereact/tooltip';
 import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
 import Formulas from "./Formulas.jsx";
@@ -17,12 +18,12 @@ function AddExercise({refresh, closeDialog}) {
   //---variables para la carga
   const { week_id } = useParams();
   const { day_id } = useParams();
-
+  const [closeAfterCreate, setCloseAfterCreate] = useState(true);
 
   const [name, setName] = useState("");
   const [sets, setSets] = useState(1);
   const [reps, setReps] = useState(1);
-  const [peso, setPeso] = useState(0); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
+  const [peso, setPeso] = useState(); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [notas, setNotas] = useState();
   const [video, setVideo] = useState();
 
@@ -60,7 +61,9 @@ let idRefresh = generateUUID()
 	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, peso, video, notas })
     .then(() => {
       refresh(idRefresh)
-      closeDialog(false)
+      if(closeAfterCreate == true){
+        handleCloseDialog()
+      }
     })
   }
 
@@ -106,7 +109,28 @@ useEffect(() => {
 
         <form className="row justify-content-evenly align-items-center" onSubmit={onSubmit}>
           <h2 className="text-center mt-3 mb-5">Agregar ejercicio</h2>
+          <div className='row justify-content-center'>
 
+            <div className='col-6 text-end p-0 fs-5'>
+                <InputSwitch checked={closeAfterCreate} onChange={(e) => setCloseAfterCreate(e.value)} />
+            </div>
+
+            <div className='col-6 text-start'>
+                <Tooltip target=".custom-target-icon" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
+                className="bi bi-question-circle custom-target-icon"
+                data-pr-tooltip="Predeterminado: Luego de crear un ejercicio, la ventana se cierra."
+                data-pr-position="right"
+                data-pr-at="right+5 top"
+                data-pr-my="left center-20"
+                data-pr-classname='largoTooltip p-0 m-0'
+                style={{ fontSize: '3rem', cursor: 'pointer' }} viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                </svg>
+          </div>
+                  
+</div>
           <div className="col-12 text-center mb-2">
             <span className="p-float-label p-fluid">
             <AutoComplete appendTo={null} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
