@@ -220,7 +220,7 @@ const notify = (name) => {
 
   const search = (event) => {
 
-
+    console.log(selectedExercise)
         let filteredExercises;
 
         if (!event.query.trim().length) {
@@ -239,6 +239,7 @@ const notify = (name) => {
 
 // Dependiendo el ejercicio elegido, se pone automaticamente el video en el input.
 useEffect(() => {
+  console.log(selectedExercise)
   if(selectedExercise != null && selectedExercise.length == undefined){
     setName(selectedExercise.name)
     setVideo(selectedExercise.video)
