@@ -258,14 +258,14 @@ useEffect(() => {
           <article className="col-10 col-lg-6 pb-3">
             <form className="row justify-content-center align-items-center" onSubmit={onSubmit}>
               <h2 className="text-center my-3">Agregar entrada en calor</h2>
-              <div className="col-10 col-xl-6 mb-3">
+              <div className="col-10 col-xl-6 my-3">
                 <span className="p-float-label p-fluid">
                   <AutoComplete appendTo={null} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
                   <label htmlFor="name">Nombre del ejercicio</label>
                 </span>
               </div>
 
-              <div className="col-10 col-xl-6 mb-1">
+              <div className="col-10 col-xl-6">
                 <label htmlFor="video" className="form-label visually-hidden">
                   Video
                 </label>
