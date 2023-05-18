@@ -215,7 +215,11 @@ const notify = (name) => {
 
 
   useEffect(() => {
-    JsonExercises.findJsonExercises().then((data) => setExercises(data));
+    JsonExercises.findJsonExercises()
+      .then((data) => {
+      console.log(data)
+      setExercises(data)
+      });
 }, []);
 
   const search = (event) => {
