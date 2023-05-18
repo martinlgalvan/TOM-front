@@ -76,7 +76,7 @@ let idRefresh = generateUUID()
 
   const search = (event) => {
 
-    setTimeout(() => {
+
         let filteredExercises;
 
         if (!event.query.trim().length) {
@@ -90,7 +90,7 @@ let idRefresh = generateUUID()
 
         setFilteredExercises(filteredExercises);
 
-    }, 100);
+
 }
 
 // Dependiendo el ejercicio elegido, se pone automaticamente el video en el input.
