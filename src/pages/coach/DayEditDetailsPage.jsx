@@ -294,6 +294,9 @@ function DayEditDetailsPage(){
     ]
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
+    
+    const handleCloseDialog = () => setVisibleCircuit(false)
+
     return (
 
         <section className='container-fluid'>
@@ -312,7 +315,7 @@ function DayEditDetailsPage(){
 
                 <div className='row justify-content-center'>
                     <Dialog className='col-12 col-lg-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'}  header="Header" visible={visibleCircuit} modal={false} onHide={() => setVisibleCircuit(false)}>
-                        <AddCircuit closeDialog={closeDialog} refresh={refresh}/>
+                        <AddCircuit handleCloseDialog={handleCloseDialog} closeDialog={closeDialog} refresh={refresh}/>
                     </Dialog>
                     <Dialog className='col-12 col-lg-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'} header="Header" visible={visibleExercises} modal={false} onHide={() => setVisibleExercises(false)}>
                         <AddExercise refresh={refresh}/>
@@ -328,7 +331,6 @@ function DayEditDetailsPage(){
                 <div className='row justify-content-center align-items-center text-center mt-5'>
 
                     <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 mb-5'>Administrar bloque de entrada en calor</button>
-                    {boolFocus}
 
                     <div className="table-responsive col-10">
                         <table className="table align-middle table-bordered caption-top">

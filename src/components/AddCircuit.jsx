@@ -10,7 +10,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
 import { BarLoader } from 'react-spinners';
 
-function AddCircuit({refresh}) {
+function AddCircuit({refresh, handleCloseDialog}) {
   //---variables para la carga
   const { week_id } = useParams();
   const { day_id } = useParams();
@@ -85,6 +85,7 @@ let idRefresh = generateUUID()
     .then(() => {
       refresh(idRefresh)
       setExercisesAmrap([])
+      handleCloseDialog()
     })
 
 }
@@ -268,7 +269,7 @@ useEffect(() => {
         </table>
       </article>}
       <div className="row justify-content-center my-4  pb-5 mb-5">
-      <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear  "{type}"</button>
+      <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear "{type}"</button>
 
       </div>
     </section>
