@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { InputSwitch } from "primereact/inputswitch";
+import { Tooltip } from 'primereact/tooltip';
 import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
 import { BarLoader } from 'react-spinners';
