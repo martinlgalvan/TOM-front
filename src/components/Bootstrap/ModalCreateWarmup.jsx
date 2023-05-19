@@ -21,6 +21,7 @@ function ModalCreateWarmup({showCreateWarmup,closeModal, week_id, day_id}) {
   const [confirm, setConfirm] = useState()
   const toastId = useRef();
   const [warmup, setWarmup] = useState()
+  const divRef = useRef()
 
   function generateUUID() {
     let d = new Date().getTime();
@@ -256,7 +257,7 @@ useEffect(() => {
 
   return (
 
-    <Modal size="xl" centered show={showCreateWarmup} onHide={closeModal} scrollable>
+    <Modal ref={divRef} size="xl" centered show={showCreateWarmup} onHide={closeModal} scrollable>
         <Modal.Header closeButton>
           <Modal.Title className='text-center'></Modal.Title>
         </Modal.Header>
@@ -267,7 +268,7 @@ useEffect(() => {
               <h2 className="text-center my-3">Agregar entrada en calor</h2>
               <div className="col-10 col-xl-6 my-3">
                 <span className="p-float-label p-fluid">
-                  <AutoComplete appendTo={null} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
+                  <AutoComplete appendTo={divRef} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
                   <label htmlFor="name">Nombre del ejercicio</label>
                 </span>
               </div>
