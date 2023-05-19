@@ -267,7 +267,7 @@ useEffect(() => {
               <h2 className="text-center my-3">Agregar entrada en calor</h2>
               <div className="col-10 col-xl-6 my-3">
                 <span className="p-float-label p-fluid">
-                  <AutoComplete appendTo={self} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
+                  <AutoComplete appendTo={null} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
                   <label htmlFor="name">Nombre del ejercicio</label>
                 </span>
               </div>
