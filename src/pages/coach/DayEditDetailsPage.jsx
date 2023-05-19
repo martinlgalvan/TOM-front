@@ -61,7 +61,7 @@ function DayEditDetailsPage(){
 
     //Variables para cambiar individualmente los ejercicios
     const [newName, setNewName] = useState()
-    const [newSet, setNewSet] = useState()
+    const [newSet, setNewSet] = useState(null)
     const [newRep, setNewRep] = useState()
     const [newPeso, setNewPeso] = useState()
     const [newVideo, setNewVideo] = useState()
@@ -418,7 +418,7 @@ function DayEditDetailsPage(){
                                     {sets === undefined ? null :
                                     <td >
                                         <InputNumber
-                                            value={sets} 
+                                            value={newSet == null ? sets : newSet} 
                                             onChange={changeSetsEdit}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
