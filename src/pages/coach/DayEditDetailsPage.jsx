@@ -318,7 +318,7 @@ function DayEditDetailsPage(){
                         <AddCircuit handleCloseDialog={handleCloseDialog} closeDialog={closeDialog} refresh={refresh}/>
                     </Dialog>
                     <Dialog className='col-12 col-lg-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'} header="Header" visible={visibleExercises} modal={false} onHide={() => setVisibleExercises(false)}>
-                        <AddExercise refresh={refresh}/>
+                        <AddExercise handleCloseDialog={handleCloseDialog} refresh={refresh}/>
                     </Dialog>
 
                 </div>
