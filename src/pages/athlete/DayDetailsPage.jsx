@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import * as WeekService from "../../services/week.services.js";
 import Logo from "../../components/Logo.jsx";
 
-import { OverlayPanel } from 'primereact/overlaypanel';
+import ReactPlayer from 'react-player';
+import { Sidebar } from 'primereact/sidebar';
+import { Button } from 'primereact/button';
 
 import * as _ from "lodash";
 
@@ -20,7 +22,7 @@ function DayDetailsPage() {
 
     const [day, setDay] = useState([]);
     const [warmupDay, setWarmupDay] = useState([]);
-    const op = useRef(null);
+
 
 
     useEffect(() => {
@@ -37,12 +39,30 @@ function DayDetailsPage() {
         });
     }, []);
 
+    const playerOptions = {
+        playerVars: {
+          controls: 1, // Oculta los controles de YouTube
+          disablekb: 1, // Desactiva el control de teclado
+          modestbranding: 1, // Oculta el logotipo de YouTube
+          showinfo: 1, // Oculta la información del video
+          rel: 1, // No muestra videos relacionados al final
+        }}
+
+    const [visible, setVisible] = useState(false);
+    const [selectedObject, setSelectedObject] = useState(null);
+    
+    const handleButtonClick = (object) => {
+        setSelectedObject(object);
+        setVisible(true);
+      };
+    
     return (
         <section className="container-fluid">
             <Logo />
 
-            <div className="row justify-content-center altoResponsive text-center m-0 p-0">
+            <div className="row justify-content-center text-center m-0 px-0 my-5">
                 <div className="col-12 col-md-10">
+                    <h2 className="text-center mb-4">Entrada en calor</h2>
                     <div className="table align-middle">
                         <table className="table table-bordered align-items">
                             <thead>
@@ -112,10 +132,11 @@ function DayDetailsPage() {
                                             </span>
                                         </td>
                                         <td>
-                                            <a
-                                                href={element.video}
-                                                target="blank"
-                                            >
+                                        <button
+                                            label="Show OverlayPanel"
+                                            onClick={() => handleButtonClick(element)}
+                                            className="btn"
+                                        >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     width="16"
@@ -129,13 +150,10 @@ function DayDetailsPage() {
                                                         d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"
                                                     />
                                                 </svg>
-                                            </a>
+                                        </button>
                                         </td>
                                         <td>
-                                                <button onClick={(e) => op.current.toggle(e)}>
-                                                <OverlayPanel ref={op}>
-                                                    <p>{element.name}</p>
-                                                </OverlayPanel>
+                                            <button disabled={true}>
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     width="16"
@@ -148,7 +166,7 @@ function DayDetailsPage() {
                                                     <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z" />
                                                     <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z" />
                                                 </svg>
-                                                </button>
+                                            </button>  
                                         </td>
                                     </tr>
                                 ))}
@@ -166,6 +184,32 @@ function DayDetailsPage() {
                     Volver al inicio
                 </Link>
             </div>
+
+            <div className="row justify-content-center">
+                <Sidebar
+                    visible={visible}
+                    onHide={() => setVisible(false)}
+                    position="bottom"
+                    className="h-75"
+                    >
+                    {selectedObject && (
+                        <div className="row justify-content-center">
+                        <h3 className="text-center border-top border-bottom py-2">{selectedObject.name}</h3>
+                        <p>{selectedObject.notas}</p>
+                        <div className="col-12 col-md-6 text-center">
+                        <ReactPlayer
+                            url={selectedObject.video}
+                            controls={true}
+                            width="100%"
+                            height="300px"
+                            config={playerOptions}
+                        />
+                        </div>
+
+                        </div>
+                    )}
+                </Sidebar>
+            </div>  
         </section>
     );
 }

@@ -43,6 +43,7 @@ function App(){
     const [isAutenticated, setIsAutenticated] = useState(null)
     
         useEffect(() => {
+            //window.google.translate.disableAutoTranslation();
             const token = localStorage.getItem('token')
             if(token){
                 setIsAutenticated(true)

@@ -421,6 +421,11 @@
   background: #2CBDC7;
 }
 
+.custom-sidebar-bottom .p-sidebar-content {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
 .buttonsEdit{
   padding: 8px;
 }
