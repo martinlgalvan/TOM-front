@@ -194,13 +194,13 @@ function DayDetailsPage() {
                     >
                     {selectedObject && (
                         <div className="row justify-content-center">
-                        <h3 className="text-center border-top border-bottom py-2">{selectedObject.name}</h3>
-                        <div className="col-12 col-md-6 text-center mt-4">
+                        <h3 className="text-center border-top border-bottom py-2 mb-2">{selectedObject.name}</h3>
+                        <div className="col-12 col-md-6 text-center mt-5">
                         <ReactPlayer
                             url={selectedObject.video}
                             controls={true}
                             width="100%"
-                            height="400px"
+                            height="450px"
                             config={playerOptions}
                         />
                         </div>
