@@ -14,7 +14,7 @@ import Formulas from "./Formulas.jsx";
 // PUEDE QUE EL PROBLEMA DE QUE NO RECARGE SEA EL NOTIFY ****************
 
 
-function AddExercise({refresh, closeDialog}) {
+function AddExercise({refresh, handleCloseDialog}) {
   //---variables para la carga
   const { week_id } = useParams();
   const { day_id } = useParams();
@@ -108,10 +108,10 @@ useEffect(() => {
       <article className="col-10 border-bottom pb-3">
 
         <form className="row justify-content-evenly align-items-center" onSubmit={onSubmit}>
-          <h2 className="text-center mt-3 mb-5">Agregar ejercicio</h2>
+          <h2 className="text-center mt-3 mb-4">Agregar ejercicio</h2>
           <div className='row justify-content-center'>
 
-            <div className='col-6 text-end p-0 fs-5'>
+            <div className='col-6 text-end p-0 mb-4 fs-5'>
                 <InputSwitch checked={closeAfterCreate} onChange={(e) => setCloseAfterCreate(e.value)} />
             </div>
 

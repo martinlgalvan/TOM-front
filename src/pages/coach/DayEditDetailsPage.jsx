@@ -108,6 +108,7 @@ function DayEditDetailsPage(){
                     setUserId(data[0].user_id)
                     setLoading(false)
                     setInputEnFoco(null)
+                    setConfirm(null)
 
                     
                     setTimeout(() => {setBoolFocus(1)},1500)
@@ -191,6 +192,9 @@ function DayEditDetailsPage(){
     } 
 
     const deleteExercise = (event,id,name) => {
+        if(name == null || name == undefined){
+            name = "Sin nombre"
+        }
         confirmDialog({
             trigger: event.currentTarget,
             message: `¡Cuidado! Estás por eliminar "${name}". ¿Estás seguro?`,
@@ -223,6 +227,9 @@ function DayEditDetailsPage(){
 
 
     const notifyA = (message) => {
+        if(message == null || message == undefined){
+            message = "Sin nombre"
+        }
         toast.loading(message, {
             position: "bottom-center",
             toastId: TOASTID, 
@@ -267,11 +274,13 @@ function DayEditDetailsPage(){
     }
 
     const [inputEnFoco, setInputEnFoco] = useState(null);
+    const [confirm, setConfirm] = useState(null);
 
     const inputRefs = useRef([]);
     
     const handleInputFocus = (index) => {
         setInputEnFoco(index);
+        setConfirm(true)
       };
 
 
@@ -295,7 +304,7 @@ function DayEditDetailsPage(){
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     
-    const handleCloseDialog = () => setVisibleCircuit(false)
+    const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false)}
 
     return (
 
@@ -418,7 +427,7 @@ function DayEditDetailsPage(){
                                     {sets === undefined ? null :
                                     <td >
                                         <InputNumber
-                                            value={inputEnFoco !== null && inputEnFoco !== index ? newSet : sets}
+                                            value={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
                                             onChange={changeSetsEdit}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
@@ -439,7 +448,7 @@ function DayEditDetailsPage(){
                                     <td>
                                             
                                         <InputNumber 
-                                            value={reps} 
+                                            value={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
                                             onChange={changeRepsEdit}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}

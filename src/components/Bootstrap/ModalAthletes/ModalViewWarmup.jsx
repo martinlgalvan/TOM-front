@@ -43,7 +43,7 @@ function ModalViewWarmup({showWarmup, handleClose, user_id,day_id}) {
               </tr>
             </thead>
             <tbody>
-              {warmup != [] ? warmup.map(exercise =>
+              {warmup != null0 ? warmup.map(exercise =>
               <tr key={exercise.warmup_id}>
                 <td>{exercise.numberWarmup}</td>
                 <td>

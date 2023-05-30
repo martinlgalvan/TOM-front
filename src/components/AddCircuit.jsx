@@ -285,22 +285,20 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
-          {loading == true ? 
-          <BarLoader color="#2CBDC7" height={5} width={300} /> :
           <>
           {exercisesAmrap.map(element=> 
-            <tr>
+            <tr key={element.idRefresh}>
               <td>{element.name}</td>
               <td>{element.video}</td>
               <td>{element.peso}</td>
               <td>{element.reps}</td>
             </tr>)}
           </>
-          }
+
           </tbody>
         </table>
       </article>}
-      <div className="row justify-content-center my-4  pb-5 mb-5">
+      <div className="row justify-content-center my-4 mb-5">
       <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear "{type}"</button>
 
       </div>

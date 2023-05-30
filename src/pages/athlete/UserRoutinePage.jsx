@@ -16,7 +16,7 @@ function UserRoutinePage(){
         WeekService.findRoutineByUserId(id)
         .then(data => {     
             setRoutine(data)
-
+            console.log(id)
         })
     }, [])
 
