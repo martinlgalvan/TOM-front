@@ -82,8 +82,7 @@ function DayDetailsPage() {
                                                 <span>{exercise.name}{" "}</span>
                                                 <span>
                                                     {exercise.sets} x{" "}
-                                                    {exercise.reps} -{" "}
-                                                    {exercise.peso}
+                                                    {exercise.reps} 
                                                 </span>
                                             </td>
                                             <td></td>
