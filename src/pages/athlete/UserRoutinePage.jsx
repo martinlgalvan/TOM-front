@@ -29,11 +29,11 @@ function UserRoutinePage(){
 
             <h2 className='text-center mt-4 mb-3'>Ver rutina</h2>
 
-            <article className='row justify-content-center pb-4'>
+            <article className='row justify-content-center mb-4'>
                 {routine != null && 
                 <div className="accordion col-10 col-md-4" id="Routine">
                     {routine.map((week,indexWeek) =>
-                    <div key={week._id} className="accordion-item">
+                    <div key={week._id} className="accordion-item mb-3">
                         <h2 className="accordion-header">
                         <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target={`#${week._id}`} aria-expanded="false" aria-controls="collapseOne">
                          {week.name}
