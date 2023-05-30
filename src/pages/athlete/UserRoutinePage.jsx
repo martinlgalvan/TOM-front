@@ -29,6 +29,8 @@ function UserRoutinePage(){
 
             <h2 className='text-center mt-4 mb-3'>Ver rutina</h2>
 
+            <p className='my-3 text-center'>Acá vas a encontrar todas las semanas de tu planificación. Desplega la semana y accedé al día de entrenamiento que te corresponde!</p>
+
             <article className='row justify-content-center mb-4'>
                 {routine != null && 
                 <div className="accordion col-10 col-md-4" id="Routine">
