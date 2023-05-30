@@ -29,7 +29,7 @@ function UserRoutinePage(){
 
             <h2 className='text-center mt-4 mb-3'>Ver rutina</h2>
 
-            <article className='row justify-content-center'>
+            <article className='row justify-content-center pb-4'>
                 {routine != null && 
                 <div className="accordion col-10 col-md-4" id="Routine">
                     {routine.map((week,indexWeek) =>
