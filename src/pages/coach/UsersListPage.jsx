@@ -39,6 +39,7 @@ function UsersListPage() {
         
         UsersService.find(id)
             .then(data => {
+                console.log(id)
                 setUsers(data)
                 setLoading(false)
             })
