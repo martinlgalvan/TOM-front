@@ -257,20 +257,14 @@ function DayEditDetailsPage(){
     }    
 
 
-    const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
+    const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise, parsedValue) => {
 
-        console.log(exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise)
-        let parsedValue = numberExercise
         let valueExercise = parseInt(parsedValue)
         let sets = parseInt(StrSets)
         let reps = parseInt(StrReps)
 
-        console.log(valueExercise)
-
-        if(notas == null || notas == "" || notas == undefined){
-            notas = " "
-        }
-
+        parsedValue = numberExercise 
+        notas == undefined ? "" : notas
 
         ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
             .then(() =>{
@@ -287,7 +281,6 @@ function DayEditDetailsPage(){
     const handleInputFocus = (index) => {
         setInputEnFoco(index);
         setConfirm(true)
-
       };
 
 
@@ -313,26 +306,6 @@ function DayEditDetailsPage(){
     
     const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false)}
 
-    const [tooltipVisible, setTooltipVisible] = useState(false);
-    const [darkMode, setDarkMode] = useState(false);
-
-    const divRef = useRef();
-
-    useEffect(() => {
-      function handleClickOutside(event) {
-        if (divRef.current && !divRef.current.contains(event.target) ) {
-            
-          setInputEnFoco(null);
-        }
-      }
-  
-      document.addEventListener('mousedown', handleClickOutside);
-  
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, []);
-
     return (
 
         <section className='container-fluid'>
@@ -346,6 +319,7 @@ function DayEditDetailsPage(){
             </div>
 
             <div className="row justify-content-center">
+
 
 
                 <div className='row justify-content-center'>
@@ -363,14 +337,14 @@ function DayEditDetailsPage(){
 
             <article className='col-12 justify-content-center'>
 
-            <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 mb-5'>Administrar bloque de entrada en calor</button>
                 <div className='row justify-content-center align-items-center text-center mt-5'>
 
+                    <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 mb-5'>Administrar bloque de entrada en calor</button>
 
-                    <div ref={divRef} className="table-responsive col-12 mx-1 col-xxl-10 mt-3">
-                        <table className="table align-middle table-bordered">
+                    <div className="table-responsive col-10">
+                        <table className="table align-middle table-bordered caption-top">
+                        <caption>Ejercicios</caption>
                             <thead>
-                                {inputEnFoco == null ? 
                                 <tr>
                                     <th className='TableResponsiveDayEditDetailsPage' scope="col">#</th>
                                     <th scope="col">Ejercicio</th>
@@ -380,10 +354,7 @@ function DayEditDetailsPage(){
                                     <th className='TableResponsiveDayEditDetailsPage' scope="col">Video</th>
                                     <th scope="col">Notas</th>
                                     <th scope="col">Acciones</th>
-                                </tr> : 
-                                <tr className='modeFastTable'>
-                                    <th colSpan={8} >Modo edición rápida</th>
-                                </tr>}
+                                </tr>
                             </thead>
 
                             <tbody>
@@ -397,7 +368,7 @@ function DayEditDetailsPage(){
                                 >
                                     <tr key={exercise_id}>
                                         <th className='TableResponsiveDayEditDetailsPage' scope="row">
-                                        {type != 'exercise' ? <span>{numberExercise}</span> : <select  defaultValue={numberExercise} onChange={(e) =>{ handleBlur(exercise_id, name, sets, reps, peso, video,notas, e.target.value)}}>
+                                        {type != 'exercise' ? <span>{numberExercise}</span> : <select  defaultValue={numberExercise} onChange={(e) =>{ editExercise(exercise_id, name, sets, reps, peso, video, e.target.value, e.target.value)}}>
                                             {options.map(option =>
                                             <optgroup key={option.value} label={option.name} >
                                                 <option value={option.value}>{option.name}</option>
@@ -555,7 +526,7 @@ function DayEditDetailsPage(){
 
                                     </td> 
                                     }
-                                    <td className='mx-5'>
+                                    <td>
                                         {inputEnFoco == null ? 
                                         <>
                                             <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn buttonsEdit'>
@@ -570,14 +541,12 @@ function DayEditDetailsPage(){
                                                 </svg>
                                             </button>
                                         </> 
-                                        :  
-                                            <button disabled={inputEnFoco !== null && inputEnFoco !== index} onClick={(e) => handleBlur(exercise_id, newName == undefined ? name : newName, newSet == undefined ? sets : newSet, newRep == undefined ? reps : newRep, newPeso == undefined ? peso : newPeso, newVideo == undefined ? video : newVideo, newNotas == undefined ? notas : newNotas, numberExercise)} className='btn buttonsEdit mx-4 px-1'>
-
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square " viewBox="0 0 16 16">
+                                        : 
+                                            <button disabled={inputEnFoco !== null && inputEnFoco !== index} onClick={(e) => handleBlur(exercise_id, newName == undefined ? name : newName, newSet == undefined ? sets : newSet, newRep == undefined ? reps : newRep, newPeso == undefined ? peso : newPeso, newVideo == undefined ? video : newVideo, newNotas == undefined ? notas : newNotas, numberExercise, valueExercise)} className='btn buttonsEdit'><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                                 <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
-                                                </svg>
-                                            </button>
+                                                </svg></button>
+                                                
                                         }
                                     </td>
                                 </tr>
@@ -586,10 +555,6 @@ function DayEditDetailsPage(){
                                 </TransitionGroup>
 
                             </tbody>
-                            {inputEnFoco != null && 
-                            <tfoot className='p-0 m-0' >
-                                <tr className='modeFastTable'><th colSpan={8}>Modo edición rápida</th></tr>
-                            </tfoot>}
                             
                         </table>
                     </div>
