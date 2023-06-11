@@ -11,6 +11,7 @@ function LoginPage({onLogin}){
         event.preventDefault()
         authService.login(email, password)
         .then(({user, token}) =>{
+            console.log(user, token)
             onLogin(user, token)
         })
         .catch(err =>{
