@@ -3,15 +3,13 @@ import {Link, useParams} from 'react-router-dom';
 
 import * as ExercisesService from '../../services/exercises.services.js';
 import * as WeekService from '../../services/week.services.js'; 
+import Options from './../../assets/json/options.json';
 
-import { InputNumber } from 'primereact/inputnumber';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
 import { Sidebar } from 'primereact/sidebar';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
 import { ToastContainer, toast } from 'react-toastify';
-import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
-import { Toast } from 'primereact/toast';
 
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
@@ -21,6 +19,7 @@ import ModalCreateWarmup from '../../components/Bootstrap/ModalCreateWarmup.jsx'
 import Formulas from '../../components/Formulas.jsx';
 import ModalEditCircuit from '../../components/Bootstrap/ModalEdit/ModalEditCircuit.jsx';
 import AddCircuit from '../../components/AddCircuit.jsx';
+import CustomInputNumber from '../../components/CustomInputNumber.jsx';
 
 
 function DayEditDetailsPage(){
@@ -28,6 +27,7 @@ function DayEditDetailsPage(){
     const {day_id} = useParams()
     const [status, setStatus] = useState(1)
     const [loading, setLoading] = useState(null)
+    const [options, setOptions] = useState()
     const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
 
@@ -49,6 +49,11 @@ function DayEditDetailsPage(){
     const [visibleCircuit, setVisibleCircuit] = useState(false);
     const [visibleExercises, setVisibleExercises] = useState(false);
     const [boolFocus, setBoolFocus] = useState(2)
+    
+    const [inputEnFoco, setInputEnFoco] = useState(null);
+    const [confirm, setConfirm] = useState(null);
+
+    const inputRefs = useRef([]);
 
     const [name, setNameExercise] = useState()
     const [sets, setSetsExercise] = useState()
@@ -66,6 +71,7 @@ function DayEditDetailsPage(){
     const [newPeso, setNewPeso] = useState()
     const [newVideo, setNewVideo] = useState()
     const [newNotas, setNewNotas] = useState()
+    const [newNumberExercise, setNewNumberExercise] = useState()
 
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
@@ -80,6 +86,32 @@ function DayEditDetailsPage(){
         return uuid;
     }
 
+    useEffect(() => {
+        setLoading(true)
+        setNumberToast(true)
+
+        WeekService.findByWeekId(week_id)
+            .then(data => {
+                //Encuentro el index del día, y luego seteo el día con el que corresponde.
+                let indexDay = data[0].routine.findIndex(dia => dia._id === day_id)
+                let day = data[0].routine[indexDay].exercises
+                let exercises = day.filter(exercise => exercise.type == 'exercise')
+                let circuit = day.filter(circuito => circuito.type != 'exercise')
+
+                setExercises(exercises)
+                setCircuit(circuit)
+                setDay(day)
+                setUserId(data[0].user_id)
+                setLoading(false)
+                setInputEnFoco(null)
+                setConfirm(null)
+                setOptions(Options)
+                
+                setTimeout(() => {setBoolFocus(1)},1500)
+
+            })
+}, [status])
+
     let idRefresh = generateUUID()
 
     const refresh = (refresh) => {
@@ -90,59 +122,15 @@ function DayEditDetailsPage(){
         setVisibleExercises(close)
     }
 
-    useEffect(() => {
-            setLoading(true)
-            setNumberToast(true)
-
-            WeekService.findByWeekId(week_id)
-                .then(data => {
-                    //Encuentro el index del día, y luego seteo el día con el que corresponde.
-                    let indexDay = data[0].routine.findIndex(dia => dia._id === day_id)
-                    let day = data[0].routine[indexDay].exercises
-                    let exercises = day.filter(exercise => exercise.type == 'exercise')
-                    let circuit = day.filter(circuito => circuito.type != 'exercise')
-
-                    setExercises(exercises)
-                    setCircuit(circuit)
-                    setDay(day)
-                    setUserId(data[0].user_id)
-                    setLoading(false)
-                    setInputEnFoco(null)
-                    setConfirm(null)
-
-                    
-                    setTimeout(() => {setBoolFocus(1)},1500)
-
-                })
-    }, [status])
-
-
     // EDIT EXERCISES
 
-    function changeNameEdit(e){
-        setNewName(e.target.value)
+    function changeNameEdit(e){ setNewName(e.target.value)}
 
-    }
+    function changePesoEdit(e){ setNewPeso(e.target.value)}
 
-    function changePesoEdit(e){
-        setNewPeso(e.target.value)
-    }
+    function changeNotasEdit(e){ setNewNotas(e.target.value)}
 
-    function changeNotasEdit(e){
-        setNewNotas(e.target.value)
-    }
-
-    function changeVideoEdit(e){
-        setNewVideo(e.target.value)
-    }
-
-    function changeSetsEdit(e){
-        setNewSet(e.value)
-    }
-
-    function changeRepsEdit(e){
-        setNewRep(e.value)
-    }
+    function changeVideoEdit(e){ setNewVideo(e.target.value)}
 
     //Modal Edit Exercise
     function handleShowEditExercise(id, name, sets, reps,peso, video, notas){
@@ -158,9 +146,7 @@ function DayEditDetailsPage(){
 
     }
 
-    function handleShowCreateMobility(){
-        setShowCreateWarmup(true)
-    }
+    function handleShowCreateMobility(){ setShowCreateWarmup(true) }
 
     function handleShowEditAmrap(id, type, typeOfSets, circuit, numberExercise){
 
@@ -192,9 +178,12 @@ function DayEditDetailsPage(){
     } 
 
     const deleteExercise = (event,id,name) => {
+
         if(name == null || name == undefined){
             name = "Sin nombre"
         }
+
+    //Dialog delete exercise
         confirmDialog({
             trigger: event.currentTarget,
             message: `¡Cuidado! Estás por eliminar "${name}". ¿Estás seguro?`,
@@ -210,10 +199,10 @@ function DayEditDetailsPage(){
             dismissableMask: true,
 
         });
-
     };
 
     const reject = () => {};
+    
     
     function acceptDeleteExercise(id) {
         setLoading(true)
@@ -225,11 +214,12 @@ function DayEditDetailsPage(){
   
     };
 
-
     const notifyA = (message) => {
+
         if(message == null || message == undefined){
             message = "Sin nombre"
         }
+
         toast.loading(message, {
             position: "bottom-center",
             toastId: TOASTID, 
@@ -239,14 +229,18 @@ function DayEditDetailsPage(){
             limit: 1 })};
 
     const updateToast = () => 
-        toast.update(TOASTID, { 
+
+        toast.update(
+            TOASTID, { 
             render: "Listo!", 
             type: toast.TYPE.SUCCESS, 
             autoClose: 1000, 
             isLoading: false,
+            pauseOnFocusLoss: false,
             hideProgressBar: true,
             limit: 1,
-            className: 'rotateY animated'});
+            className: 'rotateY animated'}
+            );
 
     const showLoadingToast = () => {
         if(loading == true){
@@ -256,33 +250,27 @@ function DayEditDetailsPage(){
         }
     }    
 
+    const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
 
-    const handleBlur = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
-
-        console.log(exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise)
         let parsedValue = numberExercise
         let valueExercise = parseInt(parsedValue)
         let sets = parseInt(StrSets)
         let reps = parseInt(StrReps)
 
-        console.log(valueExercise)
+        if(name == null || name == "" || name == undefined){ name = " " }
 
-        if(notas == null || notas == "" || notas == undefined){
-            notas = " "
-        }
+        if(peso == null || peso == "" || peso == undefined){ peso = " " }
+        
+        if(video == null || video == "" || video == undefined){ video = " " }
 
+        if(notas == null || notas == "" || notas == undefined){ notas = " "} 
 
-        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise}) 
-            .then(() =>{
-                setStatus(idRefresh)
-            })
+        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
+            .then(() => setStatus(idRefresh) )
             
     }
 
-    const [inputEnFoco, setInputEnFoco] = useState(null);
-    const [confirm, setConfirm] = useState(null);
 
-    const inputRefs = useRef([]);
     
     const handleInputFocus = (index) => {
         setInputEnFoco(index);
@@ -290,48 +278,36 @@ function DayEditDetailsPage(){
 
       };
 
-
-      const options = [
-        {value:1, name: 1, extras: [{value: 1, name: "1-A"},{value: 1, name: "1-B"},{value: 1, name: "1-C"},{value: 1, name: "1-D"},{value: 1, name: "1-F"}]},
-        {value:2, name: 2, extras: [{value: 2, name: "2-A"},{value: 2, name: "2-B"},{value: 2, name: "2-C"},{value: 2, name: "2-D"},{value: 2, name: "2-F"}]},
-        {value:3, name: 3, extras: [{value: 3, name: "3-A"},{value: 3, name: "3-B"},{value: 3, name: "3-C"},{value: 3, name: "3-D"},{value: 3, name: "3-F"}]},
-        {value:4, name: 4, extras: [{value: 4, name: "4-A"},{value: 4, name: "4-B"},{value: 4, name: "4-C"},{value: 4, name: "4-D"},{value: 4, name: "4-F"}]},
-        {value:5, name: 5, extras: [{value: 5, name: "5-A"},{value: 5, name: "5-B"},{value: 5, name: "5-C"},{value: 5, name: "5-D"},{value: 5, name: "5-F"}]},
-        {value:6, name: 6, extras: [{value: 6, name: "6-A"},{value: 6, name: "6-B"},{value: 6, name: "6-C"},{value: 6, name: "6-D"},{value: 6, name: "6-F"}]},
-        {value:7, name: 7, extras: [{value: 7, name: "7-A"},{value: 7, name: "7-B"},{value: 7, name: "7-C"},{value: 7, name: "7-D"},{value: 7, name: "7-F"}]},
-        {value:8, name: 8, extras: [{value: 8, name: "8-A"},{value: 8, name: "8-B"},{value: 8, name: "8-C"},{value: 8, name: "8-D"},{value: 8, name: "8-F"}]},
-        {value:9, name: 9, extras: [{value: 9, name: "9-A"},{value: 9, name: "9-B"},{value: 9, name: "9-C"},{value: 9, name: "9-D"},{value: 9, name: "9-F"}]},
-        {value:10, name: 10, extras: [{value: 10, name: "10-A"},{value: 10, name: "10-B"},{value: 10, name: "10-C"},{value: 10, name: "10-D"},{value: 10, name: "10-F"}]},
-        {value:11, name: 11, extras: [{value: 11, name: "11-A"},{value: 11, name: "11-B"},{value: 11, name: "11-C"},{value: 11, name: "11-D"},{value: 11, name: "11-F"}]},
-        {value:12, name: 12, extras: [{value: 12, name: "12-A"},{value: 12, name: "12-B"},{value: 12, name: "12-C"},{value: 12, name: "12-D"},{value: 12, name: "12-F"}]},
-        {value:13, name: 13, extras: [{value: 13, name: "13-A"},{value: 13, name: "13-B"},{value: 13, name: "13-C"},{value: 13, name: "13-D"},{value: 13, name: "13-F"}]},
-        {value:14, name: 14, extras: [{value: 14, name: "14-A"},{value: 14, name: "14-B"},{value: 14, name: "14-C"},{value: 14, name: "14-D"},{value: 14, name: "14-F"}]},
-        {value:15, name: 15, extras: [{value: 15, name: "15-A"},{value: 15, name: "15-B"},{value: 15, name: "15-C"},{value: 15, name: "15-D"},{value: 15, name: "15-F"}]}
-    ]
-
-    //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
+      const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false)}
+  
+    //Cuando se aprete fuera del div al que le puse el ref, se pierde el foco del input
     
-    const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false)}
-
-    const [tooltipVisible, setTooltipVisible] = useState(false);
-    const [darkMode, setDarkMode] = useState(false);
-
     const divRef = useRef();
 
     useEffect(() => {
-      function handleClickOutside(event) {
-        if (divRef.current && !divRef.current.contains(event.target) ) {
+        function handleClickOutside(event) {
+        if (divRef.current && !divRef.current.contains(event.target)) {
+            setInputEnFoco(null);
             
-          setInputEnFoco(null);
         }
-      }
-  
-      document.addEventListener('mousedown', handleClickOutside);
-  
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
+        }
+
+        const handleDocumentClick = (event) => handleClickOutside(event);
+        document.addEventListener('mousedown', handleDocumentClick);
+
+        return () => {
+        document.removeEventListener('mousedown', handleDocumentClick);
+        };
     }, []);
+
+    const handleInputChangeSet = (newValue) => setNewSet(newValue);
+    const handleInputChangeRep = (newValue) => setNewRep(newValue);
+
+
+
+    //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
+    
+
 
     return (
 
@@ -340,13 +316,12 @@ function DayEditDetailsPage(){
 
             <div className='row justify-content-center'>
 
-                <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(true)} >Añadir Ejercicio</button>
+                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(true)} >Añadir Ejercicio</button>
 
-                <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
-            </div>
+                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
+                </div>
 
-            <div className="row justify-content-center">
-
+                <div className="row justify-content-center">
 
                 <div className='row justify-content-center'>
                     <Dialog className='col-12 col-lg-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'}  header="Header" visible={visibleCircuit} modal={false} onHide={() => setVisibleCircuit(false)}>
@@ -355,37 +330,32 @@ function DayEditDetailsPage(){
                     <Dialog className='col-12 col-lg-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'} header="Header" visible={visibleExercises} modal={false} onHide={() => setVisibleExercises(false)}>
                         <AddExercise handleCloseDialog={handleCloseDialog} refresh={refresh}/>
                     </Dialog>
-
                 </div>
 
-                </div>
+            </div>
 
 
-            <article className='col-12 justify-content-center'>
+            <article  className='row justify-content-center'>
 
-            <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 mb-5'>Administrar bloque de entrada en calor</button>
-                <div className='row justify-content-center align-items-center text-center mt-5'>
+            <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 my-5'>Administrar bloque de entrada en calor</button>
+                <div ref={divRef} className={`row justify-content-center align-items-center text-center mt-5 px-0 ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
 
 
-                    <div ref={divRef} className="table-responsive col-12 mx-1 col-xxl-10 mt-3">
-                        <table className="table align-middle table-bordered">
+                    <div className={`table-responsive col-11 col-xxl-10 m-0 p-0 pt-3 `}>
+                        <table className="table align-middle table-bordered ">
                             <thead>
-                                {inputEnFoco == null ? 
-                                <tr>
-                                    <th className='TableResponsiveDayEditDetailsPage' scope="col">#</th>
-                                    <th scope="col">Ejercicio</th>
-                                    <th scope="col">Series</th>
-                                    <th scope="col">Reps</th>
-                                    <th className='TableResponsiveDayEditDetailsPage' scope="col">Peso</th>
-                                    <th className='TableResponsiveDayEditDetailsPage' scope="col">Video</th>
-                                    <th scope="col">Notas</th>
-                                    <th scope="col">Acciones</th>
-                                </tr> : 
-                                <tr className='modeFastTable'>
-                                    <th colSpan={8} >Modo edición rápida</th>
-                                </tr>}
-                            </thead>
 
+                                <tr>
+                                    <th className='TableResponsiveDayEditDetailsPage tdNumber' scope="col">#</th>
+                                    <th scope="col" className='tdName'>Ejercicio</th>
+                                    <th scope="col" className='tdSets'>Series</th>
+                                    <th scope="col" className='tdReps'>Reps</th>
+                                    <th className='TableResponsiveDayEditDetailsPage tdPeso' scope="col">Peso</th>
+                                    <th className='TableResponsiveDayEditDetailsPage tdVideo' scope="col">Video</th>
+                                    <th className='TableResponsiveDayEditDetailsPage tdNotas' scope="col">Notas</th>
+                                    <th scope="col" className='tdActions'>Acciones</th>
+                                </tr> 
+                            </thead>
                             <tbody>
                                 {showLoadingToast()}
                                 <TransitionGroup component={null} className="todo-list">
@@ -395,9 +365,14 @@ function DayEditDetailsPage(){
                                 timeout={500}
                                 classNames="item"
                                 >
-                                    <tr key={exercise_id}>
-                                        <th className='TableResponsiveDayEditDetailsPage' scope="row">
-                                        {type != 'exercise' ? <span>{numberExercise}</span> : <select  defaultValue={numberExercise} onChange={(e) =>{ handleBlur(exercise_id, name, sets, reps, peso, video,notas, e.target.value)}}>
+                                    <tr key={exercise_id} className={`oo ${inputEnFoco !== null && inputEnFoco !== index ? 'ww' : null}`}>
+                                        <th className='TableResponsiveDayEditDetailsPage' >
+                                        {type != 'exercise' ? <span>{numberExercise}</span> :
+                                         <select  
+                                            defaultValue={numberExercise} 
+                                            onChange={(e) => { editExercise(exercise_id, name, sets, reps, peso, video, notas, e.target.value)}}
+                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            >
                                             {options.map(option =>
                                             <optgroup key={option.value} label={option.name} >
                                                 <option value={option.value}>{option.name}</option>
@@ -436,7 +411,7 @@ function DayEditDetailsPage(){
                                                                     </tbody>
                                                                 </table> 
                                                             </td>: 
-                                    <td>
+                                    <td className='tdName'>
                                         <input 
                                         id='name' 
                                         className='form-control border-0' 
@@ -450,61 +425,49 @@ function DayEditDetailsPage(){
                                         onFocus={() => handleInputFocus(index)}
                                         ref={(input) => (inputRefs.current[index] = input)}
                                         disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                        autoComplete='off'
                                         />
                                     </td>}
 
                                     {sets === undefined ? null :
-                                    <td >
-                                        <InputNumber
-                                            value={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
-                                            onChange={changeSetsEdit}
+                                    <td className='tdSets c' >
+                                        <CustomInputNumber 
+                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
+                                            onChange={(newValue) => handleInputChangeSet(newValue)}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                            showButtons
-                                            size={1} 
-                                            min={1} 
-                                            inputClassName={'styleFocusInputNumber'}
-                                            buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
-                                            decrementButtonClassName="ButtonsInputNumber" 
-                                            incrementButtonClassName="ButtonsInputNumber" 
-                                            incrementButtonIcon='pi pi-plus'
-                                            decrementButtonIcon="pi pi-minus"
-                                            className="WidthInputsWhenIsMobile" 
-                                        />     
+                                            className="" 
+                                            />
+  
                                     </td>} 
                                     {reps === undefined ? null  : 
-                                    <td>
+                                    <td className='tdReps'>
                                             
-                                        <InputNumber 
-                                            value={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
-                                            onChange={changeRepsEdit}
+                                            <CustomInputNumber 
+                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
+                                            onChange={(newValue) => handleInputChangeRep(newValue)}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                            showButtons 
-                                            size={1} 
-                                            min={1} 
-                                            inputClassName={'styleFocusInputNumber'}
-                                            buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
-                                            decrementButtonClassName="ButtonsInputNumber" 
-                                            incrementButtonClassName="ButtonsInputNumber" 
-                                            incrementButtonIcon="pi pi-plus" 
-                                            decrementButtonIcon="pi pi-minus"
-                                            className="WidthInputsWhenIsMobile" 
-                                                />
+                                            className="" 
+                                            />
                                         </td> 
                                     }
                                         
                                     {peso === undefined ? null :
 
-                                        <td className='TableResponsiveDayEditDetailsPage'>
+                                        <td className='TableResponsiveDayEditDetailsPage tdPeso'>
                                             
                                             <input 
                                             className='form-control border-0' 
                                             type="text" 
                                             defaultValue={peso}
                                             onChange={changePesoEdit}
+                                            onKeyDown={event => {
+                                                if (event.key === 'Enter') {
+                                                    editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
+                                                }}}  
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
@@ -516,7 +479,7 @@ function DayEditDetailsPage(){
                                     
                                     {video === undefined ? null : 
                                     
-                                        <td className='TableResponsiveDayEditDetailsPage' >
+                                        <td className='TableResponsiveDayEditDetailsPage tdVideo' >
                                             
                                             <input 
                                             className='form-control border-0' 
@@ -537,7 +500,7 @@ function DayEditDetailsPage(){
 
                                     {notas === undefined ? null :
 
-                                    <td className='TableResponsiveDayEditDetailsPage'>
+                                    <td className='TableResponsiveDayEditDetailsPage tdNotas'>
                                         
                                         <textarea 
                                         className='form-control border-0' 
@@ -555,7 +518,7 @@ function DayEditDetailsPage(){
 
                                     </td> 
                                     }
-                                    <td className='mx-5'>
+                                    <td className='tdActions'>
                                         {inputEnFoco == null ? 
                                         <>
                                             <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn buttonsEdit'>
@@ -571,14 +534,15 @@ function DayEditDetailsPage(){
                                             </button>
                                         </> 
                                         :  
-                                            <button disabled={inputEnFoco !== null && inputEnFoco !== index} onClick={(e) => handleBlur(exercise_id, newName == undefined ? name : newName, newSet == undefined ? sets : newSet, newRep == undefined ? reps : newRep, newPeso == undefined ? peso : newPeso, newVideo == undefined ? video : newVideo, newNotas == undefined ? notas : newNotas, numberExercise)} className='btn buttonsEdit mx-4 px-1'>
+                                        
+                                            <button disabled={inputEnFoco !== null && inputEnFoco !== index} onClick={(e) => editExercise(exercise_id, newName == undefined ? name : newName, newSet == undefined ? sets : newSet, newRep == undefined ? reps : newRep, newPeso == undefined ? peso : newPeso, newVideo == undefined ? video : newVideo, newNotas == undefined ? notas : newNotas, newNumberExercise == undefined ? numberExercise : newNumberExercise)} className='btn buttonsEdit p-3'>
 
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square " viewBox="0 0 16 16">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className=" bi bi-pencil-square " viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                                 <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
                                                 </svg>
                                             </button>
-                                        }
+                                           }
                                     </td>
                                 </tr>
                                     </CSSTransition>
@@ -586,10 +550,7 @@ function DayEditDetailsPage(){
                                 </TransitionGroup>
 
                             </tbody>
-                            {inputEnFoco != null && 
-                            <tfoot className='p-0 m-0' >
-                                <tr className='modeFastTable'><th colSpan={8}>Modo edición rápida</th></tr>
-                            </tfoot>}
+                        
                             
                         </table>
                     </div>

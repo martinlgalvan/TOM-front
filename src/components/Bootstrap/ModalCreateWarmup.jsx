@@ -4,12 +4,12 @@ import Modal from 'react-bootstrap/Modal';
 
 import * as WeekService from '../../services/week.services.js'
 import * as WarmupServices from "../../services/warmup.services.js";
-import * as JsonExercises from "../../services/jsonExercises.services.js";
+import Exercises from './../../assets/json/exercises.json';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { useEffect } from "react";
 import { confirmDialog } from 'primereact/confirmdialog';
 
-import { InputNumber } from 'primereact/inputnumber';
+import CustomInputNumber from '../../components/CustomInputNumber.jsx';
 import { AutoComplete } from "primereact/autocomplete";
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -35,6 +35,7 @@ function ModalCreateWarmup({showCreateWarmup,closeModal, week_id, day_id}) {
 let idRefresh = generateUUID()
 
   useEffect(() => {
+    setExercises(Exercises)
         
     WeekService.findByWeekId(week_id)
         .then(data => {
@@ -213,20 +214,8 @@ const notify = (name) => {
     }
   }
 
-
-  useEffect(() => {
-    JsonExercises.findJsonExercises()
-      .then((data) => {
-      console.log(data)
-      setExercises(data)
-      });
-
-      // PUEDE SER QUE EL PROBLEMA SEA POR EL Z INDEX
-}, []);
-
   const search = (event) => {
 
-    console.log(selectedExercise)
         let filteredExercises;
 
         if (!event.query.trim().length) {
@@ -245,7 +234,7 @@ const notify = (name) => {
 
 // Dependiendo el ejercicio elegido, se pone automaticamente el video en el input.
 useEffect(() => {
-  console.log(selectedExercise)
+
   if(selectedExercise != null && selectedExercise.length == undefined){
     setName(selectedExercise.name)
     setVideo(selectedExercise.video)
@@ -254,15 +243,38 @@ useEffect(() => {
   }
 }, [selectedExercise]);
 
+
+
+const divRef = useRef();
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+        if (divRef.current && !divRef.current.contains(event.target)) {
+            setInputEnFoco(null);
+        }
+        }
+
+        const handleDocumentClick = (event) => handleClickOutside(event);
+        document.addEventListener('mousedown', handleDocumentClick);
+
+        return () => {
+        document.removeEventListener('mousedown', handleDocumentClick);
+        };
+    }, []);
+
+
+    const handleInputChangeSet = (newValue) => setNewSet(newValue);
+    const handleInputChangeRep = (newValue) => setNewRep(newValue);
+
   return (
 
     <Modal size="xl" centered show={showCreateWarmup} onHide={closeModal} scrollable>
         <Modal.Header closeButton>
           <Modal.Title className='text-center'></Modal.Title>
         </Modal.Header>
-        <Modal.Body className='text-center'>
+        <Modal.Body className='text-center '>
         <section className="row justify-content-center">
-          <article className="col-10 col-lg-6 pb-3">
+          <article className="col-10 pb-3">
             <form className="row justify-content-center align-items-center" onSubmit={onSubmit}>
               <h2 className="text-center my-3">Agregar entrada en calor</h2>
               <div className="col-10 col-xl-6 my-3">
@@ -290,36 +302,19 @@ useEffect(() => {
                 <label htmlFor="series" className="form-label d-block">
                   Series
                 </label>
-                  <InputNumber 
-                      value={sets} 
-                      onChange={(e) => setSets(e.value)} 
-                      showButtons 
-                      buttonLayout="horizontal" 
-                      size={1} 
-                      min={1} 
-                      decrementButtonClassName="ButtonsInputNumber" 
-                      incrementButtonClassName="ButtonsInputNumber" 
-                      incrementButtonIcon="pi pi-plus" 
-                      decrementButtonIcon="pi pi-minus" 
-                    
-                  />   
+                  <CustomInputNumber 
+                    initialValue={reps}
+                    onChange={(value) => setSets(value)}
+                  /> 
               </div>
 
               <div className="col-10 col-xl-4 my-2 text-center">
                 <label htmlFor="reps" className="form-label d-block">
                   Reps
                 </label>
-                    <InputNumber 
-                      value={reps} 
-                      onChange={(e) => setReps(e.value)} 
-                      showButtons 
-                      buttonLayout="horizontal" 
-                      size={1} 
-                      min={0} 
-                      decrementButtonClassName="ButtonsInputNumber" 
-                      incrementButtonClassName="ButtonsInputNumber" 
-                      incrementButtonIcon="pi pi-plus" 
-                      decrementButtonIcon="pi pi-minus" 
+                  <CustomInputNumber 
+                    initialValue={reps}
+                    onChange={(value) => setReps(value)}
                   />   
               </div>
 
@@ -337,7 +332,7 @@ useEffect(() => {
                   />
               </div>
               <div>
-                <button className="btn BlackBGtextWhite mt-4">Crear</button>
+                <button className="btn BlackBGtextWhite my-4">Crear</button>
               </div>
 
             </form>
@@ -345,8 +340,8 @@ useEffect(() => {
         </section>
 
         {confirm != null  && 
-                <article className="table-responsive border-bottom mb-5 pb-4">
-                    <table className="table align-middle table-bordered caption-top">
+                <article ref={divRef} className="table-responsive border-bottom mb-5 pb-4">
+                    <table className={`table align-middle table-bordered caption-top ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
                         <caption>Entrada en calor</caption>
                         <thead>
                             <tr>
@@ -367,7 +362,7 @@ useEffect(() => {
                          timeout={500}
                          classNames="item"
                          >
-                            <tr key={warmup_id}>
+                            <tr key={warmup_id} className={`oo ${inputEnFoco !== null && inputEnFoco !== index ? 'ww' : null}`}>
                             <th scope="row">
                             <select 
                             defaultValue={numberWarmup === null ? options[index].name : numberWarmup} 
@@ -397,38 +392,25 @@ useEffect(() => {
                                 ref={(input) => (inputRefs.current[index] = input)}
                                 disabled={inputEnFoco !== null && inputEnFoco !== index}/>
                             </td>
-                            <td><InputNumber 
-                                    value={sets} 
-                                    onChange={changeSetsWarmup}
-                                    onValueChange={() => handleInputFocus(index)}
-                                    ref={(input) => (inputRefs.current[index] = input)}
-                                    disabled={inputEnFoco !== null && inputEnFoco !== index}                                    
-                                    showButtons 
-                                    buttonLayout={"horizontal"} 
-                                    size={1} 
-                                    min={1} 
-                                    decrementButtonClassName="p-button-secondary p-button-outlined" 
-                                    incrementButtonClassName="p-button-secondary p-button-outlined" 
-                                    incrementButtonIcon="pi pi-plus" 
-                                    decrementButtonIcon="pi pi-minus" 
-                                />      
+                            <td>
+                              <CustomInputNumber 
+                                initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
+                                onChange={(newValue) => handleInputChangeSet(newValue)}
+                                onValueChange={() => handleInputFocus(index)}
+                                ref={(input) => (inputRefs.current[index] = input)}
+                                disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                className="" 
+                              />    
                             </td>
                             <td>
-                                <InputNumber 
-                                    value={reps} 
-                                    onChange={changeRepsWarmup}
-                                    onValueChange={() => handleInputFocus(index)}
-                                    ref={(input) => (inputRefs.current[index] = input)}
-                                    disabled={inputEnFoco !== null && inputEnFoco !== index}                                    
-                                    showButtons 
-                                    buttonLayout="horizontal" 
-                                    size={1} 
-                                    min={1} 
-                                    decrementButtonClassName="p-button-secondary p-button-outlined aa" 
-                                    incrementButtonClassName="p-button-secondary p-button-outlined aa" 
-                                    incrementButtonIcon="pi pi-plus" 
-                                    decrementButtonIcon="pi pi-minus" 
-                                /> 
+                              <CustomInputNumber 
+                                initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
+                                onChange={(newValue) => handleInputChangeRep(newValue)}
+                                onValueChange={() => handleInputFocus(index)}
+                                ref={(input) => (inputRefs.current[index] = input)}
+                                disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                className="" 
+                              /> 
                             </td>
                             <td>
                                 <input 

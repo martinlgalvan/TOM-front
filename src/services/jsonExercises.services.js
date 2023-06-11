@@ -1,5 +1,5 @@
 async function findJsonExercises() {
-    return fetch(`https://tom-api.vercel.app/api/listExercises`, {
+    return fetch(`http://localhost:2022/api/listExercises`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

@@ -273,65 +273,7 @@
   }
 
 
-  @media screen and (max-width: 600px) {
-    
-    .displayFlexInMobile{
-      display: flex;
-    }
-    .TableResponsiveDayEditDetailsPage{
-      display: none;
-    }
 
-    .responsiveEmail{
-      display: none;
-    }
-    
-    .ButtonResponsiveEditWeekName{
-      display: flex
-    }
-
-    .TitleResponsiveEditWeekName{
-      margin-left: 20px;
-    }
-
-    .buttonResponsive{
-      display: flex;
-    }
-
-/*DayEditPage styles*/
-
-    .responsiveCardExercises{
-      display: flex;
-    }   
-    .responsiveTableExercises{
-      display: none;
-    }   
-
-    /*Tabla del alumno*/
-
-  .tabla tr {
-    display: flex;
-    flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.021);
-    margin-bottom: 20px;
-  }
-
-  .tabla thead {
-    display: none;
-  }
-
-  .responsiveBlock{
-    display: block;
-  }
-  
-  .altoResponsive{
-    min-height: 350px;
-  }
-  
-  .WidthInputsWhenIsMobile{
-    max-width: 45px;
-  }
-}
 
 .eee{
   max-width: 500px !important;
@@ -394,7 +336,6 @@
 .cardSkeleton{
   display: flex;
   width: 100%;
-  height: 100%;
   padding: 0.5rem;
   border: 1px solid grey;
   border-radius: 5px;
@@ -432,4 +373,188 @@
 
 .buttonsEdit:hover{
   background-color: #dbdbdb;
+}
+
+.input-number-container {
+  display: flex;
+  justify-content: center;
+  height: 35px;
+}
+
+
+.input-number-container input{
+  height: 100%;
+  border-left: 0;
+  border-right: 0;
+  width: 70px;
+  text-align: center;
+  padding-left: 15px !important;
+  line-height: normal;
+
+}
+
+.input-number-container .buttonRight {
+  height: 100%;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  color: #fff;
+  background-color: black;
+  border: none;
+  cursor: pointer;
+}
+
+.input-number-container .buttonLeft {
+  height: 100%;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  color: #fff;
+  background-color: black;
+  border: none;
+  cursor: pointer;
+}
+
+.input-number-container .buttonRight:hover,
+.input-number-container .buttonLeft:hover{
+  background-color: rgba(240, 240, 240, 0.356);
+  color: #000000;
+}
+
+.input-number-container .buttonLeft[disabled],
+.input-number-container .buttonRight[disabled]
+ {
+  background-color: #e9ecef;
+  color: #92969a;
+
+}
+
+.input-number-container .inp[disabled]{
+  background-color: white;
+  color: #92969a;
+}
+
+.colorDisabled{
+  background-color: #f3f4f5;
+}
+
+.ww{
+  background-color: #f3f4f5;
+  opacity: 0.1 ;
+}
+
+
+
+
+
+
+
+@media screen and (max-width: 992px) {
+    
+  .displayFlexInMobile{
+    display: flex;
+  }
+  .TableResponsiveDayEditDetailsPage{
+    display: none;
+  }
+
+  .responsiveEmail{
+    display: none;
+  }
+  
+  .ButtonResponsiveEditWeekName{
+    display: flex
+  }
+
+  .TitleResponsiveEditWeekName{
+    margin-left: 20px;
+  }
+
+  .buttonResponsive{
+    display: flex;
+  }
+
+/*DayEditPage styles*/
+
+  .responsiveCardExercises{
+    display: flex;
+  }   
+  .responsiveTableExercises{
+    display: none;
+  }   
+
+  /*Tabla del alumno*/
+
+.tabla tr {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.021);
+  margin-bottom: 20px;
+}
+
+.tabla thead {
+  display: none;
+}
+
+.responsiveBlock{
+  display: block;
+}
+
+.altoResponsive{
+  min-height: 350px;
+}
+
+.WidthInputsWhenIsMobile{
+  max-width: 45px;
+}
+
+.input-number-container {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  min-width: 50px;
+ 
+}
+
+.input-number-container input{
+  border-left: 1px;
+  border-right: 1px;
+  width: 50px;
+ 
+}
+
+.input-number-container .buttonRight {
+ 
+  border-top-right-radius: 0;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+
+  color: #fff;
+  background-color: black;
+  border: none;
+  cursor: pointer;
+}
+
+.input-number-container .buttonLeft {
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-top-left-radius: 0;
+  
+  border-bottom: 0;
+
+  color: #fff;
+  background-color: black;
+  border: none;
+  cursor: pointer;
+}
+
+
 }

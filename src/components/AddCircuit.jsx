@@ -1,8 +1,9 @@
 import { useState } from "react";
 import * as ExercisesServices from "../services/exercises.services.js";
-import * as JsonExercises from "../services/jsonExercises.services.js";
+import Exercises from './../assets/json/exercises.json'
 
 
+import CustomInputNumber from './../components/CustomInputNumber.jsx';
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
@@ -22,7 +23,7 @@ function AddCircuit({refresh, handleCloseDialog}) {
   const [type, setType] = useState("");
   const [name, setName] = useState("");
   const [typeOfSets, setTypeOfSets] = useState(1);
-  const [reps, setReps] = useState();
+  const [reps, setReps] = useState(0);
   const [peso, setPeso] = useState(""); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [notas, setNotas] = useState(""); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [video, setVideo] = useState("");
@@ -102,12 +103,11 @@ let idRefresh = generateUUID()
 
 
   useEffect(() => {
-    JsonExercises.findJsonExercises().then((data) => setExercises(data));
+    setExercises(Exercises)
 }, []);
 
   const search = (event) => {
 
-    setTimeout(() => {
         let filteredExercises;
 
         if (!event.query.trim().length) {
@@ -121,7 +121,6 @@ let idRefresh = generateUUID()
 
         setFilteredExercises(filteredExercises);
 
-    }, 1);
 }
 
 // Dependiendo el ejercicio elegido, se pone automaticamente el video en el input.
@@ -220,7 +219,7 @@ useEffect(() => {
             </div>
 
             <div className="col-12 col-md-4 text-center mb-3">
-              <label htmlFor="peso" className="form-label">
+              <label htmlFor="peso" className="form-label visually-hidden">
                 Peso
               </label>
               <input
@@ -235,21 +234,12 @@ useEffect(() => {
             </div>
 
             <div className="col-10 col-xl-10 col-sm-6 text-center mb-4">
-              <label htmlFor="series" className="form-label d-block">
+              <label htmlFor="series" className="form-label d-block ">
                 Repeticiones
               </label>
-                <InputNumber 
-                    value={reps} 
-                    onValueChange={(e) => setReps(e.value)} 
-                    showButtons 
-                    buttonLayout="horizontal" 
-                    size={1} 
-                    min={1} 
-                    decrementButtonClassName="ButtonsInputNumber" 
-                    incrementButtonClassName="ButtonsInputNumber" 
-                    incrementButtonIcon="pi pi-plus" 
-                    decrementButtonIcon="pi pi-minus" 
-                  
+              <CustomInputNumber 
+                initialValue={reps}
+                onChange={(value) => setReps(value)}
                 />   
             </div>
 
@@ -299,7 +289,7 @@ useEffect(() => {
         </table>
       </article>}
       <div className="row justify-content-center my-4 mb-5">
-      <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear "{type}"</button>
+      <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear circuito</button>
 
       </div>
     </section>

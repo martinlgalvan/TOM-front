@@ -1,13 +1,13 @@
 import { useState,useRef } from "react";
 import * as ExercisesServices from "../services/exercises.services.js";
-import * as JsonExercises from "../services/jsonExercises.services.js";
+import Exercises from './../assets/json/exercises.json'
+
+import CustomInputNumber from './../components/CustomInputNumber.jsx';
 
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
-import { InputNumber } from 'primereact/inputnumber';
 import { AutoComplete } from "primereact/autocomplete";
 import Formulas from "./Formulas.jsx";
 
@@ -71,12 +71,12 @@ let idRefresh = generateUUID()
 
 
   useEffect(() => {
-    JsonExercises.findJsonExercises().then((data) => setExercises(data));
+    setExercises(Exercises);
 }, []);
 
   const search = (event) => {
 
-    setTimeout(() => {
+
         let filteredExercises;
 
         if (!event.query.trim().length) {
@@ -90,7 +90,6 @@ let idRefresh = generateUUID()
 
         setFilteredExercises(filteredExercises);
 
-    }, 1);
 }
 
 // Dependiendo el ejercicio elegido, se pone automaticamente el video en el input.
@@ -102,6 +101,7 @@ useEffect(() => {
     setName(selectedExercise)
   }
 }, [selectedExercise]);
+
 
   return (
     <section className="row justify-content-center ">
@@ -157,37 +157,20 @@ useEffect(() => {
             <label htmlFor="series" className="form-label d-block">
               Series
             </label>
-              <InputNumber 
-                  value={sets} 
-                  onValueChange={(e) => setSets(e.value)} 
-                  showButtons 
-                  buttonLayout="horizontal" 
-                  size={1} 
-                  min={1} 
-                  decrementButtonClassName="ButtonsInputNumber" 
-                  incrementButtonClassName="ButtonsInputNumber" 
-                  incrementButtonIcon="pi pi-plus" 
-                  decrementButtonIcon="pi pi-minus" 
-                 
-              />   
+              <CustomInputNumber 
+                initialValue={sets}
+                onChange={(value) => setSets(value)}
+                />
           </div>
 
           <div className="col-6  text-center">
             <label htmlFor="reps" className="form-label d-block">
               Reps
             </label>
-                <InputNumber 
-                  value={reps} 
-                  onValueChange={(e) => setReps(e.value)} 
-                  showButtons 
-                  buttonLayout="horizontal" 
-                  size={1} 
-                  min={0} 
-                  decrementButtonClassName="ButtonsInputNumber" 
-                  incrementButtonClassName="ButtonsInputNumber" 
-                  incrementButtonIcon="pi pi-plus" 
-                  decrementButtonIcon="pi pi-minus" 
-              />   
+              <CustomInputNumber 
+                initialValue={reps}
+                onChange={(value) => setReps(value)}
+                /> 
           </div>
 
           <div className="col-12  my-2 text-center">

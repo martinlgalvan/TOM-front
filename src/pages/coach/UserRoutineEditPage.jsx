@@ -179,9 +179,9 @@ function UserRoutineEditPage(){
         <section className='container'>
 
             <Logo />
-            <div className='row justify-content-center mb-4 mt-3'>
+            <div className='row justify-content-center my-5'>
 
-                <h2 className='col-10 text-center'>Administrar semanas</h2>
+                <h2 className='col-10 text-center mb-2'>Administración de semanas</h2>
                 
             </div>
 
@@ -192,7 +192,7 @@ function UserRoutineEditPage(){
                     {routine.length > 0 &&
                     
                     <div className='col-3 mt-4'> 
-                        <div className='row justify-content-center'>
+                        <div className='row justify-content-center my-3'>
 
                             <div className='col-6 text-end p-0 fs-5'>
                                 <InputSwitch checked={copyWeek} onChange={(e) => setCopyWeek(e.value)} />

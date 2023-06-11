@@ -68,7 +68,7 @@ function UsersListPage() {
         confirmDialog({
             trigger: event.currentTarget,
             message: `¡Cuidado! Estás por eliminar ${name}. ¿Estás seguro?`,
-            icon: ({theme, type}) =>  <div id="loading"></div>,
+            icon: () =>  <div id="loading"></div>,
             header:`Eliminar ${name}`,
             accept: () => acceptDeleteUser(id),
             reject,
@@ -85,6 +85,8 @@ function UsersListPage() {
     const searcher = (e) => {
         setSearch(e.target.value)   
     }  
+
+    const results = !search ? users : users.filter((dato)=> dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
 
     const notifyA = (message) => {
         toast.loading(message, {
@@ -112,8 +114,6 @@ function UsersListPage() {
             updateToast()
         }
     }
-
-    const results = !search ? users : users.filter((dato)=> dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
 
     return (
         <section className='container-fluid'>
