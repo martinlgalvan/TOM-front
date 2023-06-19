@@ -387,11 +387,12 @@
   border-left: 0;
   border-right: 0;
   width: 70px;
+  align-items: center;
   text-align: center;
-  padding-left: 15px !important;
   line-height: normal;
 
 }
+
 
 .input-number-container .buttonRight {
   height: 100%;
@@ -446,6 +447,21 @@
   background-color: #f3f4f5;
   opacity: 0.1 ;
 }
+
+.textCreated{
+  color: #0000008c;
+  font-size: 0.9em;
+}
+
+.nnn{
+  background-color: #f8f9fa;
+}
+
+
+
+
+
+
 
 
 
@@ -517,6 +533,7 @@
   flex-direction: column-reverse;
   align-items: center;
   text-align: center;
+  padding-left: 0px ;
   height: 100%;
   min-width: 50px;
  
@@ -558,3 +575,4 @@
 
 
 }
+

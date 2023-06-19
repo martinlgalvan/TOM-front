@@ -82,7 +82,8 @@ function UserRoutineEditPage(){
         let number = `Semana ${weekNumber}`
         if(copyWeek == true){
             WeekService.createClonWeek(id)
-                .then(() => {
+                .then((data) => {
+                    console.log(data)
                     setStatus(idRefresh)
                 })
     
@@ -207,7 +208,8 @@ function UserRoutineEditPage(){
                                 data-pr-at="right+5 top"
                                 data-pr-my="left center-20"
                                 data-pr-classname='largoTooltip p-0 m-0'
-                                style={{ fontSize: '3rem', cursor: 'pointer' }} viewBox="0 0 16 16">
+                                style={{ fontSize: '3rem', cursor: 'pointer' }} 
+                                viewBox="0 0 16 16">
                                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                                     <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
                                 </svg>
@@ -217,7 +219,7 @@ function UserRoutineEditPage(){
                     </div>}
 
 
-                <div className='col-10'>
+                <div className='col-12'>
                     
 
                     <div className='row justify-content-center'>
@@ -229,9 +231,9 @@ function UserRoutineEditPage(){
                         timeout={500}
                         classNames="item"
                         >
-                        <div key={elemento._id} className="card col-12 col-lg-5 text-center m-3">
+                        <div key={elemento._id} className="card col-12 col-lg-3 text-center m-3">
                             <div className="card-body m-0 p-0">
-                                <div className="menuColor py-1 row justify-content-center" >
+                                <div className="menuColor py-1 row justify-content-center titleWeek">
 
                                     <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
               
@@ -270,9 +272,13 @@ function UserRoutineEditPage(){
                                     <button onClick={() => handleShowEditWeek(elemento._id, elemento.name)} className='btn border buttonColor'>Editar</button> 
 
                                 </div>
+                                <div class="card-footer textCreated mt-3">
+                                {elemento.created_at.fecha} - {elemento.created_at.hora}
+                                </div>
                             </div>
-                            
+           
                         </div>
+                        
                         </CSSTransition>
                         )}
                         </TransitionGroup>

@@ -264,8 +264,8 @@ useEffect(() => {
           </div>
 
       </article>
-      {exercisesAmrap.length > 0 && <article className="col-10">
-        <table className="table">
+      {exercisesAmrap.length > 0 && <article className="col-10 table-responsive">
+        <table className="table align-middle table-bordered text-center">
           <thead>
             <tr>
               <th>Nombre</th>

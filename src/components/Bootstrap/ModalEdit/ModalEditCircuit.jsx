@@ -5,10 +5,10 @@ import { InputNumber } from 'primereact/inputnumber';
 
 import * as ExercisesService from '../../../services/exercises.services.js';
 
-function ModalEditCircuit({showEditCircuit, handleClose, closeModal, week_id, day_id, exercise_id, type, typeOfSets, circuitExercises, numberExercise }) {
+function ModalEditCircuit({showEditCircuit, handleClose, closeModal, week_id, day_id, exercise_id, type, typeOfSets,notasCircuit, circuitExercises, numberExercise }) {
 
   const [status, setStatus] = useState(0)
-  const [name, setName] = useState("")
+  const [notas, setNotas] = useState("")
   const [circuit, setCircuit] = useState([])
   const [copia, setCopia] = useState([])
   
@@ -28,22 +28,27 @@ let idRefresh = generateUUID()
   useEffect(() => {
     setCircuit(circuitExercises)
     setCopia(circuitExercises)
+    console.log(notas)
 
 }, [showEditCircuit, copia, status])
 
 
 //EL problema del touch del celular creo que era por el status, cuando lo hago bien si edita
 
+const handleNotas = (e) => {setNotas(e.target.value)}
+
 function editName(id, name){
-  let indexExercise = circuit.findIndex(exercise => exercise.idAmrap === id)
+  let indexExercise = circuit.findIndex(exercise => exercise.idRefresh === id)
   circuit[indexExercise].name = name
   setCopia(circuit)
+  console.log(id)
+  console.log(circuit)
  
 }
 
 function editReps(id, reps){
 
-  let indexExercise = circuit.findIndex(exercise => exercise.idAmrap === id)
+  let indexExercise = circuit.findIndex(exercise => exercise.idRefresh === id)
   circuit[indexExercise].reps = reps
   setCopia(circuit)
   setStatus(idRefresh)
@@ -51,7 +56,7 @@ function editReps(id, reps){
 }
 
 function editPeso(id, peso){
-  let indexExercise = circuit.findIndex(exercise => exercise.idAmrap === id)
+  let indexExercise = circuit.findIndex(exercise => exercise.idRefresh === id)
   circuit[indexExercise].peso = peso
   setCopia(circuit)
  
@@ -59,7 +64,11 @@ function editPeso(id, peso){
 
 function editAmrap(){
 
-  ExercisesService.editExerciseAmrap(week_id, day_id, exercise_id, {exercise_id, type, typeOfSets, circuit: copia, numberExercise })
+  if(notas == null || notas == undefined){
+    setNotas(" ws")
+  }
+
+  ExercisesService.editExerciseAmrap(week_id, day_id, exercise_id, {exercise_id, type, typeOfSets, circuit: copia, notas, numberExercise })
     .then(() => {
       handleClose()
     })
@@ -78,42 +87,57 @@ function editAmrap(){
               <table className='table align-middle'>
                 <thead>
                   <tr>
-                    <th>Ejercicio</th> 
-                    <th>Peso</th>
-                    <th>Reps</th>
+                    <th className='w-50'>Ejercicio</th> 
+                    <th className='w-25'>Peso</th>
+                    <th className='w-25'>Reps</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {circuit.map(({idAmrap,name,reps,peso}) =>
-                  <tr key={idAmrap}>
-                    <td><input id='name' className='form-control d-block' type="text" defaultValue={name} onChange={(e) => editName(idAmrap, e.target.value)}/></td>
+                  {circuit.map(({idRefresh,name,reps,peso}) =>
+                  <tr key={idRefresh}>
+                    <td>
+                      <input id='name' className='form-control d-block' type="text" defaultValue={name} onChange={(e) => editName(idRefresh, e.target.value)}/>
+                    </td>
                     
                     <td>
                       <input 
                       className='form-control' 
                       type="text" 
                       defaultValue={peso} 
-                      onChange={(e) => editPeso(idAmrap, e.target.value)}/>
+                      onChange={(e) => editPeso(idRefresh, e.target.value)}/>
                     </td>
                     <td>
                       <InputNumber 
                           value={reps} 
-                          onValueChange={(e) => editReps(idAmrap,e.value)} 
+                          onValueChange={(e) => editReps(idRefresh,e.value)} 
                           showButtons 
-                          buttonLayout={window.screen.width > 600 ? "horizontal" : "vertical"} 
+                          buttonLayout={"vertical"} 
                           size={1} 
                           min={1} 
                           decrementButtonClassName="ButtonsInputNumber" 
                           incrementButtonClassName="ButtonsInputNumber" 
                           incrementButtonIcon="pi pi-plus" 
                           decrementButtonIcon="pi pi-minus"
-                          className="WidthInputsWhenIsMobile " 
                       />
                       </td>
 
                   </tr>
                   )}
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <th colSpan={3}>Notas</th>
+                  </tr>
+                  <tr>
+                    <th colSpan={3}>
+                    <input 
+                      className='form-control' 
+                      type="text" 
+                      defaultValue={notasCircuit} 
+                      onChange={handleNotas}/>
+                    </th>
+                  </tr>
+                </tfoot>
               </table>
               
             </article>

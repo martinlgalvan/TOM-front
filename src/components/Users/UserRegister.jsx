@@ -1,4 +1,4 @@
-import { useState} from 'react'
+import { useEffect, useState} from 'react'
 import * as UsersService from '../../services/users.services.js'
 
 import {useParams} from 'react-router-dom'
@@ -9,6 +9,7 @@ function RegisterPage({refresh}){
     const {id} = useParams()
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
+    const [logo, setLogo] = useState("")
     const [password, setPassword] = useState()
     const [error, setError] = useState()
     
@@ -35,11 +36,16 @@ function RegisterPage({refresh}){
     function changePassword(e){
         setPassword(e.target.value)
     }
+    
+    useEffect(()=>{
+        UsersService.findById(id)
+            .then(data => setLogo(data.logo))
+    },[name])
 
     function onSubmit(e){
         e.preventDefault()
-        UsersService.createAlumno(id, {name, email, password})
-            .then(() => {
+        UsersService.createAlumno(id, {name, email, password,logo})
+            .then((data) => {
                 refresh(idRefresh)
             })
             .catch(err =>{

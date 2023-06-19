@@ -50,12 +50,12 @@ const CustomInputNumber = React.forwardRef(
 
             </button>
             <input
-              type="number"
+              type="text"
               value={value}
               readOnly
               disabled={disabled}
               onKeyDown={handleKeyDown}
-              className="form-control rounded-0 m-0 inp px-0"
+              className="form-control rounded-0 m-0 inp text-center"
               ref={ref}
             />
 

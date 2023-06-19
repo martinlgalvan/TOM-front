@@ -7,6 +7,7 @@ import 'primereact/resources/primereact.css';
 import '../src/assets/rsuiteStyles.css'
 //Bootstrapstyles
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 //Propios styles
 import '../src/assets/styles.css';   
 
@@ -23,6 +24,8 @@ import UsersListPage from "./pages/coach/UsersListPage.jsx"
 import UserRoutineEditPage from "./pages/coach/UserRoutineEditPage.jsx"
 import DayEditDetailsPage from "./pages/coach/DayEditDetailsPage.jsx"
 
+import DatabaseExercises from './pages/coach/DatabaseExercises.jsx'
+
 import * as authService from "./services/auth.services.js"
 import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
 
@@ -38,6 +41,7 @@ function RoutePrivate( {isAutenticate, children}){
 function App(){
     const navigate = useNavigate()
     const id = localStorage.getItem('_id')
+    const [user, setUser] = useState()
 
 
     const [isAutenticated, setIsAutenticated] = useState(null)
@@ -45,21 +49,23 @@ function App(){
         useEffect(() => {
             //window.google.translate.disableAutoTranslation();
             const token = localStorage.getItem('token')
+            console.log(user)
             if(token){
                 setIsAutenticated(true)
             } else{
                 setIsAutenticated(false)
             }
-        }, [])
+        }, [user])
 
      
         function onLogin(user, token){
-            
+            setUser(user)
             setIsAutenticated(true)
             localStorage.setItem('token', token)
             localStorage.setItem('role', user.role)
             localStorage.setItem('_id', user._id)
             localStorage.setItem('name', user.name)
+            localStorage.setItem('logo', user.logo)
             navigate(`/`)
         }
     
@@ -70,6 +76,7 @@ function App(){
             localStorage.removeItem('role')
             localStorage.removeItem('_id')
             localStorage.removeItem('name')
+            localStorage.removeItem('logo')
             
             authService.logout()
             navigate('/')
@@ -111,6 +118,9 @@ function App(){
                         {isAdmin() && <><Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link></>}
                         </li>
                         <li className="nav-item">
+                        {isAdmin() && <><Link className='nav-link' to={`/exercises/${id}`}>Base de datos</Link></>}
+                        </li>
+                        <li className="nav-item">
                         {isAutenticated && !isAdmin() && <><Link className='nav-link' to={`/routine/${id}`}>Ver rutina</Link></>}
                         </li>
                         <li className="nav-item">
@@ -128,6 +138,7 @@ function App(){
                 <Route path="/" element={<HomePage/>}/>
                 <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
                 <Route path="/users/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UsersListPage/></RoutePrivate>}/>
+                <Route path="/exercises/:id" element={<RoutePrivate isAutenticate={isAutenticated}><DatabaseExercises/></RoutePrivate>}/>
 
                 <Route path="/user/routine/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutineEditPage/></RoutePrivate>}/>
                 <Route path="/routine/week/:week_id/day/:day_id" element={<RoutePrivate isAutenticate={isAutenticated}><DayEditDetailsPage/></RoutePrivate>}/>
