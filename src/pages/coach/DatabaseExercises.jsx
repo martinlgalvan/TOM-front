@@ -147,7 +147,7 @@ function UsersListPage() {
 
             <article className="row justify-content-center mb-5">
 
-                <div className="col-9">
+                <div className="col-11 col-lg-9 table-responsive">
                     <table className="table table-bordered text-center align-middle">
                         <thead className="table-light">    
                             <tr>
@@ -155,7 +155,10 @@ function UsersListPage() {
                                 <th scope="col" className="">Video</th>
                                 <th scope="col">Acciones</th>
                             </tr>
+                            <tr>
                             <DataBaseExercises refresh={refresh} />
+                            </tr>
+
                             <tr className="">
                               <th colSpan={3}>
                                 <input
@@ -179,8 +182,8 @@ function UsersListPage() {
                                         timeout={500}
                                         classNames="item">
                                         <tr key={_id}>
-                                            <td className="text-center"> {name} </td>
-                                            <td className="text-center"> {video} </td>
+                                            <td className="text-center w-50"> {name} </td>
+                                            <td className="text-center w-25"> {video} </td>
                                             <td className="text-center">
                                                 <button onClick={() => handleShow( _id, name, video )} className="btn">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
