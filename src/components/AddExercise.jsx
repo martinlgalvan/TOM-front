@@ -1,8 +1,9 @@
 import { useState,useRef } from "react";
 import * as ExercisesServices from "../services/exercises.services.js";
 import Exercises from './../assets/json/exercises.json'
-
+import * as DatabaseExercises from './../services/jsonExercises.services.js'
 import CustomInputNumber from './../components/CustomInputNumber.jsx';
+import * as DatabaseUtils from './../utils/variables.js'
 
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -14,7 +15,7 @@ import Formulas from "./Formulas.jsx";
 // PUEDE QUE EL PROBLEMA DE QUE NO RECARGE SEA EL NOTIFY ****************
 
 
-function AddExercise({refresh, handleCloseDialog}) {
+function AddExercise({refresh, handleCloseDialog,databaseExercises}) {
   //---variables para la carga
   const { week_id } = useParams();
   const { day_id } = useParams();
@@ -71,7 +72,13 @@ let idRefresh = generateUUID()
 
 
   useEffect(() => {
-    setExercises(Exercises);
+    
+    if(DatabaseUtils.DATABASE_EXERCISES == 'USE'){
+      setExercises(databaseExercises)
+    } else{
+      setExercises(Exercises);
+    }
+
 }, []);
 
   const search = (event) => {

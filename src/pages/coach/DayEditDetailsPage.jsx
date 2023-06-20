@@ -3,7 +3,9 @@ import {Link, useParams} from 'react-router-dom';
 
 import * as ExercisesService from '../../services/exercises.services.js';
 import * as WeekService from '../../services/week.services.js'; 
+import * as DatabaseExercises from '../../services/jsonExercises.services.js'
 import Options from './../../assets/json/options.json';
+import * as DatabaseUtils from './../../utils/variables.js'
 
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
 import { Sidebar } from 'primereact/sidebar';
@@ -85,6 +87,17 @@ function DayEditDetailsPage(){
         });
         return uuid;
     }
+
+    const [databaseUser, setDatabaseUser] = useState()
+
+    useEffect(() => {
+    
+        if(DatabaseUtils.DATABASE_EXERCISES != null){
+          DatabaseExercises.findExercises(DatabaseUtils.USER_ID).then((data) => setDatabaseUser(data))
+        }
+
+    }, []);
+    
 
     useEffect(() => {
         setLoading(true)
@@ -343,10 +356,10 @@ function DayEditDetailsPage(){
 
                 <div className='row justify-content-center'>
                     <Dialog className='col-12 col-md-10 col-xxl-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'}  header="Header" visible={visibleCircuit} modal={false} onHide={() => setVisibleCircuit(false)}>
-                        <AddCircuit handleCloseDialog={handleCloseDialog} closeDialog={closeDialog} refresh={refresh}/>
+                        <AddCircuit databaseExercises={databaseUser} handleCloseDialog={handleCloseDialog} closeDialog={closeDialog} refresh={refresh}/>
                     </Dialog>
                     <Dialog className='col-12 col-md-10 col-xxl-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'} header="Header" visible={visibleExercises} modal={false} onHide={() => setVisibleExercises(false)}>
-                        <AddExercise handleCloseDialog={handleCloseDialog} refresh={refresh}/>
+                        <AddExercise databaseExercises={databaseUser} handleCloseDialog={handleCloseDialog} refresh={refresh}/>
                     </Dialog>
                 </div>
 

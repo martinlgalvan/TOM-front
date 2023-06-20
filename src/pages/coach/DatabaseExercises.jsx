@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 
 import * as DatabaseExercises from "../../services/jsonExercises.services.js";
+import * as DataBaseUser from './../../utils/variables.js'
 
 import DataBaseExercises from "../../components/DatabaseCreateExercise.jsx";
 import Logo from "../../components/Logo";
@@ -10,6 +11,8 @@ import ModalEditDatabase from "../../components/Bootstrap/ModalEdit/ModalEditDat
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { ToastContainer, toast } from "react-toastify";
+import { InputSwitch } from "primereact/inputswitch";
+import { Tooltip } from 'primereact/tooltip';
 
 function UsersListPage() {
     const { id } = useParams();
@@ -22,6 +25,8 @@ function UsersListPage() {
     const [loading, setLoading] = useState(false);
     const [numberToast, setNumberToast] = useState(0);
     const [showEdit, setShowEdit] = useState(false);
+    const [useDatabase, setUseDatabase] = useState();
+
     const TOASTID = "LOADER_ID";
 
     const navigate = useNavigate();
@@ -45,12 +50,28 @@ function UsersListPage() {
         setLoading(true);
 
         DatabaseExercises.findExercises(id).then((data) => {
-            console.log(data);
-            console.log(id);
             setExercises(data);
             setLoading(false);
         });
     }, [status]);
+
+    
+    useEffect(() => {
+        if(DataBaseUser.DATABASE_EXERCISES == 'USE' ){
+            setUseDatabase(true)
+        } 
+    },[])
+
+    useEffect(() => {
+        if(useDatabase == true ){
+            localStorage.setItem('DATABASE_USER', 'USE')
+        }
+        if(useDatabase == false){
+            localStorage.removeItem('DATABASE_USER', 'NOTUSE')
+        }
+
+        console.log(useDatabase)
+    },[useDatabase])
 
     const refresh = (refresh) => {
         setStatus(refresh);
@@ -145,6 +166,30 @@ function UsersListPage() {
         <section className="container-fluid">
             <Logo />
 
+            <div className='row justify-content-center my-3'>
+
+                <div className='col-6 text-end p-0 fs-5 '>
+                <InputSwitch checked={useDatabase} onChange={(e) => setUseDatabase(e.value)} />
+                </div>
+
+                <div className='col-6 p-0 ps-4 text-start'>
+                    <Tooltip target=".custom-target-icon" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
+                    className="bi bi-question-circle custom-target-icon"
+                    data-pr-tooltip="Al activar esta opción, vas a usar tu base de datos para la carga de ejercicios."
+                    data-pr-position="right"
+                    data-pr-at="right+5 top"
+                    data-pr-my="left center-20"
+                    data-pr-classname='largoTooltip p-0 m-0'
+                    style={{ fontSize: '3rem', cursor: 'pointer' }} 
+                    viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                    </svg>
+                </div>
+
+            </div>
+
             <article className="row justify-content-center mb-5">
 
                 <div className="col-11 col-lg-9 table-responsive">
@@ -182,8 +227,8 @@ function UsersListPage() {
                                         timeout={500}
                                         classNames="item">
                                         <tr key={_id}>
-                                            <td className="text-center w-50"> {name} </td>
-                                            <td className="text-center w-25"> {video} </td>
+                                            <td className="text-center"> {name} </td>
+                                            <td className="text-center"> {video} </td>
                                             <td className="text-center">
                                                 <button onClick={() => handleShow( _id, name, video )} className="btn">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
