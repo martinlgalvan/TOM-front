@@ -91,13 +91,18 @@ function DayEditDetailsPage(){
     const [databaseUser, setDatabaseUser] = useState()
 
     useEffect(() => {
-    
+        setDatabaseUser(localStorage.getItem('DATABASE_USER'))
         if(DatabaseUtils.DATABASE_EXERCISES != null){
           DatabaseExercises.findExercises(DatabaseUtils.USER_ID).then((data) => setDatabaseUser(data))
-        }
+        } 
 
     }, []);
     
+    const refresh = (refresh) => {
+        console.log(refresh + 'edit circuit')
+        setStatus(refresh)
+    }
+
 
     useEffect(() => {
         setLoading(true)
@@ -126,10 +131,6 @@ function DayEditDetailsPage(){
 }, [status])
 
     let idRefresh = generateUUID()
-
-    const refresh = (refresh) => {
-        setStatus(refresh)
-    }
 
     const closeDialog = (close) => {
         setVisibleExercises(close)
@@ -161,7 +162,7 @@ function DayEditDetailsPage(){
 
     function handleShowCreateMobility(){ setShowCreateWarmup(true) }
 
-    function handleShowEditAmrap(id, type, typeOfSets, circuit,notas, numberExercise){
+    function handleShowEditCircuit(id, type, typeOfSets, circuit,notas, numberExercise){
 
         setShowEditCircuit(true)
         setExercise_id(id)
@@ -427,16 +428,16 @@ function DayEditDetailsPage(){
                                                                         <tr>
 
                                                                             <th scope='col' className='mx-2'>Ejercicio</th>
-                                                                            <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col' >Reps</th>
+                                                                            <th className='mx-2' scope='col' >Reps</th>
                                                                             <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col' >Peso</th>
                                                                         </tr>
                                                                         </thead>
                                                                     <tbody>
                                                                         {circuit.map(element =>
-                                                                        <tr key={element.name}>
+                                                                        <tr key={element.idRefresh}>
 
-                                                                            <td >{element.name}</td>
-                                                                            <td className='TableResponsiveDayEditDetailsPage'>{element.reps}</td>
+                                                                            <td>{element.name}</td>
+                                                                            <td>{element.reps}</td>
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
                                                                         </tr>)}
                                                                     </tbody>
@@ -542,7 +543,7 @@ function DayEditDetailsPage(){
                                                 editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
                                             }}}  
                                         onChange={changeNotasEdit}
-                                        onClick={type != 'exercise' ? () => handleShowEditAmrap(exercise_id, type, typeOfSets, circuit, notas, numberExercise) : null}
+                                        onClick={type != 'exercise' ? () => handleShowEditCircuit(exercise_id, type, typeOfSets, circuit, notas, numberExercise) : null}
                                         onFocus={type != 'exercise' ? null : () => handleInputFocus(index)}
                                         ref={(input) => (inputRefs.current[index] = input)}
                                         disabled={inputEnFoco !== null && inputEnFoco !== index}
@@ -558,7 +559,7 @@ function DayEditDetailsPage(){
                                                 <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
                                                 </svg>
                                             </button>
-                                            <button onClick={() => type != 'exercise' ? handleShowEditAmrap(exercise_id, type, typeOfSets, circuit, notas, numberExercise) : handleShowEditExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)} className='btn buttonsEdit'>
+                                            <button onClick={() => type != 'exercise' ? handleShowEditCircuit(exercise_id, type, typeOfSets, circuit, notas, numberExercise) : handleShowEditExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)} className='btn buttonsEdit'>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                                 <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
@@ -597,7 +598,7 @@ function DayEditDetailsPage(){
                 <ModalConfirmDeleteExercise show={show} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
                 <ModalEditExercise showEditExercise={showEditExercise} handleClose={handleClose} closeModal={closeModal}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
 
-                <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
+                <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
 
                 <ModalCreateWarmup showCreateWarmup={showCreateWarmup} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} warmup={warmup}/>
                

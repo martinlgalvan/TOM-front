@@ -72,14 +72,15 @@ let idRefresh = generateUUID()
 
 
   useEffect(() => {
+    const local = localStorage.getItem('DATABASE_USER')
     
-    if(DatabaseUtils.DATABASE_EXERCISES == 'USE'){
+    if(local != null){
       setExercises(databaseExercises)
     } else{
       setExercises(Exercises);
     }
 
-}, []);
+}, [databaseExercises]);
 
   const search = (event) => {
 

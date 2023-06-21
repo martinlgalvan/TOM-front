@@ -57,9 +57,11 @@ function UsersListPage() {
 
     
     useEffect(() => {
-        if(DataBaseUser.DATABASE_EXERCISES == 'USE' ){
+        let useDatabaseLocalStorage = localStorage.getItem('DATABASE_USER')
+
+        if(useDatabaseLocalStorage != null){
             setUseDatabase(true)
-        } 
+        }
     },[])
 
     useEffect(() => {

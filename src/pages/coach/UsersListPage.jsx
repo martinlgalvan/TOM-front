@@ -130,11 +130,11 @@ function UsersListPage() {
 
             <article className='row justify-content-center'>
 
-                <div className='col-10 col-lg-3 text-center mb-5'>
+                <div className='col-10 col-md-5 col-xl-4 text-center mb-5'>
                     <UserRegister refresh={refresh} />
                 </div>
 
-                <div className='col-12 col-lg-8 text-center mb-5'>
+                <div className='col-12 col-md-7 col-xl-8 text-center mb-5'>
 
                     <div className='row justify-content-center'>
                         <div className='col-10'>

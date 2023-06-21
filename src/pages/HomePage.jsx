@@ -11,7 +11,7 @@ function HomePage() {
     <div className="row justify-content-center colorFondo">
 
         <h2 className="my-4 col-12 text-center">¿Que hace nuestra aplicación?</h2>
-        <p className="mt-4 mb-5 col-10 col-lg-6 text-center">Digitaliza la planificación del entrenamiento. Tené a todos tus alumnos en un mismo sitio, actualizando su planificación con todas las herramientas necesarias para hacer el trabajo lo más ameno posible. También contás con un feedback alumno-entrenador, para que suba sus observaciones acerca de su rutina. ¿También tenés alumnos online? Te brindamos una base de datos llena de videos explicativos sobre todos los ejercicios básicos del entrenamiento, ¡Con la posibilidad de que subas los tuyos!</p>
+        <p className="mt-4 mb-5 col-10 col-lg-6 text-center">Digitaliza la planificación del entrenamiento. Tené a todos tus alumnos en un mismo sitio, actualizando su planificación con todas las herramientas necesarias para hacer el trabajo lo más ameno posible. ¿También tenés alumnos online? Te brindamos una base de datos llena de videos explicativos sobre todos los ejercicios básicos del entrenamiento, ¡Con la posibilidad de que subas los tuyos!</p>
     
     </div>
 
