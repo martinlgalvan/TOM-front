@@ -188,7 +188,7 @@ function UserRoutineEditPage(){
 
             <article className='row justify-content-center'>
                 <div className='col-12 mx-2 text-center'>
-                    <button onClick={createWeek} className='input-group-text btn BlackBGtextWhite text-center w-25' >Crear semana <b className='fs-6'>{weekNumber}</b></button>
+                    <button onClick={createWeek} className='input-group-text btn BlackBGtextWhite text-center' >Crear semana <b className='fs-6'>{weekNumber}</b></button>
                 </div>
                     {routine.length > 0 &&
                     
