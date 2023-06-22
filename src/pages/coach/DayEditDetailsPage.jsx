@@ -88,6 +88,9 @@ function DayEditDetailsPage(){
         return uuid;
     }
 
+    
+    let idRefresh = generateUUID()
+
     const [databaseUser, setDatabaseUser] = useState()
 
     useEffect(() => {
@@ -98,11 +101,17 @@ function DayEditDetailsPage(){
 
     }, []);
     
+    const [cosa, setCosa] = useState()
+    const refreshEdit = (data) => {
+        setDay([])
+    }
+
     const refresh = (refresh) => {
-        console.log(refresh + 'edit circuit')
         setStatus(refresh)
     }
 
+    //useEffect(() => {setStatus(3),[refresh]})
+    
 
     useEffect(() => {
         setLoading(true)
@@ -116,6 +125,7 @@ function DayEditDetailsPage(){
                 let exercises = day.filter(exercise => exercise.type == 'exercise')
                 let circuit = day.filter(circuito => circuito.type != 'exercise')
 
+                setCosa(indexDay)
                 setExercises(exercises)
                 setCircuit(circuit)
                 setDay(day)
@@ -126,11 +136,12 @@ function DayEditDetailsPage(){
                 setOptions(Options)
                 
                 setTimeout(() => {setBoolFocus(1)},1500)
+                console.log(status)
 
             })
 }, [status])
 
-    let idRefresh = generateUUID()
+
 
     const closeDialog = (close) => {
         setVisibleExercises(close)
@@ -180,8 +191,9 @@ function DayEditDetailsPage(){
         setShowEditExercise(false)
         setShowCreateWarmup(false)
         setShowEditCircuit(false)
+
         setStatus(idRefresh)
-        
+        console.log(status, idRefresh)
     } 
 
     const closeModal = () => {
@@ -189,6 +201,7 @@ function DayEditDetailsPage(){
         setShowEditExercise(false)
         setShowCreateWarmup(false)
         setShowEditCircuit(false)
+        setStatus(idRefresh)
         
     } 
 
@@ -281,7 +294,7 @@ function DayEditDetailsPage(){
         if(notas == null || notas == "" || notas == undefined){ notas = " "} 
 
         ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
-            .then(() => setStatus(idRefresh) )
+            .then(() => {setStatus(idRefresh)} )
             
     }
 
@@ -596,7 +609,7 @@ function DayEditDetailsPage(){
 
 
                 <ModalConfirmDeleteExercise show={show} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
-                <ModalEditExercise showEditExercise={showEditExercise} handleClose={handleClose} closeModal={closeModal}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
+                <ModalEditExercise refreshEdit={refreshEdit} showEditExercise={showEditExercise} handleClose={handleClose} closeModal={closeModal}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
 
                 <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
 

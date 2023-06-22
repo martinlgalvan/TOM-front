@@ -6,7 +6,7 @@ import { InputNumber } from "primereact/inputnumber";
 
 import * as ExercisesService from "../../../services/exercises.services.js";
 
-function ModalEditExercise({ showEditExercise, handleClose,closeModal, week_id, day_id, exercise_id, nameModal, setsModal, repsModal, pesoModal, videoModal, notasModal, numberExerciseModal, valueExerciseModal, }) {
+function ModalEditExercise({ showEditExercise, handleClose,closeModal, week_id, day_id, exercise_id, nameModal, setsModal, repsModal, pesoModal, videoModal, notasModal, numberExerciseModal, valueExerciseModal,refreshEdit }) {
 
   const [name, setNameEdit] = useState();
   const [sets, setSetsEdit] = useState();
@@ -16,6 +16,18 @@ function ModalEditExercise({ showEditExercise, handleClose,closeModal, week_id, 
   const [notas, setNotasEdit] = useState();
   const [numberExercise, setNumberExerciseEdit] = useState();
   const [valueExercise, setValueExerciseEdit] = useState();
+
+    function generateUUID() {
+    let d = new Date().getTime();
+    let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        let r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+}
+
+let idRefresh = generateUUID()
 
   useEffect(() => {
 
@@ -48,7 +60,9 @@ function ModalEditExercise({ showEditExercise, handleClose,closeModal, week_id, 
 
   function edit() {
     ExercisesService.editExercise(week_id, day_id, exercise_id, { type: "exercise", name, sets, reps, peso, video, notas, numberExercise, valueExercise })
-      .then(() => {
+      .then((data) => {
+
+        refreshEdit(data)
         handleClose();
       });
 

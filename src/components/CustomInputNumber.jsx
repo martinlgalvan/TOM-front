@@ -50,6 +50,7 @@ const CustomInputNumber = React.forwardRef(
 
             </button>
             <input
+            
               type="text"
               value={value}
               readOnly
