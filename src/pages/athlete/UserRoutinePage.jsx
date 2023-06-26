@@ -16,7 +16,6 @@ function UserRoutinePage(){
         WeekService.findRoutineByUserId(id)
         .then(data => {     
             setRoutine(data)
-            console.log(id)
         })
     }, [])
 
@@ -35,17 +34,21 @@ function UserRoutinePage(){
                 {routine != null && 
                 <div className="accordion col-10 col-md-4" id="Routine">
                     {routine.map((week,indexWeek) =>
-                    <div key={week._id} className="accordion-item mb-3">
-                        <h2 className="accordion-header">
-                        <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target={`#${week._id}`} aria-expanded="false" aria-controls="collapseOne">
-                         {week.name}
-                        </button>
+                    <div key={week._id} className="accordion-item mb-3 border-0 border-top border-bottom">
+                        <h2 className="accordion-header border-0">
+                            <button className="accordion-button collapsed colorAccordion rounded-0 "  type="button" data-bs-toggle="collapse" data-bs-target={`#${week._id}`} aria-expanded="false" aria-controls="collapseOne">
+                                <div className='row justify-content-center text-center'>
+                                    <span className='fs-5'>{week.name}</span> 
+                                    <span className='textCreated'> {week.created_at.fecha}</span>
+                                </div>
+
+                            </button>
                         </h2>
                         <div id={week._id} className="accordion-collapse collapse" data-bs-parent="#Routine">
                             
-                            <div  className="accordion-body">
+                            <div className="accordion-body ">
                             {week.routine.map((day, index) => 
-                                <ul key={index} className="list-group ">
+                                <ul key={index} className="list-group  rounded-0">
                                     <Link className='list-group-item border-0 border-bottom text-center m-0 p-3 ClassBGHover' to={`/routine/${id}/day/${day._id}/${indexWeek}`}>{day.name}</Link>
                                 </ul>)}
                             </div>

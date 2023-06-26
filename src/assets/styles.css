@@ -488,6 +488,56 @@
 }*/
 
 
+.tdNumber{
+  width: 10%;
+}
+
+.tdName{
+  width: 20%;
+}
+
+.tdSets{
+  width: 10%;
+}
+
+.tdReps{
+  width: 10%;
+}
+
+.tdPeso{
+  width: 10%;
+}
+
+.tdVideo{
+  width: 10%;
+}
+
+.tdNotas{
+  width: 10%;
+}
+
+.tdActions{
+  width: 10%;
+}
+
+.heightDesktop{
+  height: 60px;
+}
+
+.heightMobile{
+  height: 95px;
+}
+
+/*.colorAccordion{
+  background-color: #e7e7e7;
+  border-top: 1px;
+  border-bottom: 1px;
+  border-left: 0;
+  border-right: 0;
+
+}*/
+
+
 
 
 
@@ -602,9 +652,6 @@
   cursor: pointer;
 }
 
-.skeletonName{
-  width: 300px;
-}
 
 }
 

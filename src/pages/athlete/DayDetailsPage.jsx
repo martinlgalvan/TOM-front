@@ -121,14 +121,14 @@ function DayDetailsPage() {
                                     <tr key={element.exercise_id}>
                                         <th>{element.numberExercise}</th>
                                         <td>
-                                            <span className="responsiveBlock">
+                                            <span className="d-block">
                                                 {element.name}{" "}
                                             </span>
-                                            <span>
-                                                {" "}
-                                                {element.sets} x {element.reps}{" "}
-                                                - {element.peso}
-                                            </span>
+                                            <span className="d-block">{element.sets} <span className="textCreated"> sets x </span>{element.reps} <span className="textCreated"> reps </span>  </span>
+                                            <span className="d-block"></span>
+                                            <span className="d-block">{element.peso} </span>
+
+                                           
                                         </td>
                                         <td>
                                         <button

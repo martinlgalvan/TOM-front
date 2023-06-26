@@ -1,37 +1,38 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Skeleton } from 'primereact/skeleton';
 
 const SkeletonExercises = () => {
 
-  console.log(window.innerWidth)
 
- 
+  useEffect(() => {
+    console.log(window.innerWidth)
+  },[])
 
   return (
   <tr className='dd'>
-      <td className="skeleton skeletonNumber TableResponsiveDayEditDetailsPage">
-        <Skeleton shape="rectangle " width='100%' height="95px" />
+      <td className="skeleton skeletonNumber tdNumber TableResponsiveDayEditDetailsPage">
+        <Skeleton shape="rectangle " width='100%' height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
-      <td className="skeleton skeletonName">
-        <Skeleton shape="rectangle" width="100%" height="95px" />
+      <td className="skeleton skeletonName tdName">
+        <Skeleton shape="rectangle" width="100%" height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
-      <td className="skeleton">
-        <Skeleton shape="rectangle" width="100%" height="95px" />
+      <td className="skeleton tdSets">
+        <Skeleton shape="rectangle" width="100%" height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
-      <td className="skeleton">
-        <Skeleton shape="rectangle" width="100%" height="95px" />
+      <td className="skeleton tdReps">
+        <Skeleton shape="rectangle" width="100%" height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
-      <td className="skeleton TableResponsiveDayEditDetailsPage">
-        <Skeleton shape="rectangle" width="100%" height="95px" />
+      <td className="skeleton TableResponsiveDayEditDetailsPage tdPeso">
+        <Skeleton shape="rectangle" width="100%" height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
-      <td className="skeleton TableResponsiveDayEditDetailsPage">
-        <Skeleton shape="rectangle" width="100%" height="95px" />
+      <td className="skeleton TableResponsiveDayEditDetailsPage tdVideo">
+        <Skeleton shape="rectangle" width="100%" height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
-      <td className="skeleton skeletonNotas TableResponsiveDayEditDetailsPage">
-        <Skeleton shape="rectangle" width="100%" height="95px" />
+      <td className="skeleton skeletonNotas TableResponsiveDayEditDetailsPage tdNotas">
+        <Skeleton shape="rectangle" width="100%" height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
-      <td className="skeleton skeletonActions">
-        <Skeleton shape="rectangle" width="100%" height="95px" />
+      <td className="skeleton skeletonActions tdActions">
+        <Skeleton shape="rectangle" width="100%" height={`${window.innerWidth > 992 ? '60px' : '95px'}`} />
       </td>
 
   </tr>
