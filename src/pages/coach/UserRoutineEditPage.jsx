@@ -63,7 +63,6 @@ function UserRoutineEditPage(){
         WeekService.findRoutineByUserId(id)
             .then(data => {   
                 setRoutine(data)
-                console.log(data[0].routine[2].exercises)
                 setWeekNumber(data.length + 1)
                 if(data.length == 0){
                     setCopyWeek(false)
