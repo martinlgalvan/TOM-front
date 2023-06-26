@@ -26,7 +26,7 @@ function FrequentQuestions() {
                             
                             <div  className="accordion-body">
                             {week.routine.map((day, index) => 
-                                <ul key={index} class="list-group ">
+                                <ul key={index} className="list-group ">
                                     <Link className='list-group-item border-0 border-bottom text-center m-0 p-3 ClassBGHover' to={`/routine/${id}/day/${day._id}/${indexWeek}`}>{day.name}</Link>
                                 </ul>)}
                             </div>

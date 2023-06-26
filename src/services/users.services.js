@@ -53,7 +53,7 @@ async function deleteUser(id) {
 }
 
 //Busca a un alumno
-async function findById(id) {
+async function findUserById(id) {
     return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/user/${id}`, {
         method: 'GET',
         headers: {
@@ -190,7 +190,7 @@ async function findRoutineById(id) {
 
 export {
     find,
-    findById,
+    findUserById,
     createAlumno,
     deleteUser,
     findDays,

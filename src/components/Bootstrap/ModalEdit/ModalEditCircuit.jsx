@@ -28,7 +28,7 @@ let idRefresh = generateUUID()
   useEffect(() => {
     setCircuit(circuitExercises)
     setCopia(circuitExercises)
-    console.log(notas)
+
 
 }, [showEditCircuit, copia, status])
 
@@ -149,7 +149,7 @@ function editAmrap(){
           <button className='btn BGmodalClose' onClick={closeModal}>
             Cerrar
           </button>
-          <button className='btn BlackBGtextWhite' onClick={editAmrap}>
+          <button className='btn BlackBGtextWhite' onClick={() => editAmrap()}>
             Editar
           </button>
         </Modal.Footer>

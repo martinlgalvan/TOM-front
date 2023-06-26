@@ -459,7 +459,29 @@
 }
 
 
+.skeleton {
+  background-color: #f1f1f1;
+}
 
+.skeleton :global(.p-skeleton) {
+  margin-bottom: 1rem;
+}
+
+.skeletonActions{
+  width: 94px;
+}
+
+/*.skeletonNotas{
+  width: 190px;
+}
+
+.skeletonName{
+  width: 230px;
+}
+
+.skeletonNumber{
+  width: 110px;
+}*/
 
 
 

@@ -76,15 +76,15 @@ function DatabaseCreateExercise({refresh}){
 
         {anchoPagina > 992 ?
         <>
-        <th> <input type="text" class="form-control rounded-0" placeholder='Peso muerto' onChange={changeName} /> </th>
-        <th> <input type="text" class="form-control rounded-0" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/> </th>
-        <th> <button type='submit' class="btn BlackBGtextWhite rounded-0 w-100" onClick={createExercise}>Añadir ejercicio</button> </th>
+        <th> <input type="text" className="form-control rounded-0" placeholder='Peso muerto' onChange={changeName} /> </th>
+        <th> <input type="text" className="form-control rounded-0" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/> </th>
+        <th> <button type='submit' className="btn BlackBGtextWhite rounded-0 w-100" onClick={createExercise}>Añadir ejercicio</button> </th>
         </>:
 
         <th colSpan={3}> 
-            <input type="text" class="form-control rounded-0 mb-2" placeholder='Peso muerto' onChange={changeName} />
-            <input type="text" class="form-control rounded-0 mb-2" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/>
-            <button type='submit' class="btn BlackBGtextWhite rounded-0 w-100" onClick={createExercise}>Añadir ejercicio</button>
+            <input type="text" className="form-control rounded-0 mb-2" placeholder='Peso muerto' onChange={changeName} />
+            <input type="text" className="form-control rounded-0 mb-2" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/>
+            <button type='submit' className="btn BlackBGtextWhite rounded-0 w-100" onClick={createExercise}>Añadir ejercicio</button>
         </th>}
 
  </>

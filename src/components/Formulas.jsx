@@ -137,12 +137,12 @@ useEffect(() => {
               )}
             </select>
 
-          <div class="row g-3">
-            <div class="col-sm-7">
+          <div className="row g-3">
+            <div className="col-sm-7">
               <input className="form-control"  onChange={changeFormuleKilos}  />
             </div>
 
-            <div class="col-sm">
+            <div className="col-sm">
 
               <select defaultValue={optionsReps[0].number} name="" id="formule" onChange={changeFormuleReps}>
                 {optionsReps.map(formule => 

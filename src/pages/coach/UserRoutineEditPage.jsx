@@ -63,6 +63,7 @@ function UserRoutineEditPage(){
         WeekService.findRoutineByUserId(id)
             .then(data => {   
                 setRoutine(data)
+                console.log(data[0].routine[2].exercises)
                 setWeekNumber(data.length + 1)
                 if(data.length == 0){
                     setCopyWeek(false)
@@ -248,7 +249,7 @@ function UserRoutineEditPage(){
                                     >
                                         <div key={element._id} className='row justify-content-center mx-0 py-1 border-bottom'>
 
-                                            <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/week/${elemento._id}/day/${element._id}`}>{element.name}</Link>
+                                            <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/week/${elemento._id}/day/${element._id}/${element.exercises.length}`}>{element.name}</Link>
                                             
                                             <button onClick={() => handleShowEdit(elemento._id,element._id, element.name)} className=' col-2 btn ClassBGHover'>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-three-dots-vertical" viewBox="0 0 16 16">
@@ -272,7 +273,7 @@ function UserRoutineEditPage(){
                                     <button onClick={() => handleShowEditWeek(elemento._id, elemento.name)} className='btn border buttonColor'>Editar</button> 
 
                                 </div>
-                                <div class="card-footer textCreated mt-3">
+                                <div className="card-footer textCreated mt-3">
                                 {elemento.created_at.fecha} - {elemento.created_at.hora}
                                 </div>
                             </div>

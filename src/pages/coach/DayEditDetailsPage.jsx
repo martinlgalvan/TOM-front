@@ -16,27 +16,33 @@ import { ToastContainer, toast } from 'react-toastify';
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
 import ModalConfirmDeleteExercise from '../../components/Bootstrap/ModalConfirmDeleteExercise.jsx';
-import ModalEditExercise from '../../components/Bootstrap/ModalEdit/ModalEditExercise.jsx';
 import ModalCreateWarmup from '../../components/Bootstrap/ModalCreateWarmup.jsx';
 import Formulas from '../../components/Formulas.jsx';
 import ModalEditCircuit from '../../components/Bootstrap/ModalEdit/ModalEditCircuit.jsx';
 import AddCircuit from '../../components/AddCircuit.jsx';
 import CustomInputNumber from '../../components/CustomInputNumber.jsx';
+import EditExercise from '../../components/EditExercise.jsx';
+import SkeletonExercises from '../../components/Skeleton/SkeletonExercises.jsx';
 
 
 function DayEditDetailsPage(){
     const {week_id} = useParams()
     const {day_id} = useParams()
+    const {numberExercises} = useParams()
+
     const [status, setStatus] = useState(1)
     const [loading, setLoading] = useState(null)
+    const [firstLoading, setFirstLoading] = useState(true)
+
     const [options, setOptions] = useState()
     const [numberToast, setNumberToast] = useState(0)
     const TOASTID = "LOADER_ID"
 
     const [warmup, setWarmup] = useState()
-    const [exercises, setExercises] = useState([])
+
     const [circuit, setCircuit] = useState([])
     const [day, setDay] = useState([])
+
 
     const [exercise_id, setExercise_id] = useState()
     const [nameExercise, setNameModal] = useState()
@@ -48,8 +54,6 @@ function DayEditDetailsPage(){
     const [showCreateWarmup, setShowCreateWarmup] = useState(false)
 
     const [CanvasFormulas, setCanvasFormulas] = useState(false);
-    const [visibleCircuit, setVisibleCircuit] = useState(false);
-    const [visibleExercises, setVisibleExercises] = useState(false);
     const [boolFocus, setBoolFocus] = useState(2)
     
     const [inputEnFoco, setInputEnFoco] = useState(null);
@@ -57,14 +61,8 @@ function DayEditDetailsPage(){
 
     const inputRefs = useRef([]);
 
-    const [name, setNameExercise] = useState()
-    const [sets, setSetsExercise] = useState()
-    const [reps, setRepsExercise] = useState()
-    const [peso, setPesoExercise] = useState()
-    const [video, setVideoExercise] = useState()
     const [notas, setNotasExercise] = useState()
     const [numberExercise, setNumberExercise] = useState()
-    const [valueExercise, setValueExercise] = useState()
 
     //Variables para cambiar individualmente los ejercicios
     const [newName, setNewName] = useState()
@@ -77,6 +75,11 @@ function DayEditDetailsPage(){
 
     const [typeOfSets, setTypeOfSets] = useState("")
     const [type, setType] = useState("")
+
+    const [visibleCircuit, setVisibleCircuit] = useState(false);
+    const [visibleExercises, setVisibleExercises] = useState(false);
+    const [visibleEdit, setVisibleEdit] = useState(false);
+
 
     function generateUUID() {
         let d = new Date().getTime();
@@ -101,9 +104,12 @@ function DayEditDetailsPage(){
 
     }, []);
     
-    const [cosa, setCosa] = useState()
-    const refreshEdit = (data) => {
+    const [ind, setInd] = useState()
+    const refreshEdit = () => {
         setDay([])
+
+
+        //setDay([...data.exercise.routine[ind].exercises])
     }
 
     const refresh = (refresh) => {
@@ -111,9 +117,11 @@ function DayEditDetailsPage(){
     }
 
     //useEffect(() => {setStatus(3),[refresh]})
-    
+
+    const [secondLoad, setSecondLoad] = useState()
 
     useEffect(() => {
+
         setLoading(true)
         setNumberToast(true)
 
@@ -122,11 +130,11 @@ function DayEditDetailsPage(){
                 //Encuentro el index del día, y luego seteo el día con el que corresponde.
                 let indexDay = data[0].routine.findIndex(dia => dia._id === day_id)
                 let day = data[0].routine[indexDay].exercises
-                let exercises = day.filter(exercise => exercise.type == 'exercise')
                 let circuit = day.filter(circuito => circuito.type != 'exercise')
 
-                setCosa(indexDay)
-                setExercises(exercises)
+                setInd(indexDay)
+                //setCosa(indexDay)
+
                 setCircuit(circuit)
                 setDay(day)
                 setUserId(data[0].user_id)
@@ -134,12 +142,21 @@ function DayEditDetailsPage(){
                 setInputEnFoco(null)
                 setConfirm(null)
                 setOptions(Options)
-                
+                setFirstLoading(false)
                 setTimeout(() => {setBoolFocus(1)},1500)
-                console.log(status)
 
+                localStorage.setItem('LEN', day.length)
+
+               
             })
-}, [status])
+}, [status, firstLoading])
+
+useEffect(() => {
+    let strItem = localStorage.getItem('LEN')
+    let parsedItem = parseInt(strItem)
+    setSecondLoad(parsedItem)
+    console.log(parsedItem)
+}, [loading])
 
 
 
@@ -158,17 +175,12 @@ function DayEditDetailsPage(){
     function changeVideoEdit(e){ setNewVideo(e.target.value)}
 
     //Modal Edit Exercise
-    function handleShowEditExercise(id, name, sets, reps,peso, video, notas){
 
-        setShowEditExercise(true)
-        setNameExercise(name)
-        setExercise_id(id)
-        setSetsExercise(sets)
-        setRepsExercise(reps)
-        setPesoExercise(peso)
-        setVideoExercise(video)
-        setNotasExercise(notas)
+    const [completeExercise, setCompleteExercise] = useState()
 
+    function handleEditMobileExercise(elementsExercise){
+        setCompleteExercise(elementsExercise)
+        setVisibleEdit(true)
     }
 
     function handleShowCreateMobility(){ setShowCreateWarmup(true) }
@@ -191,9 +203,8 @@ function DayEditDetailsPage(){
         setShowEditExercise(false)
         setShowCreateWarmup(false)
         setShowEditCircuit(false)
-
         setStatus(idRefresh)
-        console.log(status, idRefresh)
+
     } 
 
     const closeModal = () => {
@@ -298,61 +309,44 @@ function DayEditDetailsPage(){
             
     }
 
+    const handleInputFocus = (index) => { setInputEnFoco(index); setConfirm(true)};
 
-    
-    const handleInputFocus = (index) => {
-        setInputEnFoco(index);
-        setConfirm(true)
-
-      };
-
-      const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false)}
+    const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
   
     //Cuando se aprete fuera del div al que le puse el ref, se pierde el foco del input
     
     const divRef = useRef();
 
     useEffect(() => {
-        function handleClickOutside(event) {
-        if (divRef.current && !divRef.current.contains(event.target)) {
-            setInputEnFoco(null);
-            
-        }
-        }
+        function handleClickOutside(event) { if(divRef.current && !divRef.current.contains(event.target)) { setInputEnFoco(null); } }
 
         const handleDocumentClick = (event) => handleClickOutside(event);
         document.addEventListener('mousedown', handleDocumentClick);
 
-        return () => {
-        document.removeEventListener('mousedown', handleDocumentClick);
-        };
+        return () => { document.removeEventListener('mousedown', handleDocumentClick); };
     }, []);
 
     const handleInputChangeSet = (newValue) => setNewSet(newValue);
     const handleInputChangeRep = (newValue) => setNewRep(newValue);
-
-
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     
     const [anchoPagina, setAnchoPagina] = useState(window.innerWidth);
 
     useEffect(() => {
-      const actualizarAnchoPagina = () => {
-        setAnchoPagina(window.innerWidth);
-      };
+      const actualizarAnchoPagina = () => setAnchoPagina(window.innerWidth);
   
       // Actualizar el ancho de la página cuando se monte el componente
       actualizarAnchoPagina();
   
       // Actualizar el ancho de la página cuando se redimensione la ventana
       window.onresize = actualizarAnchoPagina;
-      console.log(anchoPagina)
+
       // Limpiar el event handler cuando se desmonte el componente
-      return () => {
-        window.onresize = null;
-      };
+      return () => { window.onresize = null; };
     }, []);
+
+    const numberOfSkeletons = 5
 
     return (
 
@@ -402,41 +396,51 @@ function DayEditDetailsPage(){
                                 </tr> 
                             </thead>
                             <tbody>
-                                {showLoadingToast()}
-                                <TransitionGroup component={null} className="todo-list">
-                                {day.map(({exercise_id,name, sets, reps, peso, video, notas, numberExercise,type, typeOfSets, circuit}, index) =>
+                            {showLoadingToast()}
+                            {firstLoading == true || day.length == 0 ? Array.from({ length: firstLoading == true && secondLoad == numberExercises ? numberExercises : secondLoad }).map((_, index) => (
+                                <SkeletonExercises key={index} />
+                            )) : 
+                            <TransitionGroup component={null} className="todo-list">
+                                {day.map((exercise, index) =>
                                 <CSSTransition
-                                key={exercise_id}
-                                timeout={500}
+                                key={exercise.exercise_id}
+                                timeout={day.length == 0 ? 0 : 400}
                                 classNames="item"
-                                >
-                                    <tr key={exercise_id} className={`oo ${inputEnFoco !== null && inputEnFoco !== index ? 'ww' : null}`}>
+                                >                               
+                                    <tr key={exercise.exercise_id} className={`oo ${inputEnFoco !== null && inputEnFoco !== index ? 'ww' : null}`}>
                                         <th className='TableResponsiveDayEditDetailsPage' >
-                                        {type != 'exercise' ? <span>{numberExercise}</span> :
+                                        {exercise.type != 'exercise' ? <span>{exercise.numberExercise}</span> :
                                          <select  
-                                            defaultValue={numberExercise} 
-                                            onChange={(e) => { editExercise(exercise_id, name, sets, reps, peso, video, notas, e.target.value)}}
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                            >
+                                            defaultValue={exercise.numberExercise} 
+                                            onChange={(e) => { 
+                                                editExercise(
+                                                    exercise.exercise_id, 
+                                                    exercise.name, 
+                                                    exercise.sets, 
+                                                    exercise.reps, 
+                                                    exercise.peso, 
+                                                    exercise.video, 
+                                                    exercise.notas, 
+                                                    e.target.value)}}
+                                            disabled={inputEnFoco !== null && inputEnFoco !== index}>
                                             {options.map(option =>
-                                            <optgroup key={option.value} label={option.name} >
-                                                <option value={option.value}>{option.name}</option>
+                                            <optgroup 
+                                                key={option.value} 
+                                                label={option.name} >
 
-                                                {option.extras.map(element => 
-
-                                                    <option key={element.name} >{element.name}</option>
-
-                                                )}
+                                                    <option value={option.value} > {option.name} </option>
+                                                    {option.extras.map(element => <option key={element.name} >{element.name}</option> )}
 
                                             </optgroup>
                                             )}
-                                            </select>}
+                                        </select>}
+
                                         </th>
-                                        {type != 'exercise' ? <td colSpan={anchoPagina > 992 ? 5 : 3} >
+                                        {exercise.type != 'exercise' ? <td colSpan={anchoPagina > 992 ? 5 : 3} >
                                                                 <table className='table align-middle'>
                                                                     <thead>
                                                                         <tr>
-                                                                            <th colSpan={anchoPagina > 992 ? 5 : 3}>{type} x {typeOfSets}</th>
+                                                                            <th colSpan={anchoPagina > 992 ? 5 : 3}>{exercise.type} x {exercise.typeOfSets}</th>
                                                                         </tr>
                                                                         <tr>
 
@@ -446,7 +450,7 @@ function DayEditDetailsPage(){
                                                                         </tr>
                                                                         </thead>
                                                                     <tbody>
-                                                                        {circuit.map(element =>
+                                                                        {exercise.circuit.map(element =>
                                                                         <tr key={element.idRefresh}>
 
                                                                             <td>{element.name}</td>
@@ -458,13 +462,20 @@ function DayEditDetailsPage(){
                                                             </td>: 
                                     <td className='tdName'>
                                         <input 
-                                        id='name' 
                                         className='form-control border-0' 
                                         type="text" 
-                                        defaultValue={name} 
-                                        onKeyDown={event => {
-                                            if (event.key === 'Enter') {
-                                                editExercise(exercise_id, event.target.value || null, sets, reps, peso, video, notas, numberExercise, valueExercise)
+                                        defaultValue={exercise.name} 
+                                        onKeyDown={e => {
+                                        if (e.key === 'Enter') {
+                                            editExercise(
+                                                exercise.exercise_id, 
+                                                e.target.value || null, 
+                                                exercise.sets, 
+                                                exercise.reps, 
+                                                exercise.peso, 
+                                                exercise.video, 
+                                                exercise.notas, 
+                                                exercise.numberExercise)
                                             }}} 
                                         onChange={changeNameEdit}
                                         onFocus={() => handleInputFocus(index)}
@@ -474,10 +485,10 @@ function DayEditDetailsPage(){
                                         />
                                     </td>}
 
-                                    {sets === undefined ? null :
+                                    {exercise.sets === undefined ? null :
                                     <td className='tdSets c' >
                                         <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
+                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : exercise.sets}
                                             onChange={(newValue) => handleInputChangeSet(newValue)}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
@@ -486,11 +497,11 @@ function DayEditDetailsPage(){
                                             />
   
                                     </td>} 
-                                    {reps === undefined ? null  : 
+                                    {exercise.reps === undefined ? null  : 
                                     <td className='tdReps'>
                                             
                                             <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
+                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : exercise.reps}
                                             onChange={(newValue) => handleInputChangeRep(newValue)}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
@@ -500,19 +511,27 @@ function DayEditDetailsPage(){
                                         </td> 
                                     }
                                         
-                                    {peso === undefined ? null :
+                                    {exercise.peso === undefined ? null :
 
                                         <td className='TableResponsiveDayEditDetailsPage tdPeso'>
                                             
                                             <input 
                                             className='form-control border-0' 
                                             type="text" 
-                                            defaultValue={peso}
+                                            defaultValue={exercise.peso}
                                             onChange={changePesoEdit}
-                                            onKeyDown={event => {
-                                                if (event.key === 'Enter') {
-                                                    editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
-                                                }}}  
+                                            onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                editExercise(
+                                                    exercise.exercise_id, 
+                                                    exercise.name, 
+                                                    exercise.sets, 
+                                                    exercise.reps, 
+                                                    e.target.value || null,
+                                                    exercise.video, 
+                                                    exercise.notas, 
+                                                    exercise.numberExercise)
+                                                }}} 
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
                                             disabled={inputEnFoco !== null && inputEnFoco !== index}
@@ -522,18 +541,26 @@ function DayEditDetailsPage(){
                                         </td> 
                                     }
                                     
-                                    {video === undefined ? null : 
+                                    {exercise.video === undefined ? null : 
                                     
                                         <td className='TableResponsiveDayEditDetailsPage tdVideo' >
                                             
                                             <input 
                                             className='form-control border-0' 
                                             type="text" 
-                                            defaultValue={video}
-                                            onKeyDown={event => {
-                                                if (event.key === 'Enter') {
-                                                    editExercise(exercise_id, name, sets, reps, peso, event.target.value || null, notas, numberExercise, valueExercise)
-                                                }}}  
+                                            defaultValue={exercise.video}
+                                            onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                editExercise(
+                                                    exercise.exercise_id, 
+                                                    exercise.name, 
+                                                    exercise.sets, 
+                                                    exercise.reps, 
+                                                    exercise.peso, 
+                                                    e.target.value || null, 
+                                                    exercise.notas, 
+                                                    exercise.numberExercise)
+                                                }}} 
                                             onChange={changeVideoEdit}
                                             onFocus={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
@@ -543,21 +570,34 @@ function DayEditDetailsPage(){
                                         </td>
                                     }
 
-                                    
-
                                     <td className='TableResponsiveDayEditDetailsPage tdNotas'>
                                         
                                         <textarea 
                                         className='form-control border-0' 
                                         type="text" 
-                                        defaultValue={notas}
-                                        onKeyDown={type == 'exercise' ? null : event => {
-                                            if (event.key === 'Enter') {
-                                                editExercise(exercise_id, name, sets, reps, peso, video, event.target.value || null, numberExercise, valueExercise)
-                                            }}}  
+                                        defaultValue={exercise.notas}
+                                        onKeyDown={e => {
+                                        if (e.key === 'Enter') {
+                                            editExercise(
+                                                exercise.exercise_id, 
+                                                exercise.name, 
+                                                exercise.sets, 
+                                                exercise.reps, 
+                                                exercise.peso, 
+                                                exercise.video, 
+                                                e.target.value || null, 
+                                                exercise.numberExercise)
+                                            }}} 
                                         onChange={changeNotasEdit}
-                                        onClick={type != 'exercise' ? () => handleShowEditCircuit(exercise_id, type, typeOfSets, circuit, notas, numberExercise) : null}
-                                        onFocus={type != 'exercise' ? null : () => handleInputFocus(index)}
+                                        onClick={
+                                            exercise.type != 'exercise' ? () => handleShowEditCircuit(
+                                            exercise.exercise_id, 
+                                            exercise.type, 
+                                            exercise.typeOfSets, 
+                                            exercise.circuit, 
+                                            exercise.notas, 
+                                            exercise.numberExercise) : null}
+                                        onFocus={exercise.type != 'exercise' ? null : () => handleInputFocus(index)}
                                         ref={(input) => (inputRefs.current[index] = input)}
                                         disabled={inputEnFoco !== null && inputEnFoco !== index}
                                         />
@@ -567,12 +607,24 @@ function DayEditDetailsPage(){
                                     <td className='tdActions'>
                                         {inputEnFoco == null ? 
                                         <>
-                                            <button onClick={(e) => deleteExercise(e,exercise_id,name)} className='btn buttonsEdit'>
+                                            <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
                                                 <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
                                                 </svg>
                                             </button>
-                                            <button onClick={() => type != 'exercise' ? handleShowEditCircuit(exercise_id, type, typeOfSets, circuit, notas, numberExercise) : handleShowEditExercise(exercise_id, name, sets, reps, peso, video, notas, numberExercise, valueExercise)} className='btn buttonsEdit'>
+                                            <button 
+                                            className='btn buttonsEdit'
+                                            onClick={() => exercise.type != 'exercise' ? 
+                                                handleShowEditCircuit(
+                                                    exercise.exercise_id, 
+                                                    exercise.type, 
+                                                    exercise.typeOfSets, 
+                                                    exercise.circuit, 
+                                                    exercise.notas, 
+                                                    exercise.numberExercise) : 
+                                                    
+                                                handleEditMobileExercise(exercise)}>
+
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                                 <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
@@ -581,7 +633,17 @@ function DayEditDetailsPage(){
                                         </> 
                                         :  
                                         
-                                            <button disabled={inputEnFoco !== null && inputEnFoco !== index} onClick={(e) => editExercise(exercise_id, newName == undefined ? name : newName, newSet == undefined ? sets : newSet, newRep == undefined ? reps : newRep, newPeso == undefined ? peso : newPeso, newVideo == undefined ? video : newVideo, newNotas == undefined ? notas : newNotas, newNumberExercise == undefined ? numberExercise : newNumberExercise)} className='btn buttonsEdit p-3'>
+                                            <button 
+                                            disabled={inputEnFoco !== null && inputEnFoco !== index} 
+                                            onClick={(e) => editExercise(
+                                                exercise.exercise_id, 
+                                                newName == undefined ? exercise.name : newName, 
+                                                newSet == undefined ? exercise.sets : newSet, 
+                                                newRep == undefined ? exercise.reps : newRep, 
+                                                newPeso == undefined ? exercise.peso : newPeso, 
+                                                newVideo == undefined ? exercise.video : newVideo, 
+                                                newNotas == undefined ? exercise.notas : newNotas, 
+                                                newNumberExercise == undefined ? exercise.numberExercise : newNumberExercise)} className='btn buttonsEdit p-3'>
 
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className=" bi bi-pencil-square " viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
@@ -593,7 +655,7 @@ function DayEditDetailsPage(){
                                 </tr>
                                     </CSSTransition>
                                 )}
-                                </TransitionGroup>
+                                </TransitionGroup>}
 
                             </tbody>
                         
@@ -607,9 +669,18 @@ function DayEditDetailsPage(){
                     <Link className="btn BlackBGtextWhite text-center my-5" to={`/user/routine/${user_id}`}>Volver atrás</Link>
                 </div>
 
+                <Dialog 
+                    className='col-12 col-md-10 col-xxl-5' 
+                    contentClassName={'colorDialog'} 
+                    headerClassName={'colorDialog'} 
+                    header="Header" 
+                    visible={visibleEdit} 
+                    modal={false} 
+                    onHide={() => setVisibleEdit(false)}>
+                    <EditExercise  completeExercise={completeExercise} functionEdit={editExercise} refreshEdit={refreshEdit}/>
+                </Dialog>
 
                 <ModalConfirmDeleteExercise show={show} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
-                <ModalEditExercise refreshEdit={refreshEdit} showEditExercise={showEditExercise} handleClose={handleClose} closeModal={closeModal}  week_id={week_id} day_id={day_id} exercise_id={exercise_id} nameModal={name} setsModal={sets} repsModal={reps} pesoModal={peso} videoModal={video} notasModal={notas}/>
 
                 <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
 

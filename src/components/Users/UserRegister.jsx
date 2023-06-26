@@ -38,7 +38,7 @@ function RegisterPage({refresh}){
     }
     
     useEffect(()=>{
-        UsersService.findById(id)
+        UsersService.findUserById(id)
             .then(data => setLogo(data.logo))
     },[name])
 

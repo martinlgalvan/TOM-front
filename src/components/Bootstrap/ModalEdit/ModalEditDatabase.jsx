@@ -50,12 +50,12 @@ function ModalEditDatabase({showEdit, handleClose, actionConfirm, exercise_id, n
           <h3 className='FontTitles py-2 border-bottom'>Editar ejercicio</h3>
           <form onSubmit={onSubmit} className="row my-4">
 
-            <div class="mb-3">
-              <label for="name" class="form-label">Nombre</label>
+            <div className="mb-3">
+              <label for="name" className="form-label">Nombre</label>
               <input onChange={changeName} className="form-control text-center" type="text" name="name" id="name" defaultValue={nameExercise}/>
             </div>
-            <div class="mb-3">
-              <label for="video" class="form-label">Link video</label>
+            <div className="mb-3">
+              <label for="video" className="form-label">Link video</label>
               <input onChange={changeVideo} className="form-control text-center " type="text" name="video" id="video" defaultValue={videoExercise}/>
             </div>
 
