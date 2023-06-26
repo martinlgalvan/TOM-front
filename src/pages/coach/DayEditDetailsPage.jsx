@@ -333,19 +333,6 @@ useEffect(() => {
     
     const [anchoPagina, setAnchoPagina] = useState(window.innerWidth);
 
-    useEffect(() => {
-      const actualizarAnchoPagina = () => setAnchoPagina(window.innerWidth);
-  
-      // Actualizar el ancho de la página cuando se monte el componente
-      actualizarAnchoPagina();
-  
-      // Actualizar el ancho de la página cuando se redimensione la ventana
-      window.onresize = actualizarAnchoPagina;
-
-      // Limpiar el event handler cuando se desmonte el componente
-      return () => { window.onresize = null; };
-    }, []);
-
     const numberOfSkeletons = 5
 
     return (
@@ -398,7 +385,7 @@ useEffect(() => {
                             <tbody>
                             {showLoadingToast()}
                             {firstLoading == true || day.length == 0 ? Array.from({ length: firstLoading == true && secondLoad == numberExercises ? numberExercises : secondLoad }).map((_, index) => (
-                                <SkeletonExercises key={index} />
+                                <SkeletonExercises ancho={anchoPagina} key={index} />
                             )) : 
                             <TransitionGroup component={null} className="todo-list">
                                 {day.map((exercise, index) =>

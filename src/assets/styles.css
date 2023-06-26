@@ -471,6 +471,10 @@
   width: 94px;
 }
 
+.vvvv{
+  height: 60px;
+}
+
 /*.skeletonNotas{
   width: 190px;
 }
@@ -493,6 +497,7 @@
 
 
 @media screen and (max-width: 992px) {
+  
     
   
   .displayFlexInMobile{
@@ -597,6 +602,9 @@
   cursor: pointer;
 }
 
+.skeletonName{
+  width: 300px;
+}
 
 }
 
