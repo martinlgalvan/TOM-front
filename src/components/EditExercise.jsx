@@ -41,12 +41,12 @@ function onSubmit(e){
     <form className='row justify-content-center' onSubmit={onSubmit}>
 
       <div className="mb-3">
-        <label for="name" className="visually-hidden">Nombre</label>
+        <label htmlFor="name" className="visually-hidden">Nombre</label>
         <input type="text" className="form-control" id="name" placeholder="Example input placeholder" onChange={changeNameEdit} defaultValue={completeExercise.name} />
       </div>
 
       <div className="mb-3">
-        <label for="peso" className="visually-hidden">Series</label>
+        <label htmlFor="peso" className="visually-hidden">Series</label>
         <CustomInputNumber 
                 initialValue={completeExercise.sets}
                 onChange={(value) => setCompleteSets(value)}
@@ -54,7 +54,7 @@ function onSubmit(e){
       </div>
 
       <div className="mb-3">
-        <label for="peso" className="visually-hidden">Repeticiones</label>
+        <label htmlFor="peso" className="visually-hidden">Repeticiones</label>
         <CustomInputNumber 
                 initialValue={completeExercise.reps}
                 onChange={(value) => setCompleteReps(value)}
@@ -62,17 +62,17 @@ function onSubmit(e){
       </div>
 
       <div className="mb-3">
-        <label for="peso" className="visually-hidden">Peso</label>
+        <label htmlFor="peso" className="visually-hidden">Peso</label>
         <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" onChange={changePesoEdit} defaultValue={completeExercise.peso}  />
       </div>
 
       <div className="mb-3">
-        <label for="peso" className="visually-hidden">Video</label>
+        <label htmlFor="peso" className="visually-hidden">Video</label>
         <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" onChange={changeVideoEdit} defaultValue={completeExercise.video}  />
       </div>
 
       <div className="mb-3">
-        <label for="peso" className="visually-hidden">Notas</label>
+        <label htmlFor="peso" className="visually-hidden">Notas</label>
         <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" onChange={changeNotasEdit} defaultValue={completeExercise.notas}  />
       </div>
 

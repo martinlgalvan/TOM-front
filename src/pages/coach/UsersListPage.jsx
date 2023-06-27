@@ -119,14 +119,7 @@ function UsersListPage() {
         <section className='container-fluid'>
 
             <Logo />
-            <h2 className='text-center mb-4 col-12'>Buscá un alumno.</h2>
-            <div className='row justify-content-center mb-5 mt-2'>
-
-                <div className='col-5'>
-                    <input value={search} onChange={searcher} type="text" placeholder='Buscar' className='col-5 form-control rounded-0'/>
-                </div>
-
-            </div>
+            <h2 className='text-center mb-5 col-12'>¡Bienvenido {localStorage.getItem('name')}!</h2>
 
             <article className='row justify-content-center'>
 
@@ -140,6 +133,27 @@ function UsersListPage() {
                         <div className='col-10'>
                             <table className="table table-bordered text-center align-middle">
                                 <thead className='table-light'>
+                                    
+                                    <tr className="">
+                                        <th colSpan={3}>
+                                            <div class="input-group mb-3">
+                                                <input
+                                                    aria-label="Buscar" 
+                                                    aria-describedby="addon-buscar"
+                                                    value={search}
+                                                    onChange={searcher}
+                                                    type="text"
+                                                    placeholder="Buscar"
+                                                    className="col-5 form-control rounded-0"
+                                                />  
+                                                <span class="input-group-text border-0 bg-light" id="addon-buscar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                                    </svg>
+                                                </span>                                      
+                                            </div>
+                                        </th>
+                                    </tr>
                                     <tr>
                                         <th scope="col">Nombre</th>
                                         <th scope="col" className='responsiveEmail'>Email</th>
@@ -148,6 +162,7 @@ function UsersListPage() {
                                 </thead>
                                 <tbody>
                                 {showLoadingToast()} 
+                               
                                     <TransitionGroup component={null} className="todo-list">
                                     {results.map(({_id, name, email}) =>
                                     

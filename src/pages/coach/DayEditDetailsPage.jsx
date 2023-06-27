@@ -29,56 +29,55 @@ function DayEditDetailsPage(){
     const {week_id} = useParams()
     const {day_id} = useParams()
     const {numberExercises} = useParams()
+    const [firstOpen, setFirstOpen] = useState(true)
 
-    const [status, setStatus] = useState(1)
-    const [loading, setLoading] = useState(null)
-    const [firstLoading, setFirstLoading] = useState(true)
+    const [status, setStatus] = useState(1)                             // Manejo de renderizado
+    const [loading, setLoading] = useState(null)                        // Manejo de renderizado
+    const [firstLoading, setFirstLoading] = useState(true)              // Manejo de skeleton
+    const [secondLoad, setSecondLoad] = useState()                      // Manejo de skeleton
 
-    const [options, setOptions] = useState()
-    const [numberToast, setNumberToast] = useState(0)
+
+    const [options, setOptions] = useState()                            // Carga de datos para el select
+    const [numberToast, setNumberToast] = useState(0)                   // Manejo del notify
     const TOASTID = "LOADER_ID"
 
-    const [warmup, setWarmup] = useState()
-
-    const [circuit, setCircuit] = useState([])
-    const [day, setDay] = useState([])
+    const [circuit, setCircuit] = useState([])                          // Carga del circuit al modal
+    const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
 
 
-    const [exercise_id, setExercise_id] = useState()
-    const [nameExercise, setNameModal] = useState()
-    const [user_id, setUserId] = useState("")
+    const [exercise_id, setExercise_id] = useState()                    // Carga edit para el edit y delete de ejercicios
+    const [nameExercise, setNameModal] = useState()                     // Carga para el delete 
+    const [user_id, setUserId] = useState("")                           // ID del usuario en cuestión
 
-    const [show, setShow] = useState(false)
-    const [showEditExercise, setShowEditExercise] = useState(false)
-    const [showEditCircuit, setShowEditCircuit] = useState(false)
-    const [showCreateWarmup, setShowCreateWarmup] = useState(false)
+    const [show, setShow] = useState(false)                             // Modal para eliminar ejercicios
+    const [showEditCircuit, setShowEditCircuit] = useState(false)       // Modal para editar los circuitos
+    const [showCreateWarmup, setShowCreateWarmup] = useState(false)     // Modal para crear la entrada en calor
 
-    const [CanvasFormulas, setCanvasFormulas] = useState(false);
-    const [boolFocus, setBoolFocus] = useState(2)
+    const [CanvasFormulas, setCanvasFormulas] = useState(false);        // Modal para canvas de formulas
     
-    const [inputEnFoco, setInputEnFoco] = useState(null);
-    const [confirm, setConfirm] = useState(null);
+    const [inputEnFoco, setInputEnFoco] = useState(null);               // Manejo de la edición rápida
+    const [confirm, setConfirm] = useState(null);                       // Ver bien para que la usé
 
-    const inputRefs = useRef([]);
+    const inputRefs = useRef([]);                                       // Manejo de la edición rápida
 
-    const [notas, setNotasExercise] = useState()
-    const [numberExercise, setNumberExercise] = useState()
+    const [notas, setNotasExercise] = useState()                        // Carga de variables para editar el circuito en su modal
+    const [numberExercise, setNumberExercise] = useState()              //
+    const [typeOfSets, setTypeOfSets] = useState("")                    //
+    const [type, setType] = useState("")                                //-------------------*
 
-    //Variables para cambiar individualmente los ejercicios
-    const [newName, setNewName] = useState()
-    const [newSet, setNewSet] = useState(null)
-    const [newRep, setNewRep] = useState()
-    const [newPeso, setNewPeso] = useState()
-    const [newVideo, setNewVideo] = useState()
-    const [newNotas, setNewNotas] = useState()
-    const [newNumberExercise, setNewNumberExercise] = useState()
+    const [newName, setNewName] = useState()                            //Variables para cambiar individualmente los ejercicios
+    const [newSet, setNewSet] = useState(null)                          //
+    const [newRep, setNewRep] = useState()                              //
+    const [newPeso, setNewPeso] = useState()                            //
+    const [newVideo, setNewVideo] = useState()                          //
+    const [newNotas, setNewNotas] = useState()                          //
+    const [newNumberExercise, setNewNumberExercise] = useState()        //-------------------*
 
-    const [typeOfSets, setTypeOfSets] = useState("")
-    const [type, setType] = useState("")
 
-    const [visibleCircuit, setVisibleCircuit] = useState(false);
-    const [visibleExercises, setVisibleExercises] = useState(false);
-    const [visibleEdit, setVisibleEdit] = useState(false);
+
+    const [visibleCircuit, setVisibleCircuit] = useState(false);        //Variables para las modales de primeReact
+    const [visibleExercises, setVisibleExercises] = useState(false);    //
+    const [visibleEdit, setVisibleEdit] = useState(false);              //-------------------*
 
 
     function generateUUID() {
@@ -98,27 +97,16 @@ function DayEditDetailsPage(){
 
     useEffect(() => {
         setDatabaseUser(localStorage.getItem('DATABASE_USER'))
+
         if(DatabaseUtils.DATABASE_EXERCISES != null){
           DatabaseExercises.findExercises(DatabaseUtils.USER_ID).then((data) => setDatabaseUser(data))
         } 
 
     }, []);
     
-    const [ind, setInd] = useState()
-    const refreshEdit = () => {
-        setDay([])
+    const refreshEdit = () => setDay([])
 
-
-        //setDay([...data.exercise.routine[ind].exercises])
-    }
-
-    const refresh = (refresh) => {
-        setStatus(refresh)
-    }
-
-    //useEffect(() => {setStatus(3),[refresh]})
-
-    const [secondLoad, setSecondLoad] = useState()
+    const refresh = (refresh) => setStatus(refresh)
 
     useEffect(() => {
 
@@ -128,34 +116,32 @@ function DayEditDetailsPage(){
         WeekService.findByWeekId(week_id)
             .then(data => {
                 //Encuentro el index del día, y luego seteo el día con el que corresponde.
-                let indexDay = data[0].routine.findIndex(dia => dia._id === day_id)
-                let day = data[0].routine[indexDay].exercises
-                let circuit = day.filter(circuito => circuito.type != 'exercise')
+                let indexDay = data[0].routine.findIndex(dia => dia._id === day_id) // De la base de datos, selecciono el día correspondiente
+                let day = data[0].routine[indexDay].exercises                       // Cargo únicamente los ejercicios
+                let circuit = day.filter(circuito => circuito.type != 'exercise')   // Cargo únicamente los ejercicios del circuito
 
-                setInd(indexDay)
                 //setCosa(indexDay)
+                setFirstOpen(false)                     // variable que detecta la primera vez que se renderiza el componente
+                setCircuit(circuit)                     // establece los ejercicios del circuito para renderizarlo luego a la hora de editar
+                setDay(day)                             // array de objetos inicial, son los ejercicios
+                setUserId(data[0].user_id)              // userId para volver a la página anterior
+                setLoading(false)                       // load principal
+                setInputEnFoco(null)                    // input para la edición rápida
+                setConfirm(null)                        // no sé todavía, averiguar por qué lo use
+                setOptions(Options)                     // array de options para el select
+                setFirstLoading(false)                  // firstload para cargar el skeleton
 
-                setCircuit(circuit)
-                setDay(day)
-                setUserId(data[0].user_id)
-                setLoading(false)
-                setInputEnFoco(null)
-                setConfirm(null)
-                setOptions(Options)
-                setFirstLoading(false)
-                setTimeout(() => {setBoolFocus(1)},1500)
-
-                localStorage.setItem('LEN', day.length)
+                localStorage.setItem('LEN', day.length) // carga en localstorage el largo del array principal, para luego al editar o eliminar cargar el skeleton correctamente 
 
                
             })
 }, [status, firstLoading])
 
 useEffect(() => {
-    let strItem = localStorage.getItem('LEN')
+    let strItem    = localStorage.getItem('LEN')
     let parsedItem = parseInt(strItem)
     setSecondLoad(parsedItem)
-    console.log(parsedItem)
+
 }, [loading])
 
 
@@ -166,13 +152,10 @@ useEffect(() => {
 
     // EDIT EXERCISES
 
-    function changeNameEdit(e){ setNewName(e.target.value)}
-
-    function changePesoEdit(e){ setNewPeso(e.target.value)}
-
-    function changeNotasEdit(e){ setNewNotas(e.target.value)}
-
-    function changeVideoEdit(e){ setNewVideo(e.target.value)}
+    const changeNameEdit = (e) => setNewName(e.target.value)
+    const changePesoEdit = (e) => setNewPeso(e.target.value)
+    const changeNotasEdit = (e) => setNewNotas(e.target.value)
+    const changeVideoEdit = (e) => setNewVideo(e.target.value)
 
     //Modal Edit Exercise
 
@@ -183,7 +166,7 @@ useEffect(() => {
         setVisibleEdit(true)
     }
 
-    function handleShowCreateMobility(){ setShowCreateWarmup(true) }
+    const handleShowCreateMobility = () => setShowCreateWarmup(true)
 
     function handleShowEditCircuit(id, type, typeOfSets, circuit,notas, numberExercise){
 
@@ -200,7 +183,6 @@ useEffect(() => {
 
     const handleClose = () => {
         setShow(false);
-        setShowEditExercise(false)
         setShowCreateWarmup(false)
         setShowEditCircuit(false)
         setStatus(idRefresh)
@@ -209,100 +191,94 @@ useEffect(() => {
 
     const closeModal = () => {
         setShow(false);
-        setShowEditExercise(false)
         setShowCreateWarmup(false)
         setShowEditCircuit(false)
-        setStatus(idRefresh)
         
     } 
 
     const deleteExercise = (event,id,name) => {
 
-        if(name == null || name == undefined){
-            name = "Sin nombre"
-        }
+        name == null || name == undefined ? name = "Sin nombre" : name = name
 
-    //Dialog delete exercise
         confirmDialog({
-            trigger: event.currentTarget,
-            message: `¡Cuidado! Estás por eliminar "${name}". ¿Estás seguro?`,
-            icon: 'pi pi-exclamation-triangle',
-            header:`Eliminar ${name}`,
-            accept: () => acceptDeleteExercise(id),
-            reject,
-            acceptLabel:"Sí, eliminar",
-            acceptClassName: "p-button-danger",
-            rejectLabel: "No",
-            rejectClassName: "closeDialog",
-            blockScroll: true,
-            dismissableMask: true,
+            trigger:            event.currentTarget,
+            message:            `¡Cuidado! Estás por eliminar "${name}". ¿Estás seguro?`,
+            icon:               'pi pi-exclamation-triangle',
+            header:             `Eliminar ${name}`,
+            accept:             () => acceptDeleteExercise(id),
+            acceptLabel:        "Sí, eliminar",
+            acceptClassName:    "p-button-danger",
+            rejectLabel:        "No",
+            rejectClassName:    "closeDialog",
+            blockScroll:        true,
+            dismissableMask:    true,
 
         });
     };
 
-    const reject = () => {};
     
     
     function acceptDeleteExercise(id) {
         setLoading(true)
         setNumberToast(2)
+
         ExercisesService.deleteExercise(week_id, day_id, id)
             .then(() => {
                 setStatus(idRefresh)
             })
-  
     };
 
     const notifyA = (message) => {
 
-        if(message == null || message == undefined){
-            message = "Sin nombre"
-        }
+        message == null || message == undefined ? message = "Sin nombre" : message = message
 
         toast.loading(message, {
-            position: "bottom-center",
-            toastId: TOASTID, 
-            autoClose: false, 
-            hideProgressBar: true,
-            pauseOnFocusLoss: false,
-            limit: 1 })};
+            position:           "bottom-center",
+            toastId:            TOASTID, 
+            autoClose:          false, 
+            hideProgressBar:    true,
+            pauseOnFocusLoss:   false,
+            limit: 1 
+        })
+    };
 
     const updateToast = () => 
 
         toast.update(
             TOASTID, { 
-            render: "Listo!", 
-            type: toast.TYPE.SUCCESS, 
-            autoClose: 1000, 
-            isLoading: false,
-            pauseOnFocusLoss: false,
-            hideProgressBar: true,
-            limit: 1,
-            className: 'rotateY animated'}
-            );
+            render:             "Listo!", 
+            type:               toast.TYPE.SUCCESS, 
+            autoClose:          1000, 
+            isLoading:          false,
+            pauseOnFocusLoss:   false,
+            hideProgressBar:    true,
+            limit:              1,
+            className:          'rotateY animated'
+            }
+        );
 
     const showLoadingToast = () => {
         if(loading == true){
             notifyA(numberToast == 1 || numberToast == true ? "Cargando" : "Eliminando ejercicio...")
-        }else{
+        } else{
             updateToast()
         }
     }    
 
     const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
 
-        let parsedValue = numberExercise
+        let parsedValue   = numberExercise
         let valueExercise = parseInt(parsedValue)
-        let sets = parseInt(StrSets)
-        let reps = parseInt(StrReps)
+        let sets          = parseInt(StrSets)
+        let reps          = parseInt(StrReps)
 
-        if(name == null || name == "" || name == undefined){ name = " " }
+        name == null || name == "" || name == undefined ? name = " " : name = name
 
-        if(peso == null || peso == "" || peso == undefined){ peso = " " }
+        peso == null || peso == "" || peso == undefined ? peso = " " : peso = peso
         
-        if(video == null || video == "" || video == undefined){ video = " " }
+        video == null || video == "" || video == undefined ? video = " ": video = video 
 
-        if(notas == null || notas == "" || notas == undefined){ notas = " "} 
+        notas == null || notas == "" || notas == undefined ? notas = " ": notas = notas
 
         ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
             .then(() => {setStatus(idRefresh)} )
@@ -318,7 +294,12 @@ useEffect(() => {
     const divRef = useRef();
 
     useEffect(() => {
-        function handleClickOutside(event) { if(divRef.current && !divRef.current.contains(event.target)) { setInputEnFoco(null); } }
+    
+        function handleClickOutside(event) { 
+            if(divRef.current && !divRef.current.contains(event.target)){ 
+                setInputEnFoco(null); 
+            } 
+        }
 
         const handleDocumentClick = (event) => handleClickOutside(event);
         document.addEventListener('mousedown', handleDocumentClick);
@@ -332,8 +313,6 @@ useEffect(() => {
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
     
     const [anchoPagina, setAnchoPagina] = useState(window.innerWidth);
-
-    const numberOfSkeletons = 5
 
     return (
 
@@ -350,11 +329,34 @@ useEffect(() => {
                 <div className="row justify-content-center">
 
                 <div className='row justify-content-center'>
-                    <Dialog className='col-12 col-md-10 col-xxl-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'}  header="Header" visible={visibleCircuit} modal={false} onHide={() => setVisibleCircuit(false)}>
-                        <AddCircuit databaseExercises={databaseUser} handleCloseDialog={handleCloseDialog} closeDialog={closeDialog} refresh={refresh}/>
+                    <Dialog 
+                        className='col-12 col-md-10 col-xxl-5' 
+                        contentClassName={'colorDialog'} 
+                        headerClassName={'colorDialog'}  
+                        header="Header" 
+                        visible={visibleCircuit} 
+                        modal={false} 
+                        onHide={() => setVisibleCircuit(false)}
+                        blockScroll={window.innerWidth > 600 ? false : true}>
+                        <AddCircuit 
+                            databaseExercises={databaseUser} 
+                            handleCloseDialog={handleCloseDialog} 
+                            closeDialog={closeDialog} 
+                            refresh={refresh}/>
                     </Dialog>
-                    <Dialog className='col-12 col-md-10 col-xxl-5' contentClassName={'colorDialog'} headerClassName={'colorDialog'} header="Header" visible={visibleExercises} modal={false} onHide={() => setVisibleExercises(false)}>
-                        <AddExercise databaseExercises={databaseUser} handleCloseDialog={handleCloseDialog} refresh={refresh}/>
+                    <Dialog 
+                        className='col-12 col-md-10 col-xxl-5' 
+                        contentClassName={'colorDialog'} 
+                        headerClassName={'colorDialog'} 
+                        header="Header" 
+                        visible={visibleExercises} 
+                        modal={false} 
+                        onHide={() => setVisibleExercises(false)}
+                        blockScroll={window.innerWidth > 600 ? false : true}>
+                        <AddExercise 
+                            databaseExercises={databaseUser}
+                            handleCloseDialog={handleCloseDialog} 
+                            refresh={refresh}/>
                     </Dialog>
                 </div>
 
@@ -595,7 +597,7 @@ useEffect(() => {
                                         {inputEnFoco == null ? 
                                         <>
                                             <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
                                                 <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
                                                 </svg>
                                             </button>
@@ -612,14 +614,21 @@ useEffect(() => {
                                                     
                                                 handleEditMobileExercise(exercise)}>
 
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                                 <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
                                                 </svg>
                                             </button>
                                         </> 
                                         :  
-                                        
+                                        <>
+                                            <button className='btn buttonsEdit' onClick={() => setInputEnFoco(null)}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-x-square" viewBox="0 0 16 16">
+                                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                                </svg>
+                                            </button>
+
                                             <button 
                                             disabled={inputEnFoco !== null && inputEnFoco !== index} 
                                             onClick={(e) => editExercise(
@@ -630,13 +639,15 @@ useEffect(() => {
                                                 newPeso == undefined ? exercise.peso : newPeso, 
                                                 newVideo == undefined ? exercise.video : newVideo, 
                                                 newNotas == undefined ? exercise.notas : newNotas, 
-                                                newNumberExercise == undefined ? exercise.numberExercise : newNumberExercise)} className='btn buttonsEdit p-3'>
+                                                newNumberExercise == undefined ? exercise.numberExercise : newNumberExercise)} 
+                                            className='btn buttonsEdit'>
 
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className=" bi bi-pencil-square " viewBox="0 0 16 16">
-                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                                                <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-check-square" viewBox="0 0 16 16">
+                                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                                    <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
                                                 </svg>
                                             </button>
+                                        </>
                                            }
                                     </td>
                                 </tr>
@@ -671,7 +682,7 @@ useEffect(() => {
 
                 <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
 
-                <ModalCreateWarmup showCreateWarmup={showCreateWarmup} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} warmup={warmup}/>
+                <ModalCreateWarmup showCreateWarmup={showCreateWarmup} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id}/>
                
                 <ToastContainer
                     position="bottom-center"
