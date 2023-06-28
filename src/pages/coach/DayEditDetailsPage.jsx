@@ -221,21 +221,12 @@ useEffect(() => {
     
     function acceptDeleteExercise(id) {
         setLoading(true)
-        setNumberToast(2)
 
         ExercisesService.deleteExercise(week_id, day_id, id)
             .then(() => {
                 setStatus(idRefresh)
             })
     };
-
-    /*const showLoadingToast = () => {
-        if(loading == true){
-            notifyA(numberToast == 1 || numberToast == true ? "Cargando" : "Eliminando ejercicio...")
-        } else{
-            updateToast()
-        }
-    }    */
 
     const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
 
@@ -407,7 +398,8 @@ useEffect(() => {
 
                                                                             <th scope='col' className='mx-2'>Ejercicio</th>
                                                                             <th className='mx-2' scope='col' >Reps</th>
-                                                                            <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col' >Peso</th>
+                                                                            <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col'>Peso</th>
+                                                                            <th className='TableResponsiveDayEditDetailsPage tdNotasCircuit' scope='col'>Video</th>
                                                                         </tr>
                                                                         </thead>
                                                                     <tbody>
@@ -417,6 +409,7 @@ useEffect(() => {
                                                                             <td>{element.name}</td>
                                                                             <td>{element.reps}</td>
                                                                             <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
+                                                                            <td className='TableResponsiveDayEditDetailsPage tdNotasCircuit'>{element.video}</td>
                                                                         </tr>)}
                                                                     </tbody>
                                                                 </table> 
@@ -658,7 +651,7 @@ useEffect(() => {
                
                 <ToastContainer
                     position="bottom-center"
-                    autoClose={1000}
+                    autoClose={200}
                     hideProgressBar={false}
                     newestOnTop={false}
                     closeOnClick

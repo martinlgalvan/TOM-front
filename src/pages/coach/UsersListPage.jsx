@@ -2,13 +2,15 @@ import {useState, useEffect} from 'react'
 import {Link, useParams, useNavigate} from 'react-router-dom'
 
 import * as UsersService from '../../services/users.services.js';
+import * as Notify from './../../helpers/notify.js'
 
 import UserRegister from '../../components/Users/UserRegister.jsx';
 import Logo from '../../components/Logo'
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from './../../helpers/notify.js';
+import DeleteUserDialog from '../../components/Users/DeleteUserDialog.jsx';
 
 function UsersListPage() {
 
@@ -17,8 +19,9 @@ function UsersListPage() {
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState(0);
     const [loading, setLoading] = useState(false)
-    const [numberToast, setNumberToast] = useState(0)
-    const TOASTID = "LOADER_ID"
+
+    const [name, setName] = useState()          // Variable para la eliminación
+    const [user_id, setUser_id] = useState()    // ----------------------------*
 
     const navigate = useNavigate()
 
@@ -36,10 +39,11 @@ function UsersListPage() {
     
     useEffect(() => {
         setLoading(true)
+        Notify.notifyA("Cargando...")
         
         UsersService.find(id)
             .then(data => {
-                console.log(id)
+                Notify.updateToast()
                 setUsers(data)
                 setLoading(false)
             })
@@ -50,36 +54,20 @@ function UsersListPage() {
         setStatus(refresh);
     }
 
+    const [showDialog, setShowDialog] = useState()
 
-    const reject = () => {};
-    
-    function acceptDeleteUser(id) {
-        setLoading(1)
-        UsersService.deleteUser(id)
-            .then(() => {
-                setStatus(idRefresh)
-            })
-
+    const showDialogDelete = (_id, name) => {
+        setName(name)
+        setUser_id(_id)
+        setShowDialog(true);
+      };
+      
+      const hideDialog = (load) => {
+        load != null ? setStatus(idRefresh) : null
   
-    };
-    
-    //Notify popup
-    const deleteUser = (event,id,name) => {
-        confirmDialog({
-            trigger: event.currentTarget,
-            message: `¡Cuidado! Estás por eliminar ${name}. ¿Estás seguro?`,
-            icon: () =>  <div id="loading"></div>,
-            header:`Eliminar ${name}`,
-            accept: () => acceptDeleteUser(id),
-            reject,
-            acceptLabel:"Sí, eliminar",
-            acceptClassName: "p-button-danger",
-            rejectLabel: "No",
-            rejectClassName: "closeDialog",
-            blockScroll: true,
-            dismissableMask: true,
-        })
-    };
+        setShowDialog(false);
+      };
+
 
     //Función de búsqueda
     const searcher = (e) => {
@@ -87,33 +75,6 @@ function UsersListPage() {
     }  
 
     const results = !search ? users : users.filter((dato)=> dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
-
-    const notifyA = (message) => {
-        toast.loading(message, {
-            position: "bottom-center",
-            toastId: TOASTID, 
-            autoClose: false, 
-            hideProgressBar: true,
-            pauseOnFocusLoss: false,
-            limit: 1 })};
-
-    const updateToast = () => 
-        toast.update(TOASTID, { 
-        render: "Carga completa", 
-        isLoading: false,
-        type: toast.TYPE.SUCCESS,
-        hideProgressBar: true,
-        autoClose: 1000, 
-        limit: 1,
-        className: 'rotateY animated'});
-
-    const showLoadingToast = () => {
-        if(loading == true){
-            notifyA(numberToast == 1 ? "Eliminando usuario..." : "Cargando...")
-        }else{
-            updateToast()
-        }
-    }
 
     return (
         <section className='container-fluid'>
@@ -161,8 +122,6 @@ function UsersListPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {showLoadingToast()} 
-                               
                                     <TransitionGroup component={null} className="todo-list">
                                     {results.map(({_id, name, email}) =>
                                     
@@ -178,7 +137,7 @@ function UsersListPage() {
 
                                                     
 
-                                                    <button onClick={(event) => deleteUser(event,_id,name) } className='btn'>
+                                                    <button onClick={() => showDialogDelete(_id,name) } className='btn'>
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
                                                         <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
                                                         </svg>
@@ -199,7 +158,7 @@ function UsersListPage() {
             <ConfirmDialog />
             <ToastContainer
                     position="bottom-center"
-                    autoClose={1000}
+                    autoClose={200}
                     hideProgressBar={false}
                     newestOnTop={false}
                     closeOnClick
@@ -209,6 +168,8 @@ function UsersListPage() {
                     pauseOnHover
                     theme="light"
                     />
+
+            <DeleteUserDialog visible={showDialog} onHide={hideDialog} user_id={user_id} name={name} />
         </section>
     )
 }

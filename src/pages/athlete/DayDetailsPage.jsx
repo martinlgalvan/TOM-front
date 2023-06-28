@@ -118,56 +118,127 @@ function DayDetailsPage() {
 
                             <tbody className="">
                                 {day.map((element) => (
+                                    
                                     <tr key={element.exercise_id}>
-                                        <th>{element.numberExercise}</th>
-                                        <td>
-                                            <span className="d-block">
-                                                {element.name}{" "}
-                                            </span>
-                                            <span className="d-block">{element.sets} <span className="textCreated"> sets x </span>{element.reps} <span className="textCreated"> reps </span>  </span>
-                                            <span className="d-block"></span>
-                                            <span className="d-block">{element.peso} </span>
+                                        {element.type == 'exercise' ? 
+                                        <>
+                                            <th>{element.numberExercise}</th>
+                                            <td>
+                                                <span className="d-block">
+                                                    {element.name}{" "}
+                                                </span>
+                                                <span className="d-block">{element.sets} <span className="textCreated"> sets x </span>{element.reps} <span className="textCreated"> reps </span>  </span>
+                                                <span className="d-block">{element.peso} </span>
 
-                                           
-                                        </td>
-                                        <td>
-                                        <button
-                                            label="Show OverlayPanel"
-                                            onClick={() => handleButtonClick(element)}
-                                            className="btn"
-                                        >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    fill="currentColor"
-                                                    className="bi bi-camera-video"
-                                                    viewBox="0 0 16 16"
+                                            
+                                            </td>
+                                            <td>
+                                                <button
+                                                    label="Show OverlayPanel"
+                                                    onClick={() => handleButtonClick(element)}
+                                                    className="btn"
                                                 >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"
-                                                    />
-                                                </svg>
-                                        </button>
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="16"
+                                                        height="16"
+                                                        fill="currentColor"
+                                                        className="bi bi-camera-video"
+                                                        viewBox="0 0 16 16"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <button disabled={true}>
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="16"
+                                                        height="16"
+                                                        fill="currentColor"
+                                                        className="bi bi-journal-text"
+                                                        viewBox="0 0 16 16"
+                                                    >
+                                                        <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z" />
+                                                        <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z" />
+                                                        <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z" />
+                                                    </svg>
+                                                </button>  
+                                            </td>
+                                        </> : 
+                                        <>
+                                        <th>{element.numberExercise}</th>
+                                        <td colSpan={3}>
+                                            <table className='table align-middle m-0'>
+                                                <thead>
+                                                    <tr>
+                                                        <th >{element.type} x {element.typeOfSets}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {element.circuit.map(exercise =>
+                                                    <tr key={exercise.idRefresh}>
+
+                                                        <td>
+                                                            <div className="row justify-content-center">
+                                                                <div className="col-9">
+                                                                    <span className="d-block">{exercise.name}</span>
+                                                                    <span className="d-block">{exercise.sets} 
+                                                                        <span className="textCreated"> sets x </span>{exercise.reps} <span className="textCreated"> reps </span>  
+                                                                    </span>
+                                                                    <span className="d-block">{exercise.peso} </span>
+                                                                </div>
+                                                                <div className="col-3">
+                                                                    <button
+                                                                        label="Show OverlayPanel"
+                                                                        onClick={() => handleButtonClick(element)}
+                                                                        className="btn"
+                                                                    >
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16"
+                                                                            height="16"
+                                                                            fill="currentColor"
+                                                                            className="bi bi-camera-video"
+                                                                            viewBox="0 0 16 16"
+                                                                        >
+                                                                            <path
+                                                                                fillRule="evenodd"
+                                                                                d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"
+                                                                            />
+                                                                        </svg>
+                                                                    </button>  
+
+                                                                    <button disabled={true}>
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16"
+                                                                            height="16"
+                                                                            fill="currentColor"
+                                                                            className="bi bi-journal-text"
+                                                                            viewBox="0 0 16 16"
+                                                                        >
+                                                                            <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z" />
+                                                                            <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z" />
+                                                                            <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z" />
+                                                                        </svg>
+                                                                    </button>  
+                                                                                                                                        
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                    </tr>)}
+                                                </tbody>
+                                            </table>
                                         </td>
-                                        <td>
-                                            <button disabled={true}>
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    fill="currentColor"
-                                                    className="bi bi-journal-text"
-                                                    viewBox="0 0 16 16"
-                                                >
-                                                    <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z" />
-                                                    <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z" />
-                                                    <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z" />
-                                                </svg>
-                                            </button>  
-                                        </td>
-                                    </tr>
+                                        
+                                        </>}
+                                    </tr>                                     
                                 ))}
                             </tbody>
                         </table>

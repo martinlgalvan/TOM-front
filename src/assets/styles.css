@@ -528,6 +528,12 @@
   height: 95px;
 }
 
+.tdNotasCircuit{
+  width: 60px !important;
+} /* ESTE ES EL Q INTENTÉ PARA Q SEA MAS CHICO, NO FUNCIONA*/
+
+
+
 /*.colorAccordion{
   background-color: #e7e7e7;
   border-top: 1px;

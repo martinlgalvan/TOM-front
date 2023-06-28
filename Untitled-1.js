@@ -12,10 +12,8 @@
 
 // ctrl f5 ve el carga del elemento app que es un h1
 
-//agregar notas en warmup
-
 // Agregar skeleton a los users y días
 
 // Crear que para eliminar un usuario se escriba la palabra 'ELIMINAR'
 
-// Al agregar un circuit ver como se muestra en el atleta
+//Corregir el video en circuit

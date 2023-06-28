@@ -1,5 +1,4 @@
 import { useState,useRef } from "react";
-import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
 import * as WeekService from '../../services/week.services.js'
@@ -18,7 +17,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function ModalCreateWarmup({showCreateWarmup, closeModal, week_id, day_id}) {
 
-  const [status, setStatus] = useState()
+  const [stat, setStat] = useState()
   const [confirm, setConfirm] = useState()
   const [warmup, setWarmup] = useState()
 
@@ -37,24 +36,18 @@ let idRefresh = generateUUID()
   useEffect(() => {
     setExercises(Exercises)
     Notify.notifyA("Cargando...")
-        
     WeekService.findByWeekId(week_id)
         .then(data => {
             let indexWarmup = data[0].routine.findIndex(dia => dia._id === day_id)
             let exists = data[0].routine[indexWarmup].warmup
             
             setWarmup(exists)
+            setInputEnFoco(null)
+            Notify.updateToast()
 
-            if(exists != undefined){
-                setConfirm(1)
-                setInputEnFoco(null)
-                Notify.updateToast()
-            } else{
-                setConfirm(null)
-            }
 
          })
-},[status])
+},[stat])
 
 
   const [exercises, setExercises] = useState([]);
@@ -82,8 +75,7 @@ let idRefresh = generateUUID()
       e.preventDefault()
 	    WarmupServices.createWarmup(week_id, day_id, { name, sets, reps, peso, video, notas })
         .then(() => {
-          
-          setStatus(idRefresh)
+          setStat(idRefresh)
         })
   }
 
@@ -110,8 +102,7 @@ function editWarmup(warmup_id, name, StrSets, StrReps,peso, video, notas, number
 
   WarmupServices.editWarmup(week_id, day_id, warmup_id, {name, sets, reps, peso, video, notas, numberWarmup})
     .then(() => {
-      notify(name,"editado con éxito!")
-      setStatus(idRefresh)
+      setStat(idRefresh)
     })
 
 }
@@ -128,8 +119,7 @@ const handleInputFocus = (index) => {
 function acceptDeleteWarmup(id) {
   WarmupServices.deleteWarmup(week_id, day_id, id)
     .then(() => {
-      setStatus(idRefresh)
-      noty
+      setStat(idRefresh)
     })
 };
 
@@ -140,11 +130,12 @@ function acceptDeleteWarmup(id) {
         trigger:          event.currentTarget,
         message:          `¿Estás seguro de que querés eliminar el ejercicio ${name}`,
         icon:             'pi pi-exclamation-triangle',
-        accept:           () => {acceptDeleteWarmup(id), setStatus(id)},
+        accept:           () => {acceptDeleteWarmup(id)},
         acceptLabel:      "Sí, eliminar",
-        acceptClassName:  "p-button-danger",
-        rejectLabel:      "No",
-        rejectClassName:  "p-button-secondary",
+        acceptLabel:        "Sí, eliminar",
+        acceptClassName:    "p-button-danger",
+        rejectLabel:        "No",
+        rejectClassName:    "closeDialog",
         appendTo:         "self"
 
     });
@@ -311,7 +302,7 @@ const divRef = useRef();
           </article>
         </section>
 
-        {confirm != null  && 
+        {warmup != null  && 
                 <article ref={divRef} className="table-responsive border-bottom mb-5 pb-4">
                     <table className={`table align-middle table-bordered caption-top ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
                         <caption>Entrada en calor</caption>
@@ -447,6 +438,8 @@ const divRef = useRef();
                         </tbody>
                     </table>
                 </article>}
+
+
         </Modal.Body>
       </Modal>
   );

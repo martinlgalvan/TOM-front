@@ -1,11 +1,11 @@
-import { useState } from "react";
-import * as ExercisesServices from "../services/exercises.services.js";
-import Exercises from './../assets/json/exercises.json'
-
-
-import CustomInputNumber from './../components/CustomInputNumber.jsx';
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+
+import * as ExercisesServices from "../services/exercises.services.js";
+import * as Notify from './../helpers/notify.js'
+
+import Exercises from './../assets/json/exercises.json'
+import CustomInputNumber from './../components/CustomInputNumber.jsx';
 
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
@@ -84,6 +84,7 @@ let idRefresh = generateUUID()
   }
 
   function createAmrap() {
+    Notify.notifyA("Cargando nuevo circuito...")
 
 	ExercisesServices.addAmrap(week_id, day_id, { type,typeOfSets, notas, circuit: exercisesAmrap  })
     .then(() => {

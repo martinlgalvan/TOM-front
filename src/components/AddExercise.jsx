@@ -1,9 +1,11 @@
 import { useState,useRef } from "react";
 import * as ExercisesServices from "../services/exercises.services.js";
-import Exercises from './../assets/json/exercises.json'
 import * as DatabaseExercises from './../services/jsonExercises.services.js'
-import CustomInputNumber from './../components/CustomInputNumber.jsx';
 import * as DatabaseUtils from '../helpers/variables.js'
+import * as Notify from './../helpers/notify.js'
+
+import CustomInputNumber from './../components/CustomInputNumber.jsx';
+import Exercises from './../assets/json/exercises.json'
 
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -58,7 +60,7 @@ let idRefresh = generateUUID()
 
   function onSubmit(e) {
   e.preventDefault()
-
+  Notify.notifyA("Cargando nuevo ejercicio...")
 	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, peso, video, notas })
     .then(() => {
       refresh(idRefresh)
