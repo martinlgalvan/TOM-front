@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 
 import * as DatabaseExercises from "../../services/jsonExercises.services.js";
-import * as DataBaseUser from './../../utils/variables.js'
 
 import DataBaseExercises from "../../components/DatabaseCreateExercise.jsx";
 import Logo from "../../components/Logo";

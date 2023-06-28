@@ -5,13 +5,14 @@ import * as ExercisesService from '../../services/exercises.services.js';
 import * as WeekService from '../../services/week.services.js'; 
 import * as DatabaseExercises from '../../services/jsonExercises.services.js'
 import Options from './../../assets/json/options.json';
-import * as DatabaseUtils from './../../utils/variables.js'
+import * as DatabaseUtils from '../../helpers/variables.js'
+import * as Notify from './../../helpers/notify.js'
 
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
 import { Sidebar } from 'primereact/sidebar';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from './../../helpers/notify.js';
 
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
@@ -39,7 +40,7 @@ function DayEditDetailsPage(){
 
     const [options, setOptions] = useState()                            // Carga de datos para el select
     const [numberToast, setNumberToast] = useState(0)                   // Manejo del notify
-    const TOASTID = "LOADER_ID"
+
 
     const [circuit, setCircuit] = useState([])                          // Carga del circuit al modal
     const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
@@ -112,7 +113,7 @@ function DayEditDetailsPage(){
 
         setLoading(true)
         setNumberToast(true)
-
+        Notify.notifyA("Cargando")
         WeekService.findByWeekId(week_id)
             .then(data => {
                 //Encuentro el index del día, y luego seteo el día con el que corresponde.
@@ -130,7 +131,7 @@ function DayEditDetailsPage(){
                 setConfirm(null)                        // no sé todavía, averiguar por qué lo use
                 setOptions(Options)                     // array de options para el select
                 setFirstLoading(false)                  // firstload para cargar el skeleton
-
+                Notify.updateToast()
                 localStorage.setItem('LEN', day.length) // carga en localstorage el largo del array principal, para luego al editar o eliminar cargar el skeleton correctamente 
 
                
@@ -228,42 +229,13 @@ useEffect(() => {
             })
     };
 
-    const notifyA = (message) => {
-
-        message == null || message == undefined ? message = "Sin nombre" : message = message
-
-        toast.loading(message, {
-            position:           "bottom-center",
-            toastId:            TOASTID, 
-            autoClose:          false, 
-            hideProgressBar:    true,
-            pauseOnFocusLoss:   false,
-            limit: 1 
-        })
-    };
-
-    const updateToast = () => 
-
-        toast.update(
-            TOASTID, { 
-            render:             "Listo!", 
-            type:               toast.TYPE.SUCCESS, 
-            autoClose:          1000, 
-            isLoading:          false,
-            pauseOnFocusLoss:   false,
-            hideProgressBar:    true,
-            limit:              1,
-            className:          'rotateY animated'
-            }
-        );
-
-    const showLoadingToast = () => {
+    /*const showLoadingToast = () => {
         if(loading == true){
             notifyA(numberToast == 1 || numberToast == true ? "Cargando" : "Eliminando ejercicio...")
         } else{
             updateToast()
         }
-    }    
+    }    */
 
     const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
 
@@ -385,7 +357,7 @@ useEffect(() => {
                                 </tr> 
                             </thead>
                             <tbody>
-                            {showLoadingToast()}
+                            
                             {firstLoading == true || day.length == 0 ? Array.from({ length: firstLoading == true && secondLoad == numberExercises ? numberExercises : secondLoad }).map((_, index) => (
                                 <SkeletonExercises ancho={anchoPagina} key={index} />
                             )) : 
@@ -695,8 +667,8 @@ useEffect(() => {
                     draggable
                     pauseOnHover
                     theme="light"
-                    />
-
+                />
+                
                 <ConfirmDialog />
 
                 <Sidebar visible={CanvasFormulas} position="right" onHide={() => setCanvasFormulas(false)}>

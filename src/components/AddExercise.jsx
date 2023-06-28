@@ -3,7 +3,7 @@ import * as ExercisesServices from "../services/exercises.services.js";
 import Exercises from './../assets/json/exercises.json'
 import * as DatabaseExercises from './../services/jsonExercises.services.js'
 import CustomInputNumber from './../components/CustomInputNumber.jsx';
-import * as DatabaseUtils from './../utils/variables.js'
+import * as DatabaseUtils from '../helpers/variables.js'
 
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";

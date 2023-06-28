@@ -4,6 +4,8 @@ import Modal from 'react-bootstrap/Modal';
 
 import * as WeekService from '../../services/week.services.js'
 import * as WarmupServices from "../../services/warmup.services.js";
+import * as Notify from './../../helpers/notify.js'
+import { ToastContainer } from "./../../helpers/notify.js";
 import Exercises from './../../assets/json/exercises.json';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { useEffect } from "react";
@@ -12,14 +14,12 @@ import { confirmDialog } from 'primereact/confirmdialog';
 import CustomInputNumber from '../../components/CustomInputNumber.jsx';
 import { AutoComplete } from "primereact/autocomplete";
 
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function ModalCreateWarmup({showCreateWarmup, closeModal, week_id, day_id}) {
 
   const [status, setStatus] = useState()
   const [confirm, setConfirm] = useState()
-  const toastId = useRef();
   const [warmup, setWarmup] = useState()
 
   function generateUUID() {
@@ -36,6 +36,7 @@ let idRefresh = generateUUID()
 
   useEffect(() => {
     setExercises(Exercises)
+    Notify.notifyA("Cargando...")
         
     WeekService.findByWeekId(week_id)
         .then(data => {
@@ -45,9 +46,9 @@ let idRefresh = generateUUID()
             setWarmup(exists)
 
             if(exists != undefined){
-
                 setConfirm(1)
                 setInputEnFoco(null)
+                Notify.updateToast()
             } else{
                 setConfirm(null)
             }
@@ -79,19 +80,20 @@ let idRefresh = generateUUID()
 
   function onSubmit(e) {
       e.preventDefault()
-	    WarmupServices.createWarmup(week_id, day_id, { name, sets, reps, peso, video })
+	    WarmupServices.createWarmup(week_id, day_id, { name, sets, reps, peso, video, notas })
         .then(() => {
+          
           setStatus(idRefresh)
         })
   }
 
-const changeNameWarmup = (e) => setNewName(e.target.value)
+const changeNameWarmup = (e) => {setNewName(e.target.value), console.log(e.target.value)}
 
-const changePesoWarmup = (e) => setNewPeso(e.target.value)
+const changePesoWarmup = (e) => setPeso(e.target.value)
 
 const changeVideoWarmup = (e) => setNewVideo(e.target.value)
 
-const changeNotasWarmup = (e) => setNewNotas(e.target.value)
+const changeNotasWarmup = (e) => setNotas(e.target.value)
 
 const changeSetsWarmup = (e) => setNewSet(e.value)
 
@@ -108,7 +110,7 @@ function editWarmup(warmup_id, name, StrSets, StrReps,peso, video, notas, number
 
   WarmupServices.editWarmup(week_id, day_id, warmup_id, {name, sets, reps, peso, video, notas, numberWarmup})
     .then(() => {
-      notify(name)
+      notify(name,"editado con éxito!")
       setStatus(idRefresh)
     })
 
@@ -127,6 +129,7 @@ function acceptDeleteWarmup(id) {
   WarmupServices.deleteWarmup(week_id, day_id, id)
     .then(() => {
       setStatus(idRefresh)
+      noty
     })
 };
 
@@ -166,39 +169,20 @@ function acceptDeleteWarmup(id) {
 
 ]
 
-const notify = (name) => {
-  if(! toast.isActive(toastId.current)) {
-      toastId.current = toast.success(`${name} editado con éxito!`, {
-  
-          position:         "bottom-center",
-          autoClose:        300,
-          hideProgressBar:  true,
-          closeOnClick:     true,
-          pauseOnHover:      true,
-          limit:            1,
-          draggable:        true,
-          progress:         undefined,
-          theme:            "light",
-          
-          })
-    }
-  }
-
   const search = (event) => {
 
-        let filteredExercises;
+    let filteredExercises;
 
-        if (!event.query.trim().length) {
-            _filteredExercises = [...exercises];
-        }
-        else {
-            filteredExercises = exercises.filter((exercise) => {
-                return exercise.name.toLowerCase().startsWith(event.query.toLowerCase());
-            });
-        }
+    if (!event.query.trim().length) {
+      _filteredExercises = [...exercises];
+    } else {
 
-        setFilteredExercises(filteredExercises);
+      filteredExercises = exercises.filter((exercise) => {
+      return exercise.name.toLowerCase().startsWith(event.query.toLowerCase());
+      });
+    }
 
+    setFilteredExercises(filteredExercises);
 
 }
 
@@ -211,6 +195,7 @@ useEffect(() => {
   } else{
     setName(selectedExercise)
   }
+
 }, [selectedExercise]);
 
 
@@ -302,6 +287,22 @@ const divRef = useRef();
                     placeholder="Kg / RPE / etc"
                   />
               </div>
+
+              <div className="col-10 my-2 text-center">
+                <label htmlFor="notas" className="form-label d-block">
+                  Notas
+                </label>
+                  <input
+                    type="text"
+                    className="form-control rounded-0"
+                    id="notas"
+                    name="notas"
+                    onChange={changeNotasWarmup}
+                    placeholder=""
+                  />
+              </div>
+
+
               <div>
                 <button className="btn BlackBGtextWhite my-4">Crear</button>
               </div>
@@ -322,6 +323,7 @@ const divRef = useRef();
                                 <th scope="col">Reps</th>
                                 <th scope="col">Peso</th>
                                 <th scope="col">Video</th>
+                                <th scope="col">Notas</th>
                                 <th scope="col">Acciones</th>
                             </tr>
                         </thead>
@@ -404,6 +406,20 @@ const divRef = useRef();
                                 disabled={inputEnFoco !== null && inputEnFoco !== index}
                                 />
                             </td>
+
+                            <td>
+                                <input 
+                                className='form-control border-0' 
+                                type="text" 
+                                defaultValue={notas}
+                                onChange={changeNotasWarmup}                                
+                                onFocus={() => handleInputFocus(index)}
+                                ref={(input) => (inputRefs.current[index] = input)}
+                                disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                />
+                            </td>
+
+
                             <td>
                               {inputEnFoco == null ?
 
