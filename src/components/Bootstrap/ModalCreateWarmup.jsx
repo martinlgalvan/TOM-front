@@ -132,7 +132,6 @@ function acceptDeleteWarmup(id) {
         icon:             'pi pi-exclamation-triangle',
         accept:           () => {acceptDeleteWarmup(id)},
         acceptLabel:      "Sí, eliminar",
-        acceptLabel:        "Sí, eliminar",
         acceptClassName:    "p-button-danger",
         rejectLabel:        "No",
         rejectClassName:    "closeDialog",

@@ -4,9 +4,9 @@ import {Link, useParams} from 'react-router-dom';
 import * as ExercisesService from '../../services/exercises.services.js';
 import * as WeekService from '../../services/week.services.js'; 
 import * as DatabaseExercises from '../../services/jsonExercises.services.js'
-import Options from './../../assets/json/options.json';
 import * as DatabaseUtils from '../../helpers/variables.js'
 import * as Notify from './../../helpers/notify.js'
+import * as RefreshFunction from './../../helpers/generateUUID.js'
 
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
 import { Sidebar } from 'primereact/sidebar';
@@ -81,18 +81,8 @@ function DayEditDetailsPage(){
     const [visibleEdit, setVisibleEdit] = useState(false);              //-------------------*
 
 
-    function generateUUID() {
-        let d = new Date().getTime();
-        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            let r = (d + Math.random() * 16) % 16 | 0;
-            d = Math.floor(d / 16);
-            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
-        return uuid;
-    }
-
     
-    let idRefresh = generateUUID()
+    let idRefresh = RefreshFunction.generateUUID()
 
     const [databaseUser, setDatabaseUser] = useState()
 
@@ -114,9 +104,10 @@ function DayEditDetailsPage(){
         setLoading(true)
         setNumberToast(true)
         Notify.notifyA("Cargando")
+
         WeekService.findByWeekId(week_id)
             .then(data => {
-                //Encuentro el index del día, y luego seteo el día con el que corresponde.
+ 
                 let indexDay = data[0].routine.findIndex(dia => dia._id === day_id) // De la base de datos, selecciono el día correspondiente
                 let day = data[0].routine[indexDay].exercises                       // Cargo únicamente los ejercicios
                 let circuit = day.filter(circuito => circuito.type != 'exercise')   // Cargo únicamente los ejercicios del circuito
@@ -147,9 +138,7 @@ useEffect(() => {
 
 
 
-    const closeDialog = (close) => {
-        setVisibleExercises(close)
-    }
+    const closeDialog = (close) => setVisibleExercises(close)
 
     // EDIT EXERCISES
 
@@ -223,9 +212,7 @@ useEffect(() => {
         setLoading(true)
 
         ExercisesService.deleteExercise(week_id, day_id, id)
-            .then(() => {
-                setStatus(idRefresh)
-            })
+            .then(() => setStatus(idRefresh))
     };
 
     const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
@@ -283,7 +270,6 @@ useEffect(() => {
             <Logo />
 
             <div className='row justify-content-center'>
-
                     <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(true)} >Añadir Ejercicio</button>
 
                     <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>

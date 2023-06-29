@@ -47,10 +47,7 @@ const DeleteUserDialog = ({ visible, onHide, user_id, name }) => {
             onClick={handleAccept}
           />
 
-
         </div>
-
-     
       </div>
     </Dialog>
   );

@@ -3,18 +3,23 @@ import {Link, useParams, useNavigate} from 'react-router-dom'
 
 import * as UsersService from '../../services/users.services.js';
 import * as Notify from './../../helpers/notify.js'
+import * as RefreshFunction from './../../helpers/generateUUID.js'
 
 import UserRegister from '../../components/Users/UserRegister.jsx';
 import Logo from '../../components/Logo'
+import DeleteUserDialog from '../../components/Users/DeleteUserDialog.jsx';
+import SkeletonUsers from '../../components/Skeleton/SkeletonUsers.jsx';
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
 import { ToastContainer } from './../../helpers/notify.js';
-import DeleteUserDialog from '../../components/Users/DeleteUserDialog.jsx';
+
 
 function UsersListPage() {
 
     const {id} = useParams()
+    const {numberUsers} = useParams()
+
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState(0);
@@ -25,21 +30,11 @@ function UsersListPage() {
 
     const navigate = useNavigate()
 
-    function generateUUID() {
-        let d = new Date().getTime();
-        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            let r = (d + Math.random() * 16) % 16 | 0;
-            d = Math.floor(d / 16);
-            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
-        return uuid;
-    }
-
-    let idRefresh = generateUUID()
+    let idRefresh = RefreshFunction.generateUUID()
     
     useEffect(() => {
         setLoading(true)
-        Notify.notifyA("Cargando...")
+        Notify.notifyA("Cargando alumnos...")
         
         UsersService.find(id)
             .then(data => {
@@ -47,13 +42,11 @@ function UsersListPage() {
                 setUsers(data)
                 setLoading(false)
             })
+       
     }, [status]) 
 
-
-    const refresh = (refresh) => {
-        setStatus(refresh);
-    }
-
+    const refresh = (refresh) => setStatus(refresh);
+    
     const [showDialog, setShowDialog] = useState()
 
     const showDialogDelete = (_id, name) => {
@@ -64,16 +57,12 @@ function UsersListPage() {
       
       const hideDialog = (load) => {
         load != null ? setStatus(idRefresh) : null
-  
         setShowDialog(false);
       };
 
-
     //Función de búsqueda
-    const searcher = (e) => {
-        setSearch(e.target.value)   
-    }  
-
+    const searcher = (e) => setSearch(e.target.value)   
+    
     const results = !search ? users : users.filter((dato)=> dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
 
     return (
@@ -97,7 +86,7 @@ function UsersListPage() {
                                     
                                     <tr className="">
                                         <th colSpan={3}>
-                                            <div class="input-group mb-3">
+                                            <div className="input-group mb-3">
                                                 <input
                                                     aria-label="Buscar" 
                                                     aria-describedby="addon-buscar"
@@ -107,8 +96,8 @@ function UsersListPage() {
                                                     placeholder="Buscar"
                                                     className="col-5 form-control rounded-0"
                                                 />  
-                                                <span class="input-group-text border-0 bg-light" id="addon-buscar">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                                <span className="input-group-text border-0 bg-light" id="addon-buscar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
                                                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                                                     </svg>
                                                 </span>                                      
@@ -122,6 +111,9 @@ function UsersListPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {loading == true ? Array.from({ length: numberUsers }).map((_, index) => (
+                                        <SkeletonUsers key={index} />
+                                    )) : 
                                     <TransitionGroup component={null} className="todo-list">
                                     {results.map(({_id, name, email}) =>
                                     
@@ -131,7 +123,7 @@ function UsersListPage() {
                                         classNames="item"
                                         >
                                             <tr key={_id}>
-                                                <td className='text-center'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}`}>{name}</Link></td>
+                                                <td className='text-center'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}/a/a`}>{name} </Link></td>
                                                 <td className='text-center responsiveEmail'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}`}>{email}</Link></td>
                                                 <td className='text-center'>
 
@@ -147,7 +139,7 @@ function UsersListPage() {
                                             </tr>
                                         </CSSTransition>
                                     )}
-                                    </TransitionGroup>
+                                    </TransitionGroup>}
                                 </tbody>
                             </table>
                         </div>

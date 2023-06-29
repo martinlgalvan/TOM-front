@@ -1,6 +1,8 @@
 import Logo from '../components/Logo.jsx';
 const name = localStorage.getItem('name')
 
+// to do chequear semántica, ortografía, agregar videos explicativos con edición
+
 function HomePage() {
   return (
 

@@ -8,11 +8,12 @@ import '../src/assets/rsuiteStyles.css'
 //Bootstrapstyles
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-//Propios styles
+// propy styles
 import '../src/assets/styles.css';   
 
-
 import {useState, useEffect} from 'react'
+
+import * as UserService from './services/users.services.js'
 
 import HomePage from "./pages/HomePage.jsx"
 import LoginPage from "./pages/login/LoginPage.jsx"
@@ -42,6 +43,7 @@ function App(){
     const navigate = useNavigate()
     const id = localStorage.getItem('_id')
     const [user, setUser] = useState()
+    const [numberUsers, setNumberUsers] = useState()
 
 
     const [isAutenticated, setIsAutenticated] = useState(null)
@@ -52,6 +54,11 @@ function App(){
 
             if(token){
                 setIsAutenticated(true)
+
+                UserService.find(id)
+                    .then(data => {
+                        setNumberUsers(data.length)
+                    })
             } else{
                 setIsAutenticated(false)
             }
@@ -60,6 +67,7 @@ function App(){
      
         function onLogin(user, token){
             setUser(user)
+
             setIsAutenticated(true)
             localStorage.setItem('token', token)
             localStorage.setItem('role', user.role)
@@ -83,10 +91,10 @@ function App(){
         }
 
         if(isAutenticated === null){
+            //Realizar un load en caso de que ésta parte tarde
             return <h1>Carga</h1>
         }
     
-
         function isAdmin(){
             const admin = localStorage.getItem('role')
             if(admin == 'admin'){
@@ -96,10 +104,8 @@ function App(){
             }
         }
     
-
     return (
-        // Visual
-       
+
         <>
 
         <nav className="navbar navbar-expand-lg bg-light">
@@ -115,7 +121,7 @@ function App(){
                             <Link className='nav-link' to="/">Inicio</Link>
                         </li>
                         <li className="nav-item">
-                        {isAdmin() && <><Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link></>}
+                        {isAdmin() && <><Link className='nav-link' to={`/users/${id}/${numberUsers}`}>Lista de alumnos</Link></>}
                         </li>
                         <li className="nav-item">
                         {isAdmin() && <><Link className='nav-link' to={`/exercises/${id}`}>Batabase videos</Link></>}
@@ -137,7 +143,7 @@ function App(){
             <Routes>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
-                <Route path="/users/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UsersListPage/></RoutePrivate>}/>
+                <Route path="/users/:id/:numberUsers" element={<RoutePrivate isAutenticate={isAutenticated}><UsersListPage/></RoutePrivate>}/>
                 <Route path="/exercises/:id" element={<RoutePrivate isAutenticate={isAutenticated}><DatabaseExercises/></RoutePrivate>}/>
 
                 <Route path="/user/routine/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutineEditPage/></RoutePrivate>}/>

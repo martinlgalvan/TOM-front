@@ -1,18 +1,19 @@
 
-import { useEffect, useState,useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 import * as UsersService from '../../services/users.services.js';
 import * as WeekService from '../../services/week.services.js';
 import * as DayService from '../../services/day.services.js';
+import * as NotifyHelper from './../../helpers/notify.js'
+import * as RefreshFunction from './../../helpers/generateUUID.js'
 
 
 import Logo from '../../components/Logo.jsx'
 import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
-import SkeletonWeek from '../../components/Skeleton/SkeletonWeek.jsx' 
-
+import SkeletonCard from '../../components/Skeleton/SkeletonCard.jsx';
 
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
@@ -20,12 +21,11 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ToastContainer, toast } from 'react-toastify';
 
 
+
 function UserRoutineEditPage(){
     const {id} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
-    const [numberToast, setNumberToast] = useState(0)
-    const TOASTID = "LOADER_ID"
     const navigate = useNavigate()
     
 
@@ -43,23 +43,14 @@ function UserRoutineEditPage(){
 
     const [copyWeek, setCopyWeek] = useState();
 
-
-    function generateUUID() {
-        let d = new Date().getTime();
-        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            let r = (d + Math.random() * 16) % 16 | 0;
-            d = Math.floor(d / 16);
-            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
-        return uuid;
-    }
-
-    let idRefresh = generateUUID()
+    let idRefresh = RefreshFunction.generateUUID()
    
 
     //Routine - API
     useEffect(() => {
         setLoading(true)
+        NotifyHelper.notifyA("Cargando semanas...")
+
         WeekService.findRoutineByUserId(id)
             .then(data => {   
                 setRoutine(data)
@@ -71,6 +62,7 @@ function UserRoutineEditPage(){
                 }
                 
                 setLoading(false)
+                NotifyHelper.updateToast()
             })
     }, [status])
 
@@ -86,18 +78,14 @@ function UserRoutineEditPage(){
                     console.log(data)
                     setStatus(idRefresh)
                 })
-    
         } else {
             WeekService.createWeek({name: number}, id)
-                .then(() => {   
-                    setStatus(idRefresh)
-                })
+                .then(() => setStatus(idRefresh))
         }
     }
 
     function addDayToWeek(week_id){
         setLoading(true)
-        setNumberToast(2)
         WeekService.findByWeekId(week_id)
             .then(data => {   
             
@@ -147,34 +135,6 @@ function UserRoutineEditPage(){
         setStatus(idRefresh)
     } 
 
-        const notifyA = (message) => {
-            toast.loading(message, {
-                position: "bottom-center",
-                toastId: TOASTID, 
-                autoClose: false, 
-                hideProgressBar: true,
-                pauseOnFocusLoss: false,
-                limit: 1 })};
-
-        const updateToast = () => 
-            toast.update(TOASTID, { 
-                render: "Listo!", 
-                type: toast.TYPE.SUCCESS, 
-                autoClose: 1000, 
-                isLoading: false,
-                hideProgressBar: true,
-                limit: 1,
-                className: 'rotateY animated'});
-
-        const showLoadingToast = () => {
-            if(loading == true){
-                notifyA(numberToast == 1 || numberToast == 2 ? "Cargando nuevo recurso..." : "Cargando...")
-            }else{
-                updateToast()
-            }
-        }
-
-
     return (
 
         <section className='container'>
@@ -220,10 +180,9 @@ function UserRoutineEditPage(){
 
 
                 <div className='col-12'>
-                    
+                
 
                     <div className='row justify-content-center'>
-                        {showLoadingToast()}
                         <TransitionGroup component={null} className="todo-list">
                         {routine.length > 0 && routine.map((elemento, index) =>
                         <CSSTransition
