@@ -76,8 +76,8 @@ function onSubmit(e){
         <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" onChange={changeNotasEdit} defaultValue={completeExercise.notas}  />
       </div>
 
-      <div className='mb-3'>
-        <button type='submit'>Editar</button>
+      <div className='mb-3 text-center'>
+        <button type='submit' className='btn BlackBGtextWhite'>Editar</button>
       </div>
 
   </form>

@@ -4,6 +4,7 @@ import {Link, useParams} from 'react-router-dom';
 import * as ExercisesService from '../../services/exercises.services.js';
 import * as WeekService from '../../services/week.services.js'; 
 import * as DatabaseExercises from '../../services/jsonExercises.services.js'
+import Options from './../../assets/json/options.json';
 import * as DatabaseUtils from '../../helpers/variables.js'
 import * as Notify from './../../helpers/notify.js'
 import * as RefreshFunction from './../../helpers/generateUUID.js'
@@ -95,7 +96,10 @@ function DayEditDetailsPage(){
 
     }, []);
     
-    const refreshEdit = () => setDay([])
+    const refreshEdit = () => {
+        setDay([])
+        setVisibleEdit(false)
+    }
 
     const refresh = (refresh) => setStatus(refresh)
 

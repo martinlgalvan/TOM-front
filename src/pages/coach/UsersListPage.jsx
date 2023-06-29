@@ -123,7 +123,7 @@ function UsersListPage() {
                                         classNames="item"
                                         >
                                             <tr key={_id}>
-                                                <td className='text-center'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}/a/a`}>{name} </Link></td>
+                                                <td className='text-center'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}/`}>{name} </Link></td>
                                                 <td className='text-center responsiveEmail'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}`}>{email}</Link></td>
                                                 <td className='text-center'>
 

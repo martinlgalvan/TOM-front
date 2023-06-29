@@ -18,6 +18,7 @@
 
 // Corregir el video en circuit
 
+// Sacar el password desde la api, no se debería traer
+
 // Al abrir en el celular, me ubica abajo, quiero que me ubique donde empieza
 
-// Sacar el password desde la api, no se debería traer
