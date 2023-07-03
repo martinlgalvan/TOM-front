@@ -14,7 +14,6 @@
 
 // Agregar skeleton a los users y días
 
-// Crear que para eliminar un usuario se escriba la palabra 'ELIMINAR'
 
 // Corregir el video en circuit
 

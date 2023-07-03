@@ -45,6 +45,28 @@ function UsersListPage() {
        
     }, [status]) 
 
+    /*useEffect(() => {
+        const fetchRoutineData = async () => {
+          for (const user of users) {
+            try {
+              const routineData = await WeekService.findRoutineByUserId(user._id);
+              console.log(routineData);
+              // Actualiza el usuario con los datos de la rutina
+              setUsers((prevUsers) =>
+                prevUsers.map((prevUser) =>
+                  prevUser._id === user._id ? { ...prevUser, routineData } : prevUser
+                )
+              );
+            } catch (error) {
+              console.error(`Error al obtener las rutinas del usuario ${user._id}:`, error);
+            }
+          }
+        };
+    
+        fetchRoutineData();
+        console.log(users)
+      }, [loading]);*/
+
     const refresh = (refresh) => setStatus(refresh);
     
     const [showDialog, setShowDialog] = useState()
