@@ -14,6 +14,7 @@ import '../src/assets/styles.css';
 import {useState, useEffect} from 'react'
 
 import * as UserService from './services/users.services.js'
+import * as RefreshUUID from './helpers/generateUUID.js'
 
 import HomePage from "./pages/HomePage.jsx"
 import LoginPage from "./pages/login/LoginPage.jsx"
@@ -44,9 +45,17 @@ function App(){
     const id = localStorage.getItem('_id')
     const [user, setUser] = useState()
     const [numberUsers, setNumberUsers] = useState()
+    const [status, setStatus] = useState()
+
 
 
     const [isAutenticated, setIsAutenticated] = useState(null)
+
+    /*const refreshUsers = (a) => {
+        console.log(a)
+        setStatus(RefreshUUID.generateUUID())
+        console.log(RefreshUUID.generateUUID())
+    }*/
     
         useEffect(() => {
             //window.google.translate.disableAutoTranslation();
@@ -57,12 +66,14 @@ function App(){
 
                 UserService.find(id)
                     .then(data => {
+                        let jsonDATA = JSON.stringify(data);
+                        sessionStorage.setItem('U4S3R', jsonDATA);
                         setNumberUsers(data.length)
                     })
             } else{
                 setIsAutenticated(false)
             }
-        }, [user])
+        }, [user, status])
 
      
         function onLogin(user, token){

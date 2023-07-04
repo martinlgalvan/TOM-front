@@ -10,7 +10,7 @@ import * as RefreshFunction from './../../helpers/generateUUID.js'
 
 
 import Logo from '../../components/Logo.jsx'
-import ModalDeleteWeek from '../../components/Bootstrap/ModalDeleteWeek.jsx';
+import ModalDeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
 import SkeletonCard from '../../components/Skeleton/SkeletonCard.jsx';
@@ -19,6 +19,8 @@ import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ToastContainer, toast } from 'react-toastify';
+import DeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
+import EditWeek from '../../components/EditActions/EditWeek.jsx';
 
 
 
@@ -27,9 +29,13 @@ function UserRoutineEditPage(){
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
-    
+    const weeks = sessionStorage.getItem('U4S3R')
+    let parsed = JSON.parse(weeks)
+    let user = parsed.filter(weeks => weeks._id == id)
+    let weeksSession = user[0].rutina
 
-    const [routine, setRoutine] = useState([])
+
+    const [routine, setRoutine] = useState(weeksSession)
     const [weekNumber, setWeekNumber] = useState(0)
 
     const [show, setShow] = useState(false);
@@ -37,9 +43,11 @@ function UserRoutineEditPage(){
     const [showEditWeek, setShowEditWeek] = useState(false);
     
     const [name, setName] = useState("")
-    const [weekID, setWeekID] = useState("")
+    const [week_id, setWeek_id] = useState("")
     const [dayID, setDayID] = useState("")
     const user_id = localStorage.getItem("_id")
+
+
 
     const [copyWeek, setCopyWeek] = useState();
 
@@ -50,9 +58,14 @@ function UserRoutineEditPage(){
     useEffect(() => {
         setLoading(true)
         NotifyHelper.notifyA("Cargando semanas...")
-
+        
+        /*let jsonDATA = JSON.stringify(parsed);
+        sessionStorage.setItem('U4S3R', jsonDATA)*/
+        
         WeekService.findRoutineByUserId(id)
             .then(data => {   
+
+                console.log(data,"AAAA")
                 setRoutine(data)
                 setWeekNumber(data.length + 1)
                 if(data.length == 0){
@@ -96,18 +109,33 @@ function UserRoutineEditPage(){
                 })
     }
 
-    function handleDeleteWeek(week_id,week_name){
+    const [showDeleteWeekDialog, setShowDeleteWeekDialog] = useState()
+    const [showEditWeekDialog, setShowEditWeekDialog] = useState()
 
-        setShow(true)
-        setName(week_name)
-        setWeekID(week_id)
+    const deleteWeek = (week_id, name) => {
+        setName(name)
+        setWeek_id(week_id)
+        setShowDeleteWeekDialog(true);
+      };
+    
+    const editWeek = (week_id, name) => {
+        setName(name)
+        setWeek_id(week_id)
+        setShowEditWeekDialog(true);
+    };
+      
+      const hideDialog = (load) => {
+        load != null ? setStatus(idRefresh) : null
+        setShowDeleteWeekDialog(false);
+        setShowEditWeekDialog(false);
+      };
 
-    }
+
 
     function handleShowEdit(week_id, day_id,name){
 
         setShowEdit(true)
-        setWeekID(week_id)
+        setWeek_id(week_id)
         setDayID(day_id)
         setName(name)
 
@@ -115,7 +143,7 @@ function UserRoutineEditPage(){
 
     function handleShowEditWeek(week_id, name){
         setShowEditWeek(true)
-        setWeekID(week_id)
+        setWeek_id(week_id)
         setName(name)
 
     }
@@ -223,10 +251,10 @@ function UserRoutineEditPage(){
                             
                             <div className='row justify-content-between'>
                                 <div className='col-5'>
-                                    <button onClick={() => handleDeleteWeek(elemento._id, elemento.name)} className='m-1 btn border buttonColor buttonColorDelete'>Eliminar</button>
+                                    <button onClick={() => deleteWeek(elemento._id, elemento.name)} className='m-1 btn border buttonColor buttonColorDelete'>Eliminar</button>
                                 </div>
                                 <div className='col-5'>
-                                    <button onClick={() => handleShowEditWeek(elemento._id, elemento.name)} className='btn border buttonColor'>Editar</button> 
+                                    <button onClick={() => editWeek(elemento._id, elemento.name)} className='btn border buttonColor'>Editar</button> 
 
                                 </div>
                                 <div className="card-footer textCreated mt-3">
@@ -249,10 +277,11 @@ function UserRoutineEditPage(){
                 <Link className='btn BlackBGtextWhite' to={`/users/${user_id}`}>Volver atrás</Link>
             </div>
             
-            <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} weekID={weekID} dayID={dayID} nameExercise={name}/>
-            <ModalEditWeek showEditWeek={showEditWeek} handleClose={handleClose} actionConfirm={actionConfirm} nameWeek={name} weekID={weekID} />
-            <ModalDeleteWeek show={show} handleClose={handleClose} actionConfirm={actionConfirm} name={name} weekID={weekID}/>
+            <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} week_id={week_id} dayID={dayID} nameExercise={name}/>
+            <EditWeek visible={showEditWeekDialog} onHide={hideDialog} week_id={week_id} defaultName={name}  />
             
+            <DeleteWeek visible={showDeleteWeekDialog} onHide={hideDialog} week_id={week_id} name={name} />
+
             <ToastContainer
                     position="bottom-center"
                     autoClose={1000}

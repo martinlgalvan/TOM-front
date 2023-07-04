@@ -21,3 +21,6 @@
 
 // Al abrir en el celular, me ubica abajo, quiero que me ubique donde empieza
 
+// Ver el tema si no se quiere poner reps, y se quiere poner segundos que haces, por ejemplo plancha 3x25"
+
+// Si el email ya esta ingresado, sigue el simbolito de carga

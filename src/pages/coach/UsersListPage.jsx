@@ -7,7 +7,7 @@ import * as RefreshFunction from './../../helpers/generateUUID.js'
 
 import UserRegister from '../../components/Users/UserRegister.jsx';
 import Logo from '../../components/Logo'
-import DeleteUserDialog from '../../components/Users/DeleteUserDialog.jsx';
+import DeleteUserDialog from '../../components/DeleteActions/DeleteUserDialog.jsx';
 import SkeletonUsers from '../../components/Skeleton/SkeletonUsers.jsx';
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
@@ -19,6 +19,10 @@ function UsersListPage() {
 
     const {id} = useParams()
     const {numberUsers} = useParams()
+    //En app esta guardado el array entero.
+    //Acá, agarro los usuarios
+    const data = sessionStorage.getItem('U4S3R')
+    let parsed = JSON.parse(data)
 
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState("")
@@ -27,47 +31,33 @@ function UsersListPage() {
 
     const [name, setName] = useState()          // Variable para la eliminación
     const [user_id, setUser_id] = useState()    // ----------------------------*
+    const [firstLoad, setFirstLoad] = useState()    
 
     const navigate = useNavigate()
 
     let idRefresh = RefreshFunction.generateUUID()
     
     useEffect(() => {
-        setLoading(true)
-        Notify.notifyA("Cargando alumnos...")
-        
-        UsersService.find(id)
-            .then(data => {
-                Notify.updateToast()
-                setUsers(data)
-                setLoading(false)
-            })
+        Notify.notifyA("Cargando usuarios...")
+           
+            UsersService.find(id)
+                .then(data => {
+                    setFirstLoad(true)
+                    //Si se actualiza, se guarda los de la base de datos y se empieza a usar estos
+                    setUsers(data)
+                    // Y a pesar de no utilizar el del storage, se actualiza.
+                    let jsonDATA = JSON.stringify(data);
+                    sessionStorage.setItem('U4S3R', jsonDATA)
+                    Notify.updateToast()
+                })
        
+
     }, [status]) 
 
-    /*useEffect(() => {
-        const fetchRoutineData = async () => {
-          for (const user of users) {
-            try {
-              const routineData = await WeekService.findRoutineByUserId(user._id);
-              console.log(routineData);
-              // Actualiza el usuario con los datos de la rutina
-              setUsers((prevUsers) =>
-                prevUsers.map((prevUser) =>
-                  prevUser._id === user._id ? { ...prevUser, routineData } : prevUser
-                )
-              );
-            } catch (error) {
-              console.error(`Error al obtener las rutinas del usuario ${user._id}:`, error);
-            }
-          }
-        };
-    
-        fetchRoutineData();
-        console.log(users)
-      }, [loading]);*/
-
-    const refresh = (refresh) => setStatus(refresh);
+    const refresh = () => {
+        Notify.notifyA("Cargando usuarios...")
+        setStatus(RefreshFunction.generateUUID())
+    };
     
     const [showDialog, setShowDialog] = useState()
 
@@ -137,7 +127,7 @@ function UsersListPage() {
                                         <SkeletonUsers key={index} />
                                     )) : 
                                     <TransitionGroup component={null} className="todo-list">
-                                    {results.map(({_id, name, email}) =>
+                                    {results != null && results.map(({_id, name, email}) =>
                                     
                                         <CSSTransition
                                         key={_id}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import * as UserService from './../../services/users.services'
+import * as UserService from '../../services/users.services'
+import * as Notify from './../../helpers/notify.js'
 
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -11,9 +12,10 @@ const DeleteUserDialog = ({ visible, onHide, user_id, name }) => {
 
   const handleAccept = () => {
     if (isInputValid) {
-
+      Notify.notifyA('Eliminando usuario...')
       UserService.deleteUser(user_id)
             .then(() => {
+               
                 onHide("delete");
             })
    
