@@ -26,7 +26,7 @@ import CustomInputNumber from '../../components/CustomInputNumber.jsx';
 import EditExercise from '../../components/EditExercise.jsx';
 import SkeletonExercises from '../../components/Skeleton/SkeletonExercises.jsx';
 
-
+// CORREGIR PROBLEMA DEL LENGTH, PASO PORQUE ELIMINE QUE SE CREE AUTOMATICAMENTE UN EXERCISES, PARA QUE LUEGO PUEDA CREAR UN INDEX DEL CAMPO ROUTINE.EXERCISES.EXERCISE_ID
 function DayEditDetailsPage(){
     const {week_id} = useParams()
     const {day_id} = useParams()
@@ -114,7 +114,7 @@ function DayEditDetailsPage(){
  
                 let indexDay = data[0].routine.findIndex(dia => dia._id === day_id) // De la base de datos, selecciono el día correspondiente
                 let day = data[0].routine[indexDay].exercises                       // Cargo únicamente los ejercicios
-                let circuit = day.filter(circuito => circuito.type != 'exercise')   // Cargo únicamente los ejercicios del circuito
+                let circuit = day != null ? day.filter(circuito => circuito.type != 'exercise') : null  // Cargo únicamente los ejercicios del circuito
 
                 //setCosa(indexDay)
                 setFirstOpen(false)                     // variable que detecta la primera vez que se renderiza el componente
@@ -127,7 +127,7 @@ function DayEditDetailsPage(){
                 setOptions(Options)                     // array de options para el select
                 setFirstLoading(false)                  // firstload para cargar el skeleton
                 Notify.updateToast()
-                localStorage.setItem('LEN', day.length) // carga en localstorage el largo del array principal, para luego al editar o eliminar cargar el skeleton correctamente 
+                //localStorage.setItem('LEN', day.length) // carga en localstorage el largo del array principal, para luego al editar o eliminar cargar el skeleton correctamente 
 
                
             })
@@ -265,6 +265,10 @@ useEffect(() => {
     const handleInputChangeRep = (newValue) => setNewRep(newValue);
 
     //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
+
+    //                            {firstLoading == true || day.length == 0 ? Array.from({ length: firstLoading == true && secondLoad == numberExercises ? numberExercises : secondLoad }).map((_, index) => (
+        //<SkeletonExercises ancho={anchoPagina} key={index} />
+        //)) : 
     
     const [anchoPagina, setAnchoPagina] = useState(window.innerWidth);
 
@@ -339,11 +343,9 @@ useEffect(() => {
                             </thead>
                             <tbody>
                             
-                            {firstLoading == true || day.length == 0 ? Array.from({ length: firstLoading == true && secondLoad == numberExercises ? numberExercises : secondLoad }).map((_, index) => (
-                                <SkeletonExercises ancho={anchoPagina} key={index} />
-                            )) : 
+
                             <TransitionGroup component={null} className="todo-list">
-                                {day.map((exercise, index) =>
+                                {day != null && day.map((exercise, index) =>
                                 <CSSTransition
                                 key={exercise.exercise_id}
                                 timeout={day.length == 0 ? 0 : 400}
@@ -608,7 +610,7 @@ useEffect(() => {
                                 </tr>
                                     </CSSTransition>
                                 )}
-                                </TransitionGroup>}
+                                </TransitionGroup>
 
                             </tbody>
                         

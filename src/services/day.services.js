@@ -1,6 +1,6 @@
 //Crea un dia
 async function createDay(name, week_id) {
-    return fetch(`https://tom-api.vercel.app/api/week/${week_id}/day`, {
+    return fetch(`httpS://tom-api.vercel.app/api/week/${week_id}/day`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ async function createDay(name, week_id) {
 //Editar un día
 
 async function editDay(week_id, day_id, name) {
-    return fetch(`https://tom-api.vercel.app/api/week/${week_id}/day/${day_id}`, {
+    return fetch(`httpS://tom-api.vercel.app/api/week/${week_id}/day/${day_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ async function editDay(week_id, day_id, name) {
 }
 
 async function deleteDay(week_id, day_id) {
-    return fetch(`https://tom-api.vercel.app/api/week/${week_id}/day/${day_id}`, {
+    return fetch(`httpS://tom-api.vercel.app/api/week/${week_id}/day/${day_id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

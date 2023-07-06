@@ -5,7 +5,7 @@ import Modal from 'react-bootstrap/Modal';
 import * as DayServices from '../../../services/day.services.js'
 
 
-function ModalEditDay({showEdit, handleClose, actionConfirm, weekID, dayID,nameExercise, refresh}) {
+function ModalEditDay({showEdit, handleClose, actionConfirm, week_id, dayID,nameExercise, refresh}) {
 
   const [name, setName] = useState('')
 
@@ -18,7 +18,7 @@ function ModalEditDay({showEdit, handleClose, actionConfirm, weekID, dayID,nameE
   }
 
   function deleteDay(){
-    DayServices.deleteDay(weekID, dayID)
+    DayServices.deleteDay(week_id, dayID)
       .then(() => {
         handleClose()
       })
@@ -29,7 +29,7 @@ function ModalEditDay({showEdit, handleClose, actionConfirm, weekID, dayID,nameE
   function onSubmit(e){
     e.preventDefault()
 
-    DayServices.editDay(weekID, dayID, {name: name})
+    DayServices.editDay(week_id, dayID, {name: name})
       .then(() => {
         handleClose()
       })

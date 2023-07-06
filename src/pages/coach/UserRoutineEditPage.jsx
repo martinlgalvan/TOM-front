@@ -29,13 +29,13 @@ function UserRoutineEditPage(){
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
-    const weeks = sessionStorage.getItem('U4S3R')
+    /*const weeks = sessionStorage.getItem('U4S3R')
     let parsed = JSON.parse(weeks)
     let user = parsed.filter(weeks => weeks._id == id)
-    let weeksSession = user[0].rutina
+    let weeksSession = user[0].rutina*/
 
 
-    const [routine, setRoutine] = useState(weeksSession)
+    const [routine, setRoutine] = useState([])
     const [weekNumber, setWeekNumber] = useState(0)
 
     const [show, setShow] = useState(false);
@@ -64,8 +64,7 @@ function UserRoutineEditPage(){
         
         WeekService.findRoutineByUserId(id)
             .then(data => {   
-
-                console.log(data,"AAAA")
+ 
                 setRoutine(data)
                 setWeekNumber(data.length + 1)
                 if(data.length == 0){
@@ -96,17 +95,11 @@ function UserRoutineEditPage(){
         }
     }
 
-    function addDayToWeek(week_id){
+    function addDayToWeek(week_id,number){
         setLoading(true)
-        WeekService.findByWeekId(week_id)
-            .then(data => {   
-            
-            let dayNumber = data[0].routine.length + 1
-                DayService.createDay({name: `Día ${dayNumber}`}, week_id)
-                    .then(() => {
-                        setStatus(idRefresh)
-                    })
-                })
+
+        DayService.createDay({name: `Día ${number + 1}`}, week_id).then(() => setStatus(idRefresh))
+
     }
 
     const [showDeleteWeekDialog, setShowDeleteWeekDialog] = useState()
@@ -233,7 +226,7 @@ function UserRoutineEditPage(){
                                     >
                                         <div key={element._id} className='row justify-content-center mx-0 py-1 border-bottom'>
 
-                                            <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/week/${elemento._id}/day/${element._id}/${element.exercises.length}`}>{element.name}</Link>
+                                            <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/week/${elemento._id}/day/${element._id}`}>{element.name}</Link>
                                             
                                             <button onClick={() => handleShowEdit(elemento._id,element._id, element.name)} className=' col-2 btn ClassBGHover'>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-three-dots-vertical" viewBox="0 0 16 16">
@@ -245,13 +238,13 @@ function UserRoutineEditPage(){
                                         </CSSTransition>
                                     )}
                                 </TransitionGroup>
-                                    <button disabled={loading} onClick={(e) => addDayToWeek(elemento._id, index)} className='input-group-text btn border buttonColor mt-3'>+</button>
+                                    <button disabled={loading} onClick={() => addDayToWeek(elemento._id,elemento.routine.length)} className='input-group-text btn border buttonColor mb-5 mt-3'>Añadir día</button>
 
                             </div>
                             
                             <div className='row justify-content-between'>
                                 <div className='col-5'>
-                                    <button onClick={() => deleteWeek(elemento._id, elemento.name)} className='m-1 btn border buttonColor buttonColorDelete'>Eliminar</button>
+                                    <button onClick={() => deleteWeek(elemento._id, elemento.name)} className='btn border buttonColor buttonColorDelete'>Eliminar</button>
                                 </div>
                                 <div className='col-5'>
                                     <button onClick={() => editWeek(elemento._id, elemento.name)} className='btn border buttonColor'>Editar</button> 

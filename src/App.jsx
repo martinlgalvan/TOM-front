@@ -64,12 +64,12 @@ function App(){
             if(token){
                 setIsAutenticated(true)
 
-                UserService.find(id)
+                /*UserService.find(id)
                     .then(data => {
                         let jsonDATA = JSON.stringify(data);
                         sessionStorage.setItem('U4S3R', jsonDATA);
                         setNumberUsers(data.length)
-                    })
+                    })*/
             } else{
                 setIsAutenticated(false)
             }
@@ -158,7 +158,7 @@ function App(){
                 <Route path="/exercises/:id" element={<RoutePrivate isAutenticate={isAutenticated}><DatabaseExercises/></RoutePrivate>}/>
 
                 <Route path="/user/routine/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutineEditPage/></RoutePrivate>}/>
-                <Route path="/routine/week/:week_id/day/:day_id/:numberExercises" element={<RoutePrivate isAutenticate={isAutenticated}><DayEditDetailsPage/></RoutePrivate>}/>
+                <Route path="/routine/week/:week_id/day/:day_id/" element={<RoutePrivate isAutenticate={isAutenticated}><DayEditDetailsPage/></RoutePrivate>}/>
 
                 <Route path="/routine/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutinePage/></RoutePrivate>}/>
                 <Route path="/routine/:id/day/:day_id/:index" element={<RoutePrivate isAutenticate={isAutenticated}><DayDetailsPage/></RoutePrivate>}/>

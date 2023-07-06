@@ -32,7 +32,7 @@ function EditWeek({ visible, onHide, week_id, defaultName }) {
 
   return (
 
-    <Dialog visible={visible} onHide={handleCancel} header={`Eliminar ${defaultName}`}>
+    <Dialog visible={visible} onHide={handleCancel} header={`Editar ${defaultName}`}>
       <div className='row justify-content-center'>
 
       <form onSubmit={onSubmit} >
