@@ -1,6 +1,6 @@
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function find(id) {
-    return fetch(`httpS://tom-api.vercel.app/api/users/${id}`, {
+    return fetch(`https://tom-api.vercel.app/api/users/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ async function find(id) {
 
 //Crea alumnos
 async function createAlumno(id, user) {
-    return fetch(`httpS://tom-api.vercel.app/api/users/${id}`, {
+    return fetch(`https://tom-api.vercel.app/api/users/${id}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ async function createAlumno(id, user) {
 
 //Elimino alumnos
 async function deleteUser(id) {
-    return fetch(`httpS://tom-api.vercel.app/api/user/${id}`, {
+    return fetch(`https://tom-api.vercel.app/api/user/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ async function deleteUser(id) {
 
 //Busca a un alumno
 async function findUserById(id) {
-    return fetch(`httpS://tom-api.vercel.app/api/user/${id}`, {
+    return fetch(`https://tom-api.vercel.app/api/user/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ async function findUserById(id) {
 
 //Encontrar días
 async function findDays(id) {
-    return fetch(`httpS://tom-api.vercel.app/api/users/routine/${id}/createDay`, {
+    return fetch(`https://tom-api.vercel.app/api/users/routine/${id}/createDay`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ async function findDays(id) {
 //Obtiene todos los ejercicios
 
 /*async function findExercises(id) {
-    return fetch(`httpS://tom-api.vercel.app/api/day/${id}/exercise`, {
+    return fetch(`https://tom-api.vercel.app/api/day/${id}/exercise`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ async function findDays(id) {
 //Agrega un ejercicio a un día 
 
 async function addExerciseToDay(id, exercise) {
-    return fetch(`httpS://tom-api.vercel.app/api/day/${id}/exercise`, {
+    return fetch(`https://tom-api.vercel.app/api/day/${id}/exercise`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ async function addExerciseToDay(id, exercise) {
 
 //Elimina un ejercicio dependiendo el día y el ejercicio
 async function deleteExercise(idDay, idExercise) {
-    return fetch(`httpS://tom-api.vercel.app/api/day/${idDay}/exercise/${idExercise}`, {
+    return fetch(`https://tom-api.vercel.app/api/day/${idDay}/exercise/${idExercise}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ async function deleteExercise(idDay, idExercise) {
 
 
 async function editExercise(idDay, idExercise, exercise) {
-    return fetch(`httpS://tom-api.vercel.app/api/day/${idDay}/exercise/${idExercise}`, {
+    return fetch(`https://tom-api.vercel.app/api/day/${idDay}/exercise/${idExercise}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -170,7 +170,7 @@ async function editExercise(idDay, idExercise, exercise) {
 
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function findRoutineById(id) {
-    return fetch(`httpS://tom-api.vercel.app/api/user/${id}/routine`, {
+    return fetch(`https://tom-api.vercel.app/api/user/${id}/routine`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

@@ -24,3 +24,5 @@
 // Ver el tema si no se quiere poner reps, y se quiere poner segundos que haces, por ejemplo plancha 3x25"
 
 // Si el email ya esta ingresado, sigue el simbolito de carga
+
+//Termine la edición rapida, hacerlo bien esteticamente y empezar a armar eso mismo del lado del usuario

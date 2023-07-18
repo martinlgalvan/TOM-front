@@ -45,6 +45,7 @@ function DayEditDetailsPage(){
 
     const [circuit, setCircuit] = useState([])                          // Carga del circuit al modal
     const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
+    const [modifiedDay, setModifiedDay] = useState([])
 
 
     const [exercise_id, setExercise_id] = useState()                    // Carga edit para el edit y delete de ejercicios
@@ -55,7 +56,7 @@ function DayEditDetailsPage(){
     const [showEditCircuit, setShowEditCircuit] = useState(false)       // Modal para editar los circuitos
     const [showCreateWarmup, setShowCreateWarmup] = useState(false)     // Modal para crear la entrada en calor
 
-    const [CanvasFormulas, setCanvasFormulas] = useState(false);        // Modal para canvas de formulas
+    const [editExerciseMobile, setEditExerciseMobile] = useState(false);        // Modal para canvas de formulas
     
     const [inputEnFoco, setInputEnFoco] = useState(null);               // Manejo de la edición rápida
     const [confirm, setConfirm] = useState(null);                       // Ver bien para que la usé
@@ -97,7 +98,7 @@ function DayEditDetailsPage(){
     }, []);
     
     const refreshEdit = () => {
-        setDay([])
+        setStatus(idRefresh)
         setVisibleEdit(false)
     }
 
@@ -120,6 +121,7 @@ function DayEditDetailsPage(){
                 setFirstOpen(false)                     // variable que detecta la primera vez que se renderiza el componente
                 setCircuit(circuit)                     // establece los ejercicios del circuito para renderizarlo luego a la hora de editar
                 setDay(day)                             // array de objetos inicial, son los ejercicios
+                setModifiedDay(day)                     
                 setUserId(data[0].user_id)              // userId para volver a la página anterior
                 setLoading(false)                       // load principal
                 setInputEnFoco(null)                    // input para la edición rápida
@@ -146,10 +148,55 @@ useEffect(() => {
 
     // EDIT EXERCISES
 
-    const changeNameEdit = (e) => setNewName(e.target.value)
-    const changePesoEdit = (e) => setNewPeso(e.target.value)
-    const changeNotasEdit = (e) => setNewNotas(e.target.value)
-    const changeVideoEdit = (e) => setNewVideo(e.target.value)
+    const changeNameEdit = (index, e) => {
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].name = e.target.value;
+        setModifiedDay(updatedModifiedDay);
+        console.log(modifiedDay)
+      };
+      
+      const changePesoEdit = (index, e) => {
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].peso = e.target.value;
+        setModifiedDay(updatedModifiedDay);
+        console.log(modifiedDay)
+      };
+
+      const changeSetEdit = (index, newValue) => {
+        console.log(index, newValue)
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].sets = newValue;
+        setModifiedDay(updatedModifiedDay);
+        console.log(modifiedDay)
+      };
+      
+      const changeRepEdit = (index, newValue) => {
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].reps = newValue;
+        setModifiedDay(updatedModifiedDay);
+      };
+      
+      const changeVideoEdit = (index, e) => {
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].video = e.target.value;
+        setModifiedDay(updatedModifiedDay);
+      };
+      
+      const changeNotasEdit = (index, e) => {
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].notas = e.target.value;
+        setModifiedDay(updatedModifiedDay);
+      };
+      
+      // Resto de funciones de cambio...
+
+      const applyChanges = () => {
+        console.log(modifiedDay)
+        setDay(modifiedDay);
+        ExercisesService.editExercise(week_id, day_id, modifiedDay)
+            .then((data) => {console.log(data), setStatus(idRefresh)} )
+        
+      };
 
     //Modal Edit Exercise
 
@@ -157,7 +204,7 @@ useEffect(() => {
 
     function handleEditMobileExercise(elementsExercise){
         setCompleteExercise(elementsExercise)
-        setVisibleEdit(true)
+        setEditExerciseMobile(true)
     }
 
     const handleShowCreateMobility = () => setShowCreateWarmup(true)
@@ -234,7 +281,7 @@ useEffect(() => {
 
         notas == null || notas == "" || notas == undefined ? notas = " ": notas = notas
 
-        ExercisesService.editExercise(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
+        ExercisesService.editExerciseMobile(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
             .then(() => {setStatus(idRefresh)} )
             
     }
@@ -243,28 +290,12 @@ useEffect(() => {
 
     const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
   
-    //Cuando se aprete fuera del div al que le puse el ref, se pierde el foco del input
-    
-    const divRef = useRef();
 
-    useEffect(() => {
-    
-        function handleClickOutside(event) { 
-            if(divRef.current && !divRef.current.contains(event.target)){ 
-                setInputEnFoco(null); 
-            } 
-        }
 
-        const handleDocumentClick = (event) => handleClickOutside(event);
-        document.addEventListener('mousedown', handleDocumentClick);
-
-        return () => { document.removeEventListener('mousedown', handleDocumentClick); };
-    }, []);
-
-    const handleInputChangeSet = (newValue) => setNewSet(newValue);
+    const handleInputChangeSet = (newValue,e ) => console.log(newValue, e);
     const handleInputChangeRep = (newValue) => setNewRep(newValue);
 
-    //<button className="btn BlackBGtextWhite col-12" onClick={() => setCanvasFormulas(true)}>Formulas</button>
+    //<button className="btn BlackBGtextWhite col-12" onClick={() => setEditExerciseMobile(true)}>Formulas</button>
 
     //                            {firstLoading == true || day.length == 0 ? Array.from({ length: firstLoading == true && secondLoad == numberExercises ? numberExercises : secondLoad }).map((_, index) => (
         //<SkeletonExercises ancho={anchoPagina} key={index} />
@@ -323,7 +354,7 @@ useEffect(() => {
             <article  className='row justify-content-center'>
 
             <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 my-5'>Administrar bloque de entrada en calor</button>
-                <div ref={divRef} className={`row justify-content-center align-items-center text-center mt-5 px-0 ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
+                <div className={`row justify-content-center align-items-center text-center mt-5 px-0 ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
 
 
                     <div className={`table-responsive col-11 col-xxl-10 m-0 p-0 pt-3 `}>
@@ -351,7 +382,7 @@ useEffect(() => {
                                 timeout={day.length == 0 ? 0 : 400}
                                 classNames="item"
                                 >                               
-                                    <tr key={exercise.exercise_id} className={`oo ${inputEnFoco !== null && inputEnFoco !== index ? 'ww' : null}`}>
+                                    <tr key={exercise.exercise_id} className={`oo`}>
                                         <th className='TableResponsiveDayEditDetailsPage' >
                                         {exercise.type != 'exercise' ? <span>{exercise.numberExercise}</span> :
                                          <select  
@@ -411,22 +442,9 @@ useEffect(() => {
                                         className='form-control border-0' 
                                         type="text" 
                                         defaultValue={exercise.name} 
-                                        onKeyDown={e => {
-                                        if (e.key === 'Enter') {
-                                            editExercise(
-                                                exercise.exercise_id, 
-                                                e.target.value || null, 
-                                                exercise.sets, 
-                                                exercise.reps, 
-                                                exercise.peso, 
-                                                exercise.video, 
-                                                exercise.notas, 
-                                                exercise.numberExercise)
-                                            }}} 
-                                        onChange={changeNameEdit}
+                                        
+                                        onChange={(e) => changeNameEdit(index, e)}
                                         onFocus={() => handleInputFocus(index)}
-                                        ref={(input) => (inputRefs.current[index] = input)}
-                                        disabled={inputEnFoco !== null && inputEnFoco !== index}
                                         autoComplete='off'
                                         />
                                     </td>}
@@ -435,10 +453,10 @@ useEffect(() => {
                                     <td className='tdSets c' >
                                         <CustomInputNumber 
                                             initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : exercise.sets}
-                                            onChange={(newValue) => handleInputChangeSet(newValue)}
+                                            onChange={(e) => changeSetEdit(index, e)}
                                             onValueChange={() => handleInputFocus(index)}
-                                            ref={(input) => (inputRefs.current[index] = input)}
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            onFocus={() => handleInputFocus(index)}
+                                            
                                             className="" 
                                             />
   
@@ -448,10 +466,10 @@ useEffect(() => {
                                             
                                             <CustomInputNumber 
                                             initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : exercise.reps}
-                                            onChange={(newValue) => handleInputChangeRep(newValue)}
+                                            onChange={(e) => changeRepEdit(index, e)}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            
                                             className="" 
                                             />
                                         </td> 
@@ -465,22 +483,9 @@ useEffect(() => {
                                             className='form-control border-0' 
                                             type="text" 
                                             defaultValue={exercise.peso}
-                                            onChange={changePesoEdit}
-                                            onKeyDown={e => {
-                                            if (e.key === 'Enter') {
-                                                editExercise(
-                                                    exercise.exercise_id, 
-                                                    exercise.name, 
-                                                    exercise.sets, 
-                                                    exercise.reps, 
-                                                    e.target.value || null,
-                                                    exercise.video, 
-                                                    exercise.notas, 
-                                                    exercise.numberExercise)
-                                                }}} 
+                                            onChange={(e) => changePesoEdit(index, e)}
                                             onFocus={() => handleInputFocus(index)}
-                                            ref={(input) => (inputRefs.current[index] = input)}
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            
                                             />
                                             
                                         
@@ -495,22 +500,10 @@ useEffect(() => {
                                             className='form-control border-0' 
                                             type="text" 
                                             defaultValue={exercise.video}
-                                            onKeyDown={e => {
-                                            if (e.key === 'Enter') {
-                                                editExercise(
-                                                    exercise.exercise_id, 
-                                                    exercise.name, 
-                                                    exercise.sets, 
-                                                    exercise.reps, 
-                                                    exercise.peso, 
-                                                    e.target.value || null, 
-                                                    exercise.notas, 
-                                                    exercise.numberExercise)
-                                                }}} 
-                                            onChange={changeVideoEdit}
+                                            onChange={(e) => changeVideoEdit(index, e)}
+                                            
                                             onFocus={() => handleInputFocus(index)}
-                                            ref={(input) => (inputRefs.current[index] = input)}
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                            
                                             />
                                         
                                         </td>
@@ -522,19 +515,7 @@ useEffect(() => {
                                         className='form-control border-0' 
                                         type="text" 
                                         defaultValue={exercise.notas}
-                                        onKeyDown={e => {
-                                        if (e.key === 'Enter') {
-                                            editExercise(
-                                                exercise.exercise_id, 
-                                                exercise.name, 
-                                                exercise.sets, 
-                                                exercise.reps, 
-                                                exercise.peso, 
-                                                exercise.video, 
-                                                e.target.value || null, 
-                                                exercise.numberExercise)
-                                            }}} 
-                                        onChange={changeNotasEdit}
+                                        onChange={(e) => changeNotasEdit(index, e)}
                                         onClick={
                                             exercise.type != 'exercise' ? () => handleShowEditCircuit(
                                             exercise.exercise_id, 
@@ -545,7 +526,6 @@ useEffect(() => {
                                             exercise.numberExercise) : null}
                                         onFocus={exercise.type != 'exercise' ? null : () => handleInputFocus(index)}
                                         ref={(input) => (inputRefs.current[index] = input)}
-                                        disabled={inputEnFoco !== null && inputEnFoco !== index}
                                         />
 
                                     </td> 
@@ -553,6 +533,7 @@ useEffect(() => {
                                     <td className='tdActions'>
                                         {inputEnFoco == null ? 
                                         <>
+                                       
                                             <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
                                                 <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
@@ -616,6 +597,9 @@ useEffect(() => {
                         
                             
                         </table>
+                        <button onClick={applyChanges} >
+                                            Aplicar cambios
+                                            </button>
                     </div>
                     </div>
                 </article>
@@ -632,7 +616,7 @@ useEffect(() => {
                     visible={visibleEdit} 
                     modal={false} 
                     onHide={() => setVisibleEdit(false)}>
-                    <EditExercise  completeExercise={completeExercise} functionEdit={editExercise} refreshEdit={refreshEdit}/>
+
                 </Dialog>
 
                 <ModalConfirmDeleteExercise show={show} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
@@ -656,8 +640,8 @@ useEffect(() => {
                 
                 <ConfirmDialog />
 
-                <Sidebar visible={CanvasFormulas} position="right" onHide={() => setCanvasFormulas(false)}>
-                    <Formulas />
+                <Sidebar visible={editExerciseMobile}  position="right" onHide={() => setEditExerciseMobile(false)}>
+                    <EditExercise  completeExercise={completeExercise} functionEdit={editExercise} refreshEdit={refreshEdit}/>
                 </Sidebar>
         </section>
     )
