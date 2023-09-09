@@ -4,35 +4,83 @@ import CustomInputNumber from './CustomInputNumber.jsx'
 
 import * as ExercisesService from '../services/exercises.services.js';
 
-function EditExercise({refreshEdit,functionEdit, completeExercise}) {
+function EditExercise({refreshEdit, refresh, indexOfExercise, completeExercise, week_id, day_id}) {
 
 
 const [completeName, setCompleteName] = useState()
+const [modifiedDay, setModifiedDay] = useState([])
+
 const [completeSets, setCompleteSets] = useState()
 const [completeReps, setCompleteReps] = useState()
 const [completePeso, setCompletePeso] = useState()
 const [completeVideo, setCompleteVideo] = useState()
 const [completeNotas, setCompleteNotas] = useState()
 
-const changeNameEdit = (e) => setCompleteName(e.target.value)
+useEffect(() => {
+  setModifiedDay(completeExercise)
+}, []);
+
+/*const changeNameEdit = (e) => setCompleteName(e.target.value)
 const changeSetsEdit = (e) => setCompleteSets(e.target.value)
 const changeRepsEdit = (e) => setCompleteReps(e.target.value)
 const changePesoEdit = (e) => setCompletePeso(e.target.value)
 const changeVideoEdit = (e) => setCompleteVideo(e.target.value)
-const changeNotasEdit = (e) => setCompleteNotas(e.target.value)
+const changeNotasEdit = (e) => setCompleteNotas(e.target.value)*/
+
+
+    // EDIT EXERCISES
+
+    const changeNameEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].name = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    const changePesoEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].peso = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+    };
+
+    const changeSetEdit = (index, newValue) => {
+      console.log(index, newValue)
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].sets = newValue;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    const changeRepEdit = (index, newValue) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].reps = newValue;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    const changeVideoEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].video = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    const changeNotasEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].notas = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    // Resto de funciones de cambio...
+
+
+// Resto de funciones de cambio...
+
+
 
 function onSubmit(e){
   e.preventDefault()
-
-  functionEdit(
-    completeExercise.exercise_id, 
-    completeName == null ? completeExercise.name : completeName, 
-    completeSets == null ? completeExercise.sets : completeSets, 
-    completeReps == null ? completeExercise.reps : completeReps, 
-    completePeso == null ? completeExercise.peso : completePeso, 
-    completeVideo == null ? completeExercise.video : completeVideo, 
-    completeNotas == null ? completeExercise.notas : completeNotas)
-  refreshEdit(e)
+  refreshEdit()
+  ExercisesService.editExercise(week_id, day_id, modifiedDay)
+      .then((data) => {refreshEdit(modifiedDay)} )
+  
+  
  
 }
     
@@ -42,38 +90,38 @@ function onSubmit(e){
 
       <div className="mb-3">
         <label htmlFor="name" className="visually-hidden">Nombre</label>
-        <input type="text" className="form-control" id="name" placeholder="Example input placeholder" onChange={changeNameEdit} defaultValue={completeExercise.name} />
+        <input type="text" className="form-control" id="name" placeholder="Example input placeholder" defaultValue={completeExercise[indexOfExercise].name} onChange={(e) => changeNameEdit(indexOfExercise, e)}  />
       </div>
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Series</label>
         <CustomInputNumber 
-                initialValue={completeExercise.sets}
-                onChange={(value) => setCompleteSets(value)}
+                initialValue={completeExercise[indexOfExercise].sets}
+                onChange={(value) => changeSetEdit(indexOfExercise, value)}
                 />
       </div>
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Repeticiones</label>
         <CustomInputNumber 
-                initialValue={completeExercise.reps}
-                onChange={(value) => setCompleteReps(value)}
+                initialValue={completeExercise[indexOfExercise].reps}
+                onChange={(value) => changeRepEdit(indexOfExercise, value)}
                 />
       </div>
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Peso</label>
-        <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" onChange={changePesoEdit} defaultValue={completeExercise.peso}  />
+        <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" defaultValue={completeExercise[indexOfExercise].peso} onChange={(e) => changePesoEdit(indexOfExercise, e)}   />
       </div>
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Video</label>
-        <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" onChange={changeVideoEdit} defaultValue={completeExercise.video}  />
+        <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" defaultValue={completeExercise[indexOfExercise].video} onChange={(e) => changeVideoEdit(indexOfExercise, e)}   />
       </div>
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Notas</label>
-        <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" onChange={changeNotasEdit} defaultValue={completeExercise.notas}  />
+        <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" defaultValue={completeExercise[indexOfExercise].notas} onChange={(e) => changeNotasEdit(indexOfExercise, e)}   />
       </div>
 
       <div className='mb-3 text-center'>

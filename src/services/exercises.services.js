@@ -68,7 +68,7 @@ async function editExerciseAmrap(week_id,day_id,exercise_id, amrap) {
 
 //Elimina un ejercicio dependiendo el día y el ejercicio
 async function deleteExercise(week_id, day_id, exercise_id) {
-    return fetch(`https://tom-api.vercel.app/api/week/${week_id}/day/${day_id}/exercises/${exercise_id}`, {
+    return fetch(`https://tom-api.vercel.app/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ async function deleteExercise(week_id, day_id, exercise_id) {
 
 
 async function editExercise(week_id, day_id, exercise) {
-    return fetch(`https://tom-api.vercel.app/api/week/${week_id}/day/${day_id}/exercises`, {
+    return fetch(`https://tom-api.vercel.app/api/week/${week_id}/day/${day_id}/exercise`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

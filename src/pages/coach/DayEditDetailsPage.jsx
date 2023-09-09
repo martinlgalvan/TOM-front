@@ -97,10 +97,6 @@ function DayEditDetailsPage(){
 
     }, []);
     
-    const refreshEdit = () => {
-        setStatus(idRefresh)
-        setVisibleEdit(false)
-    }
 
     const refresh = (refresh) => setStatus(refresh)
 
@@ -120,8 +116,8 @@ function DayEditDetailsPage(){
                 //setCosa(indexDay)
                 setFirstOpen(false)                     // variable que detecta la primera vez que se renderiza el componente
                 setCircuit(circuit)                     // establece los ejercicios del circuito para renderizarlo luego a la hora de editar
-                setDay(day)                             // array de objetos inicial, son los ejercicios
-                setModifiedDay(day)                     
+                setDay(day)   
+                setModifiedDay(day)                           // array de objetos inicial, son los ejercicios
                 setUserId(data[0].user_id)              // userId para volver a la página anterior
                 setLoading(false)                       // load principal
                 setInputEnFoco(null)                    // input para la edición rápida
@@ -134,6 +130,16 @@ function DayEditDetailsPage(){
                
             })
 }, [status, firstLoading])
+
+
+const refreshEdit = (le) => {
+    setDay([])
+    setStatus(idRefresh)
+    setVisibleEdit(false)
+    setEditExerciseMobile(false)
+}
+
+
 
 useEffect(() => {
     let strItem    = localStorage.getItem('LEN')
@@ -192,7 +198,7 @@ useEffect(() => {
 
       const applyChanges = () => {
         console.log(modifiedDay)
-        setDay(modifiedDay);
+        setDay(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
         ExercisesService.editExercise(week_id, day_id, modifiedDay)
             .then((data) => {console.log(data), setStatus(idRefresh)} )
         
@@ -201,12 +207,14 @@ useEffect(() => {
     //Modal Edit Exercise
 
     const [completeExercise, setCompleteExercise] = useState()
+    const [indexOfExercise, setIndexOfExercise] = useState()
 
-    function handleEditMobileExercise(elementsExercise){
+    function handleEditMobileExercise(elementsExercise, index){
+        setIndexOfExercise(index)
         setCompleteExercise(elementsExercise)
         setEditExerciseMobile(true)
     }
-
+    refreshEdit
     const handleShowCreateMobility = () => setShowCreateWarmup(true)
 
     function handleShowEditCircuit(id, type, typeOfSets, circuit,notas, numberExercise){
@@ -240,6 +248,7 @@ useEffect(() => {
     const deleteExercise = (event,id,name) => {
 
         name == null || name == undefined ? name = "Sin nombre" : name = name
+        console.log(event, id, name)
 
         confirmDialog({
             trigger:            event.currentTarget,
@@ -266,7 +275,7 @@ useEffect(() => {
             .then(() => setStatus(idRefresh))
     };
 
-    const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
+    /*const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
 
         let parsedValue   = numberExercise
         let valueExercise = parseInt(parsedValue)
@@ -284,7 +293,7 @@ useEffect(() => {
         ExercisesService.editExerciseMobile(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
             .then(() => {setStatus(idRefresh)} )
             
-    }
+    }*/
 
     const handleInputFocus = (index) => { setInputEnFoco(index); setConfirm(true)};
 
@@ -303,13 +312,15 @@ useEffect(() => {
     
     const [anchoPagina, setAnchoPagina] = useState(window.innerWidth);
 
+
+
     return (
 
         <section className='container-fluid'>
             <Logo />
 
             <div className='row justify-content-center'>
-                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(true)} >Añadir Ejercicio</button>
+                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setDay(modifiedDay)} >Añadir Ejercicio</button>
 
                     <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
                 </div>
@@ -376,7 +387,7 @@ useEffect(() => {
                             
 
                             <TransitionGroup component={null} className="todo-list">
-                                {day != null && day.map((exercise, index) =>
+                                { day.map((exercise, index) =>
                                 <CSSTransition
                                 key={exercise.exercise_id}
                                 timeout={day.length == 0 ? 0 : 400}
@@ -531,7 +542,7 @@ useEffect(() => {
                                     </td> 
                                     
                                     <td className='tdActions'>
-                                        {inputEnFoco == null ? 
+
                                         <>
                                        
                                             <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
@@ -550,7 +561,7 @@ useEffect(() => {
                                                     exercise.notas, 
                                                     exercise.numberExercise) : 
                                                     
-                                                handleEditMobileExercise(exercise)}>
+                                                handleEditMobileExercise(exercise, index)}>
 
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
@@ -558,48 +569,31 @@ useEffect(() => {
                                                 </svg>
                                             </button>
                                         </> 
-                                        :  
-                                        <>
-                                            <button className='btn buttonsEdit' onClick={() => setInputEnFoco(null)}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-x-square" viewBox="0 0 16 16">
-                                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                                                </svg>
-                                            </button>
 
-                                            <button 
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index} 
-                                            onClick={(e) => editExercise(
-                                                exercise.exercise_id, 
-                                                newName == undefined ? exercise.name : newName, 
-                                                newSet == undefined ? exercise.sets : newSet, 
-                                                newRep == undefined ? exercise.reps : newRep, 
-                                                newPeso == undefined ? exercise.peso : newPeso, 
-                                                newVideo == undefined ? exercise.video : newVideo, 
-                                                newNotas == undefined ? exercise.notas : newNotas, 
-                                                newNumberExercise == undefined ? exercise.numberExercise : newNumberExercise)} 
-                                            className='btn buttonsEdit'>
-
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-check-square" viewBox="0 0 16 16">
-                                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                                                    <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
-                                                </svg>
-                                            </button>
-                                        </>
-                                           }
                                     </td>
                                 </tr>
+                                
                                     </CSSTransition>
                                 )}
                                 </TransitionGroup>
+                                
 
                             </tbody>
+                            
                         
                             
                         </table>
-                        <button onClick={applyChanges} >
-                                            Aplicar cambios
-                                            </button>
+                        {inputEnFoco == null ? null :
+                        <>
+                            <button className='btn btn-secondary mb-2 me-2' onClick={() => setInputEnFoco(null)}>
+                            Cancelar edición
+                        </button>
+                            <button className='btn BlackBGtextWhite mb-2 ms-2' onClick={applyChanges} >
+                                Aplicar cambios
+                            </button>
+                        </>
+                        }
+                        
                     </div>
                     </div>
                 </article>
@@ -640,8 +634,8 @@ useEffect(() => {
                 
                 <ConfirmDialog />
 
-                <Sidebar visible={editExerciseMobile}  position="right" onHide={() => setEditExerciseMobile(false)}>
-                    <EditExercise  completeExercise={completeExercise} functionEdit={editExercise} refreshEdit={refreshEdit}/>
+                <Sidebar visible={editExerciseMobile} position="right" onHide={() => {setEditExerciseMobile(false)}}>
+                    <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refresh={refresh} refreshEdit={refreshEdit}/>
                 </Sidebar>
         </section>
     )
