@@ -266,9 +266,7 @@ function UserRoutineEditPage(){
 
             </article>
             
-            <div className='d-flex flex-column align-items-center my-5'>
-                <Link className='btn BlackBGtextWhite' to={`/users/${user_id}`}>Volver atrás</Link>
-            </div>
+           
             
             <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} week_id={week_id} dayID={dayID} nameExercise={name}/>
             <EditWeek visible={showEditWeekDialog} onHide={hideDialog} week_id={week_id} defaultName={name}  />

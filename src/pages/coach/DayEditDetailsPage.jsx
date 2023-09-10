@@ -320,7 +320,7 @@ useEffect(() => {
             <Logo />
 
             <div className='row justify-content-center'>
-                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setDay(modifiedDay)} >Añadir Ejercicio</button>
+                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(modifiedDay)} >Añadir Ejercicio</button>
 
                     <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
                 </div>
@@ -598,9 +598,7 @@ useEffect(() => {
                     </div>
                 </article>
 
-                <div className='d-flex justify-content-center'>
-                    <Link className="btn BlackBGtextWhite text-center my-5" to={`/user/routine/${user_id}`}>Volver atrás</Link>
-                </div>
+               
 
                 <Dialog 
                     className='col-12 col-md-10 col-xxl-5' 
