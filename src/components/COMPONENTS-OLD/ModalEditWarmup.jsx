@@ -69,10 +69,10 @@ function editWarmup(){
           <Modal.Title><h2 className='text-center'>Editar entrada en calor</h2></Modal.Title>
         </Modal.Header>
         <Modal.Body className='text-center'>
-
+        <h2>wedqfihoqweihofdqweihofihqopwefq</h2>
           <div className='row justify-content-center'>
             <article className='col-10'>
-
+            
               <div className='row justify-content-center'>
                 <div className='col-10'>
                   <label htmlFor="name" className='p-2 d-block'>Nombre</label>

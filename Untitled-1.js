@@ -26,3 +26,11 @@
 // Si el email ya esta ingresado, sigue el simbolito de carga
 
 //Termine la edición rapida, hacerlo bien esteticamente y empezar a armar eso mismo del lado del usuario
+
+// ---------------------- NEWS ----
+
+// Se ve mal el circuito en el celular
+
+// Edit circuit no anda
+
+// 

@@ -15,6 +15,7 @@ function UserRoutinePage(){
     useEffect(() => {
         WeekService.findRoutineByUserId(id)
         .then(data => {     
+            console.log(data)
             setRoutine(data)
         })
     }, [])
@@ -49,7 +50,7 @@ function UserRoutinePage(){
                             <div className="accordion-body ">
                             {week.routine.map((day, index) => 
                                 <ul key={index} className="list-group  rounded-0">
-                                    <Link className='list-group-item border-0 border-bottom text-center m-0 p-3 ClassBGHover' to={`/routine/${id}/day/${day._id}/${indexWeek}`}>{day.name}</Link>
+                                    <Link className='list-group-item border-0 border-bottom text-center m-0 p-3 ClassBGHover' to={`/routine/${id}/day/${day._id}/${week._id}/${indexWeek}`}>{day.name}</Link>
                                 </ul>)}
                             </div>
                             

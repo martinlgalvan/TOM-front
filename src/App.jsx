@@ -132,7 +132,7 @@ function App(){
                             <Link className='nav-link' to="/">Inicio</Link>
                         </li>
                         <li className="nav-item">
-                        {isAdmin() && <><Link className='nav-link' to={`/users/${id}/${numberUsers}`}>Lista de alumnos</Link></>}
+                        {isAdmin() && <><Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link></>}
                         </li>
                         <li className="nav-item">
                         {isAdmin() && <><Link className='nav-link' to={`/exercises/${id}`}>Batabase videos</Link></>}
@@ -154,14 +154,14 @@ function App(){
             <Routes>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
-                <Route path="/users/:id/:numberUsers" element={<RoutePrivate isAutenticate={isAutenticated}><UsersListPage/></RoutePrivate>}/>
+                <Route path="/users/:id/" element={<RoutePrivate isAutenticate={isAutenticated}><UsersListPage/></RoutePrivate>}/>
                 <Route path="/exercises/:id" element={<RoutePrivate isAutenticate={isAutenticated}><DatabaseExercises/></RoutePrivate>}/>
 
-                <Route path="/user/routine/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutineEditPage/></RoutePrivate>}/>
-                <Route path="/routine/week/:week_id/day/:day_id/" element={<RoutePrivate isAutenticate={isAutenticated}><DayEditDetailsPage/></RoutePrivate>}/>
+                <Route path="/user/routine/:id/:username" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutineEditPage/></RoutePrivate>}/>
+                <Route path="/routine/week/:week_id/day/:day_id" element={<RoutePrivate isAutenticate={isAutenticated}><DayEditDetailsPage/></RoutePrivate>}/>
 
                 <Route path="/routine/:id" element={<RoutePrivate isAutenticate={isAutenticated}><UserRoutinePage/></RoutePrivate>}/>
-                <Route path="/routine/:id/day/:day_id/:index" element={<RoutePrivate isAutenticate={isAutenticated}><DayDetailsPage/></RoutePrivate>}/>
+                <Route path="/routine/:id/day/:day_id/:week_id/:index" element={<RoutePrivate isAutenticate={isAutenticated}><DayDetailsPage/></RoutePrivate>}/>
 
 
                 <Route path="*" element={<div><h1>404</h1><p>Esta pagina no se encuentra disponible.</p></div>}/>

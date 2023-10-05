@@ -1,0 +1,25 @@
+Lista de cosas que tiene que andar :
+
+Flujo de navegación
+
+LISTA DE USUARIOS
+  - Crear usuario - CHECK
+  - Editar usuario - TO DO
+  - Borrar usuario - CHECK
+  - Entrar a usuario - CHECK
+
+CREACIÓN DE ENTRADA EN CALOR
+  - Crear ejercicio - CHECK
+  - Editar ejercicios - CHECK
+  - Borrar ejercicios
+
+CREACIÓN DE EJERCICIOS
+  - Crear ejercicio
+  - Editar ejercicios
+  - Borrar ejercicios
+
+DATABASE
+
+  - Crear ejercicio
+  - Editar ejercicio
+  - Borrar ejercicio

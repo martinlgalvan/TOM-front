@@ -13,7 +13,7 @@ import Logo from '../../components/Logo.jsx'
 import ModalDeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
 import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
-import SkeletonCard from '../../components/Skeleton/SkeletonCard.jsx';
+
 
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
@@ -26,6 +26,7 @@ import EditWeek from '../../components/EditActions/EditWeek.jsx';
 
 function UserRoutineEditPage(){
     const {id} = useParams()
+    const {username} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
@@ -42,7 +43,7 @@ function UserRoutineEditPage(){
     const [showEdit, setShowEdit] = useState(false);
     const [showEditWeek, setShowEditWeek] = useState(false);
     
-    const [name, setName] = useState("")
+    const [weekName, setWeekName] = useState("")
     const [week_id, setWeek_id] = useState("")
     const [dayID, setDayID] = useState("")
     const user_id = localStorage.getItem("_id")
@@ -59,18 +60,16 @@ function UserRoutineEditPage(){
         setLoading(true)
         NotifyHelper.notifyA("Cargando semanas...")
         
-        /*let jsonDATA = JSON.stringify(parsed);
-        sessionStorage.setItem('U4S3R', jsonDATA)*/
-        
         WeekService.findRoutineByUserId(id)
             .then(data => {   
  
                 setRoutine(data)
                 setWeekNumber(data.length + 1)
-                if(data.length == 0){
-                    setCopyWeek(false)
-                } else if(data.length > 0){
-                    setCopyWeek(true)
+
+                if(data.length == 0) { 
+                    setCopyWeek(false) 
+                } else if(data.length > 0) { 
+                    setCopyWeek(true) 
                 }
                 
                 setLoading(false)
@@ -86,7 +85,6 @@ function UserRoutineEditPage(){
         if(copyWeek == true){
             WeekService.createClonWeek(id)
                 .then((data) => {
-                    console.log(data)
                     setStatus(idRefresh)
                 })
         } else {
@@ -106,13 +104,13 @@ function UserRoutineEditPage(){
     const [showEditWeekDialog, setShowEditWeekDialog] = useState()
 
     const deleteWeek = (week_id, name) => {
-        setName(name)
+        setWeekName(name)
         setWeek_id(week_id)
         setShowDeleteWeekDialog(true);
       };
     
     const editWeek = (week_id, name) => {
-        setName(name)
+        setWeekName(name)
         setWeek_id(week_id)
         setShowEditWeekDialog(true);
     };
@@ -130,14 +128,14 @@ function UserRoutineEditPage(){
         setShowEdit(true)
         setWeek_id(week_id)
         setDayID(day_id)
-        setName(name)
+        setWeekName(name)
 
     }
 
     function handleShowEditWeek(week_id, name){
         setShowEditWeek(true)
         setWeek_id(week_id)
-        setName(name)
+        setWeekName(name)
 
     }
 
@@ -159,14 +157,27 @@ function UserRoutineEditPage(){
         <section className='container'>
 
             <Logo />
-            <div className='row justify-content-center my-5'>
+            <div className='row justify-content-center mt-2 mb-5'>
 
                 <h2 className='col-10 text-center mb-2'>Administración de semanas</h2>
+
+                <p className='col-10 text-center mt-2'>Estás en la planificación de <b>{username}</b> </p>
+
+
+                    <p className='col-10 text-center mb-2'>
+                        <b>Para comenzar, por favor, creá una semana. Vas a poder:</b>
+                    </p>
+                    <ul class="list-group list-group-flush text-center">
+                        <li class="list-group-item">Añadir días de entrenamiento</li>
+                        <li class="list-group-item">Dentro de los días, vas a poder añadir tanto su entrada en calor, como su planificación.</li>
+                    </ul>
+
                 
+
             </div>
 
             <article className='row justify-content-center'>
-                <div className='col-12 mx-2 text-center'>
+                <div className='col-12 mx-2 text-center mb-2'>
                     <button onClick={createWeek} className='input-group-text btn BlackBGtextWhite text-center' >Crear semana <b className='fs-6'>{weekNumber}</b></button>
                 </div>
                     {routine.length > 0 &&
@@ -264,14 +275,16 @@ function UserRoutineEditPage(){
 
                 </div> 
 
+                <Link to={`/users/${user_id}`} className='btn BlackBGtextWhite text-center mt-5 mb-3 col-4' >Volver atrás</Link>
+
             </article>
             
            
             
-            <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} week_id={week_id} dayID={dayID} nameExercise={name}/>
-            <EditWeek visible={showEditWeekDialog} onHide={hideDialog} week_id={week_id} defaultName={name}  />
+            <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} week_id={week_id} dayID={dayID} nameExercise={weekName}/>
+            <EditWeek visible={showEditWeekDialog} onHide={hideDialog} week_id={week_id} defaultName={weekName}  />
             
-            <DeleteWeek visible={showDeleteWeekDialog} onHide={hideDialog} week_id={week_id} name={name} />
+            <DeleteWeek visible={showDeleteWeekDialog} onHide={hideDialog} week_id={week_id} name={weekName} />
 
             <ToastContainer
                     position="bottom-center"

@@ -13,8 +13,16 @@
   background-color: #d8d8d8;
   border: 1px solid black;
 }
-/* Autocomplete clase */
 
+.largeTh{
+  min-width: 90px !important;
+}
+
+.largeThName{
+  min-width: 170px !important;
+}
+
+/* Autocomplete clase */
 
 
 .p-autocomplete {

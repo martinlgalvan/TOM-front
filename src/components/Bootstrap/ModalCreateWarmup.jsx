@@ -21,6 +21,8 @@ function ModalCreateWarmup({showCreateWarmup, closeModal, week_id, day_id}) {
   const [confirm, setConfirm] = useState()
   const [warmup, setWarmup] = useState()
 
+  const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
+
   function generateUUID() {
     let d = new Date().getTime();
     let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -40,7 +42,7 @@ let idRefresh = generateUUID()
         .then(data => {
             let indexWarmup = data[0].routine.findIndex(dia => dia._id === day_id)
             let exists = data[0].routine[indexWarmup].warmup
-            
+            setModifiedDay(exists)                           // array de objetos inicial, son los ejercicios
             setWarmup(exists)
             setInputEnFoco(null)
             Notify.updateToast()
@@ -190,36 +192,97 @@ useEffect(() => {
 
 
 
-const divRef = useRef();
-
-    useEffect(() => {
-        function handleClickOutside(event) {
-        if (divRef.current && !divRef.current.contains(event.target)) {
-            setInputEnFoco(null);
-        }
-        }
-
-        const handleDocumentClick = (event) => handleClickOutside(event);
-        document.addEventListener('mousedown', handleDocumentClick);
-
-        return () => {
-        document.removeEventListener('mousedown', handleDocumentClick);
-        };
-    }, []);
-
-
     const handleInputChangeSet = (newValue) => setNewSet(newValue);
     const handleInputChangeRep = (newValue) => setNewRep(newValue);
 
-  return (
+    // Edit warmup
 
-    <Modal size="xl" centered show={showCreateWarmup} onHide={closeModal} scrollable>
-        <Modal.Header closeButton>
-          <Modal.Title className='text-center'></Modal.Title>
-        </Modal.Header>
-        <Modal.Body className='text-center '>
+    // EDIT EXERCISES
+
+    const changeNameEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].name = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+      console.log(modifiedDay)
+    };
+    
+    const changePesoEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].peso = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+      console.log(modifiedDay)
+    };
+
+    const changeSetEdit = (index, newValue) => {
+      console.log(index, newValue)
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].sets = newValue;
+      setModifiedDay(updatedModifiedDay);
+      console.log(modifiedDay)
+    };
+    
+    const changeRepEdit = (index, newValue) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].reps = newValue;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    const changeVideoEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].video = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    const changeNotasEdit = (index, e) => {
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].notas = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+    };
+    
+    // Resto de funciones de cambio...
+
+    const applyChanges = () => {
+      console.log(modifiedDay)
+      setWarmup(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
+      WarmupServices.editWarmup(week_id, day_id, modifiedDay)
+          .then((data) => {console.log(data), setStat(idRefresh)} )
+      
+    };
+
+    function handleEditMobileExercise(elementsExercise, index){
+      setIndexOfExercise(index)
+      setCompleteExercise(elementsExercise)
+      setEditExerciseMobile(true)
+  }
+
+  const deleteExercise = (event,id,name) => {
+
+    name == null || name == undefined ? name = "Sin nombre" : name = name
+    console.log(event, id, name)
+
+    confirmDialog({
+        trigger:            event.currentTarget,
+        message:            `¡Cuidado! Estás por eliminar "${name}". ¿Estás seguro?`,
+        icon:               'pi pi-exclamation-triangle',
+        header:             `Eliminar ${name}`,
+        accept:             () => acceptDeleteExercise(id),
+        acceptLabel:        "Sí, eliminar",
+        acceptClassName:    "p-button-danger",
+        rejectLabel:        "No",
+        rejectClassName:    "closeDialog",
+        blockScroll:        true,
+        dismissableMask:    true,
+
+    });
+};
+
+
+const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
+
+  return (
+<>
         <section className="row justify-content-center">
-          <article className="col-10 pb-3">
+          <article className="col-10 ">
             <form className="row justify-content-center align-items-center" onSubmit={onSubmit}>
               <h2 className="text-center my-3">Agregar entrada en calor</h2>
               <div className="col-10 col-xl-6 my-3">
@@ -293,7 +356,7 @@ const divRef = useRef();
               </div>
 
 
-              <div>
+              <div className="text-center">
                 <button className="btn BlackBGtextWhite my-4">Crear</button>
               </div>
 
@@ -302,19 +365,18 @@ const divRef = useRef();
         </section>
 
         {warmup != null  && 
-                <article ref={divRef} className="table-responsive border-bottom mb-5 pb-4">
-                    <table className={`table align-middle table-bordered caption-top ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
-                        <caption>Entrada en calor</caption>
+                <article className="table-responsive-xxl border-bottom mb-5  text-center">
+                    <table className={`table align-middle table-bordered caption-top text-center`}>
                         <thead>
                             <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Ejercicio</th>
-                                <th scope="col">Series</th>
-                                <th scope="col">Reps</th>
-                                <th scope="col">Peso</th>
-                                <th scope="col">Video</th>
-                                <th scope="col">Notas</th>
-                                <th scope="col">Acciones</th>
+                                <th scope="col" className="">#</th>
+                                <th scope="col" className="largeThName">Ejercicio</th>
+                                <th scope="col" className="largeTh">Series</th>
+                                <th scope="col" className="largeTh">Reps</th>
+                                <th scope="col" className="largeTh">Peso</th>
+                                <th scope="col" className="largeTh">Video</th>
+                                <th scope="col" className="largeTh">Notas</th>
+                                <th scope="col" className="">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -325,7 +387,7 @@ const divRef = useRef();
                          timeout={500}
                          classNames="item"
                          >
-                            <tr key={warmup_id} className={`oo ${inputEnFoco !== null && inputEnFoco !== index ? 'ww' : null}`}>
+                            <tr key={warmup_id} className={`oo `}>
                             <th scope="row">
                             <select 
                             defaultValue={numberWarmup === null ? options[index].name : numberWarmup} 
@@ -350,50 +412,42 @@ const divRef = useRef();
                                 className='form-control border-0' 
                                 type="text" 
                                 defaultValue={name} 
-                                onChange={changeNameWarmup}                                
+                                onChange={(e) => changeNameEdit(index, e)}
                                 onFocus={() => handleInputFocus(index)}
-                                ref={(input) => (inputRefs.current[index] = input)}
-                                disabled={inputEnFoco !== null && inputEnFoco !== index}/>
+                                />
                             </td>
                             <td>
-                              <CustomInputNumber 
-                                initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
-                                onChange={(newValue) => handleInputChangeSet(newValue)}
-                                onValueChange={() => handleInputFocus(index)}
-                                ref={(input) => (inputRefs.current[index] = input)}
-                                disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                className="" 
-                              />    
+                            <CustomInputNumber 
+                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
+                                            onChange={(e) => changeSetEdit(index, e)}
+                                            onValueChange={() => handleInputFocus(index)}
+                                            onFocus={() => handleInputFocus(index)}
+                                            />  
                             </td>
                             <td>
-                              <CustomInputNumber 
-                                initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
-                                onChange={(newValue) => handleInputChangeRep(newValue)}
-                                onValueChange={() => handleInputFocus(index)}
-                                ref={(input) => (inputRefs.current[index] = input)}
-                                disabled={inputEnFoco !== null && inputEnFoco !== index}
-                                className="" 
-                              /> 
+                            <CustomInputNumber 
+                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
+                                            onChange={(e) => changeRepEdit(index, e)}
+                                            onValueChange={() => handleInputFocus(index)}
+                                            />
                             </td>
                             <td>
                                 <input 
                                 className='form-control border-0' 
                                 type="text" 
                                 defaultValue={peso}
-                                onChange={changePesoWarmup}
+                                onChange={(e) => changePesoEdit(index, e)}
                                 onFocus={() => handleInputFocus(index)}
-                                ref={(input) => (inputRefs.current[index] = input)}
-                                disabled={inputEnFoco !== null && inputEnFoco !== index}/>
+                                />
                             </td>
                             <td>
                                 <input 
                                 className='form-control border-0' 
                                 type="text" 
                                 defaultValue={video}
-                                onChange={changeVideoWarmup}                                
+                                onChange={(e) => changeVideoEdit(index, e)}
                                 onFocus={() => handleInputFocus(index)}
-                                ref={(input) => (inputRefs.current[index] = input)}
-                                disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                
                                 />
                             </td>
 
@@ -403,45 +457,41 @@ const divRef = useRef();
                                 type="text" 
                                 defaultValue={notas}
                                 onChange={changeNotasWarmup}                                
-                                onFocus={() => handleInputFocus(index)}
-                                ref={(input) => (inputRefs.current[index] = input)}
-                                disabled={inputEnFoco !== null && inputEnFoco !== index}
+                                onFocus={() => handleInputFocus(index)}           
                                 />
                             </td>
 
 
-                            <td>
-                              {inputEnFoco == null ?
-
-                                <button onClick={(e) => deleteWarmup(e,warmup_id,name) } className="btn ">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
+                            <td className='tdActions'>
+                                <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
                                     <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
                                   </svg>
                                 </button>
-
-                                :
-
-                                <button disabled={inputEnFoco !== null && inputEnFoco !== index} onClick={() => editWarmup(warmup_id, newName == undefined ? name : newName, newSet == undefined ? sets : newSet, newRep == undefined ? reps : newRep, newPeso == undefined ? peso : newPeso, newVideo == undefined ? video : newVideo, newNotas == undefined ? notas : newNotas, numberWarmup)} className='btn buttonsEdit'>
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
-                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                                    <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
-                                  </svg>
-                                </button> 
-
-                              }
                             </td>
+
                           </tr>
                         </CSSTransition>
                         )}
                         </TransitionGroup>
                         </tbody>
                     </table>
-                </article>}
-
-
-        </Modal.Body>
-      </Modal>
+                      
+                </article>
+                }
+                {inputEnFoco == null ? null :
+                        <div className="text-center mb-3">
+                            <button className='btn btn-secondary mb-2 mx-2' onClick={() => setInputEnFoco(null)}>
+                            Cancelar edición
+                        </button>
+                            <button className='btn BlackBGtextWhite mb-2 mx-2' onClick={applyChanges} >
+                                Aplicar cambios
+                            </button>
+                        </div>
+                        }
+                </>
   );
 }
 
 export default ModalCreateWarmup;
+

@@ -25,6 +25,8 @@ import AddCircuit from '../../components/AddCircuit.jsx';
 import CustomInputNumber from '../../components/CustomInputNumber.jsx';
 import EditExercise from '../../components/EditExercise.jsx';
 import SkeletonExercises from '../../components/Skeleton/SkeletonExercises.jsx';
+import Warmup from '../../components/Bootstrap/ModalCreateWarmup.jsx';
+import WarmupExercises from '../../components/WarmupExercises.jsx';
 
 // CORREGIR PROBLEMA DEL LENGTH, PASO PORQUE ELIMINE QUE SE CREE AUTOMATICAMENTE UN EXERCISES, PARA QUE LUEGO PUEDA CREAR UN INDEX DEL CAMPO ROUTINE.EXERCISES.EXERCISE_ID
 function DayEditDetailsPage(){
@@ -45,7 +47,7 @@ function DayEditDetailsPage(){
 
     const [circuit, setCircuit] = useState([])                          // Carga del circuit al modal
     const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
-    const [modifiedDay, setModifiedDay] = useState([])
+    const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
 
 
     const [exercise_id, setExercise_id] = useState()                    // Carga edit para el edit y delete de ejercicios
@@ -54,9 +56,9 @@ function DayEditDetailsPage(){
 
     const [show, setShow] = useState(false)                             // Modal para eliminar ejercicios
     const [showEditCircuit, setShowEditCircuit] = useState(false)       // Modal para editar los circuitos
-    const [showCreateWarmup, setShowCreateWarmup] = useState(false)     // Modal para crear la entrada en calor
 
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);        // Modal para canvas de formulas
+    const [warmup, setWarmup] = useState(false);        // Modal para canvas de formulas
     
     const [inputEnFoco, setInputEnFoco] = useState(null);               // Manejo de la edición rápida
     const [confirm, setConfirm] = useState(null);                       // Ver bien para que la usé
@@ -113,6 +115,10 @@ function DayEditDetailsPage(){
                 let day = data[0].routine[indexDay].exercises                       // Cargo únicamente los ejercicios
                 let circuit = day != null ? day.filter(circuito => circuito.type != 'exercise') : null  // Cargo únicamente los ejercicios del circuito
 
+                let warmup  =  data[0].routine[indexDay].warmup
+                console.log(data[0].routine[indexDay].warmup)
+                
+
                 //setCosa(indexDay)
                 setFirstOpen(false)                     // variable que detecta la primera vez que se renderiza el componente
                 setCircuit(circuit)                     // establece los ejercicios del circuito para renderizarlo luego a la hora de editar
@@ -137,6 +143,7 @@ const refreshEdit = (le) => {
     setStatus(idRefresh)
     setVisibleEdit(false)
     setEditExerciseMobile(false)
+    setWarmup(false)
 }
 
 
@@ -214,8 +221,8 @@ useEffect(() => {
         setCompleteExercise(elementsExercise)
         setEditExerciseMobile(true)
     }
-    refreshEdit
-    const handleShowCreateMobility = () => setShowCreateWarmup(true)
+   
+    const handleShowWarmup = () => setWarmup(true)
 
     function handleShowEditCircuit(id, type, typeOfSets, circuit,notas, numberExercise){
 
@@ -232,7 +239,6 @@ useEffect(() => {
 
     const handleClose = () => {
         setShow(false);
-        setShowCreateWarmup(false)
         setShowEditCircuit(false)
         setStatus(idRefresh)
 
@@ -240,7 +246,6 @@ useEffect(() => {
 
     const closeModal = () => {
         setShow(false);
-        setShowCreateWarmup(false)
         setShowEditCircuit(false)
         
     } 
@@ -267,6 +272,10 @@ useEffect(() => {
     };
 
     
+  const sidebarStyles = {
+    height: '90%', // Establece la altura al 100% de la pantalla
+    zIndex: 1000, // Asegura que el Sidebar esté por encima del contenido principal
+  };
     
     function acceptDeleteExercise(id) {
         setLoading(true)
@@ -364,8 +373,18 @@ useEffect(() => {
 
             <article  className='row justify-content-center'>
 
-            <button onClick={handleShowCreateMobility} className='btn border buttonColor col-9 col-md-5 my-5'>Administrar bloque de entrada en calor</button>
+           
+            <button onClick={handleShowWarmup} className='btn border buttonColor col-9 col-md-5 my-5'>Administrar bloque de entrada en calor</button>
+            <div className='row justify-content-center'>
+                {warmup.length > 0 && <div className='col-11 col-xxl-10'>
+                    <WarmupExercises /> 
+
+                </div>}
+
+            </div>
                 <div className={`row justify-content-center align-items-center text-center mt-5 px-0 ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
+
+                    
 
 
                     <div className={`table-responsive col-11 col-xxl-10 m-0 p-0 pt-3 `}>
@@ -512,9 +531,7 @@ useEffect(() => {
                                             type="text" 
                                             defaultValue={exercise.video}
                                             onChange={(e) => changeVideoEdit(index, e)}
-                                            
                                             onFocus={() => handleInputFocus(index)}
-                                            
                                             />
                                         
                                         </td>
@@ -615,7 +632,6 @@ useEffect(() => {
 
                 <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
 
-                <ModalCreateWarmup showCreateWarmup={showCreateWarmup} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id}/>
                
                 <ToastContainer
                     position="bottom-center"
@@ -635,6 +651,19 @@ useEffect(() => {
                 <Sidebar visible={editExerciseMobile} position="right" onHide={() => {setEditExerciseMobile(false)}}>
                     <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refresh={refresh} refreshEdit={refreshEdit}/>
                 </Sidebar>
+                    <Dialog 
+                        className='col-12 col-md-10' 
+                        contentClassName={'colorDialog'} 
+                        headerClassName={'colorDialog'}  
+                        header="Header" 
+                        visible={warmup} 
+                        modal={false} 
+                        onHide={() => setWarmup(false)}
+                        blockScroll={window.innerWidth > 600 ? false : true}>
+
+                        <ModalCreateWarmup  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refresh={refresh} refreshEdit={refreshEdit}/>
+                    </Dialog>
+
         </section>
     )
 }
