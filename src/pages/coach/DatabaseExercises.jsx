@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 
 import * as DatabaseExercises from "../../services/jsonExercises.services.js";
-
+import Exercises from './../../assets/json/exercises.json'
 import DataBaseExercises from "../../components/DatabaseCreateExercise.jsx";
 import Logo from "../../components/Logo";
 import ModalEditDatabase from "../../components/Bootstrap/ModalEdit/ModalEditDatabase.jsx";
@@ -16,6 +16,7 @@ import { Tooltip } from 'primereact/tooltip';
 function UsersListPage() {
     const { id } = useParams();
     const [exercises, setExercises] = useState([]);
+    const [TOMExercises, setTOMExercises] = useState([]);
     const [name, setName] = useState([]);
     const [exercise_id, setExercise_id] = useState()
     const [video, setVideo] = useState()
@@ -48,7 +49,15 @@ function UsersListPage() {
     useEffect(() => {
         setLoading(true);
 
+        setTOMExercises(Exercises)
+        console.log(Exercises)
+    }, [status]);
+
+    useEffect(() => {
+        setLoading(true);
+
         DatabaseExercises.findExercises(id).then((data) => {
+            console.log(data)
             setExercises(data);
             setLoading(false);
         });
@@ -164,8 +173,72 @@ function UsersListPage() {
   } 
 
     return (
+    <>
         <section className="container-fluid">
-            <Logo />
+        <Logo />
+            <article className="row justify-content-center">
+
+            <h2 className="text-center my-5">Biblioteca de ejercicios</h2>
+
+            <div className="col-11 col-lg-4 table-responsive">
+                    <table className="table table-bordered text-center align-middle">
+                        <thead className="table-light">    
+                            <tr>
+                                <th scope="col" className="largeThName">Nombre</th>
+                                <th scope="col" className="">Video</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {showLoadingToast()}
+                            <TransitionGroup
+                                component={null}
+                                className="todo-list"
+                            >
+                                {TOMExercises.map(({ name, video }) => (
+                                    <CSSTransition
+                                        key={video}
+                                        timeout={500}
+                                        classNames="item">
+                                        <tr key={video}>
+                                            <td className="text-center"> {name} </td>
+                                            <td className="text-center"><a href={video} target="blank">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    className="bi bi-camera-video"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"
+                                                    />
+                                                </svg>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </CSSTransition>
+                                ))}
+                            </TransitionGroup>
+                        </tbody>
+                    </table>
+                </div>
+                
+            </article>
+        </section>
+
+
+
+
+
+
+
+
+
+        <section className="container-fluid">
+            <p className="text-center my-4">¿Querés agregar tus propios? Simplemente agregalos, activá la opción que está debajo, y comenzá a utilizarlos.</p>
+
 
             <div className='row justify-content-center my-3'>
 
@@ -263,7 +336,7 @@ function UsersListPage() {
     <ModalEditDatabase showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} exercise_id={exercise_id} nameExercise={name} videoExercise={video}/>
 
         </section>
-
+        </>
         
     );
 }

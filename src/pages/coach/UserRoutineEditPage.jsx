@@ -237,7 +237,7 @@ function UserRoutineEditPage(){
                                     >
                                         <div key={element._id} className='row justify-content-center mx-0 py-1 border-bottom'>
 
-                                            <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/week/${elemento._id}/day/${element._id}`}>{element.name}</Link>
+                                            <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/user/${id}/week/${elemento._id}/day/${element._id}/${username}`}>{element.name}</Link>
                                             
                                             <button onClick={() => handleShowEdit(elemento._id,element._id, element.name)} className=' col-2 btn ClassBGHover'>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-three-dots-vertical" viewBox="0 0 16 16">

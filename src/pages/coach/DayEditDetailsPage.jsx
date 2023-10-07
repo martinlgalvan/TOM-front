@@ -32,6 +32,8 @@ import WarmupExercises from '../../components/WarmupExercises.jsx';
 function DayEditDetailsPage(){
     const {week_id} = useParams()
     const {day_id} = useParams()
+    const {id} = useParams()
+    const {username} = useParams()
     const {numberExercises} = useParams()
     const [firstOpen, setFirstOpen] = useState(true)
 
@@ -613,6 +615,8 @@ useEffect(() => {
                         
                     </div>
                     </div>
+
+                    <Link to={`/user/routine/${id}/${username}`} className='btn BlackBGtextWhite text-center mt-5 mb-3 col-4' >Volver atrás</Link>
                 </article>
 
                

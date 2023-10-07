@@ -7,13 +7,23 @@ import POWERHOUSE from './../assets/img/Powerhouse.png';
 
 function Logo(){
 
-    let urlActual = `/src/assets/img/${localStorage.getItem('logo')}`
-    let urlPath = TOM
+    const [urlPath, setUrlPath] = useState()
+
+    useEffect(() => {
+        let urlActual = `/src/assets/img/${localStorage.getItem('logo')}`
 
 
-    if (urlActual == TOM )             { urlPath = TOM } 
-    else if (urlActual == JESUSOLIVA) { urlPath = JESUSOLIVA } 
-    else if (urlActual == POWERHOUSE) { urlPath = POWERHOUSE } 
+        if (urlActual == TOM ){ 
+            setUrlPath(TOM)
+        } else if (urlActual == JESUSOLIVA) { 
+            setUrlPath(JESUSOLIVA)
+        } else if (urlActual == POWERHOUSE) { 
+            setUrlPath(POWERHOUSE)
+        } 
+    
+    
+    }, [])
+
 
 
     return (
