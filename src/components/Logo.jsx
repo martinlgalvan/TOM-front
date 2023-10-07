@@ -13,13 +13,13 @@ function Logo(){
         let urlActual = `/src/assets/img/${localStorage.getItem('logo')}`
 
 
-        if (urlActual == TOM ){ 
-            setUrlPath(TOM)
-        } else if (urlActual == JESUSOLIVA) { 
+        if (urlActual == JESUSOLIVA) { 
             setUrlPath(JESUSOLIVA)
         } else if (urlActual == POWERHOUSE) { 
             setUrlPath(POWERHOUSE)
-        } 
+        } else{
+            setUrlPath(TOM)
+        }
     
     
     }, [])
