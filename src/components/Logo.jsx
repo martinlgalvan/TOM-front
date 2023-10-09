@@ -1,9 +1,8 @@
 import {useState, useEffect} from 'react'
 
-import TOM from './../assets/img/TOM.png';
-import JESUSOLIVA from './../assets/img/Jesusoliva.png';
-import POWERHOUSE from './../assets/img/Powerhouse.png';
-
+import TOM from '/src/assets/img/TOM.png';
+import JESUSOLIVA from '/src/assets/img/Jesusoliva.png';
+import POWERHOUSE from '/src/assets/img/Powerhouse.png';
 
 function Logo(){
 
