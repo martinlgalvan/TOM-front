@@ -141,9 +141,8 @@ function DayEditDetailsPage(){
 
 
 const refreshEdit = (le) => {
-    setDay([])
     setStatus(idRefresh)
-    setVisibleEdit(false)
+
     setEditExerciseMobile(false)
     setWarmup(false)
 }
