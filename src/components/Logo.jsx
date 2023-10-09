@@ -7,9 +7,11 @@ import POWERHOUSE from '/src/assets/img/Powerhouse.png';
 function Logo(){
 
     const [urlPath, setUrlPath] = useState()
-
+    const [a, setA] = useState(JESUSOLIVA)
     useEffect(() => {
         let urlActual = `/src/assets/img/${localStorage.getItem('logo')}`
+
+
 
 
         if (urlActual == JESUSOLIVA) { 
@@ -28,6 +30,7 @@ function Logo(){
     return (
         <div className='row justify-content-center align-items-center y-2'>
             <h1 className="visually-hidden">TOM</h1>
+            <p>{a}</p>
             <img className="img-fluid Largo text-center my-5 pt-5 pb-3" src={urlPath} alt="TOM" />
         </div>
     )
