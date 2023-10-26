@@ -4,7 +4,7 @@ import CustomInputNumber from './CustomInputNumber.jsx'
 
 import * as ExercisesService from '../services/exercises.services.js';
 
-function EditExercise({refreshEdit, refresh, indexOfExercise, completeExercise, week_id, day_id}) {
+function EditExercise({refreshEdit, refresh, indexOfExercise, completeExercise, week_id, day_id, isAthlete}) {
 
 
 const [completeName, setCompleteName] = useState()
@@ -18,6 +18,7 @@ const [completeNotas, setCompleteNotas] = useState()
 
 useEffect(() => {
   setModifiedDay(completeExercise)
+  console.log(isAthlete)
 }, []);
 
 /*const changeNameEdit = (e) => setCompleteName(e.target.value)
@@ -90,12 +91,13 @@ function onSubmit(e){
 
       <div className="mb-3">
         <label htmlFor="name" className="visually-hidden">Nombre</label>
-        <input type="text" className="form-control" id="name" placeholder="Example input placeholder" defaultValue={completeExercise[indexOfExercise].name} onChange={(e) => changeNameEdit(indexOfExercise, e)}  />
+        <input disabled={isAthlete} type="text" className="form-control" id="name" placeholder="Nombre" defaultValue={completeExercise[indexOfExercise].name} onChange={(e) => changeNameEdit(indexOfExercise, e)}  />
       </div>
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Series</label>
-        <CustomInputNumber 
+        <CustomInputNumber
+                disabled={isAthlete} 
                 initialValue={completeExercise[indexOfExercise].sets}
                 onChange={(value) => changeSetEdit(indexOfExercise, value)}
                 />
@@ -104,6 +106,7 @@ function onSubmit(e){
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Repeticiones</label>
         <CustomInputNumber 
+                disabled={isAthlete}
                 initialValue={completeExercise[indexOfExercise].reps}
                 onChange={(value) => changeRepEdit(indexOfExercise, value)}
                 />
@@ -116,7 +119,7 @@ function onSubmit(e){
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Video</label>
-        <input type="text" className="form-control" id="peso" placeholder="Another input placeholder" defaultValue={completeExercise[indexOfExercise].video} onChange={(e) => changeVideoEdit(indexOfExercise, e)}   />
+        <input disabled={isAthlete} type="text" className="form-control" id="peso" placeholder="Another input placeholder" defaultValue={completeExercise[indexOfExercise].video} onChange={(e) => changeVideoEdit(indexOfExercise, e)}   />
       </div>
 
       <div className="mb-3">

@@ -167,9 +167,9 @@ function UserRoutineEditPage(){
                     <p className='col-10 text-center mb-2'>
                         <b>Para comenzar, por favor, creá una semana. Vas a poder:</b>
                     </p>
-                    <ul class="list-group list-group-flush text-center">
-                        <li class="list-group-item">Añadir días de entrenamiento</li>
-                        <li class="list-group-item">Dentro de los días, vas a poder añadir tanto su entrada en calor, como su planificación.</li>
+                    <ul className="list-group list-group-flush text-center">
+                        <li className="list-group-item">Añadir días de entrenamiento</li>
+                        <li className="list-group-item">Dentro de los días, vas a poder añadir tanto su entrada en calor, como su planificación.</li>
                     </ul>
 
                 

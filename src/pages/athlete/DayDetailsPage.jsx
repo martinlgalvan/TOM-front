@@ -199,7 +199,7 @@ function DayDetailsPage() {
                                                 </button>
                                             </td>
                                             <td>
-                                                <button onClick={() => element.type != 'exercise' ? 
+                                                <button className="backgroundPencil" onClick={() => element.type != 'exercise' ? 
                                                 handleShowEditCircuit(
                                                     element.exercise_id, 
                                                     element.type, 
@@ -322,7 +322,7 @@ function DayDetailsPage() {
             </div>  
 
             <Sidebar visible={editExerciseMobile} position="right" onHide={() => {setEditExerciseMobile(false)}}>
-                    <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refreshEdit={refresh}/>
+                    <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refreshEdit={refresh} isAthlete={true}/>
                 </Sidebar>
         </section>
     );

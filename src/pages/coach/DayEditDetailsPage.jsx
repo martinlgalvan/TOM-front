@@ -118,7 +118,6 @@ function DayEditDetailsPage(){
                 let circuit = day != null ? day.filter(circuito => circuito.type != 'exercise') : null  // Cargo únicamente los ejercicios del circuito
 
                 let warmup  =  data[0].routine[indexDay].warmup
-                console.log(data[0].routine[indexDay].warmup)
                 
 
                 //setCosa(indexDay)
@@ -487,6 +486,7 @@ useEffect(() => {
                                             onChange={(e) => changeSetEdit(index, e)}
                                             onValueChange={() => handleInputFocus(index)}
                                             onFocus={() => handleInputFocus(index)}
+
                                             
                                             className="" 
                                             />
@@ -494,16 +494,15 @@ useEffect(() => {
                                     </td>} 
                                     {exercise.reps === undefined ? null  : 
                                     <td className='tdReps'>
-                                            
                                             <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : exercise.reps}
+                                            initialValue={inputEnFoco !== null && inputEnFoco === index && !confirm ? newRep : exercise.reps}
                                             onChange={(e) => changeRepEdit(index, e)}
                                             onValueChange={() => handleInputFocus(index)}
                                             ref={(input) => (inputRefs.current[index] = input)}
-                                            
-                                            className="" 
+                                            isTextMode={inputEnFoco !== null && inputEnFoco === index && !confirm}
+
                                             />
-                                        </td> 
+                                    </td>
                                     }
                                         
                                     {exercise.peso === undefined ? null :
@@ -652,7 +651,7 @@ useEffect(() => {
                 <ConfirmDialog />
 
                 <Sidebar visible={editExerciseMobile} position="right" onHide={() => {setEditExerciseMobile(false)}}>
-                    <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refresh={refresh} refreshEdit={refreshEdit}/>
+                    <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refresh={refresh} refreshEdit={refreshEdit} isAthlete={false}/>
                 </Sidebar>
                     <Dialog 
                         className='col-12 col-md-10' 
