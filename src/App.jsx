@@ -85,6 +85,7 @@ function App(){
             localStorage.setItem('_id', user._id)
             localStorage.setItem('name', user.name)
             localStorage.setItem('email', user.email)
+            localStorage.setItem('entrenador_id', user.entrenador_id)
             localStorage.setItem('logo', user.logo)
             navigate(`/`)
         }

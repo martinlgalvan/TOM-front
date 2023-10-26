@@ -16,10 +16,10 @@ function Logo(){
 
 
 
-    if(localStorage.getItem('email') == "ramabeltrame18@gmail.com"){
+    if(localStorage.getItem('email') == "ramabeltrame18@gmail.com" || localStorage.getItem('entrenador_id') == "6524635228c05be658aef93c"){
         setUrlPath(RAMABELTRAME)
-    } else if(localStorage.getItem('email') == "hodla@gmail.com"){
-        setUrlPath(RAMABELTRAME)
+    } else if(localStorage.getItem('email') == "hola@gmail.com" || localStorage.getItem('entrenador_id') == "63e7f02b3649482a65953d5c"){
+        setUrlPath(JESUSOLIVA)
     } else{
         setUrlPath(TOM)
     }
