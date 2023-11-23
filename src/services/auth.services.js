@@ -1,5 +1,5 @@
 async function login(email, password) {
-    return fetch('https://tom-api.vercel.app/api/users/login', {
+    return fetch('https://tom-api-git-main-martinlgalvan.vercel.app/api/users/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -17,7 +17,7 @@ async function login(email, password) {
 }
 
 async function logout() {
-    return fetch('https://tom-api.vercel.app/api/users/logout', {
+    return fetch('https://tom-api-git-main-martinlgalvan.vercel.app/api/users/logout', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

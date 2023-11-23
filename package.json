@@ -15,6 +15,7 @@
     "crypto": "^1.0.1",
     "hashlib": "^1.0.1",
     "lodash": "^4.17.21",
+    "papaparse": "^5.4.1",
     "pnpm": "^8.3.1",
     "primeicons": "^6.0.1",
     "react": "^18.2.0",
