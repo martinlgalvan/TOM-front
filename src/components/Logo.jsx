@@ -9,17 +9,13 @@ function Logo(){
 
     const [urlPath, setUrlPath] = useState()
     let id = localStorage.getItem('_id')
-    const [a, setA] = useState(JESUSOLIVA)
-    let urlActual = `/src/assets/img/${localStorage.getItem('logo')}`
 
    useEffect(() => {
 
-
-
     if(localStorage.getItem('email') == "ramabeltrame18@gmail.com" || localStorage.getItem('entrenador_id') == "6524635228c05be658aef93c"){
         setUrlPath(RAMABELTRAME)
-    } else if(localStorage.getItem('email') == "hola@gmail.com" || localStorage.getItem('entrenador_id') == "63e7f02b3649482a65953d5c"){
-        setUrlPath(JESUSOLIVA)
+    } else if(localStorage.getItem('email') == "jesusoliva@gmail.com" || localStorage.getItem('entrenador_id') == "648c06a7c3ce34126657a924"){
+        setUrlPath(TOM)
     } else{
         setUrlPath(TOM)
     }
