@@ -15,7 +15,7 @@ function Logo(){
     if(localStorage.getItem('email') == "ramabeltrame18@gmail.com" || localStorage.getItem('entrenador_id') == "6524635228c05be658aef93c"){
         setUrlPath(RAMABELTRAME)
     } else if(localStorage.getItem('email') == "jesusoliva@gmail.com" || localStorage.getItem('entrenador_id') == "648c06a7c3ce34126657a924"){
-        setUrlPath(TOM)
+        setUrlPath(JESUSOLIVA)
     } else{
         setUrlPath(TOM)
     }
