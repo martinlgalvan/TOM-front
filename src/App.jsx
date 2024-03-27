@@ -125,9 +125,16 @@ function App(){
                 return false
             }
         }
-    /*<li className="nav-item">
-                        {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Personalizar</Link></>}
-                        </li>*/
+    /*
+        <li className="nav-item">
+            {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Personalizar</Link></>}
+        </li>
+                        
+                        
+        <li className="nav-item">
+            {isAdmin() && <><Link className='nav-link' to={`/planificator/`}>PAR</Link></>}
+        </li>                   
+    */
           
     return (
 
@@ -151,9 +158,7 @@ function App(){
                         <li className="nav-item">
                         {isAdmin() && <><Link className='nav-link' to={`/exercises/${id}`}>Batabase videos</Link></>}
                         </li>
-                        <li className="nav-item">
-                        {isAdmin() && <><Link className='nav-link' to={`/planificator/`}>PAR</Link></>}
-                        </li>
+
                         
                         <li className="nav-item">
                         {isAutenticated && !isAdmin() && <><Link className='nav-link' to={`/routine/${id}`}>Ver rutina</Link></>}
@@ -225,7 +230,7 @@ function App(){
             </Routes>
 
 
-        <footer className={`container-fluid ${textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `black` }} >
+        <footer className={`container-fluid ${!textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `black` }} >
             <div className="row">
                 <ul className="text-center ">
                     <li className="mt-4">TOM</li>

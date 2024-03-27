@@ -94,7 +94,14 @@ function UserRoutinePage(){
 
                         <section>
                             <div className="table-responsive">
+                            {pressedRoutine.length > 0 && pressedRoutine.map(day => 
+                            <>     
                             <table className="table table-bordered align-middle text-center table-md">
+                                <thead>
+                                    <tr>
+                                        <th colSpan={8}>{day.name}</th>
+                                    </tr>
+                                </thead>
                                 <thead>
                                     <tr>
                                         <th className="text-center">#</th>
@@ -108,14 +115,10 @@ function UserRoutinePage(){
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {pressedRoutine.length > 0 && pressedRoutine.map(day => 
-                                    <>
-                                        <tr key={day._id} className='text-center py-1 fs-5'>
-                                            <td colSpan={8}>{day.name}</td>
-                                        </tr>
+
                                         {day.exercises.map(exercise => (
                                             <tr key={exercise.exercise_id}>
-                                                <td className="text-center ">{exercise.numberExercise}</td>
+                                                <td className="text-center "><b>{exercise.numberExercise}</b></td>
                                                 <td className="text-center ">{exercise.name}</td>
                                                 <td className="text-center ">{exercise.sets}</td>
                                                 <td className="text-center ">{exercise.reps}</td>
@@ -140,9 +143,9 @@ function UserRoutinePage(){
                                             </tr>
                                         ))}
                                     
-                                    </>)}
+                                    
                                 </tbody>
-                            </table>
+                            </table></>)}
                             </div>
                         </section>
 

@@ -398,7 +398,7 @@ useEffect(() => {
                                     <th scope="col" className='tdName'>Ejercicio</th>
                                     <th scope="col" className='tdSets'>Series</th>
                                     <th scope="col" className='tdReps'>Reps</th>
-                                    <th scope="col" className='tdReps'>Rest</th>
+                                    <th scope="col" className=' TableResponsiveDayEditDetailsPage tdReps '>Rest</th>
                                     <th className='TableResponsiveDayEditDetailsPage tdPeso' scope="col">Peso</th>
                                     <th className='TableResponsiveDayEditDetailsPage tdVideo' scope="col">Video</th>
                                     <th className='TableResponsiveDayEditDetailsPage tdNotas' scope="col">Notas</th>
