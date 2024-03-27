@@ -50,14 +50,12 @@ function UsersListPage() {
         setLoading(true);
 
         setTOMExercises(Exercises)
-        console.log(Exercises)
     }, [status]);
 
     useEffect(() => {
         setLoading(true);
 
         DatabaseExercises.findExercises(id).then((data) => {
-            console.log(data)
             setExercises(data);
             setLoading(false);
         });
@@ -80,7 +78,6 @@ function UsersListPage() {
             localStorage.removeItem('DATABASE_USER', 'NOTUSE')
         }
 
-        console.log(useDatabase)
     },[useDatabase])
 
     const refresh = (refresh) => {

@@ -23,12 +23,16 @@ function DayDetailsPage() {
     const { week_id } = useParams();
     const { index } = useParams();
 
-     const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
+    const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
     const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
     const [warmupDay, setWarmupDay] = useState([]);
     const [status, setStatus] = useState()
 
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);        // Modal para canvas de edit exercises
+    const [dayName, setDayName] = useState(false);        // Modal para canvas de edit exercises
 
     const [completeExercise, setCompleteExercise] = useState()                  // Futuro uso para editar la semana
 
@@ -39,17 +43,16 @@ function DayDetailsPage() {
 
     useEffect(() => {
         WeekService.findRoutineByUserId(id).then((data) => {
-            let indexDay = data[index].routine.findIndex(
-                (dia) => dia._id === day_id
-            );
+            let indexDay = data[index].routine.findIndex((dia) => dia._id === day_id);
             let exercise = data[index].routine[indexDay].exercises;
             let warmup = data[index].routine[indexDay].warmup;
 
-            console.log(exercise);
+            setDayName(data[index].routine[indexDay])
+
             setWarmupDay(warmup);
             setDay(exercise);
             setModifiedDay(exercise);
-            console.log(exercise)
+                
         });
     }, [status]);
 
@@ -107,7 +110,7 @@ function DayDetailsPage() {
 
             <div className="row justify-content-center text-center m-0 px-0 my-5">
                 <div className="col-12 col-md-10">
-                    <h2 className="text-center mb-4">Entrada en calor</h2>
+                    <h2 className="text-center mb-4">{dayName.name}</h2>
                     <div className="table align-middle">
                         <table className="table table-bordered align-items">
                             <thead>
@@ -130,8 +133,37 @@ function DayDetailsPage() {
                                                     {exercise.reps} 
                                                 </span>
                                             </td>
-                                            <td></td>
-                                            <td></td>
+                                            <td>
+                                                <button
+                                                    label="Show OverlayPanel"
+                                                    onClick={() => handleButtonClick(exercise)}
+                                                    className="btn"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="16"
+                                                        height="16"
+                                                        fill="currentColor"
+                                                        className="bi bi-camera-video"
+                                                        viewBox="0 0 16 16"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"
+                                                        />
+                                                    </svg>
+                                                </button></td>
+                                            <td>
+                                            <button className="backgroundPencil" disabled onClick={() => 
+                                                
+                                                    
+                                                handleEditMobileExercise(element, index)}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
+                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                                </svg>
+                                                </button> 
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
@@ -162,6 +194,8 @@ function DayDetailsPage() {
                             </thead>
 
                             <tbody className="">
+
+
                                 {day.map((element, index) => (
                                     
                                     <tr key={element.exercise_id}>
@@ -173,7 +207,7 @@ function DayDetailsPage() {
                                                     {element.name}{" "}
                                                 </span>
                                                 <span className="d-block">{element.sets} <span className="textCreated"> sets x </span>{element.reps} <span className="textCreated"> reps </span>  </span>
-                                                <span className="d-block">{element.peso} </span>
+                                                <span className="d-block">{element.peso} x {element.rest} rest </span>
 
                                             
                                             </td>
@@ -289,10 +323,11 @@ function DayDetailsPage() {
 
             <div className="d-flex justify-content-center">
                 <Link
-                    className="btn BlackBGtextWhite text-center my-5"
-                    to={"/"}
+                    className={`btn ${textColor ? "bbb" : "text-light"} text-center my-5`}
+                    style={{ "backgroundColor": `black` }}
+                    to={`/routine/${id}`}
                 >
-                    Volver al inicio
+                    Volver atrás
                 </Link>
             </div>
 

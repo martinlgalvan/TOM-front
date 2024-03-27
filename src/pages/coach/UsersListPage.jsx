@@ -2,17 +2,17 @@ import {useState, useEffect} from 'react'
 import {Link, useParams, useNavigate} from 'react-router-dom'
 
 import * as UsersService from '../../services/users.services.js';
-import * as Notify from './../../helpers/notify.js'
-import * as RefreshFunction from './../../helpers/generateUUID.js'
+import * as Notify from '../../helpers/notify.js'
+import * as RefreshFunction from '../../helpers/generateUUID.js'
 
 import UserRegister from '../../components/Users/UserRegister.jsx';
-import Logo from '../../components/Logo'
+import Logo from '../../components/Logo.jsx'
 import DeleteUserDialog from '../../components/DeleteActions/DeleteUserDialog.jsx';
-import SkeletonUsers from '../../components/Skeleton/SkeletonUsers.jsx';
+import AddColorToUser from '../../components/Users/AddColorToUser.jsx';
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
-import { ToastContainer } from './../../helpers/notify.js';
+import { ToastContainer } from '../../helpers/notify.js';
 
 
 function UsersListPage() {
@@ -81,13 +81,13 @@ function UsersListPage() {
         <section className='container-fluid'>
 
             <Logo />
-            <h2 className='text-center mb-5 col-12'>¡Bienvenido {localStorage.getItem('name')}!</h2>
+            <h2 className='text-center mb-5 col-12'>¡Bienvenido/a {localStorage.getItem('name')}!</h2>
 
             <article className='row justify-content-center'>
 
                 <div className='col-10 col-md-5 col-xl-4 text-center mb-5'>
                     <UserRegister refresh={refresh} />
-                </div>
+                </div>        
 
                 <div className='col-12 col-md-7 col-xl-8 text-center mb-5'>
 
@@ -135,8 +135,8 @@ function UsersListPage() {
                                         classNames="item"
                                         >
                                             <tr key={_id}>
-                                                <td className='text-center'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}/${name}`}>{name}</Link></td>
-                                                <td className='text-center responsiveEmail'><Link className="btn LinkDays ClassBGHover w-100" to={`/user/routine/${_id}/${name}`}>{email}</Link></td>
+                                                <td className='text-center'><Link className={`btn LinkDays ClassBGHover w-100`} to={`/user/routine/${_id}/${name}`}>{name}</Link></td>
+                                                <td className='text-center responsiveEmail'><Link className={`btn LinkDays ClassBGHover w-100`} to={`/user/routine/${_id}/${name}`}>{email}</Link></td>
                                                 <td className='text-center'>
 
                                                     

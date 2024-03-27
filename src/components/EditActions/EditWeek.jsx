@@ -11,6 +11,8 @@ import { Button } from 'primereact/button';
 function EditWeek({ visible, onHide, week_id, defaultName }) {
 
   const [name, setName] = useState("")
+  const [color, setColor] = useState(localStorage.getItem('color'))
+  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
   function changeName(e){
       setName(e.target.value)
@@ -43,7 +45,7 @@ function EditWeek({ visible, onHide, week_id, defaultName }) {
 
         <div className='col-12 text-center mt-4'>
           <button className="btn buttonCancelDialog me-2" onClick={handleCancel}>Cancelar</button>
-          <button className='btn BlackBGtextWhite ms-2' onClick={onSubmit}>Editar</button>
+          <button className={`btn ${textColor ? "bbb" : "text-light"} ms-2`} style={{ "backgroundColor": `black` }} onClick={onSubmit}>Editar</button>
         </div>
 
       </div>

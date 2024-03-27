@@ -1,3 +1,0 @@
-- Cambiar el edit de la entrada en calor
-- Permitir que el usuario edite las notas (Que el entrenador decida si puede o no)
-- Edit del mobile 

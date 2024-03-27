@@ -4,7 +4,7 @@
 //Obtiene todos los ejercicios
 
 async function findExercises(id) {
-    return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/day/${id}/exercise`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/day/${id}/exercise`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ async function findExercises(id) {
 //Agrega un ejercicio a un día 
 
 async function addExerciseToDay(week_id,day_id, exercise) {
-    return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/week/${week_id}/day/${day_id}/exercises`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercises`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ async function addExerciseToDay(week_id,day_id, exercise) {
 //Agrega un amrap a un día 
 
 async function addAmrap(week_id,day_id, amrap) {
-    return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/week/${week_id}/day/${day_id}/exercises/amrap`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercises/amrap`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ async function addAmrap(week_id,day_id, amrap) {
 //Editar un ejercicio del amrap
 
 async function editExerciseAmrap(week_id,day_id,exercise_id, amrap) {
-    return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}/amrap`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}/amrap`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ async function editExerciseAmrap(week_id,day_id,exercise_id, amrap) {
 
 //Elimina un ejercicio dependiendo el día y el ejercicio
 async function deleteExercise(week_id, day_id, exercise_id) {
-    return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ async function deleteExercise(week_id, day_id, exercise_id) {
 
 
 async function editExercise(week_id, day_id, exercise) {
-    return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/week/${week_id}/day/${day_id}/exercise`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercise`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ async function editExercise(week_id, day_id, exercise) {
 }
 
 async function editExerciseMobile(week_id, day_id, exercise_id, exercise) {
-    return fetch(`https://tom-api-git-main-martinlgalvan.vercel.app/api/week/${week_id}/day/${day_id}/exercises/${exercise_id}`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercises/${exercise_id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

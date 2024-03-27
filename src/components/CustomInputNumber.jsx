@@ -16,6 +16,11 @@ const CustomInputNumber = React.forwardRef(
 
     const handleInputChange = (newValue) => {
       if (!disabled) {
+        if (!isTextMode) {
+          // Si no está en modo de texto, asegúrate de que el valor sea un entero
+          newValue = parseInt(newValue, 10) || 0;
+        }
+
         setValue(newValue);
         onChange(newValue);
         if (onValueChange) {
@@ -47,7 +52,14 @@ const CustomInputNumber = React.forwardRef(
           }
         }
       } else {
-        setTextValue(String(value)); // Guardar el valor en modo de texto antes de cambiar al modo numérico
+        // Si no está en modo de texto, parsea el valor actual a un entero
+        const parsedValue = parseInt(value, 10) || 0;
+        setValue(parsedValue);
+        onChange(parsedValue);
+        if (onValueChange) {
+          onValueChange();
+        }
+        setTextValue(''); // Reinicia el valor de texto al cambiar al modo numérico
       }
       setIsTextMode(!isTextMode);
     };

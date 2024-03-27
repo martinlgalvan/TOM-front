@@ -4,22 +4,68 @@ Flujo de navegación
 
 LISTA DE USUARIOS
   - Crear usuario - CHECK
-  - Editar usuario - TO DO
+  - Editar usuario - 
   - Borrar usuario - CHECK
   - Entrar a usuario - CHECK
+
+CREACION DE SEMANA 
+  - Crear semana - CHECK
+  - Editar semana - CHECK
+  - Eliminar semana - CHECK
+  - Copiar ultima semana - CHECK
+  - 
+
+CREACION DÍAS
+  - Crear día - CHECK
+  - Editar día - CHECK
+  - Eliminar día - CHECK
 
 CREACIÓN DE ENTRADA EN CALOR
   - Crear ejercicio - CHECK
   - Editar ejercicios - CHECK
-  - Borrar ejercicios
+  - Borrar ejercicios - CHECK
 
 CREACIÓN DE EJERCICIOS
-  - Crear ejercicio
-  - Editar ejercicios
-  - Borrar ejercicios
+  - Crear ejercicio - CHECK
+  - Editar ejercicios - CHECK
+  - Borrar ejercicios - CHECK
 
 DATABASE
 
-  - Crear ejercicio
-  - Editar ejercicio
-  - Borrar ejercicio
+  - Crear ejercicio - CHECK
+  - Editar ejercicio - CHECK
+  - Borrar ejercicio - CHECK
+
+PERSONALIZATION
+
+  - Crear color
+  - Crear text color
+
+PAR
+
+  - Crear columnas
+  - Editar columnas
+  - Elimminar columnas
+
+
+URGENTES
+
+CHEQUEAR EL CAMBIO DE PERMITIR TEXTO EN LAS REPS ( ARREGLAR, se queda en NaN )
+
+
+ARREGLAR EL PERMITIR TEXTO TOOLTIP
+
+
+
+AGREGAR HORA A LA SEMANA ( QUE VEAN SOLO LOS ENTRENADORES )`
+
+
+TRAER DEL OBJETO USER TODO MENOS LA CONTRASEñA
+
+ARREGLAR INPUT DEL COLOR, ANDA MAL
+
+PAR HAYA PRECARGADOS, Y QUE PUEDAN ELIMINARLOS, SIN QUE SE ELIMINEN DEL GUARDADO, ESO LO PUEDO HACER PRECARGANDOLO DESDE EL BACK, HARDCODEARLO AHI
+
+CONFIRMMACION EN ELIMINAR EN PAR
+
+AGREGAR NOTIFY A LAS COLUMNAS Y EL PAR

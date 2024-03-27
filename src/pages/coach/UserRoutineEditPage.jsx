@@ -22,7 +22,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import DeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
 import EditWeek from '../../components/EditActions/EditWeek.jsx';
 
-
+import Papa from 'papaparse';  // Papaparse  para pasar de json a  csv
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -48,13 +48,17 @@ function UserRoutineEditPage(){
     const [dayID, setDayID] = useState("")
     const user_id = localStorage.getItem("_id")
 
-
+    const [csv, setCSV] = useState('')
 
     const [copyWeek, setCopyWeek] = useState();
 
     let idRefresh = RefreshFunction.generateUUID()
-   
+    const flatExercises = [];
 
+
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+    
     //Routine - API
     useEffect(() => {
         setLoading(true)
@@ -62,7 +66,7 @@ function UserRoutineEditPage(){
         
         WeekService.findRoutineByUserId(id)
             .then(data => {   
- 
+                
                 setRoutine(data)
                 setWeekNumber(data.length + 1)
 
@@ -74,6 +78,8 @@ function UserRoutineEditPage(){
                 
                 setLoading(false)
                 NotifyHelper.updateToast()
+
+                
             })
     }, [status])
 
@@ -152,6 +158,9 @@ function UserRoutineEditPage(){
         setStatus(idRefresh)
     } 
 
+
+
+
     return (
 
         <section className='container'>
@@ -178,7 +187,7 @@ function UserRoutineEditPage(){
 
             <article className='row justify-content-center'>
                 <div className='col-12 mx-2 text-center mb-2'>
-                    <button onClick={createWeek} className='input-group-text btn BlackBGtextWhite text-center' >Crear semana <b className='fs-6'>{weekNumber}</b></button>
+                    <button onClick={createWeek} className={`input-group-text btn ${textColor ? "bbb" : "text-light"} text-center`} style={{ "backgroundColor": `black` }} >Crear semana <b className='fs-6'>{weekNumber}</b></button>
                 </div>
                     {routine.length > 0 &&
                     
@@ -211,6 +220,10 @@ function UserRoutineEditPage(){
 
                 <div className='col-12'>
                 
+                <div>
+
+                    </div>
+
 
                     <div className='row justify-content-center'>
                         <TransitionGroup component={null} className="todo-list">
@@ -275,7 +288,7 @@ function UserRoutineEditPage(){
 
                 </div> 
 
-                <Link to={`/users/${user_id}`} className='btn BlackBGtextWhite text-center mt-5 mb-3 col-4' >Volver atrás</Link>
+                <Link to={`/users/${user_id}`} className={`btn ${textColor ? "bbb" : "text-light"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `black` }} >Volver atrás</Link>
 
             </article>
             

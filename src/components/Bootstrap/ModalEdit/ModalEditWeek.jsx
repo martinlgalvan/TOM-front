@@ -7,7 +7,9 @@ import * as WeekServices from '../../../services/week.services.js'
 function ModalEditWeek({showEditWeek, handleClose, actionConfirm, weekID, nameWeek}) {
 
   const [name, setName] = useState("")
-
+  const [color, setColor] = useState(localStorage.getItem('color'))
+  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+  
   function changeName(e){
       setName(e.target.value)
   }
@@ -39,7 +41,7 @@ function ModalEditWeek({showEditWeek, handleClose, actionConfirm, weekID, nameWe
           </form>
         </Modal.Body>
         <Modal.Footer>
-          <button className='btn BlackBGtextWhite' onClick={actionConfirm}>
+          <button className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} onClick={actionConfirm}>
             Cerrar
           </button>
         </Modal.Footer>

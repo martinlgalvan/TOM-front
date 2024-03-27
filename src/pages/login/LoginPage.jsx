@@ -1,5 +1,6 @@
 import {useState} from 'react'
 import * as authService from '../../services/auth.services.js'
+import * as userService from '../../services/users.services.js'
 import Logo from '../../components/Logo.jsx'
 
 function LoginPage({onLogin}){
@@ -7,12 +8,15 @@ function LoginPage({onLogin}){
     const [password, setPassword] = useState('')
     const [error, setError] = useState()
 
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+    
     function onSubmit(event){
         event.preventDefault()
         authService.login(email, password)
         .then(({user, token}) =>{
-
             onLogin(user, token)
+
         })
         .catch(err =>{
             setError(err.message)
@@ -49,7 +53,7 @@ function LoginPage({onLogin}){
                         <input type="password" className="form-control" onChange={onChangePassword} id="passw" rows="3"/> 
                     </div>
                     <div className='d-flex justify-content-center mb-4'>
-                        <button className='btn BlackBGtextWhite' onSubmit={onSubmit}>Ingresar</button>
+                        <button className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} onSubmit={onSubmit}>Ingresar</button>
                     </div>
                 </form>
             </section> 

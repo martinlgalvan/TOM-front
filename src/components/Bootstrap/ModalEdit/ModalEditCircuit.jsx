@@ -12,6 +12,10 @@ function ModalEditCircuit({showEditCircuit, handleClose, closeModal, week_id, da
   const [circuit, setCircuit] = useState([])
   const [copia, setCopia] = useState([])
   
+  const [color, setColor] = useState(localStorage.getItem('color'))
+  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+  
+  
   function generateUUID() {
     let d = new Date().getTime();
     let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -41,8 +45,6 @@ function editName(id, name){
   let indexExercise = circuit.findIndex(exercise => exercise.idRefresh === id)
   circuit[indexExercise].name = name
   setCopia(circuit)
-  console.log(id)
-  console.log(circuit)
  
 }
 
@@ -149,7 +151,7 @@ function editAmrap(){
           <button className='btn BGmodalClose' onClick={closeModal}>
             Cerrar
           </button>
-          <button className='btn BlackBGtextWhite' onClick={() => editAmrap()}>
+          <button className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} onClick={() => editAmrap()}>
             Editar
           </button>
         </Modal.Footer>

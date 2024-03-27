@@ -4,9 +4,6 @@ import { Skeleton } from 'primereact/skeleton';
 const SkeletonExercises = () => {
 
 
-  useEffect(() => {
-    console.log(window.innerWidth)
-  },[])
 
   return (
   <tr className='dd'>

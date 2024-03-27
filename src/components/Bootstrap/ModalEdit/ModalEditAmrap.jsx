@@ -15,12 +15,13 @@ function ModalEditAmrap({showEditAmrap, handleClose, refresh, week_id, day_id, e
   let objectId = new ObjectId()
   let refreshId = objectId.toHexString();
   
-
+  const [color, setColor] = useState(localStorage.getItem('color'))
+  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+  
+  
   useEffect(() => {
     setCircuit(circuitExercises)
     setCopia(circuitExercises)
-
-    console.log(type)
 
 
 }, [showEditAmrap, copia, status])
@@ -124,7 +125,7 @@ function editAmrap(){
           <button className='btn BGmodalClose' onClick={handleClose}>
             Cerrar
           </button>
-          <button className='btn BlackBGtextWhite' onClick={editAmrap}>
+          <button className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} onClick={editAmrap}>
             Editar
           </button>
         </Modal.Footer>

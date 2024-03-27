@@ -11,6 +11,9 @@ function DatabaseCreateExercise({refresh}){
     const [video, setVideo] = useState("")
     const [error, setError] = useState()
     
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+    
     function generateUUID() {
         let d = new Date().getTime();
         let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -25,12 +28,10 @@ function DatabaseCreateExercise({refresh}){
     
     function changeName(e){
         setName(e.target.value)
-        console.log(e.target.value + "name")
     }
 
     function changeVideo(e){
         setVideo(e.target.value)
-        console.log(e.target.value)
     }
 
 
@@ -38,7 +39,6 @@ function DatabaseCreateExercise({refresh}){
     function createExercise(){
         DatabaseExercises.createExercise(id, {name, video})
             .then((data) => {
-                console.log(data)
                 refresh(idRefresh)
             })
             .catch(err =>{
@@ -58,7 +58,6 @@ function DatabaseCreateExercise({refresh}){
   
       // Actualizar el ancho de la página cuando se redimensione la ventana
       window.onresize = actualizarAnchoPagina;
-      console.log(anchoPagina)
       // Limpiar el event handler cuando se desmonte el componente
       return () => {
         window.onresize = null;
@@ -78,13 +77,13 @@ function DatabaseCreateExercise({refresh}){
         <>
         <th> <input type="text" className="form-control rounded-0" placeholder='Peso muerto' onChange={changeName} /> </th>
         <th> <input type="text" className="form-control rounded-0" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/> </th>
-        <th> <button type='submit' className="btn BlackBGtextWhite rounded-0 w-100" onClick={createExercise}>Añadir ejercicio</button> </th>
+        <th> <button type='submit' className={`btn ${textColor ? "bbb" : "text-light"} rounded-0 w-100`} style={{ "backgroundColor": `black` }} onClick={createExercise}>Añadir ejercicio</button> </th>
         </>:
 
         <th colSpan={3}> 
             <input type="text" className="form-control rounded-0 mb-2" placeholder='Peso muerto' onChange={changeName} />
             <input type="text" className="form-control rounded-0 mb-2" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/>
-            <button type='submit' className="btn BlackBGtextWhite rounded-0 w-100" onClick={createExercise}>Añadir ejercicio</button>
+            <button type='submit' className={`btn ${textColor ? "bbb" : "text-light"} rounded-0 w-100`} onClick={createExercise} style={{ "backgroundColor": `black` }}>Añadir ejercicio</button>
         </th>}
 
  </>

@@ -3,6 +3,7 @@ import * as UsersService from '../../services/users.services.js'
 import * as Notify from './../../helpers/notify.js'
 
 import {useParams} from 'react-router-dom'
+import { useColor } from '../Context/ColorContext.jsx'
 
 
 function RegisterPage({refresh}){
@@ -13,6 +14,11 @@ function RegisterPage({refresh}){
     const [logo, setLogo] = useState("")
     const [password, setPassword] = useState()
     const [error, setError] = useState()
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+
+
+
     
     function generateUUID() {
         let d = new Date().getTime();
@@ -80,7 +86,7 @@ function RegisterPage({refresh}){
                                     <input type="password" className="form-control my-1 rounded-0" id="passw" name="passw" onChange={changePassword} />
                                 </li>
                                 <li className="list-group-item">
-                                    <button className='btn BlackBGtextWhite my-1'>Crear usuario</button>
+                                    <button className={`btn my-1 ${!textColor ? "bbb" : "text-light"} w-100`} style={{ "backgroundColor": `black` }}>Crear usuario</button>
                                 </li>
 
                             </ul>

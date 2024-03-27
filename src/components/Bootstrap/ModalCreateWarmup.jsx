@@ -73,6 +73,9 @@ let idRefresh = generateUUID()
   const [newVideo, setNewVideo] = useState()
   const [newNotas, setNewNotas] = useState()
 
+  const [color, setColor] = useState(localStorage.getItem('color'))
+  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+
   function onSubmit(e) {
       e.preventDefault()
 	    WarmupServices.createWarmup(week_id, day_id, { name, sets, reps, peso, video, notas })
@@ -81,7 +84,7 @@ let idRefresh = generateUUID()
         })
   }
 
-const changeNameWarmup = (e) => {setNewName(e.target.value), console.log(e.target.value)}
+const changeNameWarmup = (e) => {setNewName(e.target.value)}
 
 const changePesoWarmup = (e) => setPeso(e.target.value)
 
@@ -203,22 +206,18 @@ useEffect(() => {
       const updatedModifiedDay = [...modifiedDay];
       updatedModifiedDay[index].name = e.target.value;
       setModifiedDay(updatedModifiedDay);
-      console.log(modifiedDay)
     };
     
     const changePesoEdit = (index, e) => {
       const updatedModifiedDay = [...modifiedDay];
       updatedModifiedDay[index].peso = e.target.value;
       setModifiedDay(updatedModifiedDay);
-      console.log(modifiedDay)
     };
 
     const changeSetEdit = (index, newValue) => {
-      console.log(index, newValue)
       const updatedModifiedDay = [...modifiedDay];
       updatedModifiedDay[index].sets = newValue;
       setModifiedDay(updatedModifiedDay);
-      console.log(modifiedDay)
     };
     
     const changeRepEdit = (index, newValue) => {
@@ -242,10 +241,10 @@ useEffect(() => {
     // Resto de funciones de cambio...
 
     const applyChanges = () => {
-      console.log(modifiedDay)
+
       setWarmup(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
       WarmupServices.editWarmup(week_id, day_id, modifiedDay)
-          .then((data) => {console.log(data), setStat(idRefresh)} )
+          .then((data) => {setStat(idRefresh)} )
       
     };
 
@@ -258,7 +257,7 @@ useEffect(() => {
   const deleteExercise = (event,id,name) => {
 
     name == null || name == undefined ? name = "Sin nombre" : name = name
-    console.log(event, id, name)
+
 
     confirmDialog({
         trigger:            event.currentTarget,
@@ -276,6 +275,12 @@ useEffect(() => {
     });
 };
 
+function acceptDeleteExercise(id) {
+
+
+  WarmupServices.deleteWarmup(week_id, day_id, id)
+      .then(() => setStat(idRefresh))
+};
 
 const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
 
@@ -357,7 +362,7 @@ const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(f
 
 
               <div className="text-center">
-                <button className="btn BlackBGtextWhite my-4">Crear</button>
+                <button className={`btn ${textColor ? "bbb" : "text-light"} my-4`} style={{ "backgroundColor": `black` }}>Crear</button>
               </div>
 
             </form>
@@ -463,7 +468,7 @@ const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(f
 
 
                             <td className='tdActions'>
-                                <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
+                                <button onClick={(e) => deleteExercise(e, warmup_id , name)} className='btn buttonsEdit'>
                                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
                                     <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
                                   </svg>
@@ -484,7 +489,7 @@ const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(f
                             <button className='btn btn-secondary mb-2 mx-2' onClick={() => setInputEnFoco(null)}>
                             Cancelar edición
                         </button>
-                            <button className='btn BlackBGtextWhite mb-2 mx-2' onClick={applyChanges} >
+                            <button className={`btn ${textColor ? "bbb" : "text-light"} mb-2 mx-2`} style={{ "backgroundColor": `black` }} onClick={applyChanges} >
                                 Aplicar cambios
                             </button>
                         </div>

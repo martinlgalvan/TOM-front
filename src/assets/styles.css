@@ -71,6 +71,10 @@
     background-color: #d1d1d1;
   }
 
+  .mouseUp{
+    cursor: pointer;
+  }
+
   ul {
     list-style: none;
   }
@@ -556,18 +560,157 @@
 
 
 
-/*.colorAccordion{
-  background-color: #e7e7e7;
-  border-top: 1px;
-  border-bottom: 1px;
-  border-left: 0;
-  border-right: 0;
 
-}*/
-
-.marginInput{
-  margin-left: 1px !important;
+.cardActionArea {
+  box-shadow: 5px 5px 10px #888888;
 }
+
+.tableRandomizer-num{
+  width: 20px !important;
+}
+
+.tableRandomizer-exercise{
+  width: 250px !important;
+}
+
+.tableRandomizer-sets{
+  width: 50px !important;
+}
+
+.tableRandomizer-reps{
+  width: 50px !important;
+}
+
+.tableRandomizer-rest{
+  width: 100px !important;
+}
+
+.tableRandomizer-video{
+  width: 200px !important;
+}
+
+.tableRandomizer-notes{
+  width: 200px !important;
+}
+
+
+/* Agrega este estilo CSS a tu archivo de estilos o en línea en tu componente */
+.tableRandomizer-exercise,
+.tableRandomizer-sets input,
+.tableRandomizer-reps input,
+.tableRandomizer-rest input,
+.tableRandomizer-video input,
+.tableRandomizer-notes input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.dropDown{
+  border: 0 !important;
+}
+
+.dropDown span{
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.colorWeeklyProgress{
+  color: white !important;
+  background-color: #000000 !important;
+}
+
+.altoListPAR{
+  height: 35px !important;
+  font-size: 0.85em ;
+}
+
+.heightCardColumns{
+  min-height: 300px;
+}
+
+.listPAR li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nnn div{
+  min-height: 200px !important;
+  font-size: 0.8em;
+}
+
+.bbb {
+  color: #ffffff !important;
+}
+
+.bbb div{
+  color: #ffffff !important;
+}
+
+.bbb ul{
+  color: #ffffff !important;
+}
+
+.bbb a{
+  color: #ffffff !important;
+}
+
+.bbb li{
+  color: #ffffff !important;
+}
+
+.bbb p{
+  color: #ffffff !important;
+}
+
+.bbb button{
+  color: #ffffff !important;
+}
+
+
+.buttonsHover:hover{
+  opacity: 0.6;
+  text-shadow: #000000;
+}
+
+.blackColor{
+  color: #000000;
+}
+
+
+.colorPicker{
+  height: 70px;
+  width: 90px;
+}
+
+.colorTdPAR{
+  background-color: #dadada !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

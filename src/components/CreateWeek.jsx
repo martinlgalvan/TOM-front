@@ -9,6 +9,9 @@ function NewDay(){
     const {id} = useParams()
     const [name, setName] = useState("")
 
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+    
     function changeName(e){
         setName(e.target.value)
     }
@@ -23,7 +26,7 @@ function NewDay(){
                 <div className="input-group mb-5">
                 <label htmlFor="name" className="visually-hidden ">Nombre del día</label>
                     <input type="text" className="form-control" id="name" name="name"  onChange={changeName} value={name} placeholder="Día 1" />
-                    <button className='input-group-text btn btn-warning'>Crear día</button>
+                    <button className={`input-group-text btn ${textColor ? "bbb" : "text-light"} `} style={{ "backgroundColor": `black` }}>Crear día</button>
                 </div>
             </form>
 

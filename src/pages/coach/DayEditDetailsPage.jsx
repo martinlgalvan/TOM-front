@@ -28,6 +28,9 @@ import SkeletonExercises from '../../components/Skeleton/SkeletonExercises.jsx';
 import Warmup from '../../components/Bootstrap/ModalCreateWarmup.jsx';
 import WarmupExercises from '../../components/WarmupExercises.jsx';
 
+
+
+
 // CORREGIR PROBLEMA DEL LENGTH, PASO PORQUE ELIMINE QUE SE CREE AUTOMATICAMENTE UN EXERCISES, PARA QUE LUEGO PUEDA CREAR UN INDEX DEL CAMPO ROUTINE.EXERCISES.EXERCISE_ID
 function DayEditDetailsPage(){
     const {week_id} = useParams()
@@ -86,7 +89,10 @@ function DayEditDetailsPage(){
     const [visibleExercises, setVisibleExercises] = useState(false);    //
     const [visibleEdit, setVisibleEdit] = useState(false);              //-------------------*
 
+    const [csv, setCsv] = useState(false);              //  Papaparse, json to  csv
 
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
     
     let idRefresh = RefreshFunction.generateUUID()
 
@@ -131,20 +137,21 @@ function DayEditDetailsPage(){
                 setConfirm(null)                        // no sé todavía, averiguar por qué lo use
                 setOptions(Options)                     // array de options para el select
                 setFirstLoading(false)                  // firstload para cargar el skeleton
+                setEditExerciseMobile(false)
                 Notify.updateToast()
                 //localStorage.setItem('LEN', day.length) // carga en localstorage el largo del array principal, para luego al editar o eliminar cargar el skeleton correctamente 
 
-               
             })
 }, [status, firstLoading])
 
 
 const refreshEdit = (le) => {
+    setLoading(true)
     setStatus(idRefresh)
-
     setEditExerciseMobile(false)
     setWarmup(false)
 }
+
 
 
 
@@ -165,22 +172,22 @@ useEffect(() => {
         const updatedModifiedDay = [...modifiedDay];
         updatedModifiedDay[index].name = e.target.value;
         setModifiedDay(updatedModifiedDay);
-        console.log(modifiedDay)
+
       };
       
       const changePesoEdit = (index, e) => {
         const updatedModifiedDay = [...modifiedDay];
         updatedModifiedDay[index].peso = e.target.value;
         setModifiedDay(updatedModifiedDay);
-        console.log(modifiedDay)
+
       };
 
       const changeSetEdit = (index, newValue) => {
-        console.log(index, newValue)
+
         const updatedModifiedDay = [...modifiedDay];
         updatedModifiedDay[index].sets = newValue;
         setModifiedDay(updatedModifiedDay);
-        console.log(modifiedDay)
+
       };
       
       const changeRepEdit = (index, newValue) => {
@@ -188,8 +195,16 @@ useEffect(() => {
         updatedModifiedDay[index].reps = newValue;
         setModifiedDay(updatedModifiedDay);
       };
+
+      const changeRestEdit = (index, e) => {
+
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].rest = e.target.value;
+        setModifiedDay(updatedModifiedDay);
+      };
       
       const changeVideoEdit = (index, e) => {
+
         const updatedModifiedDay = [...modifiedDay];
         updatedModifiedDay[index].video = e.target.value;
         setModifiedDay(updatedModifiedDay);
@@ -200,14 +215,21 @@ useEffect(() => {
         updatedModifiedDay[index].notas = e.target.value;
         setModifiedDay(updatedModifiedDay);
       };
+
+      const changeNumberExercise = (index, e) => {
+
+        const updatedModifiedDay = [...modifiedDay];
+        updatedModifiedDay[index].numberExercise = e.target.value;
+        setModifiedDay(updatedModifiedDay);
+      };
       
       // Resto de funciones de cambio...
 
       const applyChanges = () => {
-        console.log(modifiedDay)
+
         setDay(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
         ExercisesService.editExercise(week_id, day_id, modifiedDay)
-            .then((data) => {console.log(data), setStatus(idRefresh)} )
+            .then((data) => {setStatus(idRefresh)} )
         
       };
 
@@ -253,7 +275,7 @@ useEffect(() => {
     const deleteExercise = (event,id,name) => {
 
         name == null || name == undefined ? name = "Sin nombre" : name = name
-        console.log(event, id, name)
+
 
         confirmDialog({
             trigger:            event.currentTarget,
@@ -284,26 +306,6 @@ useEffect(() => {
             .then(() => setStatus(idRefresh))
     };
 
-    /*const editExercise = (exercise_id, name, StrSets, StrReps, peso, video, notas, numberExercise) => {
-
-        let parsedValue   = numberExercise
-        let valueExercise = parseInt(parsedValue)
-        let sets          = parseInt(StrSets)
-        let reps          = parseInt(StrReps)
-
-        name == null || name == "" || name == undefined ? name = " " : name = name
-
-        peso == null || peso == "" || peso == undefined ? peso = " " : peso = peso
-        
-        video == null || video == "" || video == undefined ? video = " ": video = video 
-
-        notas == null || notas == "" || notas == undefined ? notas = " ": notas = notas
-
-        ExercisesService.editExerciseMobile(week_id, day_id, exercise_id, {type: 'exercise', name, sets, reps, peso, video, notas, numberExercise, valueExercise})
-            .then(() => {setStatus(idRefresh)} )
-            
-    }*/
-
     const handleInputFocus = (index) => { setInputEnFoco(index); setConfirm(true)};
 
     const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
@@ -329,9 +331,9 @@ useEffect(() => {
             <Logo />
 
             <div className='row justify-content-center'>
-                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(modifiedDay)} >Añadir Ejercicio</button>
+                    <button className={`btn ${textColor ? "bbb" : "text-light"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `black` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(modifiedDay)} >Añadir Ejercicio</button>
 
-                    <button className='btn BlackBGtextWhite col-6 col-lg-2 my-2 mx-1' label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
+                    <button className={`btn ${textColor ? "bbb" : "text-light"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `black` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
                 </div>
 
                 <div className="row justify-content-center">
@@ -396,6 +398,7 @@ useEffect(() => {
                                     <th scope="col" className='tdName'>Ejercicio</th>
                                     <th scope="col" className='tdSets'>Series</th>
                                     <th scope="col" className='tdReps'>Reps</th>
+                                    <th scope="col" className='tdReps'>Rest</th>
                                     <th className='TableResponsiveDayEditDetailsPage tdPeso' scope="col">Peso</th>
                                     <th className='TableResponsiveDayEditDetailsPage tdVideo' scope="col">Video</th>
                                     <th className='TableResponsiveDayEditDetailsPage tdNotas' scope="col">Notas</th>
@@ -416,18 +419,11 @@ useEffect(() => {
                                         <th className='TableResponsiveDayEditDetailsPage' >
                                         {exercise.type != 'exercise' ? <span>{exercise.numberExercise}</span> :
                                          <select  
+                                            onFocus={exercise.type != 'exercise' ? null : () => handleInputFocus(index)}
+                                            ref={(input) => (inputRefs.current[index] = input)}
                                             defaultValue={exercise.numberExercise} 
-                                            onChange={(e) => { 
-                                                editExercise(
-                                                    exercise.exercise_id, 
-                                                    exercise.name, 
-                                                    exercise.sets, 
-                                                    exercise.reps, 
-                                                    exercise.peso, 
-                                                    exercise.video, 
-                                                    exercise.notas, 
-                                                    e.target.value)}}
-                                            disabled={inputEnFoco !== null && inputEnFoco !== index}>
+                                            onChange={(e) => {changeNumberExercise(index, e)}}
+                                            >
                                             {options.map(option =>
                                             <optgroup 
                                                 key={option.value} 
@@ -504,7 +500,21 @@ useEffect(() => {
                                             />
                                     </td>
                                     }
-                                        
+
+                                        {exercise.rest === undefined ? null :
+                        
+                                        <td className='tdReps'>
+                                            <input 
+                                                className='form-control border-0' 
+                                                type="text" 
+                                                defaultValue={exercise.rest}
+                                                onChange={(e) => changeRestEdit(index, e)}
+                                                onFocus={() => handleInputFocus(index)}
+                                                
+                                            />
+                                        </td>}
+                                    
+
                                     {exercise.peso === undefined ? null :
 
                                         <td className='TableResponsiveDayEditDetailsPage tdPeso'>
@@ -605,7 +615,7 @@ useEffect(() => {
                             <button className='btn btn-secondary mb-2 me-2' onClick={() => setInputEnFoco(null)}>
                             Cancelar edición
                         </button>
-                            <button className='btn BlackBGtextWhite mb-2 ms-2' onClick={applyChanges} >
+                            <button className={`btn ${textColor ? "bbb" : "text-light"} mb-2 ms-2`} style={{ "backgroundColor": `black` }} onClick={applyChanges} >
                                 Aplicar cambios
                             </button>
                         </>
@@ -614,7 +624,7 @@ useEffect(() => {
                     </div>
                     </div>
 
-                    <Link to={`/user/routine/${id}/${username}`} className='btn BlackBGtextWhite text-center mt-5 mb-3 col-4' >Volver atrás</Link>
+                    <Link to={`/user/routine/${id}/${username}`} className={`btn ${textColor ? "bbb" : "text-light"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `black` }} >Volver atrás</Link>
                 </article>
 
                
@@ -663,7 +673,7 @@ useEffect(() => {
                         onHide={() => setWarmup(false)}
                         blockScroll={window.innerWidth > 600 ? false : true}>
 
-                        <ModalCreateWarmup  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refresh={refresh} refreshEdit={refreshEdit}/>
+                        <ModalCreateWarmup  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refreshEdit={refreshEdit}/>
                     </Dialog>
 
         </section>

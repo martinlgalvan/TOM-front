@@ -33,6 +33,9 @@ function AddCircuit({refresh, handleCloseDialog}) {
   const [filteredExercises, setFilteredExercises] = useState(null);
   const [exercisesAmrap, setExercisesAmrap] = useState([]);
 
+  const [color, setColor] = useState(localStorage.getItem('color'))
+  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+
   function generateUUID() {
     let d = new Date().getTime();
     let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -260,7 +263,7 @@ useEffect(() => {
             </div>
 
             <div className="col-6 text-center">
-              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className='input-group-text btn border BlackBGtextWhite mt-3'>Añadir ejercicio</button>
+              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className={`input-group-text btn border ${textColor ? "bbb" : "text-light"} mt-3`} style={{ "backgroundColor": `black` }}>Añadir ejercicio</button>
             </div>      
           </div>
 
@@ -290,7 +293,7 @@ useEffect(() => {
         </table>
       </article>}
       <div className="row justify-content-center my-4 mb-5">
-      <button className="btn border BlackBGtextWhite col-3" type="submit" onClick={createAmrap}>Crear circuito</button>
+      <button className={`btn border ${textColor ? "bbb" : "text-light"} col-3`} style={{ "backgroundColor": `black` }} type="submit" onClick={createAmrap}>Crear circuito</button>
 
       </div>
     </section>
