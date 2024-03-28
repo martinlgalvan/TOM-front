@@ -263,7 +263,7 @@ useEffect(() => {
             </div>
 
             <div className="col-6 text-center">
-              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className={`input-group-text btn border ${textColor ? "bbb" : "text-light"} mt-3`} style={{ "backgroundColor": `black` }}>Añadir ejercicio</button>
+              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className={`input-group-text btn border ${textColor == 'false' ? "bbb" : "blackColor"} mt-3`} style={{ "backgroundColor": `black` }}>Añadir ejercicio</button>
             </div>      
           </div>
 
@@ -293,7 +293,7 @@ useEffect(() => {
         </table>
       </article>}
       <div className="row justify-content-center my-4 mb-5">
-      <button className={`btn border ${textColor ? "bbb" : "text-light"} col-3`} style={{ "backgroundColor": `black` }} type="submit" onClick={createAmrap}>Crear circuito</button>
+      <button className={`btn border ${textColor == 'false' ? "bbb" : "blackColor"} col-3`} style={{ "backgroundColor": `black` }} type="submit" onClick={createAmrap}>Crear circuito</button>
 
       </div>
     </section>

@@ -7,12 +7,14 @@ const ColorContext = createContext();
 export const useColor = () => useContext(ColorContext);
 
 export const ColorProvider = ({ children }) => {
-  const [color, setColor] = useState("#1d1d1d");
+  const [color, setColor] = useState("#000000");
   const [textColor, setTextColor] = useState(false);
 
   useEffect(()=>{
     if(localStorage.getItem('color')){
       setColor(localStorage.getItem('color'))
+    } else{
+      setColor("#1a1a1a")
     }
 
     if(localStorage.getItem('textColor')){

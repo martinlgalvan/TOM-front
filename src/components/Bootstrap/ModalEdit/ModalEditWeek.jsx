@@ -41,7 +41,7 @@ function ModalEditWeek({showEditWeek, handleClose, actionConfirm, weekID, nameWe
           </form>
         </Modal.Body>
         <Modal.Footer>
-          <button className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} onClick={actionConfirm}>
+          <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} onClick={actionConfirm}>
             Cerrar
           </button>
         </Modal.Footer>

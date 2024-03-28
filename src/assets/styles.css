@@ -672,6 +672,38 @@
   color: #ffffff !important;
 }
 
+.blackColor {
+  color: #000000 !important;
+}
+
+.blackColor div{
+  color: #000000 !important;
+}
+
+.blackColor ul{
+  color: #000000 !important;
+}
+
+.blackColor a{
+  color: #000000 !important;
+}
+
+.blackColor li{
+  color: #000000 !important;
+}
+
+.blackColor p{
+  color: #000000 !important;
+}
+
+.blackColor button{
+  color: #000000 !important;
+}
+
+.bgColor{
+  background-color: #000000 !important;
+}
+
 
 .buttonsHover:hover{
   opacity: 0.6;

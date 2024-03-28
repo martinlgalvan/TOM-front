@@ -41,12 +41,17 @@ PERSONALIZATION
   - Crear color
   - Crear text color
 
+COLUMNS
+  - Crear columnas - CHECK
+  - Eliminar columnas - CHECK
+
+EXERCISES IN COLUMNS
+  - Crear exercises - CHECK
+  - Editar exercises - CHECK
+  - Elimminar exercises -CHECK
+
 PAR
-
-  - Crear columnas
-  - Editar columnas
-  - Elimminar columnas
-
+  - FORMATO ENTERO - CHECK
 
 URGENTES
 

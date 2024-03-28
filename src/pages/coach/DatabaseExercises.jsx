@@ -234,7 +234,7 @@ function UsersListPage() {
 
 
         <section className="container-fluid">
-            <p className="text-center my-4">¿Querés agregar tus propios? Simplemente agregalos, activá la opción que está debajo, y comenzá a utilizarlos.</p>
+            <p className="text-center my-4">¿Querés agregar tus propios videos? Simplemente agregalos, activá la opción que está debajo, y comenzá a utilizarlos.</p>
 
 
             <div className='row justify-content-center my-3'>

@@ -125,7 +125,7 @@ function editAmrap(){
           <button className='btn BGmodalClose' onClick={handleClose}>
             Cerrar
           </button>
-          <button className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} onClick={editAmrap}>
+          <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"}`}} style={{ "backgroundColor": `${color}` }} onClick={editAmrap}>
             Editar
           </button>
         </Modal.Footer>

@@ -145,7 +145,7 @@ function onSubmit(e){
       </div>
 
       <div className='mb-3 text-center'>
-        <button type='submit' className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }}>Editar</button>
+        <button type='submit' className={`btn ${textColor == 'false' ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }}>Editar</button>
       </div>
 
   </form>

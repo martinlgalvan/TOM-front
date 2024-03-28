@@ -10,6 +10,7 @@ function LoginPage({onLogin}){
 
     const [color, setColor] = useState(localStorage.getItem('color'))
     const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+    console.log(localStorage.getItem('textColor'))
     
     function onSubmit(event){
         event.preventDefault()
@@ -53,7 +54,7 @@ function LoginPage({onLogin}){
                         <input type="password" className="form-control" onChange={onChangePassword} id="passw" rows="3"/> 
                     </div>
                     <div className='d-flex justify-content-center mb-4'>
-                        <button className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} onSubmit={onSubmit}>Ingresar</button>
+                        <button className={`btn ${textColor == 'false' || !textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color || '#1a1a1a'}` }} onSubmit={onSubmit}>Ingresar</button>
                     </div>
                 </form>
             </section> 

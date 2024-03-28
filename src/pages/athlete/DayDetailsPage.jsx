@@ -323,8 +323,8 @@ function DayDetailsPage() {
 
             <div className="d-flex justify-content-center">
                 <Link
-                    className={`btn ${textColor ? "bbb" : "text-light"} text-center my-5`}
-                    style={{ "backgroundColor": `black` }}
+                    className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} text-center my-5`}
+                    style={{ "backgroundColor": `${color}` }}
                     to={`/routine/${id}`}
                 >
                     Volver atrás

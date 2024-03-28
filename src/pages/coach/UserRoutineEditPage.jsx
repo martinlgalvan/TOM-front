@@ -187,7 +187,7 @@ function UserRoutineEditPage(){
 
             <article className='row justify-content-center'>
                 <div className='col-12 mx-2 text-center mb-2'>
-                    <button onClick={createWeek} className={`input-group-text btn ${textColor ? "bbb" : "text-light"} text-center`} style={{ "backgroundColor": `black` }} >Crear semana <b className='fs-6'>{weekNumber}</b></button>
+                    <button onClick={createWeek} className={`input-group-text btn ${textColor == 'false' ? "bbb" : "blackColor"} text-center`} style={{ "backgroundColor": `${color}` }} >Crear semana <b className='fs-6'>{weekNumber}</b></button>
                 </div>
                     {routine.length > 0 &&
                     
@@ -288,7 +288,7 @@ function UserRoutineEditPage(){
 
                 </div> 
 
-                <Link to={`/users/${user_id}`} className={`btn ${textColor ? "bbb" : "text-light"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `black` }} >Volver atrás</Link>
+                <Link to={`/users/${user_id}`} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `${color}` }} >Volver atrás</Link>
 
             </article>
             

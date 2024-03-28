@@ -5,6 +5,7 @@ import * as PARService from "../../services/par.services.js";
 import * as UsersService from '../../services/users.services.js';
 import * as WeekService from '../../services/week.services.js';
 import * as RandomizerColumns from "../../services/randomizerColumn.services.js";
+import Logo from './../../components/Logo.jsx'
 
 import * as GenerateObjectId from './../../helpers/generateUUID.js'
 import * as NotifyHelper from './../../helpers/notify.js'
@@ -297,14 +298,22 @@ const handleRoutineUpdate = (routine) => {
     return (
     <>
         <section className="container-fluid">
+
+            <Logo />
             <article className="row justify-content-center">
 
-                <div className="col-10 text-center">
+                <div className="col-10 col-lg-8 text-center">
 
-                    <h2>PAR</h2>
+                    <h2>SAPE</h2>
 
-                    <p>Bienvenido al <b>Planificador Automático de Rutinas</b></p>
-                    <p>Este sistema está hecho para que puedas automatizar tu planificación de la manera que trabajes.</p>
+                    <p>Bienvenido al <b>Sistema Automático de Protocolos de Entrenamiento</b></p>
+                    <p>Este sistema te permite armar tus protocolos de entrenamiento. ¿Que es eso? Básicamente revolucionar tu manera de planificar.</p>
+                    <p>En primer lugar, te vamos a permitir la total libertad de <b>todo</b>. Para darte una ayuda, el flujo de creación es el siguiente:</p>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><b>1 .</b> Creación de columnas</li>
+                            <li class="list-group-item"><b>2 .</b> Añadir ejercicios a las columnas</li>
+                            <li class="list-group-item"><b>3 .</b> Armar tu protocolo de entrenamiento</li>
+                        </ul>
 
                 </div>
 
@@ -386,7 +395,7 @@ const handleRoutineUpdate = (routine) => {
 
                             <label htmlFor="name" className="visually-hidden ">Nombre de la columna</label>
                             <input type="text" className="form-control " id="name" name="name"  onChange={changeCreateName}  placeholder="Nombre" />
-                            <button onClick={() => createColumn(createName)} className={`btn ${textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} type="button" id="button-addon2">Agregar</button>
+                            <button onClick={() => createColumn(createName)} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} type="button" id="button-addon2">Agregar</button>
 
                         </div>
 
@@ -410,8 +419,8 @@ const handleRoutineUpdate = (routine) => {
                             timeout={500}
                             classNames="item"
                             >
-                                <div className={'col-2 py-2'}  onClick={() => showAdminColumns(elemento)}>
-                                    <ActionAreaCard className={" py-5"} title={elemento.name} body={"ejemplo de body"} id={elemento._id}  />
+                                <div className={'col-10 col-sm-4 col-lg-3 py-2'}  onClick={() => showAdminColumns(elemento)}>
+                                    <ActionAreaCard className={"py-5"} title={elemento.name} body={"ejemplo de body"} id={elemento._id}  />
                                 </div>
 
                             </CSSTransition>
@@ -432,8 +441,8 @@ const handleRoutineUpdate = (routine) => {
                             timeout={500}
                             classNames="item"
                             >
-                                <div className={'col-2'} onClick={() => showAdminPAR(index, elemento)}>
-                                    <ActionAreaCard className={" py-5"} title={elemento.name} body={"ejemplo de body"} id={elemento._id}  />
+                                <div className={'col-5 col-lg-3 py-2'} onClick={() => showAdminPAR(index, elemento)}>
+                                    <ActionAreaCard className={"py-5"} title={elemento.name} body={"ejemplo de body"} id={elemento._id}  />
                                 </div>
 
                             </CSSTransition>
@@ -635,18 +644,18 @@ const handleRoutineUpdate = (routine) => {
                                                         value={actualUser}
                                                         options={users}
                                                         optionLabel="name"
-                                                        placeholder="Selecciona una columna"
+                                                        placeholder="Seleccioná un alumno"
                                                         onChange={(e) => handleDropdownChange(e.value)}
                                                         className="w-100 dropDown"
                                                         filter
                                                         scrollHeight={"360px"}
                                                         filterPlaceholder={"ss"}
-                                                        emptyFilterMessage={"No se encontró ningun ejercicio"}
-                                                        emptyMessage={"No se encontró ningun ejercicio"}
+                                                        emptyFilterMessage={"No se encontró ningun alumno"}
+                                                        emptyMessage={"No se encontró ningun alumno"}
                                                         />
                                                     </td>
-                                                    <td colSpan={3}><button className={`btn ${textColor ? "bbb" : "text-light"} w-100`} style={{ "backgroundColor": `black` }} onClick={() => FindSameName()}>Random</button></td>
-                                                    <td colSpan={3}><button className={`btn ${textColor ? "bbb" : "text-light"} w-100`} style={{ "backgroundColor": `black` }} onClick={() => createWeek()}>Designar rutina</button></td>
+                                                    <td colSpan={3}><button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} w-100`} style={{ "backgroundColor": `${color}` }} onClick={() => FindSameName()}>Generar semana</button></td>
+                                                    <td colSpan={3}><button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} w-100`} style={{ "backgroundColor": `${color}` }} onClick={() => createWeek()}>Designar semana</button></td>
                                             </tr>
                                         </tbody>
                         

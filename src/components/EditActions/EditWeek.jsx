@@ -45,7 +45,7 @@ function EditWeek({ visible, onHide, week_id, defaultName }) {
 
         <div className='col-12 text-center mt-4'>
           <button className="btn buttonCancelDialog me-2" onClick={handleCancel}>Cancelar</button>
-          <button className={`btn ${textColor ? "bbb" : "text-light"} ms-2`} style={{ "backgroundColor": `black` }} onClick={onSubmit}>Editar</button>
+          <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} ms-2`} style={{ "backgroundColor": `${color}` }} onClick={onSubmit}>Editar</button>
         </div>
 
       </div>

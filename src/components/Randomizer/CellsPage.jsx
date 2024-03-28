@@ -51,7 +51,7 @@ useEffect(() => {
 }, []);
 
 function onChangeName(event){
-  setNamePAR(event.target.value)
+  setNamePAR(event.target.value);
   if (event.target.value.trim() === "") { // Verifica si el valor está vacío o solo contiene espacios en blanco
     setDenied(false);
   } else {
@@ -90,7 +90,7 @@ function onChangeName(event){
     setTableData([...tableData, { type: 'exercise', numberExercise: tableData.length + 1, nombre: '', sets: '', peso: '', reps: '', rest: '', video: '', notas: '' }]);
   };
 
-  const createProgress = () => {
+  const createProgress = (name2) => {
     const newProgress = tableData.map((row, index) => {
       const sets = isNaN(row.sets) || row.sets == '' ? row.sets : parseInt(row.sets);
       const reps = isNaN(row.reps) || row.reps == '' ? row.reps : parseInt(row.reps);
@@ -110,24 +110,25 @@ function onChangeName(event){
     });
   
     const progressObject = {
-      name: `Day ${dayCount + 1}`,
+      name: `Día ${dayCount + 1}`,
       _id: generateMongoDBObjectId(),
       exercises: newProgress,
     };
   
     // Actualizar el estado con el nuevo objeto
     setRoutine((prevRoutine) => {
-      return { name: namePAR, routine: [...(prevRoutine?.routine || []), progressObject] };
+      return { name: `${name2}`, routine: [...(prevRoutine?.routine || []), progressObject] };
     });
   
     setDayCount((prevCount) => prevCount + 1);
     onUpdateRoutine((prevRoutine) => {
-      return { name: namePAR, routine: [...(prevRoutine?.routine || []), progressObject] };
+      return { name: `${name2}`, routine: [...(prevRoutine?.routine || []), progressObject] };
     });
     // Restaurar valores de tableData a su estado inicial
     setTableData([
       { type: 'exercise', numberExercise: 1, nombre: '', sets: '', reps: '', peso: '', rest: '', video: '', notas: '' },
     ]);
+    console.log(routine)
   };
   
   
@@ -139,7 +140,7 @@ function onChangeName(event){
 
   const SaveRoutine = () => {
 
-
+    console.log(routine)
     PARService.createPAR(routine, user_id)
       .then(data => {
         console.log(routine)
@@ -239,42 +240,43 @@ function onChangeName(event){
 
       <article className="row justify-content-center mt-4">
 
-        <div>
-          <button className={`col-6 col-lg-3 btn ${textColor ? "bbb" : "text-light"} `} style={{ "backgroundColor": `black` }} onClick={addRow} >
+        <div className="custom-target-icon">
+          <button disabled={!denied} className={`col-6 col-lg-3 btn ${textColor == 'false' ? "bbb" : "blackColor"} `} style={{ "backgroundColor": `${color}` }} onClick={addRow} >
             Agregar Fila
           </button>
         </div>
 
-        <div>
-            <button disabled={tableData[0].nombre == ''} className={`col-6 col-lg-3 btn ${textColor ? "bbb" : "text-light"}  m-2`} style={{ "backgroundColor": `black` }} onClick={createProgress}>
-              Añadir semana
+        <div className="mt-2 custom-target-icon">
+            <button disabled={!denied}  className={` col-6 col-lg-3 btn ${textColor == 'false' ? "bbb" : "blackColor"}  m-2`} style={{ "backgroundColor": `${color}` }} onClick={() => createProgress(namePAR)}>
+              Añadir día
             </button>
         </div>
 
-        <div>
-        {!denied && <Tooltip 
-          target=".custom-target-icon"
-          position="right"
-          mouseTrack
-          mouseTrackLeft={5}
-          mouseTrackTop={5}
-          onHide={() => setShowTooltip(false)}
-          className="largoTooltip p-0 m-0"
-          >
-          Ingresa un nombre para el protocolo!
-        </Tooltip>}
-          <div className="custom-target-icon">
+        <div className="col-5 mt-2">
+          {!denied && 
+            <Tooltip 
+              target=".custom-target-icon"
+              position="right"
+              mouseTrack
+              mouseTrackLeft={5}
+              mouseTrackTop={5}
+              onHide={() => setShowTooltip(false)}
+              className="largoTooltip p-0 m-0"
+              >
+              Ingresa un nombre para el protocolo!
+            </Tooltip>}
+            <div className="custom-target-icon ">
 
-          <button 
-          disabled={!denied} 
-          className={`btn ${textColor ? "bbb" : "text-light"} col-6 col-lg-3 `} 
-          style={{ "backgroundColor": `black` }}
-          onClick={SaveRoutine}
-          >
-            Guardar rutina
-          </button>
-            
-          </div>
+            <button 
+            disabled={!denied} 
+            className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} w-100`} 
+            style={{ "backgroundColor": `${color}` }}
+            onClick={SaveRoutine}
+            >
+              Crear {namePAR && namePAR}
+            </button>
+              
+            </div>
         </div>
 
 

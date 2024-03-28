@@ -362,7 +362,7 @@ const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(f
 
 
               <div className="text-center">
-                <button className={`btn ${textColor ? "bbb" : "text-light"} my-4`} style={{ "backgroundColor": `black` }}>Crear</button>
+                <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} my-4`} style={{ "backgroundColor": `${color}` }}>Crear</button>
               </div>
 
             </form>
@@ -489,7 +489,7 @@ const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(f
                             <button className='btn btn-secondary mb-2 mx-2' onClick={() => setInputEnFoco(null)}>
                             Cancelar edición
                         </button>
-                            <button className={`btn ${textColor ? "bbb" : "text-light"} mb-2 mx-2`} style={{ "backgroundColor": `black` }} onClick={applyChanges} >
+                            <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mb-2 mx-2`} style={{ "backgroundColor": `${color}` }} onClick={applyChanges} >
                                 Aplicar cambios
                             </button>
                         </div>

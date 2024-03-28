@@ -74,7 +74,7 @@ const handleClose = () => {
             <Logo />
 
             <div className='row justify-content-center'>
-                <button className={`col-8 col-md-4 btn ${textColor ? "bbb" : "text-light"} text-center`} style={{ "backgroundColor": `black` }} onClick={handleShowWarmup}>Entrada en calor</button>
+                <button className={`col-8 col-md-4 btn ${textColor == 'false' ? "bbb" : "blackColor"}`} text-center`} style={{ "backgroundColor": `${color}` }} onClick={handleShowWarmup}>Entrada en calor</button>
             </div>
 
             <h2 className='text-center my-5'>Bloque {step + 1}</h2>

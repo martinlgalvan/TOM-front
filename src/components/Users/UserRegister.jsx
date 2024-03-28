@@ -14,8 +14,16 @@ function RegisterPage({refresh}){
     const [logo, setLogo] = useState("")
     const [password, setPassword] = useState()
     const [error, setError] = useState()
-    const [color, setColor] = useState(localStorage.getItem('color'))
-    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+
+    const [color, setColor] = useState()
+    const [textColor, setTextColor] = useState()
+
+    useEffect(() => {
+        setColor(localStorage.getItem('color'))
+        setTextColor(localStorage.getItem('textColor'))
+        console.log(localStorage.getItem('textColor'))
+    },[])
+
 
 
 
@@ -46,13 +54,16 @@ function RegisterPage({refresh}){
     
     useEffect(()=>{
         UsersService.findUserById(id)
-            .then(data => setLogo(data.logo))
+            .then(data => {
+                setLogo(data.logo)
+                console.log(data)
+            })
     },[name])
 
     function onSubmit(e){
         e.preventDefault()
         Notify.notifyA("Agregando nuevo usuario...")
-        UsersService.createAlumno(id, {name, email, password,logo})
+        UsersService.createAlumno(id, {name, email, password, logo, color, textColor})
             .then((data) => {
                 refresh(idRefresh)
             })
@@ -86,7 +97,7 @@ function RegisterPage({refresh}){
                                     <input type="password" className="form-control my-1 rounded-0" id="passw" name="passw" onChange={changePassword} />
                                 </li>
                                 <li className="list-group-item">
-                                    <button className={`btn my-1 ${!textColor ? "bbb" : "text-light"} w-100`} style={{ "backgroundColor": `black` }}>Crear usuario</button>
+                                    <button className={`btn my-1 ${textColor == 'false' || !textColor ? "bbb" : "blackColor"} w-100`} style={{ "backgroundColor": `${color}` }}>Crear usuario</button>
                                 </li>
 
                             </ul>

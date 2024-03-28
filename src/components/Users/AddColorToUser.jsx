@@ -20,7 +20,8 @@ function AddColorToUser(){
     const { textColor } = useColor();
     const [colorText, setColorText] = useState();
     useEffect(() =>{
-        if(textColor === true){
+        console.log(textColor)
+        if(textColor == true){
             setColorText(true)
         } else{
             setColorText(false)
@@ -74,7 +75,7 @@ function AddColorToUser(){
                 <div className='row justify-content-center'>
 
                     <div className='col-10 col-lg-5 mb-3'>
-                        <label className='mb-3' htmlFor="">Color</label>
+                        <label className='mb-3' htmlFor="">Editar color</label>
                         <div className='text-center'>
                             <input type="color" className="btn colorPicker" id="exampleColorInput" defaultValue={color} onChange={(e) => handleColorChange(e)} title="Choose your color"></input>
 
@@ -86,7 +87,7 @@ function AddColorToUser(){
                             Así se verán los botones
                         </p>
 
-                        <button className={`btn ${textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `black` }}>Botón de prueba</button>
+                        <button className={`btn ${textColor == false ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }}>Botón de prueba</button>
                     </div>
 
                         <div className='col-10 col-lg-12  mb-3'>
@@ -98,7 +99,7 @@ function AddColorToUser(){
                         </div>
 
                         <div className='mb-3'>
-                            <button className={`btn ${textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `black` }}  onClick={() => colorUpdate()}>Aceptar</button>
+                            <button className={`btn ${textColor == false ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }}  onClick={() => colorUpdate()}>Aceptar</button>
 
                         </div>
                     </div>

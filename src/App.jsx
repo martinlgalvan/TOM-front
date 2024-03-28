@@ -54,8 +54,8 @@ function App(){
     const [numberUsers, setNumberUsers] = useState()
     const [status, setStatus] = useState()
 
-    const [localColor, setLocalColor] = useState()
-    const [localTextColor, setLocalTextColor] = useState()
+    const [localColor, setLocalColor] = useState(color)
+    const [localTextColor, setLocalTextColor] = useState(textColor)
 
 
 
@@ -67,6 +67,11 @@ function App(){
         setStatus(RefreshUUID.generateUUID())
         console.log(RefreshUUID.generateUUID())
     }*/
+
+    useEffect(() => {
+        
+
+    }, [])
     
         useEffect(() => {
             //window.google.translate.disableAutoTranslation();
@@ -82,17 +87,30 @@ function App(){
      
         function onLogin(user, token){
             setUser(user)
-
+            console.log(user)
             setIsAutenticated(true)
             localStorage.setItem('token', token)
             localStorage.setItem('role', user.role)
             localStorage.setItem('_id', user._id)
             localStorage.setItem('name', user.name)
-            localStorage.setItem('color', user.color)
-            localStorage.setItem('textColor', user.textColor)
+            
+
             localStorage.setItem('email', user.email)
             localStorage.setItem('entrenador_id', user.entrenador_id)
             localStorage.setItem('logo', user.logo)
+
+            if(user.color == undefined){
+                localStorage.setItem('color', '#1a1a1a')
+            } else{
+                localStorage.setItem('color', user.color)
+            }
+
+            if(user.color == undefined){
+                localStorage.setItem('textColor', false)
+            } else{
+                localStorage.setItem('textColor', user.textColor)
+
+            }
             navigate(`/`)
         }
 
@@ -126,21 +144,14 @@ function App(){
             }
         }
     /*
-        <li className="nav-item">
-            {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Personalizar</Link></>}
-        </li>
-                        
-                        
-        <li className="nav-item">
-            {isAdmin() && <><Link className='nav-link' to={`/planificator/`}>PAR</Link></>}
-        </li>                   
+                  
     */
           
     return (
 
         <>
 
-        <nav className={`navbar navbar-expand-lg navbar-dark ${!textColor ? "bbb" : "text-light"}`} style={{ "backgroundColor": `black` }} >
+        <nav className={`navbar navbar-expand-lg navbar-dark ${textColor == 'false' || !textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} >
             
             <div className="container-fluid ">
                 <a className="navbar-brand " href="/">TOM</a>
@@ -158,8 +169,12 @@ function App(){
                         <li className="nav-item">
                         {isAdmin() && <><Link className='nav-link' to={`/exercises/${id}`}>Batabase videos</Link></>}
                         </li>
-
-                        
+                        <li className="nav-item">
+                            {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Personalizar</Link></>}
+                        </li>
+                        <li className="nav-item">
+                            {isAdmin() && <><Link className='nav-link' to={`/planificator/`}>PAR</Link></>}
+                        </li> 
                         <li className="nav-item">
                         {isAutenticated && !isAdmin() && <><Link className='nav-link' to={`/routine/${id}`}>Ver rutina</Link></>}
                         </li>
@@ -230,7 +245,7 @@ function App(){
             </Routes>
 
 
-        <footer className={`container-fluid ${!textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `black` }} >
+        <footer className={`container-fluid ${textColor == 'false' || !textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} >
             <div className="row">
                 <ul className="text-center ">
                     <li className="mt-4">TOM</li>

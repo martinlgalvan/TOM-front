@@ -331,9 +331,9 @@ useEffect(() => {
             <Logo />
 
             <div className='row justify-content-center'>
-                    <button className={`btn ${textColor ? "bbb" : "text-light"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `black` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(modifiedDay)} >Añadir Ejercicio</button>
+                    <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `${color}` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(modifiedDay)} >Añadir Ejercicio</button>
 
-                    <button className={`btn ${textColor ? "bbb" : "text-light"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `black` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
+                    <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `${color}` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
                 </div>
 
                 <div className="row justify-content-center">
@@ -615,7 +615,7 @@ useEffect(() => {
                             <button className='btn btn-secondary mb-2 me-2' onClick={() => setInputEnFoco(null)}>
                             Cancelar edición
                         </button>
-                            <button className={`btn ${textColor ? "bbb" : "text-light"} mb-2 ms-2`} style={{ "backgroundColor": `black` }} onClick={applyChanges} >
+                            <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mb-2 ms-2`} style={{ "backgroundColor": `${color}` }} onClick={applyChanges} >
                                 Aplicar cambios
                             </button>
                         </>
@@ -624,7 +624,7 @@ useEffect(() => {
                     </div>
                     </div>
 
-                    <Link to={`/user/routine/${id}/${username}`} className={`btn ${textColor ? "bbb" : "text-light"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `black` }} >Volver atrás</Link>
+                    <Link to={`/user/routine/${id}/${username}`} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `${color}` }} >Volver atrás</Link>
                 </article>
 
                

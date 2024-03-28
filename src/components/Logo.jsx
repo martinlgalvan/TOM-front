@@ -4,6 +4,7 @@ import TOM from '/src/assets/img/TOM.png';
 import JESUSOLIVA from '/src/assets/img/Jesusoliva.png';
 import POWERHOUSE from '/src/assets/img/Powerhouse.png';
 import RAMABELTRAME from '/src/assets/img/RB.png';
+import CAMILABENEITEZ from '/src/assets/img/camila-beneitez.png';
 
 function Logo(){
 
@@ -12,8 +13,8 @@ function Logo(){
 
    useEffect(() => {
 
-    if(localStorage.getItem('email') == "ramabeltrame18@gmail.com" || localStorage.getItem('entrenador_id') == "6524635228c05be658aef93c"){
-        setUrlPath(RAMABELTRAME)
+    if(localStorage.getItem('email') == "camibeneitez.fitness@gmail.com" || localStorage.getItem('entrenador_id') == "6604700535d4ec9f70bc4abf"){
+        setUrlPath(CAMILABENEITEZ)
     } else if(localStorage.getItem('email') == "jesusoliva@gmail.com" || localStorage.getItem('entrenador_id') == "648c06a7c3ce34126657a924"){
         setUrlPath(JESUSOLIVA)
     } else{

@@ -239,7 +239,7 @@ useEffect(() => {
           </div>
 
           <div className="col-12 col-md-10 my-2 text-center">
-            <button className={`btn ${textColor ? "bbb" : "text-light"} border input-group-text`} style={{ "backgroundColor": `black` }}>Crear</button>
+            <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} border input-group-text`} style={{ "backgroundColor": `${color}` }}>Crear</button>
           </div>
 
         </form>
