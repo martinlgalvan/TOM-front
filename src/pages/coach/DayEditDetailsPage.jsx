@@ -503,7 +503,7 @@ useEffect(() => {
 
                                         {exercise.rest === undefined ? null :
                         
-                                        <td className='tdReps'>
+                                        <td className='tdReps TableResponsiveDayEditDetailsPage'>
                                             <input 
                                                 className='form-control border-0' 
                                                 type="text" 
