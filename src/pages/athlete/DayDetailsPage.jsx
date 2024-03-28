@@ -207,8 +207,8 @@ function DayDetailsPage() {
                                                     {element.name}{" "}
                                                 </span>
                                                 <span className="d-block">{element.sets} <span className="textCreated"> sets x </span>{element.reps} <span className="textCreated"> reps </span>  </span>
-                                                <span className="d-block">{element.peso} x {element.rest} rest </span>
-
+                                                <span className="d-block">{element.peso} </span>
+                                                <span>{element.rest} de descanso</span>
                                             
                                             </td>
                                             <td>

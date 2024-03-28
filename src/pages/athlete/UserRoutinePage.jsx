@@ -122,7 +122,7 @@ function UserRoutinePage(){
                                                 <td className="text-center ">{exercise.name}</td>
                                                 <td className="text-center ">{exercise.sets}</td>
                                                 <td className="text-center ">{exercise.reps}</td>
-                                                <td className="text-center ">-</td>
+                                                <td className="text-center ">{exercise.rest ? exercise.rest : "-"}</td>
                                                 <td className="text-center ">{exercise.peso}</td>
                                                 <td className="text-center ">{exercise.video ? <a target='_blank' href={exercise.video}>
                                                 <svg

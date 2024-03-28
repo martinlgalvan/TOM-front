@@ -133,7 +133,7 @@ const createColumn = (name) => {
     setLoading(true)
     RandomizerColumns.createColumn({name}, user_id)
         .then(() => {
-
+            
         })
 
 }
@@ -304,9 +304,9 @@ const handleRoutineUpdate = (routine) => {
 
                 <div className="col-10 col-lg-8 text-center">
 
-                    <h2>SAPE</h2>
+                    <h2>PAR</h2>
 
-                    <p>Bienvenido al <b>Sistema Automático de Protocolos de Entrenamiento</b></p>
+                    <p>Bienvenido/a al <b>Planificador Automático de rutinas</b></p>
                     <p>Este sistema te permite armar tus protocolos de entrenamiento. ¿Que es eso? Básicamente revolucionar tu manera de planificar.</p>
                     <p>En primer lugar, te vamos a permitir la total libertad de <b>todo</b>. Para darte una ayuda, el flujo de creación es el siguiente:</p>
                         <ul class="list-group list-group-flush">
@@ -432,7 +432,7 @@ const handleRoutineUpdate = (routine) => {
                 
                 <div className='row justify-content-center mb-3'>
 
-                <h2 className="text-center">Rutinas pre cargadas</h2>
+                <h2 className="text-center mt-2">Protocolos</h2>
 
                     <TransitionGroup component={null} className="todo-list">
                             {PAR.map((elemento, index) =>
@@ -530,7 +530,7 @@ const handleRoutineUpdate = (routine) => {
                                     </table>
                             </div>
 
-                            <button className="btn btn-danger text-center  col-4" onClick={() => deleteColumn(exercise._id)}>Eliminar  columna</button>
+                            <button className="btn btn-danger text-center  col-4" onClick={() => deleteColumn(exercise._id)}>Eliminar columna</button>
 
                         </article>
 
@@ -566,9 +566,9 @@ const handleRoutineUpdate = (routine) => {
                     </div>
 
                     <div  className="row justify-content-center">
-                        <button type="submit" className="btn btn-primary mb-3  mx-1 col-6" disabled={loading} onClick={() => editExerciseInColumn(columnId, idExercise, name, video)}>Editar ejercicio</button>
+                        <button type="submit" className={`btn btn-primary mb-3 ${textColor == 'false' ? "bbb" : "blackColor"} mx-1 col-6`} style={{ "backgroundColor": `${color}` }} disabled={loading} onClick={() => editExerciseInColumn(columnId, idExercise, name, video)}>Editar ejercicio</button>
 
-                        <button type="submit" className="btn btn-danger  mx-1  col-6" disabled={loading} onClick={() => deleteExerciseInColumn(columnId, idExercise)}>Eliminar ejercicio</button>
+                        <button type="submit" className={`btn btn-danger ${textColor == 'false' ? "bbb" : "blackColor"} mx-1 col-6`} style={{ "backgroundColor": `${color}` }} disabled={loading} onClick={() => deleteExerciseInColumn(columnId, idExercise)}>Eliminar ejercicio</button>
                     </div>
 
                     
