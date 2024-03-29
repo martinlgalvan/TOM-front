@@ -581,6 +581,10 @@
   width: 50px !important;
 }
 
+.tableRandomizer-peso{
+  width: 70px !important;
+}
+
 .tableRandomizer-rest{
   width: 100px !important;
 }
@@ -705,6 +709,8 @@
 }
 
 
+
+
 .buttonsHover:hover{
   opacity: 0.6;
   text-shadow: #000000;
@@ -748,12 +754,16 @@
 
 
 
-
+@media screen and (min-width: 800px) {
+  .msjPhone{
+    display: none;
+  }
+}
 
 
 @media screen and (max-width: 992px) {
   
-    
+
   
   .displayFlexInMobile{
     display: flex;

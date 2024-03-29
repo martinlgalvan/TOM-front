@@ -5,6 +5,8 @@ import * as WeekService from '../../services/week.services.js';
 import Logo from '../../components/Logo.jsx'
 import { Dialog } from 'primereact/dialog';
 
+import  * as NotifyHelper from './../../helpers/notify.js'
+
 function UserRoutinePage(){
     const {id} = useParams()
 
@@ -20,10 +22,13 @@ function UserRoutinePage(){
     const handleCloseDialog = () => setVisibleEdit(false)
 
     useEffect(() => {
+        NotifyHelper.notifyA("Cargando rutina...")
+        
         WeekService.findRoutineByUserId(id)
         .then(data => {     
             console.log(data)
             setRoutine(data)
+            NotifyHelper.updateToast()
         })
     }, [])
 

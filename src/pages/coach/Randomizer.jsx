@@ -66,7 +66,7 @@ function Randomizer() {
     // USERS USE EFFECT
 
     useEffect(() => {
-        NotifyHelper.notifyA("Cargando usuarios...")
+        NotifyHelper.notifyA("Cargando...")
            
             UsersService.find(user_id)
                 .then(data => {
@@ -385,7 +385,7 @@ const handleRoutineUpdate = (routine) => {
 
 
 
-                <div className="col-5 text-center my-5">
+                <div className="col-10 col-lg-5 text-center my-5">
 
                     <h3 className="mb-4">Agregar una columna</h3>
 
@@ -441,7 +441,7 @@ const handleRoutineUpdate = (routine) => {
                             timeout={500}
                             classNames="item"
                             >
-                                <div className={'col-5 col-lg-3 py-2'} onClick={() => showAdminPAR(index, elemento)}>
+                                <div className={'col-10 col-sm-5 col-lg-3 py-2'} onClick={() => showAdminPAR(index, elemento)}>
                                     <ActionAreaCard className={"py-5"} title={elemento.name} body={"ejemplo de body"} id={elemento._id}  />
                                 </div>
 
@@ -478,12 +478,17 @@ const handleRoutineUpdate = (routine) => {
                         headerClassName={"text-start"}
                         exercise={exercise} 
                         visible={administerColumn} 
-                        style={{ width: '75vw' }} 
+                        style={{ width: '100vw' }} 
                         onHide={() => setAdministerColumn(false)
                     }>
 
                     <section className="container-fluid">
-                        <article className="row justify-content-center">
+                    <div className="text-center">
+
+                        <p className="msjPhone ">Para una mejor visión, podes poner el celular en modo horizontal.</p>
+                                            
+                        </div>
+                        <article className="row justify-content-center text-center">
 
                             <div className="col-10 mb-3">
                                 <div className="mb-3">
@@ -495,7 +500,7 @@ const handleRoutineUpdate = (routine) => {
                                     <input type="Link del video" className="form-control" onChange={changeVideoExercise}/>
                                 </div>
 
-                                <button type="submit" className="btn btn-primary" disabled={loading} onClick={() => AddExerciseInColumn(exercise._id)}>Añadir ejercicio</button>
+                                <button type="submit" className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} my-2`} style={{ "backgroundColor": `${color}` }} disabled={loading} onClick={() => AddExerciseInColumn(exercise._id)}>Añadir ejercicio</button>
                             </div>
                             
                             <div className="table-responsive">
@@ -579,95 +584,100 @@ const handleRoutineUpdate = (routine) => {
 
 
 
-                {routine && <Dialog header="Admninistrar PAR" className="text-center"  visible={administerAdminPAR} style={{ width: '75vw' }} onHide={() => setAministerAdminPAR(false)}>
-                        <table className="table table-bordered altoListPAR">
-                    <thead>
-                        <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Nombre</th>
-                        <th scope="col">Reps</th>
-                        <th scope="col">Sets</th>
-                        <th scope="col">Rest</th>
-                        <th scope="col">Video</th>
-                        <th scope="col">Notas</th>
-                        </tr>
-                    </thead>
+                {routine && <Dialog header="Admninistrar PAR" className="text-center"  visible={administerAdminPAR} style={{ width: '100vw' }} onHide={() => setAministerAdminPAR(false)}>
+                    <div className="text-center">
 
-                    
-                        {routine.routine.map((week, dayIndex) => (
-                            <>
-                            <tbody>
+                        <p className="msjPhone ">Para una mejor visión, podes poner el celular en modo horizontal.</p>
+                                            
+                    </div>
+                    <table className="table table-bordered altoListPAR">
+                        <thead>
+                            <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Reps</th>
+                            <th scope="col">Sets</th>
+                            <th scope="col">Rest</th>
+                            <th scope="col">Video</th>
+                            <th scope="col">Notas</th>
+                            </tr>
+                        </thead>
 
-                                <tr className="border-0">
-                                    <td className="border-0"></td>
-                                </tr>
-                                
-                                <tr>
-                                    <td colSpan={7}>{week.name}</td>
-                                </tr>
-
-                                <tr className="border-0">
-                                    <td className="border-0"></td>
-                                </tr>
-                            </tbody>
-                            <tbody> 
-
-                                        {week.exercises.map((exercises) =>
-                                                <>
-                                                <tr>
-                                                    <th scope="row">{exercises.numberExercise}</th>
-                                                    <td>{notRandom ? exercises.name : exercises.mainName}</td>
-                                                    <td>{exercises.sets}</td>
-                                                    <td>{exercises.reps}</td>
-                                                    <td>{exercises.rest}</td>
-                                                    <td>{exercises.video}</td>
-                                                    <td>{exercises.notas}</td>
-                                                </tr>
-                                                </>
-                                            )}
-                                        
-                            </tbody>
-    
-                                    </>
-
-                                        ))} 
-
-                                        <tbody>
-                                            <tr className="border-0">
-                                                <td className="border-0"></td>
-                                            </tr>
-                                            <tr>
-                                                    <td 
-                                                        colSpan={1}
-                                                        className="">
-                                                        <Dropdown
-                                                        value={actualUser}
-                                                        options={users}
-                                                        optionLabel="name"
-                                                        placeholder="Seleccioná un alumno"
-                                                        onChange={(e) => handleDropdownChange(e.value)}
-                                                        className="w-100 dropDown"
-                                                        filter
-                                                        scrollHeight={"360px"}
-                                                        filterPlaceholder={"ss"}
-                                                        emptyFilterMessage={"No se encontró ningun alumno"}
-                                                        emptyMessage={"No se encontró ningun alumno"}
-                                                        />
-                                                    </td>
-                                                    <td colSpan={3}><button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} w-100`} style={{ "backgroundColor": `${color}` }} onClick={() => FindSameName()}>Generar semana</button></td>
-                                                    <td colSpan={3}><button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} w-100`} style={{ "backgroundColor": `${color}` }} onClick={() => createWeek()}>Designar semana</button></td>
-                                            </tr>
-                                        </tbody>
                         
-                                        </table>
+                            {routine.routine.map((week, dayIndex) => (
+                                <>
+                                <tbody>
 
-                                        <div>
-                                            <button className="btn btn-danger" onClick={() => deletePAR(parId)}>Eliminar</button>
-                                        </div>
-                                      
+                                    <tr className="border-0">
+                                        <td className="border-0"></td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td colSpan={7}>{week.name}</td>
+                                    </tr>
 
+                                    <tr className="border-0">
+                                        <td className="border-0"></td>
+                                    </tr>
+                                </tbody>
+                                <tbody> 
+
+                                            {week.exercises.map((exercises) =>
+                                                    <>
+                                                    <tr>
+                                                        <th scope="row">{exercises.numberExercise}</th>
+                                                        <td>{notRandom ? exercises.name : exercises.mainName}</td>
+                                                        <td>{exercises.sets}</td>
+                                                        <td>{exercises.reps}</td>
+                                                        <td>{exercises.rest}</td>
+                                                        <td>{exercises.video}</td>
+                                                        <td>{exercises.notas}</td>
+                                                    </tr>
+                                                    </>
+                                                )}
+                                            
+                                </tbody>
+        
+                                        </>
+
+                                            ))} 
+
+                                            <tbody>
+                                                <tr className="border-0">
+                                                    <td className="border-0"></td>
+                                                </tr>
+                                                <tr>
+                                                        <td 
+                                                            colSpan={1}
+                                                            className="">
+                                                            <Dropdown
+                                                            value={actualUser}
+                                                            options={users}
+                                                            optionLabel="name"
+                                                            placeholder="Seleccioná un alumno"
+                                                            onChange={(e) => handleDropdownChange(e.value)}
+                                                            className="w-100 dropDown"
+                                                            filter
+                                                            scrollHeight={"360px"}
+                                                            filterPlaceholder={"ss"}
+                                                            emptyFilterMessage={"No se encontró ningun alumno"}
+                                                            emptyMessage={"No se encontró ningun alumno"}
+                                                            />
+                                                        </td>
+                                                        <td colSpan={3}><button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} w-100`} style={{ "backgroundColor": `${color}` }} onClick={() => FindSameName()}>Generar semana</button></td>
+                                                        <td colSpan={3}><button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} w-100`} style={{ "backgroundColor": `${color}` }} onClick={() => createWeek()}>Designar semana</button></td>
+                                                </tr>
+                                            </tbody>
+                            
+                                            </table>
+
+                                            <div>
+                                                <button className="btn btn-danger" onClick={() => deletePAR(parId)}>Eliminar</button>
+                                            </div>
                                         
-                </Dialog>}
+
+                                            
+                    </Dialog>}
                 
             </article>
 

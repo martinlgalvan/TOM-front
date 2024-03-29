@@ -152,8 +152,7 @@ function onChangeName(event){
 
 
   return (
-    <section className="container-fluid">
-
+<>
       <h2>Planificador</h2>
 
       <article className="row justify-content-center">
@@ -177,7 +176,7 @@ function onChangeName(event){
                 <th className="tableRandomizer-exercise">Ejercicio</th>
                 <th className="tableRandomizer-sets">Series</th>
                 <th className="tableRandomizer-reps">Reps</th>
-                <th className="tableRandomizer-reps">Peso</th>
+                <th className="tableRandomizer-peso">Peso</th>
                 <th className="tableRandomizer-rest">Descanso</th>
                 <th className="tableRandomizer-video">Video</th>
                 <th className="tableRandomizer-notes">Notas</th>
@@ -188,7 +187,7 @@ function onChangeName(event){
             {tableData.map((row, index) => (
                 <tr key={index}>
 
-                  <td className='TableResponsiveDayEditDetailsPage' >
+                  <td className='' >
                                         
                       <select  
                         defaultValue={row.numberExercise} 
@@ -225,8 +224,8 @@ function onChangeName(event){
    
                   <td className="tableRandomizer-sets"> <input type="text"  name="sets"  className="border-0 h-100 text-center" value={row.sets} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-reps"> <input type="text" name="reps" className="border-0 h-100 text-center" value={row.reps} onChange={(e) => handleInputChange(index, e)} /></td>
-                  <td className="tableRandomizer-rest"> <input type="text" name="rest" className="border-0 h-100 text-center" value={row.rest} onChange={(e) => handleInputChange(index, e)} /></td>
-                  <td className="tableRandomizer-peso"> <input type="text" name="peso" className="border-0 h-100 text-center" value={row.peso} onChange={(e) => handleInputChange(index, e)} /></td>
+                  <td className="tableRandomizer-reps"> <input type="text" name="rest" className="border-0 h-100 text-center" value={row.rest} onChange={(e) => handleInputChange(index, e)} /></td>
+                  <td className="tableRandomizer-reps"> <input type="text" name="peso" className="border-0 h-100 text-center" value={row.peso} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-video"><input type="text" name="video" className="border-0  h-100 text-center" value={row.video} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-notes"><input type="text" name="notas" className="border-0  h-100 text-center" value={row.notas} onChange={(e) => handleInputChange(index, e)} /></td>
                 </tr>
@@ -283,16 +282,7 @@ function onChangeName(event){
 
 
       </article>
-
-            
-      
-
-
-
-          
-
-    </section>
-
+      </>
   );
 }
 
