@@ -94,9 +94,13 @@ function Randomizer() {
 // PAR USE EFFECT
 
 useEffect(() => {
+    NotifyHelper.notifyA("Cargando...")
+
     PARService.getPAR(user_id)
       .then(data => { 
         setPAR(data)
+        NotifyHelper.updateToast()
+        setLoading(false)
       })
   
   }, [loading]);
@@ -225,8 +229,9 @@ const FindSameName = () => {
         columns.forEach(columnItem => {
 
             if (routineExercise.mainName === columnItem.name) { 
-
-              routineExercise.name = columnItem.exercises[Math.floor(Math.random() * columnItem.exercises.length)].name;
+                const selectedExercise = columnItem.exercises[Math.floor(Math.random() * columnItem.exercises.length)];
+                routineExercise.name = selectedExercise.name;
+                routineExercise.video = selectedExercise.video; 
             }
 
     
@@ -244,7 +249,7 @@ const FindSameName = () => {
         routine: updatedRoutine,
     };
 
-
+    console.log(newRoutine)
     setNotRandom(true)
     setRoutine(newRoutine);
 
@@ -284,7 +289,10 @@ const handleRoutineUpdate = (routine) => {
   };
 
 
-
+  const handleRefreshCells = (routine) => {
+    setLoading(routine);
+    console.log(routine)
+  };
 
 
 
@@ -319,7 +327,7 @@ const handleRoutineUpdate = (routine) => {
 
                 <div className="text-center my-5">
 
-                    <CellsPage onUpdateRoutine={handleRoutineUpdate} />
+                    <CellsPage onRefreshCells={handleRefreshCells} onUpdateRoutine={handleRoutineUpdate} />
 
                 </div>
 
@@ -584,7 +592,7 @@ const handleRoutineUpdate = (routine) => {
 
 
 
-                {routine && <Dialog header="Admninistrar PAR" className="text-center"  visible={administerAdminPAR} style={{ width: '100vw' }} onHide={() => setAministerAdminPAR(false)}>
+                {routine && <article className="row justify-content-center"><Dialog header="Admninistrar PAR" className="text-center col-11 col-lg-9"  visible={administerAdminPAR} onHide={() => setAministerAdminPAR(false)}>
                     <div className="text-center">
 
                         <p className="msjPhone ">Para una mejor visión, podes poner el celular en modo horizontal.</p>
@@ -677,7 +685,7 @@ const handleRoutineUpdate = (routine) => {
                                         
 
                                             
-                    </Dialog>}
+                    </Dialog></article>}
                 
             </article>
 

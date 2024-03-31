@@ -4,11 +4,12 @@ import * as PARService from "../../services/par.services.js";
 import { Dropdown } from 'primereact/dropdown';
 import { generateMongoDBObjectId } from "../../helpers/generateUUID.js";
 import { Tooltip } from 'primereact/tooltip';
+import * as NotifyHelper from './../../helpers/notify.js'
 
 import Options from './../../assets/json/options.json';
 
 
-function CellsPage({ onUpdateRoutine }) {
+function CellsPage({ onUpdateRoutine, onRefreshCells }) {
 
   const user_id = localStorage.getItem("_id")
   const [columns, setColumns] = useState()
@@ -21,7 +22,7 @@ function CellsPage({ onUpdateRoutine }) {
   const [routine, setRoutine] = useState();
   const [PAR, setPAR] = useState();
   const [namePAR, setNamePAR] = useState();
-
+  const [loading, setLoading] = useState()
 
   const [showTooltip, setShowTooltip] = useState(false);
   const [denied, setDenied] = useState(false);
@@ -33,22 +34,27 @@ function CellsPage({ onUpdateRoutine }) {
   const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
   useEffect(() => {
+    NotifyHelper.notifyA("Cargando...")
     setOptions(Options)                   
     RandomizerColumns.getColumns(user_id)
       .then(data => {
         setColumns(data)
+        NotifyHelper.updateToast()
+
         
       })
 
-}, [routine]);
+}, [loading]);
 
 useEffect(() => {
+  NotifyHelper.notifyA("Carganddsdso...")
   PARService.getPAR(user_id)
     .then(data => { 
       setPAR(data)
+      NotifyHelper.updateToast()
     })
 
-}, []);
+}, [loading]);
 
 function onChangeName(event){
   setNamePAR(event.target.value);
@@ -128,7 +134,7 @@ function onChangeName(event){
     setTableData([
       { type: 'exercise', numberExercise: 1, nombre: '', sets: '', reps: '', peso: '', rest: '', video: '', notas: '' },
     ]);
-    console.log(routine)
+
   };
   
   
@@ -140,11 +146,11 @@ function onChangeName(event){
 
   const SaveRoutine = () => {
 
-    console.log(routine)
+    setLoading(true)
     PARService.createPAR(routine, user_id)
       .then(data => {
-        console.log(routine)
-
+        
+        onRefreshCells(true)
       })
   
   };
@@ -165,7 +171,7 @@ function onChangeName(event){
                 <td colSpan={8} className="text-center colorTdPAR">
                 <div className="mb-4">
                         <label htmlFor="name" className="form-label">Nombre del protocolo</label>
-                        <input type="name" className="form-control" onChange={onChangeName} defaultValue={namePAR} id="name" placeholder="Nombre"/>
+                        <input type="name" className="form-control" onChange={onChangeName} defaultValue={namePAR} id="name" placeholder="Nombre del protocolo"/>
                     </div>
                 </td>
               </tr>
@@ -178,7 +184,6 @@ function onChangeName(event){
                 <th className="tableRandomizer-reps">Reps</th>
                 <th className="tableRandomizer-peso">Peso</th>
                 <th className="tableRandomizer-rest">Descanso</th>
-                <th className="tableRandomizer-video">Video</th>
                 <th className="tableRandomizer-notes">Notas</th>
               </tr>
             </thead>
@@ -226,7 +231,6 @@ function onChangeName(event){
                   <td className="tableRandomizer-reps"> <input type="text" name="reps" className="border-0 h-100 text-center" value={row.reps} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-reps"> <input type="text" name="rest" className="border-0 h-100 text-center" value={row.rest} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-reps"> <input type="text" name="peso" className="border-0 h-100 text-center" value={row.peso} onChange={(e) => handleInputChange(index, e)} /></td>
-                  <td className="tableRandomizer-video"><input type="text" name="video" className="border-0  h-100 text-center" value={row.video} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-notes"><input type="text" name="notas" className="border-0  h-100 text-center" value={row.notas} onChange={(e) => handleInputChange(index, e)} /></td>
                 </tr>
               ))}
