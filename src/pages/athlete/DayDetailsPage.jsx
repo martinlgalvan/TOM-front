@@ -216,6 +216,7 @@ function DayDetailsPage() {
                                                     label="Show OverlayPanel"
                                                     onClick={() => handleButtonClick(element)}
                                                     className="btn"
+                                                    disabled={element.video == ''}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"

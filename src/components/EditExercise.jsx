@@ -100,48 +100,49 @@ function onSubmit(e){
   return (
     <>
     <form className='row justify-content-center' onSubmit={onSubmit}>
-
-      <div className="mb-3">
+    {isAthlete && <p className='fs-5'>{completeExercise[indexOfExercise].name}</p>}
+      {!isAthlete && <div className="mb-3">
         <label htmlFor="name" className="visually-hidden">Nombre</label>
         <input disabled={isAthlete} type="text" className="form-control" id="name" placeholder="Nombre" defaultValue={completeExercise[indexOfExercise].name} onChange={(e) => changeNameEdit(indexOfExercise, e)}  />
-      </div>
+      </div>}
 
-      <div className="mb-3">
+      {!isAthlete && <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Series</label>
         <CustomInputNumber
                 disabled={isAthlete} 
                 initialValue={completeExercise[indexOfExercise].sets}
                 onChange={(value) => changeSetEdit(indexOfExercise, value)}
                 />
-      </div>
+      </div>}
 
-      <div className="mb-3">
+      {!isAthlete && <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Repeticiones</label>
         <CustomInputNumber 
                 disabled={isAthlete}
                 initialValue={completeExercise[indexOfExercise].reps}
                 onChange={(value) => changeRepEdit(indexOfExercise, value)}
                 />
-      </div>
+      </div>}
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Peso</label>
+        {isAthlete && <p>Peso</p>}
         <input type="text" className="form-control" id="peso" placeholder="Peso" defaultValue={completeExercise[indexOfExercise].peso} onChange={(e) => changePesoEdit(indexOfExercise, e)}   />
       </div>
 
-      <div className="mb-3">
+      {!isAthlete && <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Rest</label>
         <input disabled={isAthlete} type="text" className="form-control" id="rest" placeholder="Descanso" defaultValue={completeExercise[indexOfExercise].rest} onChange={(e) => changeRestEdit(indexOfExercise, e)}   />
-      </div>
+      </div>}
 
-      <div className="mb-3">
+      {!isAthlete && <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Video</label>
         <input disabled={isAthlete} type="text" className="form-control" id="peso" placeholder="Video" defaultValue={completeExercise[indexOfExercise].video} onChange={(e) => changeVideoEdit(indexOfExercise, e)}   />
-      </div>
+      </div>}
 
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Notas</label>
-        <input type="text" className="form-control" id="peso" placeholder="Notas" defaultValue={completeExercise[indexOfExercise].notas} onChange={(e) => changeNotasEdit(indexOfExercise, e)}   />
+        <textarea type="text" className="form-control" id="peso" placeholder="Notas" defaultValue={completeExercise[indexOfExercise].notas} onChange={(e) => changeNotasEdit(indexOfExercise, e)}   />
       </div>
 
       <div className='mb-3 text-center'>
