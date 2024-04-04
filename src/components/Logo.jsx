@@ -6,6 +6,7 @@ import POWERHOUSE from '/src/assets/img/Powerhouse.png';
 import RAMABELTRAME from '/src/assets/img/RB.png';
 import CAMILABENEITEZ from '/src/assets/img/camila-beneitez.png';
 import MATHIAS_RAGO from '/src/assets/img/mathias-logo.png';
+import GERONIMO_BISANZIO from '/src/assets/img/geronimo-logo.jpeg';
 import JEREMIAS_OLMEDO from '/src/assets/img/jeremias-olmedo.jpeg';
 
 
@@ -22,6 +23,8 @@ function Logo(){
         setUrlPath(JESUSOLIVA)
     } else if(localStorage.getItem('email') == "mathiasrago7@gmail.com" || localStorage.getItem('entrenador_id') == "66066ff46310dcb00ee20717"){
         setUrlPath(MATHIAS_RAGO)
+    } else if(localStorage.getItem('email') == "bisabisanzio@gmail.com" || localStorage.getItem('entrenador_id') == "660df0889e33d1815acf9506"){
+        setUrlPath(GERONIMO_BISANZIO)
     } else if(localStorage.getItem('email') == "jeremiasolmedo6@gmail.com" || localStorage.getItem('entrenador_id') == "660680376310dcb00ee20719"){
             setUrlPath(JEREMIAS_OLMEDO)
 
