@@ -40,10 +40,6 @@ function DayDetailsPage() {
 
     const [completeExercise, setCompleteExercise] = useState()                  // Futuro uso para editar la semana
 
-    function handleEditMobileExercise(elementsExercise){
-        setCompleteExercise(elementsExercise)
-        setEditExerciseMobile(true)
-    }
 
     useEffect(() => {
         WeekService.findRoutineByUserId(id).then((data) => {
@@ -59,6 +55,7 @@ function DayDetailsPage() {
                 setCurrentDay(lastDay);
                 setDay_id(data[index].routine[lastDay]._id)
                 setModifiedDay(data[index].routine[lastDay].exercises)
+                console.log("USE EFFECT", data[index].routine[lastDay].exercises)
 
             }
 
@@ -85,12 +82,6 @@ function DayDetailsPage() {
 
       const [indexOfExercise, setIndexOfExercise] = useState()
     
-      function handleEditMobileExercise(elementsExercise, index){
-        setIndexOfExercise(index)
-        setCompleteExercise(elementsExercise)
-        setEditExerciseMobile(true)
-    }
-
     const refresh = (refresh) => setStatus(refresh)
 
     
@@ -108,6 +99,7 @@ function DayDetailsPage() {
     }    
 
     function handleEditMobileExercise(elementsExercise, index){
+        console.log(elementsExercise, index)
         setIndexOfExercise(index)
         setCompleteExercise(elementsExercise)
         setEditExerciseMobile(true)
@@ -116,7 +108,8 @@ function DayDetailsPage() {
 
 
 
-  const handleDayClick = (index) => {
+  const handleDayClick = (dia, index) => {
+    setModifiedDay(dia.exercises)
     localStorage.setItem("LastDay", index);
     setCurrentDay(index);
     console.log(allDays[index]._id)
@@ -131,7 +124,7 @@ function DayDetailsPage() {
             <div className="text-center">
             {allDays.map((dia, index) => (
 
-                    <button disabled={currentDay === index} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mx-1`} style={{ "backgroundColor": `${color}`}} key={index} onClick={() => handleDayClick(index)}>
+                    <button disabled={currentDay === index} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mx-1`} style={{ "backgroundColor": `${color}`}} key={index} onClick={() => handleDayClick(dia, index)}>
                         {dia.name}
                     </button>
 

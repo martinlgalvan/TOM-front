@@ -24,6 +24,7 @@ const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
 
 useEffect(() => {
+  console.log(completeExercise)
   setModifiedDay(completeExercise)
 }, []);
 
