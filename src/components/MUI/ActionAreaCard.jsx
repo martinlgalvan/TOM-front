@@ -35,7 +35,7 @@ function ActionAreaCard({title, body, id}) {
         <CardContent className='row justify-content-center align-items-center text-center py-5' >
 
             <h4 className='p-0 m-0'>{title}</h4>
-
+            {body && <span className='p-0 m-0'>{body}</span>}
         </CardContent>
       </CardActionArea>
     </Card>

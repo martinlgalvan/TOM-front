@@ -249,7 +249,7 @@ const FindSameName = () => {
         routine: updatedRoutine,
     };
 
-    console.log(newRoutine)
+    console.log(updatedRoutine)
     setNotRandom(true)
     setRoutine(newRoutine);
 
@@ -263,6 +263,7 @@ const FindSameName = () => {
 
 
   function createWeek(){
+    console.log(routine)
     setLoading(true)
     PARService.createPARroutine(routine, actualUser._id)
             .then((data) => {
@@ -428,7 +429,7 @@ const handleRoutineUpdate = (routine) => {
                             classNames="item"
                             >
                                 <div className={'col-10 col-sm-4 col-lg-3 py-2'}  onClick={() => showAdminColumns(elemento)}>
-                                    <ActionAreaCard className={"py-5"} title={elemento.name} body={"ejemplo de body"} id={elemento._id}  />
+                                    <ActionAreaCard className={"py-5"} title={elemento.name}  id={elemento._id}  />
                                 </div>
 
                             </CSSTransition>
@@ -450,7 +451,7 @@ const handleRoutineUpdate = (routine) => {
                             classNames="item"
                             >
                                 <div className={'col-10 col-sm-5 col-lg-3 py-2'} onClick={() => showAdminPAR(index, elemento)}>
-                                    <ActionAreaCard className={"py-5"} title={elemento.name} body={"ejemplo de body"} id={elemento._id}  />
+                                    <ActionAreaCard className={"py-5"} title={elemento.name}  id={elemento._id}  />
                                 </div>
 
                             </CSSTransition>
@@ -605,6 +606,7 @@ const handleRoutineUpdate = (routine) => {
                             <th scope="col">Nombre</th>
                             <th scope="col">Reps</th>
                             <th scope="col">Sets</th>
+                            <th scope="col">Peso</th>
                             <th scope="col">Rest</th>
                             <th scope="col">Video</th>
                             <th scope="col">Notas</th>
@@ -637,6 +639,7 @@ const handleRoutineUpdate = (routine) => {
                                                         <td>{notRandom ? exercises.name : exercises.mainName}</td>
                                                         <td>{exercises.sets}</td>
                                                         <td>{exercises.reps}</td>
+                                                        <td>{exercises.peso}</td>
                                                         <td>{exercises.rest}</td>
                                                         <td>{exercises.video}</td>
                                                         <td>{exercises.notas}</td>

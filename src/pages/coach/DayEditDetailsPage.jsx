@@ -130,6 +130,7 @@ function DayEditDetailsPage(){
                 setFirstOpen(false)                     // variable que detecta la primera vez que se renderiza el componente
                 setCircuit(circuit)                     // establece los ejercicios del circuito para renderizarlo luego a la hora de editar
                 setDay(day)   
+                console.log(day)
                 setModifiedDay(day)                           // array de objetos inicial, son los ejercicios
                 setUserId(data[0].user_id)              // userId para volver a la página anterior
                 setLoading(false)                       // load principal
@@ -325,6 +326,14 @@ useEffect(() => {
 
 
 
+
+
+
+
+
+
+
+    
     return (
 
         <section className='container-fluid'>

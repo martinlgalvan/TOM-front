@@ -8,6 +8,7 @@ import CAMILABENEITEZ from '/src/assets/img/camila-beneitez.png';
 import MATHIAS_RAGO from '/src/assets/img/mathias-logo.png';
 import GERONIMO_BISANZIO from '/src/assets/img/geronimo-logo.jpeg';
 import JEREMIAS_OLMEDO from '/src/assets/img/jeremias-olmedo.jpeg';
+import MATIAS_VILLALBA from '/src/assets/img/matias-logo.jpeg';
 
 
 function Logo(){
@@ -26,7 +27,9 @@ function Logo(){
     } else if(localStorage.getItem('email') == "bisabisanzio@gmail.com" || localStorage.getItem('entrenador_id') == "660df0889e33d1815acf9506"){
         setUrlPath(GERONIMO_BISANZIO)
     } else if(localStorage.getItem('email') == "jeremiasolmedo6@gmail.com" || localStorage.getItem('entrenador_id') == "660680376310dcb00ee20719"){
-            setUrlPath(JEREMIAS_OLMEDO)
+        setUrlPath(JEREMIAS_OLMEDO)
+    } else if(localStorage.getItem('email') == "matuch_27@hotmail.com" || localStorage.getItem('entrenador_id') == "66156628e97c68ef705f451f"){
+        setUrlPath(MATIAS_VILLALBA)
 
     } else{
         setUrlPath(TOM)

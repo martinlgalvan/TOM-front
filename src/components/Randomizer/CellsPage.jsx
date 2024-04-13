@@ -100,7 +100,8 @@ function onChangeName(event){
     const newProgress = tableData.map((row, index) => {
       const sets = isNaN(row.sets) || row.sets == '' ? row.sets : parseInt(row.sets);
       const reps = isNaN(row.reps) || row.reps == '' ? row.reps : parseInt(row.reps);
-  
+      const video = row.video == '' ? '' :  row.video;
+
       return {
         type: 'exercise',
         mainName: row.nombre,
@@ -109,7 +110,7 @@ function onChangeName(event){
         reps,
         peso: row.peso,
         rest: row.rest,
-        video: row.video,
+        video,
         notas: row.notas,
         exercise_id: generateMongoDBObjectId(),
       };
@@ -145,7 +146,7 @@ function onChangeName(event){
   
 
   const SaveRoutine = () => {
-
+    console.log(routine)
     setLoading(true)
     PARService.createPAR(routine, user_id)
       .then(data => {
@@ -229,8 +230,8 @@ function onChangeName(event){
    
                   <td className="tableRandomizer-sets"> <input type="text"  name="sets"  className="border-0 h-100 text-center" value={row.sets} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-reps"> <input type="text" name="reps" className="border-0 h-100 text-center" value={row.reps} onChange={(e) => handleInputChange(index, e)} /></td>
-                  <td className="tableRandomizer-reps"> <input type="text" name="rest" className="border-0 h-100 text-center" value={row.rest} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-reps"> <input type="text" name="peso" className="border-0 h-100 text-center" value={row.peso} onChange={(e) => handleInputChange(index, e)} /></td>
+                  <td className="tableRandomizer-reps"> <input type="text" name="rest" className="border-0 h-100 text-center" value={row.rest} onChange={(e) => handleInputChange(index, e)} /></td>
                   <td className="tableRandomizer-notes"><input type="text" name="notas" className="border-0  h-100 text-center" value={row.notas} onChange={(e) => handleInputChange(index, e)} /></td>
                 </tr>
               ))}

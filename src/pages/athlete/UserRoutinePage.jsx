@@ -6,6 +6,7 @@ import Logo from '../../components/Logo.jsx'
 import { Dialog } from 'primereact/dialog';
 
 import  * as NotifyHelper from './../../helpers/notify.js'
+import ActionAreaCard from '../../components/MUI/ActionAreaCard.jsx';
 
 function UserRoutinePage(){
     const {id} = useParams()
@@ -59,34 +60,23 @@ function UserRoutinePage(){
                 {routine != null && 
                 <div className="accordion col-10 col-md-4" id="Routine">
                     {routine.map((week,indexWeek) =>
-                    <div key={week._id} className="accordion-item mb-3 border-0 border-top border-bottom">
-                        <h2 className="accordion-header border-0">
-                            <button className="accordion-button collapsed colorAccordion rounded-0 "  type="button" data-bs-toggle="collapse" data-bs-target={`#${week._id}`} aria-expanded="false" aria-controls="collapseOne">
-                                <div className='row justify-content-center text-center'>
-                                    <span className='fs-5'>{week.name}</span> 
-                                    <span className='textCreated'> {week.created_at.fecha}</span>
-                                </div>
 
-                            </button>
-                        </h2>
-                        <div id={week._id} className="accordion-collapse collapse" data-bs-parent="#Routine">
-                            
-                            <div className="accordion-body ">
-                                <ul className='list-group'>
-                                    <li className='list-group-item border-1 border-bottom text-center m-0 p-2   '><button onClick={() => seeRoutine(indexWeek)} className='btn '>Ver semana completa</button></li>
-                                </ul>
-                            {week.routine.map((day, index) => 
-                                <ul key={index} className="list-group  rounded-0">
-                                    <Link className='list-group-item border-0 border-bottom text-center m-0 p-3 ClassBGHover' to={`/routine/${id}/day/${day._id}/${week._id}/${indexWeek}`}>{day.name}</Link>
-                                </ul>)}
-                            </div>
-                            
-                        </div>
-
-                    </div>)}
+                            <Link className='list-group-item border-0 border-bottom text-center m-0 p-3 ClassBGHover' to={`/routine/${id}/day/0/${week._id}/${indexWeek}`}>
+                                <ActionAreaCard title={week.name} body={week.created_at.fecha} />
+                            </Link>
+)}
                 </div>
                 }
             </article>
+
+
+
+
+
+
+
+
+
 
             {routine && <Dialog 
                     className='col-12 col-md-10 col-xxl-8' 

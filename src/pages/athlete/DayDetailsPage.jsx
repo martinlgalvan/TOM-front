@@ -19,14 +19,18 @@ import * as _ from "lodash";
 
 function DayDetailsPage() {
     const { id } = useParams();
-    const { day_id } = useParams();
     const { week_id } = useParams();
     const { index } = useParams();
 
-    const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
+    const [day_id, setDay_id] = useState()                                  // Carga del array principal de ejercicios
+    const [allDays, setAllDays] = useState([]) 
     const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
     const [warmupDay, setWarmupDay] = useState([]);
     const [status, setStatus] = useState()
+
+    const lastDay = parseInt(localStorage.getItem("LastDay"));
+
+    const [currentDay, setCurrentDay] = useState(null);
 
     const [color, setColor] = useState(localStorage.getItem('color'))
     const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
@@ -43,15 +47,21 @@ function DayDetailsPage() {
 
     useEffect(() => {
         WeekService.findRoutineByUserId(id).then((data) => {
-            let indexDay = data[index].routine.findIndex((dia) => dia._id === day_id);
-            let exercise = data[index].routine[indexDay].exercises;
-            let warmup = data[index].routine[indexDay].warmup;
 
-            setDayName(data[index].routine[indexDay])
+            setAllDays(data[index].routine)
 
-            setWarmupDay(warmup);
-            setDay(exercise);
-            setModifiedDay(exercise);
+            console.log(localStorage.getItem('LastDay'))
+            if (lastDay == null || isNaN(lastDay)) {
+                setCurrentDay(0);
+                setModifiedDay(0)
+                setDay_id(data[0].routine[lastDay]._id)
+            } else{
+                setCurrentDay(lastDay);
+                setDay_id(data[index].routine[lastDay]._id)
+                setModifiedDay(data[index].routine[lastDay].exercises)
+
+            }
+
                 
         });
     }, [status]);
@@ -104,13 +114,35 @@ function DayDetailsPage() {
     }
    
 
+
+
+  const handleDayClick = (index) => {
+    localStorage.setItem("LastDay", index);
+    setCurrentDay(index);
+    console.log(allDays[index]._id)
+    setDay_id(allDays[index]._id)
+
+  };
+
     return (
         <section className="container-fluid">
             <Logo />
 
-            <div className="row justify-content-center text-center m-0 px-0 my-5">
+            <div className="text-center">
+            {allDays.map((dia, index) => (
+
+                    <button disabled={currentDay === index} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mx-1`} style={{ "backgroundColor": `${color}`}} key={index} onClick={() => handleDayClick(index)}>
+                        {dia.name}
+                    </button>
+
+
+                ))}
+            </div>
+
+{currentDay !== null &&
+ <> <div className="row justify-content-center text-center m-0 px-0 my-5">
                 <div className="col-12 col-md-10">
-                    <h2 className="text-center mb-4">{dayName.name}</h2>
+                    <h2>{allDays[currentDay].name}</h2>
                     <div className="table align-middle">
                         <table className="table table-bordered align-items">
                             <thead>
@@ -122,8 +154,8 @@ function DayDetailsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {warmupDay != null ? (
-                                    warmupDay.map((exercise) => (
+                                {allDays[currentDay].warmup != null ? (
+                                    allDays[currentDay].warmup.map((exercise) => (
                                         <tr key={exercise.warmup_id}>
                                             <td>{exercise.numberWarmup}</td>
                                             <td>
@@ -196,7 +228,7 @@ function DayDetailsPage() {
                             <tbody className="">
 
 
-                                {day.map((element, index) => (
+                                {allDays[currentDay].exercises.map((element, index) => (
                                     
                                     <tr key={element.exercise_id}>
                                         {element.type == 'exercise' ? 
@@ -320,7 +352,19 @@ function DayDetailsPage() {
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> </>
+            }
+
+
+
+
+
+
+
+
+
+
+
 
             <div className="d-flex justify-content-center">
                 <Link

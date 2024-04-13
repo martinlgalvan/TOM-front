@@ -86,6 +86,7 @@ const changeNotasEdit = (e) => setCompleteNotas(e.target.value)*/
 
 
 function onSubmit(e){
+  console.log(modifiedDay)
   e.preventDefault()
   Notify.notifyA("Cargando")
   ExercisesService.editExercise(week_id, day_id, modifiedDay)
