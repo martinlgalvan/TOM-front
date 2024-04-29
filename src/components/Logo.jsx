@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react'
 
 import TOM from '/src/assets/img/TOM.png';
-import JESUSOLIVA from '/src/assets/img/Jesusoliva.png';
+import JESUSOLIVA from '/src/assets/img/jesus-logo.jpeg';
 import POWERHOUSE from '/src/assets/img/Powerhouse.png';
 import RAMABELTRAME from '/src/assets/img/RB.png';
 import CAMILABENEITEZ from '/src/assets/img/camila-beneitez.png';
