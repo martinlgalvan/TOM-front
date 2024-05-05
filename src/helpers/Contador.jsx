@@ -13,7 +13,7 @@ function Contador({max}) {
 
   return (
 
-      <button className='bg-dark' onClick={handleClick}>
+      <button className='bg-dark  p-3' onClick={handleClick}>
       {count}
       </button>
  

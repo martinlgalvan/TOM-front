@@ -245,7 +245,7 @@ const productTemplate = (exercise) => {
                                     }
                                     action={
                                         <Avatar aria-label="recipe" className="avatarSize bg-dark me-1 mt-1">
-                                        <Contador   max={element.sets} />
+                                        <Contador className={'p-2'}  max={element.sets} />
                                         </Avatar>
                                     }
                                     title={element.name}
