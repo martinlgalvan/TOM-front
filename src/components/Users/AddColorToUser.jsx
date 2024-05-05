@@ -99,7 +99,7 @@ function AddColorToUser(){
                         </div>
 
                         <div className='mb-3'>
-                            <button className={`btn ${textColor == false ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }}  onClick={() => colorUpdate()}>Editar color</button>
+                            <button className={`btn ${textColor == false ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }}  onClick={() => colorUpdate()}>Confirmar cambios</button>
 
                         </div>
                     </div>

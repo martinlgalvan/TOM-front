@@ -33,8 +33,9 @@ function UsersListPage() {
 
             <article className='row justify-content-center my-5'>
 
-                <div className='col-6 text-center'>
+                <div className='col-10 col-lg-6 text-center'>
                     <h2>Más personalización pronto...</h2>
+                    
                 </div>
 
             </article>

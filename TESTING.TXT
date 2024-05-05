@@ -28,12 +28,15 @@ COSAS PARA HACER
 
 
 
-
-
-
-
-
-
+       <Typography variant="" color="text.secondary">
+                                       {element.sets} series x {isNaN(element.reps) ? `${element.reps} - ${element.peso}` : `${element.reps} repeticiones - ${element.peso}`}
+                                    </Typography>
+                                    <Typography variant="" color="text.secondary" className="d-block mt-1">
+                                       
+                                    </Typography>
+                                    <Typography variant="" color="text.secondary" className="d-block mt-1">
+                                       {element.rest} de descanso
+                                    </Typography>
 
 
 

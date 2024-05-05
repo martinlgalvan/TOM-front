@@ -730,18 +730,134 @@
   background-color: #dadada !important;
 }
 
+.titleObservaciones{
+  font-size: 1.09em;
+  font-weight: 600;
+}
+
+.paraphObservaciones{
+  font-size: 1em;
+}
+
+.Mui-focused{
+  background-color: #ffffff00 !important;
+}
+
+.Mui-selected{
+  background-color: #ffffff00 !important;
+}
+
+.stylesSegmented{
+  font-size: 1em;
+  background-color: #ebebeb;
+  padding: 5px;
+}
+
+.avatarSize{
+  height: 35px !important;
+  width: 35px !important;
+  text-align: center !important;
+
+  align-items: center !important;
+  font-size: 1em !important;
+}
+
+.avatarColor{
+  background-color: #888888 !important;
+}
+
+.titleCard span{
+  font-size: 1em  !important;
+  color: #000000;
+  
+}
+
+.MuiCardHeader-avatar{
+  margin: 0 !important;
+}
+.ytColor{
+  color: red;
+  font-size: 34px !important;
+}
+
+.ytColor-disabled{
+  color: rgb(153, 153, 153);
+  font-size: 34px !important;
+}
+
+.editStyle{
+  font-size: 34px !important;
+}
+
+.p-selectbutton div{
+  padding: 1px;
+  width: 50%;
+  font-size: 0.8em;
+  font-weight: 200;
+ 
+}
+
+.p-highlight{
+  color: #000000 !important;
+  border-color: #888888  !important;
+  background-color: #e2e1e1 !important;
+}
 
 
+.cardShadow {
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.5) !important;
+  border: 0  !important;
+}
 
+.trStyleWarmup{
+  border-top: 1px #d8d8d8;
+  border-bottom: 1px #ffffff;
+}
 
+.spanObservaciones{
+  font-weight: 400;
+}
 
+.p-highlight button{
+  background-color: #000000 !important;
+}
 
+.whatsapp-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: #e0e0e0fb; /* Color de fondo de WhatsApp */
+  padding: 15px;
+  border-radius: 50%;
+  box-shadow: 0 4px 13px rgba(0, 0, 0, 0.733);
+  transition: background-color 0.3s ease-in-out;
+  color: #fff; /* Color del ícono de WhatsApp */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
 
+.arrowStyle{
+  margin-left: 6px;
+}
 
+.navbar-transition {
+  animation: slideInLeft 1.5s forwards;
+}
 
+@keyframes slideInLeft {
+  from {
+      transform: translateX(-100%);
+  }
+  to {
+      transform: translateX(0);
+  }
+}
 
-
-
+.MuiCardHeader-title{
+  padding: 0 10px !important;
+}
 
 
 
@@ -764,6 +880,12 @@
 @media screen and (max-width: 992px) {
   
 
+  .p-selectbutton div{
+    width: 100%;
+    background-color: #92969a;
+    border: 1px !important;
+    border-radius: 5px !important;
+  }
   
   .displayFlexInMobile{
     display: flex;

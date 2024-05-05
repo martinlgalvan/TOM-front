@@ -36,6 +36,7 @@ import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
 
 import AddColorToUser from './components/Users/AddColorToUser.jsx'
 import { useColor } from './components/Context/ColorContext.jsx';
+import { Sidebar } from 'primereact/sidebar';
 
 function RoutePrivate( {isAutenticate, children}){
     return (
@@ -56,6 +57,7 @@ function App(){
 
     const [localColor, setLocalColor] = useState(color)
     const [localTextColor, setLocalTextColor] = useState(textColor)
+    const [menuSidebar, setMenuSidebar] = useState(null);
 
 
 
@@ -127,6 +129,7 @@ function App(){
             localStorage.removeItem('logo')
             
             authService.logout()
+            setMenuSidebar(false)
             navigate('/')
         }
 
@@ -143,9 +146,16 @@ function App(){
                 return false
             }
         }
-    /*
-                  
-    */
+
+    const handleMenuSidebarOpen = () => {
+    setMenuSidebar(true);
+  };
+
+
+  const handleMenuSidebarHide = () => {
+    setMenuSidebar(false);
+  };
+
           
     return (
 
@@ -155,7 +165,7 @@ function App(){
             
             <div className="container-fluid ">
                 <a className="navbar-brand " href="/">TOM</a>
-                <button className="navbar-toggler " type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button className="navbar-toggler " type="button"  onClick={handleMenuSidebarOpen}>
                     <span className="navbar-toggler-icon "></span>
                 </button>
                 <div className="collapse navbar-collapse justify-content-end  " id="navbarNav">
@@ -244,6 +254,58 @@ function App(){
                 <Route path="*" element={<div><h1>404</h1><p>Esta pagina no se encuentra disponible.</p></div>}/>
             </Routes>
 
+        <Sidebar visible={menuSidebar} onHide={handleMenuSidebarHide} blockScroll={true} className="" position="right">
+
+            <ul className="list-group  list-group-flush ulDecoration ">
+
+                <li className="list-group-item ">
+                            <Link className='nav-link ' to="/" onClick={() => setMenuSidebar(false)}>Inicio</Link>
+                        </li>
+
+                        {isAdmin() && 
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/users/${id}`} onClick={() => setMenuSidebar(false)}>Lista de alumnos</Link>
+                        </li>
+                        }
+
+                        {isAdmin() && 
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/exercises/${id}`} onClick={() => setMenuSidebar(false)}>Batabase videos</Link>
+                        </li>
+                        }
+                        
+                        {isAdmin() && 
+                        <li className="list-group-item">
+                           <Link className='nav-link' to={`/personalize/`} onClick={() => setMenuSidebar(false)}>Personalizar</Link>
+                        </li>
+                        }
+
+                        {isAdmin() &&
+                        <li className="list-group-item">
+                           <Link className='nav-link' to={`/planificator/`} onClick={() => setMenuSidebar(false)}>PAR</Link>
+                        </li> 
+                        }
+
+                        {isAutenticated && !isAdmin() &&
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/routine/${id}`} onClick={() => setMenuSidebar(false)}>Ver rutina</Link>
+                        </li>
+                        }
+                        
+                        {!isAutenticated &&
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={"/login"} onClick={() => setMenuSidebar(false)}>Iniciar sesión</Link>
+                        </li>
+                        }
+                       
+                        {isAutenticated &&
+                        <li className="list-group-item">
+                            <Link className='nav-link' onClick={onLogout} >Cerrar sesión</Link>
+                        </li> 
+                        }
+            </ul>
+        
+        </Sidebar>
 
         <footer className={`container-fluid ${textColor == 'false' || !textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} >
             <div className="row">

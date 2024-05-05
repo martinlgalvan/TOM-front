@@ -27,10 +27,13 @@ import EditExercise from '../../components/EditExercise.jsx';
 import SkeletonExercises from '../../components/Skeleton/SkeletonExercises.jsx';
 import Warmup from '../../components/Bootstrap/ModalCreateWarmup.jsx';
 import WarmupExercises from '../../components/WarmupExercises.jsx';
-import Floating from '../../helpers/Floating.jsx';
 
-
-
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { InputText } from 'primereact/inputtext';
+import { InputNumber } from 'primereact/inputnumber';
+import { SelectButton } from 'primereact/selectbutton';
+import { InputSwitch } from 'primereact/inputswitch';
 
 // CORREGIR PROBLEMA DEL LENGTH, PASO PORQUE ELIMINE QUE SE CREE AUTOMATICAMENTE UN EXERCISES, PARA QUE LUEGO PUEDA CREAR UN INDEX DEL CAMPO ROUTINE.EXERCISES.EXERCISE_ID
 function DayEditDetailsPage(){
@@ -170,10 +173,12 @@ useEffect(() => {
 
     // EDIT EXERCISES
 
-    const changeNameEdit = (index, e) => {
-        const updatedModifiedDay = [...modifiedDay];
+    const changeNameEdit = (e) => {
+        console.log(e.rowIndex, e.value, e.props.value[e.rowIndex], e.props.editingMeta[e.rowIndex].fields[0])
+        //console.log(primeraPropiedad)
+        /*const updatedModifiedDay = [...modifiedDay];
         updatedModifiedDay[index].name = e.target.value;
-        setModifiedDay(updatedModifiedDay);
+        setModifiedDay(updatedModifiedDay);*/
 
       };
       
@@ -229,9 +234,9 @@ useEffect(() => {
 
       const applyChanges = () => {
         console.log(modifiedDay)
-        setDay(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
+        /*setDay(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
         ExercisesService.editExercise(week_id, day_id, modifiedDay)
-            .then((data) => {setStatus(idRefresh)} )
+            .then((data) => {setStatus(idRefresh)} )*/
         
       };
 
@@ -308,7 +313,7 @@ useEffect(() => {
             .then(() => setStatus(idRefresh))
     };
 
-    const handleInputFocus = (index) => { setInputEnFoco(index); setConfirm(true); console.log(index)};
+    const handleInputFocus = (index) => { setInputEnFoco(index); setConfirm(true)};
 
     const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
   
@@ -326,10 +331,166 @@ useEffect(() => {
     const [anchoPagina, setAnchoPagina] = useState(window.innerWidth);
 
 
+    const exportExcel = () => {
+        import('xlsx').then((xlsx) => {
+            const worksheet = xlsx.utils.json_to_sheet(day);
+            const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
+            const excelBuffer = xlsx.write(workbook, {
+                bookType: 'xlsx',
+                type: 'array'
+            });
+
+            saveAsExcelFile(excelBuffer, 'day');
+        });
+    };
+
+    const saveAsExcelFile = (buffer, fileName) => {
+        import('file-saver').then((module) => {
+            if (module && module.default) {
+                let EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+                let EXCEL_EXTENSION = '.xlsx';
+                const data = new Blob([buffer], {
+                    type: EXCEL_TYPE
+                });
+
+                module.default.saveAs(data, fileName + '_export_' + new Date().getTime() + EXCEL_EXTENSION);
+            }
+        });
+    };
 
 
 
+    const [products, setProducts] = useState(null);
 
+    const columns = [
+        { field: 'numberExercise', header: '#' },
+        { field: 'name', header: 'Name' },
+        { field: 'sets', header: 'Sets' },
+        { field: 'reps', header: 'Reps' },
+        { field: 'peso', header: 'Peso' },
+        { field: 'rest', header: 'Rest' },
+        { field: 'video', header: 'Video' },
+        { field: 'notas', header: 'Notas' },
+    ];
+
+
+    const isPositiveInteger = (val) => {
+        let str = String(val);
+
+        str = str.trim();
+
+        if (!str) {
+            return false;
+        }
+
+        str = str.replace(/^0+/, '') || '0';
+        let n = Math.floor(Number(str));
+
+        return n !== Infinity && String(n) === str && n >= 0;
+    };
+
+
+    const onCellEditComplete = (e) => {
+
+
+        let { rowData, newValue, rowIndex, field, originalEvent: event } = e;
+
+
+        if (newValue !== null && newValue !== undefined) {
+            switch (field) {
+                case 'sets':
+                case 'reps':
+                    if (isPositiveInteger(newValue)) {
+                        rowData[field] = newValue;
+                        const updatedModifiedDay = [...modifiedDay];
+                        updatedModifiedDay[rowIndex].field = newValue;
+                        setModifiedDay(updatedModifiedDay);
+                
+                    } else {
+                        event.preventDefault();
+                    }
+                    break;
+    
+                default:
+                    if (newValue.trim().length > 0) {
+                        rowData[field] = newValue;
+                        const updatedModifiedDay = [...modifiedDay];
+                        updatedModifiedDay[rowIndex].field = newValue;
+                        setModifiedDay(updatedModifiedDay);
+                
+                    } else {
+                        event.preventDefault();
+                    }
+                    break;
+            }
+        } else {
+            // Hacer algo si el valor es nulo, por ejemplo, mostrar un mensaje de error
+            event.preventDefault();
+        }
+    };
+
+
+
+    const cellEditor = (options) => {
+       if (!isNaN(options.value)) return numberEditor(options);
+       return textEditor(options);
+    };
+
+
+
+    const textEditor = (options) => {
+        console.log(options)
+        return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />;
+    };
+
+
+    const [rowIsTextMode, setRowIsTextMode] = useState();
+
+
+    const handleSelectChange = (e,rowIndex) => {
+        console.log(e, rowIndex)
+        setRowIsTextMode(e.value)
+
+        //setModifiedDay([...modifiedDay]); // Actualizar el estado para reflejar el cambio
+    };
+
+    const numberEditor = (options) => {
+     
+
+        console.log(options)
+            
+                if(rowIsTextMode != 'text') {
+                    return <>
+                        <InputNumber value={options.value} showButtons buttonLayout="horizontal" onValueChange={(e) => options.editorCallback(e.value)}  onKeyDown={(e) => e.stopPropagation()} /> 
+                        
+                        <SelectButton className='styleSelectButton' value={rowIsTextMode == 'text' ? true : false} onChange={(e) => handleSelectChange(e, options.rowIndex)} options={[
+                        { label: 'Text', value: 'text' },
+                        ]} /> 
+                    </>
+                } else{  
+                    return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />}
+
+           } 
+
+
+            
+
+    const setsTemplate = (rowData) => {
+
+        return <InputNumber value={rowData.sets} showButtons buttonLayout="horizontal"  />;
+    };
+
+    const hasNonNumber = !/^\d+$/.test(String());
+
+
+
+    const repsTemplate = (rowData) => {
+
+        return <>
+        {!isNaN(rowData.reps)  ? <InputNumber value={rowData.reps} showButtons buttonLayout="horizontal"  /> : <p>{rowData.reps}</p>}
+ 
+        </>;
+    };
 
 
 
@@ -386,258 +547,41 @@ useEffect(() => {
             <article  className='row justify-content-center'>
 
            
-            <button onClick={handleShowWarmup} className='btn border buttonColor col-9 col-md-5 my-5'>Administrar bloque de entrada en calor</button>
-            <div className='row justify-content-center'>
-                {warmup.length > 0 && <div className='col-11 col-xxl-10'>
-                    <WarmupExercises /> 
+                <button onClick={handleShowWarmup} className='btn border buttonColor col-9 col-md-5 my-5'>Administrar bloque de entrada en calor</button>
+                <div className='row justify-content-center'>
+                    {warmup.length > 0 && <div className='col-11 col-xxl-10'>
+                        <WarmupExercises /> 
 
-                </div>}
+                    </div>}
 
-            </div>
-                <div className={`row justify-content-center align-items-center text-center mt-5 px-0 ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
-
-                    
+                </div>
+                <div className="card p-fluid">
 
 
-                    <div className={`table-responsive col-11 col-xxl-10 m-0 p-0 pt-3 `}>
-                        <table className="table align-middle table-bordered ">
-                            <thead>
 
-                                <tr>
-                                    <th className='TableResponsiveDayEditDetailsPage tdNumber' scope="col">#</th>
-                                    <th scope="col" className='tdName'>Ejercicio</th>
-                                    <th scope="col" className='tdSets'>Series</th>
-                                    <th scope="col" className='tdReps'>Reps</th>
-                                    <th scope="col" className=' TableResponsiveDayEditDetailsPage tdReps '>Rest</th>
-                                    <th className='TableResponsiveDayEditDetailsPage tdPeso' scope="col">Peso</th>
-                                    <th className='TableResponsiveDayEditDetailsPage tdVideo' scope="col">Video</th>
-                                    <th className='TableResponsiveDayEditDetailsPage tdNotas' scope="col">Notas</th>
-                                    <th scope="col" className='tdActions'>Acciones</th>
-                                </tr> 
-                            </thead>
-                            <tbody>
-                            
 
-                            <TransitionGroup component={null} className="todo-list">
-                                { day.map((exercise, index) =>
-                                <CSSTransition
-                                key={exercise.exercise_id}
-                                timeout={day.length == 0 ? 0 : 400}
-                                classNames="item"
-                                >                               
-                                    <tr key={exercise.exercise_id} className={`oo`}>
-                                        <th className='TableResponsiveDayEditDetailsPage' >
-                                        {exercise.type != 'exercise' ? <span>{exercise.numberExercise}</span> :
-                                         <select  
-                                            onFocus={exercise.type != 'exercise' ? null : () => handleInputFocus(index)}
-                                            ref={(input) => (inputRefs.current[index] = input)}
-                                            defaultValue={exercise.numberExercise} 
-                                            onChange={(e) => {changeNumberExercise(index, e)}}
-                                            >
-                                            {options.map(option =>
-                                            <optgroup 
-                                                key={option.value} 
-                                                label={option.name} >
 
-                                                    <option value={option.value} > {option.name} </option>
-                                                    {option.extras.map(element => <option key={element.name} >{element.name}</option> )}
 
-                                            </optgroup>
-                                            )}
-                                        </select>}
+                    <DataTable value={day} editMode="cell" tableStyle={{ minWidth: '50rem' }}>
+                        {columns.map(({ field, header }) => {
+                            return <Column key={field} field={field} header={header} style={{ width: '25%' }} body={field === 'sets'  ? setsTemplate : field  ===  'reps' ?  repsTemplate  : null } editor={(options) => cellEditor(options)} onCellEditComplete={onCellEditComplete} />;
+                        })}
+                    </DataTable>
+                </div>
+                <div>
+                    <button onClick={applyChanges}>VER</button>
+                </div>
 
-                                        </th>
-                                        {exercise.type != 'exercise' ? <td colSpan={anchoPagina > 992 ? 5 : 3} >
-                                                                <table className='table align-middle'>
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th colSpan={anchoPagina > 992 ? 5 : 3}>{exercise.type} x {exercise.typeOfSets}</th>
-                                                                        </tr>
-                                                                        <tr>
 
-                                                                            <th scope='col' className='mx-2'>Ejercicio</th>
-                                                                            <th className='mx-2' scope='col' >Reps</th>
-                                                                            <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col'>Peso</th>
-                                                                            <th className='TableResponsiveDayEditDetailsPage tdNotasCircuit' scope='col'>Video</th>
-                                                                        </tr>
-                                                                        </thead>
-                                                                    <tbody>
-                                                                        {exercise.circuit.map(element =>
-                                                                        <tr key={element.idRefresh}>
 
-                                                                            <td>{element.name}</td>
-                                                                            <td>{element.reps}</td>
-                                                                            <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
-                                                                            <td className='TableResponsiveDayEditDetailsPage tdNotasCircuit'>{element.video}</td>
-                                                                        </tr>)}
-                                                                    </tbody>
-                                                                </table> 
-                                                            </td>: 
-                                    <td className='tdName'>
-                                        <input 
-                                        className='form-control border-0' 
-                                        type="text" 
-                                        defaultValue={exercise.name} 
-                                        
-                                        onChange={(e) => changeNameEdit(index, e)}
-                                        onFocus={() => handleInputFocus(index)}
-                                        autoComplete='off'
-                                        />
-                                    </td>}
 
-                                    {exercise.sets === undefined ? null :
-                                    <td className='tdSets c' >
-                                        <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : exercise.sets}
-                                            onChange={(e) => changeSetEdit(index, e)}
-                                            onValueChange={() => handleInputFocus(index)}
-                                            onFocus={() => handleInputFocus(index)}
 
-                                            
-                                            className="" 
-                                            />
-  
-                                    </td>} 
-                                    {exercise.reps === undefined ? null  : 
-                                    <td className='tdReps'>
-                                            <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco === index && !confirm ? newRep : exercise.reps}
-                                            onChange={(e) => changeRepEdit(index, e)}
-                                            onValueChange={() => handleInputFocus(index)}
-                                            ref={(input) => (inputRefs.current[index] = input)}
-                                            isTextMode={inputEnFoco !== null && inputEnFoco === index && !confirm}
 
-                                            />
-                                    </td>
-                                    }
 
-                                        {exercise.rest === undefined ? null :
-                        
-                                        <td className='tdReps TableResponsiveDayEditDetailsPage'>
-                                            <input 
-                                                className='form-control border-0' 
-                                                type="text" 
-                                                defaultValue={exercise.rest}
-                                                onChange={(e) => changeRestEdit(index, e)}
-                                                onFocus={() => handleInputFocus(index)}
-                                                
-                                            />
-                                        </td>}
-                                    
 
-                                    {exercise.peso === undefined ? null :
+            </article>
 
-                                        <td className='TableResponsiveDayEditDetailsPage tdPeso'>
-                                            
-                                            <input 
-                                            className='form-control border-0' 
-                                            type="text" 
-                                            defaultValue={exercise.peso}
-                                            onChange={(e) => changePesoEdit(index, e)}
-                                            onFocus={() => handleInputFocus(index)}
-                                            
-                                            />
-                                            
-                                        
-                                        </td> 
-                                    }
-                                    
-                                    {exercise.video === undefined ? null : 
-                                    
-                                        <td className='TableResponsiveDayEditDetailsPage tdVideo' >
-                                            
-                                            <input 
-                                            className='form-control border-0' 
-                                            type="text" 
-                                            defaultValue={exercise.video}
-                                            onChange={(e) => changeVideoEdit(index, e)}
-                                            onFocus={() => handleInputFocus(index)}
-                                            />
-                                        
-                                        </td>
-                                    }
-
-                                    <td className='TableResponsiveDayEditDetailsPage tdNotas'>
-                                        
-                                        <textarea 
-                                        className='form-control border-0' 
-                                        type="text" 
-                                        defaultValue={exercise.notas}
-                                        onChange={(e) => changeNotasEdit(index, e)}
-                                        onClick={
-                                            exercise.type != 'exercise' ? () => handleShowEditCircuit(
-                                            exercise.exercise_id, 
-                                            exercise.type, 
-                                            exercise.typeOfSets, 
-                                            exercise.circuit, 
-                                            exercise.notas, 
-                                            exercise.numberExercise) : null}
-                                        onFocus={exercise.type != 'exercise' ? null : () => handleInputFocus(index)}
-                                        ref={(input) => (inputRefs.current[index] = input)}
-                                        />
-
-                                    </td> 
-                                    
-                                    <td className='tdActions'>
-
-                                        <>
-                                       
-                                            <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
-                                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                                                </svg>
-                                            </button>
-                                            {anchoPagina < 986 && <button 
-                                            className='btn buttonsEdit'
-                                            onClick={() => exercise.type != 'exercise' ? 
-                                                handleShowEditCircuit(
-                                                    exercise.exercise_id, 
-                                                    exercise.type, 
-                                                    exercise.typeOfSets, 
-                                                    exercise.circuit, 
-                                                    exercise.notas, 
-                                                    exercise.numberExercise) : 
-                                                    
-                                                handleEditMobileExercise(exercise, index)}>
-
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
-                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                                                <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
-                                                </svg>
-                                            </button>}
-                                        </> 
-
-                                    </td>
-                                </tr>
-                                
-                                    </CSSTransition>
-                                )}
-                                </TransitionGroup>
-                                
-
-                            </tbody>
-                            
-                        
-                            
-                        </table>
-                        {inputEnFoco == null ? null :
-                        <>
-                            <button className='btn btn-secondary mb-2 me-2' onClick={() => setInputEnFoco(null)}>
-                            Cancelar edición
-                        </button>
-                            <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mb-2 ms-2`} style={{ "backgroundColor": `${color}` }} onClick={applyChanges} >
-                                Aplicar cambios
-                            </button>
-                        </>
-                        }
-                        
-                    </div>
-                    </div>
-
-                    <Link to={`/user/routine/${id}/${username}`} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `${color}` }} >Volver atrás</Link>
-                </article>
-
-                <Floating link={`/user/routine/${id}/${username}`} />
+               
 
                 <Dialog 
                     className='col-12 col-md-10 col-xxl-5' 

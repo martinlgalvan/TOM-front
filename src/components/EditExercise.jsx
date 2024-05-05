@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import CustomInputNumber from './CustomInputNumber.jsx'
 import * as Notify from './../helpers/notify.js'
-
+import Options from '../assets/json/options.json';
 import * as ExercisesService from '../services/exercises.services.js';
 
 import { ToastContainer } from './../helpers/notify.js';
 
 function EditExercise({refreshEdit, indexOfExercise, completeExercise, week_id, day_id, isAthlete}) {
 
+const [options, setOptions] = useState()  
 
 const [completeName, setCompleteName] = useState()
 const [modifiedDay, setModifiedDay] = useState([])
@@ -24,8 +25,10 @@ const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
 
 useEffect(() => {
-  console.log(completeExercise)
+  console.log(completeExercise[indexOfExercise].numberExercise)
+  setOptions(Options)
   setModifiedDay(completeExercise)
+
 }, []);
 
 /*const changeNameEdit = (e) => setCompleteName(e.target.value)
@@ -37,6 +40,13 @@ const changeNotasEdit = (e) => setCompleteNotas(e.target.value)*/
 
 
     // EDIT EXERCISES
+
+    const changeNumberExercise = (index, e) => {
+
+      const updatedModifiedDay = [...modifiedDay];
+      updatedModifiedDay[index].numberExercise = e.target.value;
+      setModifiedDay(updatedModifiedDay);
+    };
 
     const changeNameEdit = (index, e) => {
       const updatedModifiedDay = [...modifiedDay];
@@ -92,6 +102,7 @@ function onSubmit(e){
   Notify.notifyA("Cargando")
   ExercisesService.editExercise(week_id, day_id, modifiedDay)
       .then(() => {
+        refreshEdit(false)
         Notify.updateToast()
       } )
   
@@ -103,13 +114,33 @@ function onSubmit(e){
     <>
     <form className='row justify-content-center' onSubmit={onSubmit}>
     {isAthlete && <p className='fs-5'>{completeExercise[indexOfExercise].name}</p>}
-      {!isAthlete && <div className="mb-3">
+    {!isAthlete &&  
+        <div  className='col-6'>
+          <select  
+            value={completeExercise[indexOfExercise].numberExercise} 
+            onChange={(e) => {changeNumberExercise(indexOfExercise,e)}}
+            className='form-control col-6 mb-2'
+            >
+            {options && options.map(option =>
+            <optgroup 
+                key={option.value} 
+                label={option.name} >
+
+                    <option value={option.value} > {option.name} </option>
+                    {option.extras.map(element => <option key={element.name} >{element.name}</option> )}
+
+            </optgroup>
+            )}
+        </select>
+        </div>}
+        
+      {!isAthlete && <div className="mb-3 col-11">
         <label htmlFor="name" className="visually-hidden">Nombre</label>
         <input disabled={isAthlete} type="text" className="form-control" id="name" placeholder="Nombre" defaultValue={completeExercise[indexOfExercise].name} onChange={(e) => changeNameEdit(indexOfExercise, e)}  />
       </div>}
 
-      {!isAthlete && <div className="mb-3">
-        <label htmlFor="peso" className="visually-hidden">Series</label>
+      {!isAthlete && <div className="mb-3 col-6  text-center">
+        <label htmlFor="peso" className="text-center mb-2">Series</label>
         <CustomInputNumber
                 disabled={isAthlete} 
                 initialValue={completeExercise[indexOfExercise].sets}
@@ -117,8 +148,8 @@ function onSubmit(e){
                 />
       </div>}
 
-      {!isAthlete && <div className="mb-3">
-        <label htmlFor="peso" className="visually-hidden">Repeticiones</label>
+      {!isAthlete && <div className="mb-3 col-6 text-center">
+        <label htmlFor="peso" className=" mb-2">Reps</label>
         <CustomInputNumber 
                 disabled={isAthlete}
                 initialValue={completeExercise[indexOfExercise].reps}
