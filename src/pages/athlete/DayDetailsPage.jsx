@@ -244,7 +244,7 @@ const productTemplate = (exercise) => {
                                         </Avatar>
                                     }
                                     action={
-                                        <Avatar aria-label="recipe" className="avatarSize bg-dark me-1 mt-1">
+                                        <Avatar aria-label="recipe" className="avatarSize bg-dark me-1 mt-1 p-1">
                                         <Contador className={'p-2'}  max={element.sets} />
                                         </Avatar>
                                     }
@@ -270,6 +270,7 @@ const productTemplate = (exercise) => {
                                             <td className="border-0">{element.reps}</td>
                                             <td className="border-0">{element.peso}</td>
                                             <td className="border-0">{element.rest}</td>
+                                            <td className="border-0">{element.video}</td>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -282,7 +283,7 @@ const productTemplate = (exercise) => {
                                     </CardContent>
                                     <CardActions  className="p-0 row justify-content-between" >
                                         <IconButton aria-label="video" className="p-0 col-3 mb-2" disabled={element.video == null || element.video == ''}  onClick={() => handleButtonClick(element)} >
-                                            <YouTubeIcon  className={element.video != null || element.video != '' ? 'ytColor-disabled' : ' ytColor'} />
+                                            <YouTubeIcon  className={element.video == null || element.video == "" ? 'ytColor-disabled' : ' ytColor'} />
                                         </IconButton>
                                         <IconButton aria-label="video" className="p-0 col-3 mb-2" onClick={() => element.type != 'exercise' ? 
                                         handleShowEditCircuit(
