@@ -70,7 +70,7 @@ function DayDetailsPage() {
 
             setAllDays(data[index].routine)
             console.log(data[index].routine.length, lastDay)
-            if (lastDay == null  ||lastDay >= data[index].routine.length ) {
+            if (lastDay == null || isNaN(lastDay) || lastDay >= data[index].routine.length ) {
                 setCurrentDay(0);
                 setModifiedDay(0)
                 setDay_id(data[0].routine[lastDay]._id)
@@ -200,7 +200,7 @@ const productTemplate = (exercise) => {
                 <Segmented
                     options={allDays.map((dia) => (dia.name))}
                     className="stylesSegmented"
-                    defaultValue={localStorage.getItem('LastDayName') || allDays[0].name}
+                    defaultValue={localStorage.getItem('LastDayName') == undefined  ? 'Día 1' : localStorage.getItem('LastDayName') }
                     onChange={(value) => {
                         const actualDay = allDays.find(item => item.name === value);
                         const index = allDays.findIndex(item => item._id === actualDay._id);
@@ -255,7 +255,7 @@ const productTemplate = (exercise) => {
 
                                     
                                 <div className="card border-0">
-                                    <table class="table border-0">
+                                    <table className="table border-0">
                                         <thead >
                                         <tr className="border-0">
                                             <th className="border-0">Series</th>
@@ -325,7 +325,7 @@ const productTemplate = (exercise) => {
 
                                     <p className="border-0"><b>{element.typeOfSets} series</b></p>
 
-                                    <table class="table border-0">
+                                    <table className="table border-0">
                                         <thead >
                                         <tr className="border-0">
                                             <th className="border-0">Nombre</th>
