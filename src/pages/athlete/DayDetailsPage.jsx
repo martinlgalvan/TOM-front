@@ -270,7 +270,6 @@ const productTemplate = (exercise) => {
                                             <td className="border-0">{element.reps}</td>
                                             <td className="border-0">{element.peso}</td>
                                             <td className="border-0">{element.rest}</td>
-                                            <td className="border-0">{element.video}</td>
                                         </tr>
                                         </tbody>
                                     </table>
