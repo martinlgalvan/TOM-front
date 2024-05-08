@@ -4,7 +4,7 @@ import TOM from '/src/assets/img/TOM.png';
 import JESUSOLIVA from '/src/assets/img/jesus-logo.jpeg';
 import POWERHOUSE from '/src/assets/img/Powerhouse.png';
 import RAMABELTRAME from '/src/assets/img/RB.png';
-import CAMILABENEITEZ from '/src/assets/img/camila-beneitez.png';
+import ARIELBRUNO from '/src/assets/img/ariel-logo.png';
 import MATHIAS_RAGO from '/src/assets/img/mathias-logo.png';
 import GERONIMO_BISANZIO from '/src/assets/img/geronimo-logo.jpeg';
 import JEREMIAS_OLMEDO from '/src/assets/img/jeremias-olmedo.jpeg';
@@ -18,8 +18,8 @@ function Logo(){
 
    useEffect(() => {
 
-    if(localStorage.getItem('email') == "camibeneitez.fitness@gmail.com" || localStorage.getItem('entrenador_id') == "6604700535d4ec9f70bc4abf"){
-        setUrlPath(CAMILABENEITEZ)
+    if(localStorage.getItem('email') == "ariebruno97@gmail.com" || localStorage.getItem('entrenador_id') == "663b122634b3af9cafacb80c"){
+        setUrlPath(ARIELBRUNO)
     } else if(localStorage.getItem('email') == "jesusoliva@gmail.com" || localStorage.getItem('entrenador_id') == "648c06a7c3ce34126657a924"){
         setUrlPath(JESUSOLIVA)
     } else if(localStorage.getItem('email') == "mathiasrago7@gmail.com" || localStorage.getItem('entrenador_id') == "66066ff46310dcb00ee20717"){
