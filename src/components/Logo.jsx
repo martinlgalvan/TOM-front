@@ -18,7 +18,7 @@ function Logo(){
 
    useEffect(() => {
 
-    if(localStorage.getItem('email') == "ariebruno97@gmail.com" || localStorage.getItem('entrenador_id') == "663b122634b3af9cafacb80c"){
+    if(localStorage.getItem('email') == "arielbruno97@gmail.com" || localStorage.getItem('entrenador_id') == "663b122634b3af9cafacb80c"){
         setUrlPath(ARIELBRUNO)
     } else if(localStorage.getItem('email') == "jesusoliva@gmail.com" || localStorage.getItem('entrenador_id') == "648c06a7c3ce34126657a924"){
         setUrlPath(JESUSOLIVA)
