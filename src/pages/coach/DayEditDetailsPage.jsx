@@ -360,8 +360,9 @@ const confirmDelete = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                            {transitions((styles, exercise, i) => (
-                            <animated.tr key={exercise.exercise_id} style={styles}>
+                            {modifiedDay.map((exercise, i) => (
+                                <tr key={exercise.exercise_id}>
+
                                 
                                     {exercise.type == 'exercise' ?
                                         <>                                    
@@ -428,7 +429,7 @@ const confirmDelete = () => {
                                                 </div>
                                             </td> 
                                             </>}
-                                        </animated.tr>
+                                        </tr>
                              
                               ))}
                                 
@@ -464,18 +465,10 @@ const confirmDelete = () => {
                     
                 <div className='col-12 mt-4 text-center'>
 
-<button onClick={handleShowWarmup} className='btn border buttonColor '>Administrar bloque de entrada en calor</button>
+                        <button onClick={handleShowWarmup} className='btn border buttonColor '>Administrar bloque de entrada en calor</button>
 
-</div>
+                        </div>
 
-                </div>
-
-
-                <div className='row justify-content-center'>
-                    {warmup.length > 0 && <div className='col-11 col-xxl-10'>
-                        <WarmupExercises /> 
-
-                    </div>}
                 </div>
 
                     <div className='row justify-content-center'>
