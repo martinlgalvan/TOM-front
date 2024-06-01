@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
-import * as UsersService from '../../services/users.services.js';
 import * as WeekService from '../../services/week.services.js';
 import * as DayService from '../../services/day.services.js';
 import * as NotifyHelper from './../../helpers/notify.js'
@@ -10,19 +9,17 @@ import * as RefreshFunction from './../../helpers/generateUUID.js'
 
 
 import Logo from '../../components/Logo.jsx'
-import ModalDeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
 import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx';
-import ModalEditWeek from '../../components/Bootstrap/ModalEdit/ModalEditWeek.jsx';
-
+import DeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
+import EditWeek from '../../components/EditActions/EditWeek.jsx';
 
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ToastContainer, toast } from 'react-toastify';
-import DeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
-import EditWeek from '../../components/EditActions/EditWeek.jsx';
+import { animated, useTransition } from '@react-spring/web';
 
-import Papa from 'papaparse';  // Papaparse  para pasar de json a  csv
+
 import Floating from '../../helpers/Floating.jsx';
 
 function UserRoutineEditPage(){
@@ -30,11 +27,7 @@ function UserRoutineEditPage(){
     const {username} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
-    const navigate = useNavigate()
-    /*const weeks = sessionStorage.getItem('U4S3R')
-    let parsed = JSON.parse(weeks)
-    let user = parsed.filter(weeks => weeks._id == id)
-    let weeksSession = user[0].rutina*/
+
 
 
     const [routine, setRoutine] = useState([])
@@ -49,12 +42,10 @@ function UserRoutineEditPage(){
     const [dayID, setDayID] = useState("")
     const user_id = localStorage.getItem("_id")
 
-    const [csv, setCSV] = useState('')
 
     const [copyWeek, setCopyWeek] = useState();
 
     let idRefresh = RefreshFunction.generateUUID()
-    const flatExercises = [];
 
 
     const [color, setColor] = useState(localStorage.getItem('color'))
@@ -139,12 +130,6 @@ function UserRoutineEditPage(){
 
     }
 
-    function handleShowEditWeek(week_id, name){
-        setShowEditWeek(true)
-        setWeek_id(week_id)
-        setWeekName(name)
-
-    }
 
     const actionConfirm = () => {
         setShow(false);
@@ -160,32 +145,14 @@ function UserRoutineEditPage(){
     } 
 
 
-    /*const exportExcel = () => {
-        import('xlsx').then((xlsx) => {
-            const worksheet = xlsx.utils.json_to_sheet(routine);
-            const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-            const excelBuffer = xlsx.write(workbook, {
-                bookType: 'xlsx',
-                type: 'array'
-            });
-
-            saveAsExcelFile(excelBuffer, 'day');
-        });
-    };
-
-    const saveAsExcelFile = (buffer, fileName) => {
-        import('file-saver').then((module) => {
-            if (module && module.default) {
-                let EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
-                let EXCEL_EXTENSION = '.xlsx';
-                const data = new Blob([buffer], {
-                    type: EXCEL_TYPE
-                });
-
-                module.default.saveAs(data, fileName + '_export_' + new Date().getTime() + EXCEL_EXTENSION);
-            }
-        });
-    };*/
+    const transitions = useTransition(routine, {
+        from: { opacity: 0, scale: 0.9,},
+        enter: { opacity: 1, scale: 1, },
+        leave: { opacity: 0, scale: 0.9},
+        config: { tension: 350, friction: 20 },
+        delay: 200,
+        keys: item => item._id,
+      });
 
     return (
 
@@ -245,20 +212,11 @@ function UserRoutineEditPage(){
 
 
                 <div className='col-12'>
-                
-                <div>
-
-                    </div>
-
 
                     <div className='row justify-content-center'>
-                        <TransitionGroup component={null} className="todo-list">
+
                         {routine.length > 0 && routine.map((elemento, index) =>
-                        <CSSTransition
-                        key={elemento._id}
-                        timeout={500}
-                        classNames="item"
-                        >
+
                         <div key={elemento._id} className="card col-12 col-lg-3 text-center m-3">
                             <div className="card-body m-0 p-0">
                                 <div className="menuColor py-1 row justify-content-center titleWeek">
@@ -267,13 +225,9 @@ function UserRoutineEditPage(){
               
                                 </div>
                                 
-                                <TransitionGroup component={null} className="todo-list">
+
                                     {elemento.routine.map(element => 
-                                    <CSSTransition
-                                        key={element._id}
-                                        timeout={400}
-                                        classNames="item"
-                                    >
+
                                         <div key={element._id} className='row justify-content-center mx-0 py-1 border-bottom'>
 
                                             <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/user/${id}/week/${elemento._id}/day/${element._id}/${username}`}>{element.name}</Link>
@@ -285,9 +239,9 @@ function UserRoutineEditPage(){
                                             </button>
 
                                         </div>
-                                        </CSSTransition>
+                                  
                                     )}
-                                </TransitionGroup>
+       
                                     <button disabled={loading} onClick={() => addDayToWeek(elemento._id,elemento.routine.length)} className='input-group-text btn border buttonColor mb-5 mt-3'>Añadir día</button>
 
                             </div>
@@ -306,10 +260,9 @@ function UserRoutineEditPage(){
                             </div>
            
                         </div>
-                        
-                        </CSSTransition>
+          
                         )}
-                        </TransitionGroup>
+
                     </div>
 
                 </div> 
