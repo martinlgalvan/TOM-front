@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import {Link, useParams, useNavigate} from 'react-router-dom'
 
 import * as UsersService from '../../services/users.services.js';
@@ -8,12 +8,11 @@ import * as RefreshFunction from '../../helpers/generateUUID.js'
 import UserRegister from '../../components/Users/UserRegister.jsx';
 import Logo from '../../components/Logo.jsx'
 import DeleteUserDialog from '../../components/DeleteActions/DeleteUserDialog.jsx';
-import AddColorToUser from '../../components/Users/AddColorToUser.jsx';
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
 import { ToastContainer } from '../../helpers/notify.js';
-
+import { animated, useTransition } from '@react-spring/web';
 
 function UsersListPage() {
 
@@ -31,9 +30,7 @@ function UsersListPage() {
 
     const [name, setName] = useState()          // Variable para la eliminación
     const [user_id, setUser_id] = useState()    // ----------------------------*
-    const [firstLoad, setFirstLoad] = useState()    
 
-    const navigate = useNavigate()
 
     let idRefresh = RefreshFunction.generateUUID()
     
@@ -42,8 +39,6 @@ function UsersListPage() {
            
             UsersService.find(id)
                 .then(data => {
-                    setFirstLoad(true)
-                    //Si se actualiza, se guarda los de la base de datos y se empieza a usar estos
                     setUsers(data)
                     // Y a pesar de no utilizar el del storage, se actualiza.
                     let jsonDATA = JSON.stringify(data);
@@ -76,6 +71,15 @@ function UsersListPage() {
     const searcher = (e) => setSearch(e.target.value)   
     
     const results = !search ? users : users.filter((dato)=> dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
+
+    const transitions = useTransition(results, {
+        from: { opacity: 0, scale: 0.9,},
+        enter: { opacity: 1, scale: 1, },
+        leave: { opacity: 0, scale: 0.9},
+        config: { tension: 350, friction: 20 },
+        delay: 200,
+        keys: item => item._id,
+      });
 
     return (
         <section className='container-fluid'>
@@ -123,18 +127,10 @@ function UsersListPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {loading == true ? Array.from({ length: numberUsers }).map((_, index) => (
-                                        <SkeletonUsers key={index} />
-                                    )) : 
-                                    <TransitionGroup component={null} className="todo-list">
-                                    {results != null && results.map(({_id, name, email}) =>
-                                    
-                                        <CSSTransition
-                                        key={_id}
-                                        timeout={500}
-                                        classNames="item"
-                                        >
-                                            <tr key={_id}>
+
+                                    {transitions((styles, {_id, name, email }) => (
+                                        <animated.tr key={_id} style={styles}>
+                            
                                                 <td className='text-center'><Link className={`btn LinkDays ClassBGHover w-100`} to={`/user/routine/${_id}/${name}`}>{name}</Link></td>
                                                 <td className='text-center responsiveEmail'><Link className={`btn LinkDays ClassBGHover w-100`} to={`/user/routine/${_id}/${name}`}>{email}</Link></td>
                                                 <td className='text-center'>
@@ -148,10 +144,10 @@ function UsersListPage() {
                                                     </button>
                                                     
                                                 </td>
-                                            </tr>
-                                        </CSSTransition>
-                                    )}
-                                    </TransitionGroup>}
+                                            </animated.tr>
+                                        
+                                    ))}
+                                   
                                 </tbody>
                             </table>
                         </div>

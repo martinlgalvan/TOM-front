@@ -1,163 +1,135 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
-import { InputNumber } from 'primereact/inputnumber';
+import { InputText } from 'primereact/inputtext';
+import { Badge } from 'primereact/badge';
+import CustomInputNumber from '../../CustomInputNumber.jsx';
+import * as ExercisesService from './../../../services/exercises.services.js'
 
-import * as ExercisesService from '../../../services/exercises.services.js';
-
-function ModalEditCircuit({showEditCircuit, handleClose, closeModal, week_id, day_id, exercise_id, type, typeOfSets,notasCircuit, circuitExercises, numberExercise }) {
-
-  const [status, setStatus] = useState(0)
-  const [notas, setNotas] = useState("")
-  const [circuit, setCircuit] = useState([])
-  const [copia, setCopia] = useState([])
-  
-  const [color, setColor] = useState(localStorage.getItem('color'))
-  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
-  
-  
-  function generateUUID() {
-    let d = new Date().getTime();
-    let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        let r = (d + Math.random() * 16) % 16 | 0;
-        d = Math.floor(d / 16);
-        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-    return uuid;
-}
-
-let idRefresh = generateUUID()
-  
-
+function ModalEditCircuit({ showEditCircuit, handleClose, closeModal, week_id, day_id, exercise_id, circuit }) {
+  const [status, setStatus] = useState(0);
+  const [notas, setNotas] = useState("");
+  const [updatedModifiedCircuit, setUpdatedModifiedCircuit] = useState(circuit);
+  const [copia, setCopia] = useState([]);
+  const [color, setColor] = useState(localStorage.getItem('color'));
+  const [textColor, setTextColor] = useState(localStorage.getItem('textColor'));
+  const [firstWidth, setIsFirstWidth] = useState()
   useEffect(() => {
-    setCircuit(circuitExercises)
-    setCopia(circuitExercises)
+    setIsFirstWidth(window.innerWidth)
+  },[])
 
 
-}, [showEditCircuit, copia, status])
+  const editName = (index, value) => {
+    const updatedCircuit = { ...updatedModifiedCircuit };
+    updatedCircuit.circuit[index].name = value;
+    setUpdatedModifiedCircuit(updatedCircuit);
+  };
 
+  const editReps = (index, value) => {
+    const updatedCircuit = { ...updatedModifiedCircuit };
+    updatedCircuit.circuit[index].reps = value;
+    setUpdatedModifiedCircuit(updatedCircuit);
+  };
 
-//EL problema del touch del celular creo que era por el status, cuando lo hago bien si edita
+  const editPeso = (index, value) => {
+    const updatedCircuit = { ...updatedModifiedCircuit };
+    updatedCircuit.circuit[index].peso = value;
+    setUpdatedModifiedCircuit(updatedCircuit);
+  };
 
-const handleNotas = (e) => {setNotas(e.target.value)}
+  const editVideo = (index, value) => {
+    const updatedCircuit = { ...updatedModifiedCircuit };
+    updatedCircuit.circuit[index].video = value;
+    setUpdatedModifiedCircuit(updatedCircuit);
+  };
 
-function editName(id, name){
-  let indexExercise = circuit.findIndex(exercise => exercise.idRefresh === id)
-  circuit[indexExercise].name = name
-  setCopia(circuit)
- 
-}
+  function editAmrap(){
 
-function editReps(id, reps){
-
-  let indexExercise = circuit.findIndex(exercise => exercise.idRefresh === id)
-  circuit[indexExercise].reps = reps
-  setCopia(circuit)
-  setStatus(idRefresh)
-
-}
-
-function editPeso(id, peso){
-  let indexExercise = circuit.findIndex(exercise => exercise.idRefresh === id)
-  circuit[indexExercise].peso = peso
-  setCopia(circuit)
- 
-}
-
-function editAmrap(){
-
-  if(notas == null || notas == undefined){
-    setNotas(" ws")
+    console.log(week_id, day_id, updatedModifiedCircuit.exercise_id, updatedModifiedCircuit )
+   ExercisesService.editExerciseAmrap(week_id, day_id, updatedModifiedCircuit.exercise_id, updatedModifiedCircuit )
+      .then(() => {
+        handleClose()
+      })
   }
 
-  ExercisesService.editExerciseAmrap(week_id, day_id, exercise_id, {exercise_id, type, typeOfSets, circuit: copia, notas, numberExercise })
-    .then(() => {
-      handleClose()
-    })
-}
-    
   return (
     <>
-      <Modal size="lg" centered show={showEditCircuit} onHide={closeModal}>
-        <Modal.Header closeButton>
-          <Modal.Title><h2 className='text-center'>Editar ejecicio</h2></Modal.Title>
-        </Modal.Header>
-        <Modal.Body className='text-center'>
+    <Modal size="lg" centered show={showEditCircuit} onHide={closeModal}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <h2 className="text-center">Editar {circuit.type}</h2>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+      <div className={`${firstWidth > 992 ? 'table-responsive' : 'table-responsiveCss'}`}>
+        <table className="table align-middle table-bordered table-hover ">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th >Nombre</th>
+              <th>Peso</th>
+              <th>Reps</th>
+              <th>Video</th>
+            </tr>
+          </thead>
+          <tbody>
+            {updatedModifiedCircuit.circuit.map((exercise, index) => (
+              <tr key={exercise.idRefresh}>
+                <td data-th={'#'} className='text-center'>
+                  <span >{index + 1}</span>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    className="form-control text-center"
+                    value={exercise.name}
+                    onChange={(e) => editName(index, e.target.value)}
+                  />
+                </td>
+                <td data-th={'Nombre'}>
+                  <input
+                    type="text"
+                    className="form-control text-center"
+                    value={exercise.peso}
+                    onChange={(e) => editPeso(index, e.target.value)}
+                  />
+                </td>
+                <td data-th={'Repeticiones'}>
+                <CustomInputNumber 
+                  initialValue={exercise.reps}
+                  onChange={(e) => editReps(index, e)}
+                  value={exercise.reps} 
+                  isRep={true}/>
 
-          <div className='row justify-content-center'>
-            <article className='col-12'>
-              <table className='table align-middle'>
-                <thead>
-                  <tr>
-                    <th className='w-50'>Ejercicio</th> 
-                    <th className='w-25'>Peso</th>
-                    <th className='w-25'>Reps</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {circuit.map(({idRefresh,name,reps,peso}) =>
-                  <tr key={idRefresh}>
-                    <td>
-                      <input id='name' className='form-control d-block' type="text" defaultValue={name} onChange={(e) => editName(idRefresh, e.target.value)}/>
-                    </td>
-                    
-                    <td>
-                      <input 
-                      className='form-control' 
-                      type="text" 
-                      defaultValue={peso} 
-                      onChange={(e) => editPeso(idRefresh, e.target.value)}/>
-                    </td>
-                    <td>
-                      <InputNumber 
-                          value={reps} 
-                          onValueChange={(e) => editReps(idRefresh,e.value)} 
-                          showButtons 
-                          buttonLayout={"vertical"} 
-                          size={1} 
-                          min={1} 
-                          decrementButtonClassName="ButtonsInputNumber" 
-                          incrementButtonClassName="ButtonsInputNumber" 
-                          incrementButtonIcon="pi pi-plus" 
-                          decrementButtonIcon="pi pi-minus"
-                      />
-                      </td>
+                </td>
+                <td data-th={'Video'}>
+                  <input
+                    type="text"
+                    className="form-control text-center"
+                    value={exercise.video}
+                    onChange={(e) => editVideo(index, e.target.value)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        </div>
+      </Modal.Body>
+      <Modal.Footer className="sticky-footer">
 
-                  </tr>
-                  )}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <th colSpan={3}>Notas</th>
-                  </tr>
-                  <tr>
-                    <th colSpan={3}>
-                    <input 
-                      className='form-control' 
-                      type="text" 
-                      defaultValue={notasCircuit} 
-                      onChange={handleNotas}/>
-                    </th>
-                  </tr>
-                </tfoot>
-              </table>
-              
-            </article>
-
-          </div>
-                       
-        </Modal.Body>
-        <Modal.Footer>
-          <button className='btn BGmodalClose' onClick={closeModal}>
-            Cerrar
-          </button>
-          <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} onClick={() => editAmrap()}>
-            Editar
-          </button>
-        </Modal.Footer>
-      </Modal>
+        <button
+          className={`btn ${'BlackBGtextWhite'}`}
+          onClick={editAmrap}
+        >
+          Editar
+        </button>
+        <button className="btn btn-secondary" onClick={closeModal}>
+          Cerrar
+        </button>
+      </Modal.Footer>
+    </Modal>
     </>
   );
 }
 
-export default ModalEditCircuit
+export default ModalEditCircuit;

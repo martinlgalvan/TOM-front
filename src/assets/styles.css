@@ -1,8 +1,4 @@
-*{
-  margin: 0;
-  padding: 0;
-  font-family: montserrat;
- }
+
 
 .buttonCancelDialog{
   background-color: white;
@@ -177,6 +173,44 @@
     align-items: center;
 
   }
+
+  .styleSelectButton{
+    font-size: 0.9em;
+    margin: auto !important;
+    padding: 0 !important;
+    width: 140px !important;
+  }
+
+  .marginReps{
+    margin-top: 29px;
+  }
+
+  .custom-fieldset {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+  
+  .custom-fieldset legend {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .fieldset-content {
+    margin-top: 10px;
+  }
+  
+  .fieldset-content .form-group {
+    margin-bottom: 10px;
+  }
+  
+  .fieldset-content .form-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
 
   .p-inputnumber-button{
     max-height: 35px;
@@ -401,11 +435,6 @@
   background-color: #dbdbdb;
 }
 
-.input-number-container {
-  display: flex !important;
-  justify-content: center !important;
-  height: 35px;
-}
 
 
 .input-number-container input{
@@ -419,31 +448,86 @@
 
 }
 
-
-.input-number-container .buttonRight {
-  height: 100%;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
-  color: #fff;
-  background-color: black;
-  border: none;
-  cursor: pointer;
+.colorIconYoutube{
+  color: rgb(221, 28, 28) !important;
 }
 
-.input-number-container .buttonLeft {
-  height: 100%;
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
-  color: #fff;
-  background-color: black;
-  border: none;
-  cursor: pointer;
+.p-slider{
+  background-color: #b9b9b9 !important;
+}
+
+.p-slider-handle{
+  background-color: #000000  !important;
+  border: 0 !important;
+}
+
+.dialogStyleProfile .p-dialog-title{
+  margin-top: 10px;
+  margin-left: 15px;
+}
+
+.p-slider-range{
+  background-color: rgb(0, 0, 0);
+}
+
+.p-dropdown-items{
+ padding: 10px;
+ margin: 0;
+}
+
+.p-dropdown-items .p-highlight{
+  font-size: 1em !important;
+  background-color: #888888 !important;
+ }
+
+ 
+
+.colorIconDeleteExercise{
+  color: rgb(190, 27, 27) !important;
+}
+
+.dataTableStyles td{
+  margin-top: 30px;
+  text-align: center !important;
+  border: 1px solid rgba(75, 75, 75, 0.123);
+  border-left: 0;
+  border-right: 0;
+}
+
+.p-column-header-content{
+  justify-content: center;
+}
+
+.fontTable{
+  font-size: 1em;
+  font-family: montserrat;
+}
+
+.dataTableStyles th{
+  padding: 15px;
+  margin-top: 30px !important;
+  justify-content: center;
+  text-align: center !important;
+}
+
+.dataTableStyles {
+  overflow-x: auto;  
+}
+
+.container-fluid, .row {
+  overflow-x: hidden;  
+}
+
+
+
+
+.ellipsis-input {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 5px;
+  box-sizing: border-box;
+  transition: all 0.3s;
 }
 
 .input-number-container .buttonRight:hover,
@@ -463,6 +547,10 @@
 .input-number-container .inp[disabled]{
   background-color: white;
   color: #92969a;
+}
+
+.inputFontSize{
+  font-size: 2.9em;
 }
 
 .colorDisabled{
@@ -565,54 +653,8 @@
   box-shadow: 5px 5px 10px #888888;
 }
 
-.tableRandomizer-num{
-  width: 20px !important;
-}
-
-.tableRandomizer-exercise{
-  width: 250px !important;
-}
-
-.tableRandomizer-sets{
-  width: 50px !important;
-}
-
-.tableRandomizer-reps{
-  width: 50px !important;
-}
-
-.tableRandomizer-peso{
-  width: 70px !important;
-}
-
-.tableRandomizer-rest{
-  width: 100px !important;
-}
-
-.tableRandomizer-video{
-  width: 200px !important;
-}
-
-.tableRandomizer-notes{
-  width: 200px !important;
-}
 
 
-/* Agrega este estilo CSS a tu archivo de estilos o en línea en tu componente */
-.tableRandomizer-exercise,
-.tableRandomizer-sets input,
-.tableRandomizer-reps input,
-.tableRandomizer-rest input,
-.tableRandomizer-video input,
-.tableRandomizer-notes input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  outline: none;
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
 
 .dropDown{
   border: 0 !important;
@@ -647,6 +689,55 @@
   min-height: 200px !important;
   font-size: 0.8em;
 }
+
+.td-0{
+  width: 120px !important;
+}
+
+.td-1{
+  width: 300px !important;
+
+}
+
+.td-4{
+  width: 100px !important;
+}
+
+.td-5{
+  width: 100px !important;
+}
+
+.td-6{
+  width: 40px !important;
+}
+
+.td-7{
+  width: 200px !important;
+}
+
+.td-8{
+  width: 60px  !important;
+}
+
+
+
+.colorPencil{
+  color: #000000;
+}
+
+.colorEditing{
+  background-color: #2CBDC7 !important;
+  font-size: 2em;
+}
+
+.colorIcon{
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  border-radius: 10px !important;
+}
+
+
+
 
 .bbb {
   color: #ffffff !important;
@@ -797,10 +888,11 @@
  
 }
 
-.p-highlight{
-  color: #000000 !important;
-  border-color: #888888  !important;
-  background-color: #e2e1e1 !important;
+.styleSelectButton .p-highlight{
+  color: #ffffff !important;
+  border-color: #000000  !important;
+  background-color: #000000 !important;
+  font-size: 0.7em !important;
 }
 
 
@@ -818,9 +910,9 @@
   font-weight: 400;
 }
 
-.p-highlight button{
+/**.p-highlight button{
   background-color: #000000 !important;
-}
+}*/
 
 .whatsapp-button {
   position: fixed;
@@ -860,6 +952,242 @@
 }
 
 
+/* Ocultar flechas en Chrome, Safari, Edge y Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Ocultar flechas en Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.dialogDeleteExercise .p-dialog-header{
+  padding: 10px 10px;
+}
+
+.dialogDeleteExercise .p-dialog-footer{
+  padding: 0px 0px 10px;
+}
+
+.input-number-container {
+  font-size: 0.4em;
+  width: 140px;
+}
+
+.input-number-container {
+  display: flex !important;
+  flex-direction: row !important;
+  font-size: 0.4em;
+  justify-content: center !important;
+  height: 30px;
+}
+
+.input-number-container input {
+width: 50px;
+}
+
+
+.input-number-container .buttonRight {
+  height: 100%;
+  width: 40px;
+  border-radius: 15px 0px 0px 15px;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  color: #fff;
+  background-color: black;
+  border: none;
+  cursor: pointer;
+}
+
+.input-number-container .buttonLeft {
+  height: 100%;
+  width: 40px;
+  border-radius: 0px 15px 15px 0px;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  color: #fff;
+  background-color: black;
+  border: none;
+  cursor: pointer;
+}
+
+.textAreaResize {
+  resize: none; /* Evita que el usuario pueda redimensionar el textarea */
+  border: none !important; /* Elimina el borde inferior */
+  box-shadow: none !important; /* Elimina cualquier sombra que pueda estar presente */
+}
+
+.table-responsiveCss thead {
+  display: none;
+}
+.table-responsiveCss tbody, .table-responsiveCss tr, .table-responsiveCss td {
+  display: block;
+  width: 100%;
+}
+.table-responsiveCss tr {
+  margin-bottom: 1rem;
+}
+.table-responsiveCss td {
+  text-align: right;
+  padding-left: 50%;
+  position: relative;
+}
+
+.table-responsiveCss .notStyle {
+  text-align: center;
+  padding: 0;
+  position: static;
+  width: 100%;
+
+}
+
+.noneStyle{
+  padding: 0 !important; 
+}
+
+.leftIcon{
+  margin-left: 10px !important;
+  border: 0 !important;
+  background-color: #d80000 !important;
+}
+
+.rightIcon{
+  margin-right: 10px !important;
+  background-color: #e7e7e78e  !important;
+}
+
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  width: 100%;
+  padding: 10px;
+  border-top: 1px solid #dee2e6;
+}
+
+.table-responsiveCss td::before {
+  content: attr(data-th);
+  position: absolute;
+  left: 0;
+  width: 45%;
+  padding-left: 1rem;
+  font-weight: bold;
+  text-align: left;
+}
+
+
+.trNotStyle{
+  text-align: center !important;
+  width: 100% !important;
+  margin-bottom: 0 !important;
+  border: 0 !important;
+  background-color: #000000 !important;
+  color: white !important;
+}
+
+.colorTd{
+  border: 0 !important;
+}
+
+.selectNotStyles{
+  -webkit-appearance: none !important; /* Safari y Chrome */
+  -moz-appearance: none !important;    /* Firefox */
+  appearance: none !important;         /* Estándar */
+
+}
+
+
+
+
+
+@keyframes slideUp {
+  0% {
+      transform: translateX(-50%) translateY(100%);
+      opacity: 0;
+  }
+  100% {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+  }
+}
+
+.floating-button {
+  position: fixed;
+  bottom: 0.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  width: 100%;
+  background-color: #00000067;
+  gap: 10px;
+  z-index: 1000;
+  justify-content: center;
+  animation: slideUp 0.5s ease forwards;
+}
+
+.colorRed{
+  background-color: rgb(0, 0, 0);
+  border: 1px solid white;
+  color: white;
+}
+
+.colorCancel{
+  background-color: #ffffff;
+  border: 1px solid #000000;
+}
+
+
+.floating-button .btn {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.floating-button .btn:hover {
+  transform: translateY(-2px);
+}
+
+.bbbbb{
+  color: red;
+}
+
+
+
+
+/*Efectos de eliminar y agregar*/
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+
+/* Definir animación de salida */
+@keyframes fadeOut {
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}
+
+/* Aplicar transición para cambios de altura (ejemplo) */
+.transition-height {
+  transition: height 0.3s ease-in-out;
+}
+
+/* Aplicar transición para cambios de opacidad (ejemplo) */
+.transition-opacity {
+  transition: opacity 0.3s ease-in-out;
+}
 
 
 
@@ -870,20 +1198,102 @@
 
 
 
-@media screen and (min-width: 800px) {
+
+
+
+
+
+@media screen and (min-width: 992px) {
   .msjPhone{
     display: none;
   }
+
+  .input-number-container {
+    font-size: 0.4em;
+    width: 140px;
+  }
+
+  .input-number-container {
+    display: flex !important;
+    flex-direction: row !important;
+    font-size: 0.4em;
+    justify-content: center !important;
+    height: 30px;
+  }
+
+  .input-number-container input {
+width: 50px;
+  }
+
+  .input-number-container .buttonRight {
+    height: 100%;
+    width: 40px;
+    border-radius: 15px 0px 0px 15px;
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    color: #fff;
+    background-color: black;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .input-number-container .buttonLeft {
+    height: 100%;
+    width: 40px;
+    border-radius: 0px 15px 15px 0px;
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    color: #fff;
+    background-color: black;
+    border: none;
+    cursor: pointer;
+  }
+  
 }
 
 
 @media screen and (max-width: 992px) {
-  
+
+  .td-0{
+    display: none;
+  }
+
+  .td-1{
+    width: 20px !important;
+  }
+
+  .td-2{
+    width: 30px !important;
+
+  }
+
+  .td-3{
+    width: 30px  !important;
+
+  }
+
+  .td-5{
+    display: none;
+  }
+
+  .td-6{
+    display: none;
+  }
+
+  .td-7{
+    display: none;
+  }
+
+  .td-8{
+    width: 60px !important;
+  }
 
   .p-selectbutton div{
     width: 100%;
-    background-color: #92969a;
-    border: 1px !important;
+    background-color: #ffffff;
+    border: 1px solid #000000!important;
     border-radius: 5px !important;
   }
   
@@ -944,51 +1354,10 @@
   max-width: 45px;
 }
 
-.input-number-container {
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  text-align: center;
-  padding-left: 0px ;
-  height: 100%;
-  min-width: 50px;
- 
+.input-number-container{
+  display: block;
+
 }
-
-.input-number-container input{
-  border-left: 1px;
-  border-right: 1px;
-  width: 50px;
- 
-}
-
-.input-number-container .buttonRight {
- 
-  border-top-right-radius: 0;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-
-  color: #fff;
-  background-color: black;
-  border: none;
-  cursor: pointer;
-}
-
-.input-number-container .buttonLeft {
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 4px;
-  border-top-left-radius: 0;
-  
-  border-bottom: 0;
-
-  color: #fff;
-  background-color: black;
-  border: none;
-  cursor: pointer;
-}
-
 
 }
 

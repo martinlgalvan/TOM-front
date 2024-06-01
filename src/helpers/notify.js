@@ -19,7 +19,7 @@ const updateToast = () =>
       TOASTID, { 
       render:             "Listo!", 
       type:               toast.TYPE.SUCCESS, 
-      autoClose:          1000, 
+      autoClose:          800, 
       isLoading:          false,
       pauseOnFocusLoss:   false,
       hideProgressBar:    true,

@@ -51,7 +51,7 @@ async function addAmrap(week_id,day_id, amrap) {
 
 //Editar un ejercicio del amrap
 
-async function editExerciseAmrap(week_id,day_id,exercise_id, amrap) {
+async function editExerciseAmrap(week_id, day_id,exercise_id, amrap) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}/amrap`, {
         method: 'PUT',
         headers: {
@@ -62,8 +62,6 @@ async function editExerciseAmrap(week_id,day_id,exercise_id, amrap) {
     })
         .then(response => response.json())
 }
-
-
 
 
 //Elimina un ejercicio dependiendo el día y el ejercicio

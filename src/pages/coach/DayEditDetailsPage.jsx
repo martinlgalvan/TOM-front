@@ -4,17 +4,13 @@ import {Link, useParams} from 'react-router-dom';
 import * as ExercisesService from '../../services/exercises.services.js';
 import * as WeekService from '../../services/week.services.js'; 
 import * as DatabaseExercises from '../../services/jsonExercises.services.js'
-import Options from '../../assets/json/options.json';
 import * as DatabaseUtils from '../../helpers/variables.js'
 import * as Notify from '../../helpers/notify.js'
 import * as RefreshFunction from '../../helpers/generateUUID.js'
+import Options from '../../assets/json/options.json';
 
-import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
-import { Sidebar } from 'primereact/sidebar';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Dialog } from 'primereact/dialog';
-import { ToastContainer } from '../../helpers/notify.js';
 
+import CancelIcon from '@mui/icons-material/Cancel';
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
 import ModalConfirmDeleteExercise from '../../components/Bootstrap/ModalConfirmDeleteExercise.jsx';
@@ -24,13 +20,23 @@ import ModalEditCircuit from '../../components/Bootstrap/ModalEdit/ModalEditCirc
 import AddCircuit from '../../components/AddCircuit.jsx';
 import CustomInputNumber from '../../components/CustomInputNumber.jsx';
 import EditExercise from '../../components/EditExercise.jsx';
-import SkeletonExercises from '../../components/Skeleton/SkeletonExercises.jsx';
 import Warmup from '../../components/Bootstrap/ModalCreateWarmup.jsx';
-import WarmupExercises from '../../components/WarmupExercises.jsx';
 import Floating from '../../helpers/Floating.jsx';
 
+import { motion } from 'framer-motion';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Sidebar } from 'primereact/sidebar';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { Dialog } from 'primereact/dialog';
+import { ToastContainer } from '../../helpers/notify.js';
+import { OverlayPanel } from 'primereact/overlaypanel';
+import { InputTextarea } from "primereact/inputtextarea";
+import { Dropdown } from 'primereact/dropdown';
+import { animated, useTransition } from '@react-spring/web';
 
-
+import IconButton from '@mui/material/IconButton';
+import YouTubeIcon from '@mui/icons-material/YouTube';
+import EditIcon from '@mui/icons-material/Edit';
 
 // CORREGIR PROBLEMA DEL LENGTH, PASO PORQUE ELIMINE QUE SE CREE AUTOMATICAMENTE UN EXERCISES, PARA QUE LUEGO PUEDA CREAR UN INDEX DEL CAMPO ROUTINE.EXERCISES.EXERCISE_ID
 function DayEditDetailsPage(){
@@ -38,51 +44,29 @@ function DayEditDetailsPage(){
     const {day_id} = useParams()
     const {id} = useParams()
     const {username} = useParams()
-    const {numberExercises} = useParams()
-    const [firstOpen, setFirstOpen] = useState(true)
 
+    const [databaseUser, setDatabaseUser] = useState()
+    const [weekName, setWeekName] = useState()
+    const [color, setColor] = useState(localStorage.getItem('color'))
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
     const [status, setStatus] = useState(1)                             // Manejo de renderizado
     const [loading, setLoading] = useState(null)                        // Manejo de renderizado
-    const [firstLoading, setFirstLoading] = useState(true)              // Manejo de skeleton
-    const [secondLoad, setSecondLoad] = useState()                      // Manejo de skeleton
-
 
     const [options, setOptions] = useState()                            // Carga de datos para el select
-    const [numberToast, setNumberToast] = useState(0)                   // Manejo del notify
-
 
     const [circuit, setCircuit] = useState([])                          // Carga del circuit al modal
-    const [day, setDay] = useState([])                                  // Carga del array principal de ejercicios
+    const [exercises, setExercises] = useState([])                                  // Carga del array principal de ejercicios
+    const [day, setDay] = useState([]) 
+
     const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
-
-
-    const [exercise_id, setExercise_id] = useState()                    // Carga edit para el edit y delete de ejercicios
-    const [nameExercise, setNameModal] = useState()                     // Carga para el delete 
-    const [user_id, setUserId] = useState("")                           // ID del usuario en cuestión
+    const [exerciseId, setExe] = useState([]) 
 
     const [show, setShow] = useState(false)                             // Modal para eliminar ejercicios
     const [showEditCircuit, setShowEditCircuit] = useState(false)       // Modal para editar los circuitos
 
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);        // Modal para canvas de formulas
     const [warmup, setWarmup] = useState(false);        // Modal para canvas de formulas
-    
-    const [inputEnFoco, setInputEnFoco] = useState(null);               // Manejo de la edición rápida
-    const [confirm, setConfirm] = useState(null);                       // Ver bien para que la usé
-
-    const inputRefs = useRef([]);                                       // Manejo de la edición rápida
-
-    const [notas, setNotasExercise] = useState()                        // Carga de variables para editar el circuito en su modal
-    const [numberExercise, setNumberExercise] = useState()              //
-    const [typeOfSets, setTypeOfSets] = useState("")                    //
-    const [type, setType] = useState("")                                //-------------------*
-
-    const [newName, setNewName] = useState()                            //Variables para cambiar individualmente los ejercicios
-    const [newSet, setNewSet] = useState(null)                          //
-    const [newRep, setNewRep] = useState()                              //
-    const [newPeso, setNewPeso] = useState()                            //
-    const [newVideo, setNewVideo] = useState()                          //
-    const [newNotas, setNewNotas] = useState()                          //
-    const [newNumberExercise, setNewNumberExercise] = useState()        //-------------------*
+    const [firstWidth, setFirstWidth] = useState();        //Variables para las modales de primeReact
 
 
 
@@ -90,61 +74,73 @@ function DayEditDetailsPage(){
     const [visibleExercises, setVisibleExercises] = useState(false);    //
     const [visibleEdit, setVisibleEdit] = useState(false);              //-------------------*
 
-    const [csv, setCsv] = useState(false);              //  Papaparse, json to  csv
+    const [visible, setVisible] = useState(false);
+    const [selectedRow, setSelectedRow] = useState(null);
 
-    const [color, setColor] = useState(localStorage.getItem('color'))
-    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
-    
+    const op = useRef(null);
     let idRefresh = RefreshFunction.generateUUID()
 
-    const [databaseUser, setDatabaseUser] = useState()
+
 
     useEffect(() => {
         setDatabaseUser(localStorage.getItem('DATABASE_USER'))
-
         if(DatabaseUtils.DATABASE_EXERCISES != null){
           DatabaseExercises.findExercises(DatabaseUtils.USER_ID).then((data) => setDatabaseUser(data))
         } 
-
     }, []);
-    
 
-    const refresh = (refresh) => setStatus(refresh)
 
     useEffect(() => {
 
+
         setLoading(true)
-        setNumberToast(true)
         Notify.notifyA("Cargando")
+    
 
         WeekService.findByWeekId(week_id)
             .then(data => {
- 
+                setWeekName(data[0].name)
                 let indexDay = data[0].routine.findIndex(dia => dia._id === day_id) // De la base de datos, selecciono el día correspondiente
                 let day = data[0].routine[indexDay].exercises                       // Cargo únicamente los ejercicios
+                let onlyExercises = day != null ? day.filter(circuito => circuito.type == 'exercise') : null                     // Cargo únicamente los ejercicios
+
                 let circuit = day != null ? day.filter(circuito => circuito.type != 'exercise') : null  // Cargo únicamente los ejercicios del circuito
 
                 let warmup  =  data[0].routine[indexDay].warmup
                 
-
-                //setCosa(indexDay)
-                setFirstOpen(false)                     // variable que detecta la primera vez que se renderiza el componente
+                console.log(circuit)
                 setCircuit(circuit)                     // establece los ejercicios del circuito para renderizarlo luego a la hora de editar
                 setDay(day)   
+                setExercises(onlyExercises)
                 console.log(day)
                 setModifiedDay(day)                           // array de objetos inicial, son los ejercicios
-                setUserId(data[0].user_id)              // userId para volver a la página anterior
                 setLoading(false)                       // load principal
-                setInputEnFoco(null)                    // input para la edición rápida
-                setConfirm(null)                        // no sé todavía, averiguar por qué lo use
-                setOptions(Options)                     // array de options para el select
-                setFirstLoading(false)                  // firstload para cargar el skeleton
-                setEditExerciseMobile(false)
-                Notify.updateToast()
-                //localStorage.setItem('LEN', day.length) // carga en localstorage el largo del array principal, para luego al editar o eliminar cargar el skeleton correctamente 
+
+                try {
+                    Notify.updateToast();
+                } catch (error) {
+                    console.error("Error actualizando notificación:", error);
+                }
+
 
             })
-}, [status, firstLoading])
+}, [status])
+
+    useEffect(() => {
+        setFirstWidth(window.innerWidth)
+        
+    const groupedOptions = Options.reduce((acc, group) => {
+        acc.push({ label: group.label, value: group.value, disabled: null });
+        acc.push(...group.items);
+        return acc;
+    }, [])
+
+    setOptions(groupedOptions)
+
+    }, [])
+
+
+const refresh = (refresh) => setStatus(refresh)
 
 
 const refreshEdit = (le) => {
@@ -155,111 +151,24 @@ const refreshEdit = (le) => {
 }
 
 
+const handleButtonClick = (rowData) => {
+    setSelectedRow(rowData);
+    setVisible(true);
+};
 
+const confirmDelete = () => {
+    console.log("eliminado!");
+    setVisible(false);
 
-useEffect(() => {
-    let strItem    = localStorage.getItem('LEN')
-    let parsedItem = parseInt(strItem)
-    setSecondLoad(parsedItem)
-
-}, [loading])
-
-
-
-    const closeDialog = (close) => setVisibleExercises(close)
-
-    // EDIT EXERCISES
-
-    const changeNameEdit = (index, e) => {
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].name = e.target.value;
-        setModifiedDay(updatedModifiedDay);
-
-      };
-      
-      const changePesoEdit = (index, e) => {
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].peso = e.target.value;
-        setModifiedDay(updatedModifiedDay);
-
-      };
-
-      const changeSetEdit = (index, newValue) => {
-
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].sets = newValue;
-        setModifiedDay(updatedModifiedDay);
-
-      };
-      
-      const changeRepEdit = (index, newValue) => {
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].reps = newValue;
-        setModifiedDay(updatedModifiedDay);
-      };
-
-      const changeRestEdit = (index, e) => {
-
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].rest = e.target.value;
-        setModifiedDay(updatedModifiedDay);
-      };
-      
-      const changeVideoEdit = (index, e) => {
-
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].video = e.target.value;
-        setModifiedDay(updatedModifiedDay);
-      };
-      
-      const changeNotasEdit = (index, e) => {
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].notas = e.target.value;
-        setModifiedDay(updatedModifiedDay);
-      };
-
-      const changeNumberExercise = (index, e) => {
-
-        const updatedModifiedDay = [...modifiedDay];
-        updatedModifiedDay[index].numberExercise = e.target.value;
-        setModifiedDay(updatedModifiedDay);
-      };
-      
-      // Resto de funciones de cambio...
-
-      const applyChanges = () => {
-        console.log(modifiedDay)
-        setDay(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
-        ExercisesService.editExercise(week_id, day_id, modifiedDay)
-            .then((data) => {setStatus(idRefresh)} )
-        
-      };
-
+};
     //Modal Edit Exercise
 
     const [completeExercise, setCompleteExercise] = useState()
+    const [completeCircuit, setCompleteCircuit] = useState()
     const [indexOfExercise, setIndexOfExercise] = useState()
+    const [indexOfCircuit, setIndexOfCircuit] = useState()
+    const [isEditing, setIsEditing] = useState(false)
 
-    function handleEditMobileExercise(elementsExercise, index){
-        setIndexOfExercise(index)
-        setCompleteExercise(elementsExercise)
-        setEditExerciseMobile(true)
-    }
-   
-    const handleShowWarmup = () => setWarmup(true)
-
-    function handleShowEditCircuit(id, type, typeOfSets, circuit,notas, numberExercise){
-
-        setShowEditCircuit(true)
-        setExercise_id(id)
-        setNotasExercise(notas)
-        setTypeOfSets(typeOfSets)
-        setNumberExercise(numberExercise)
-        setCircuit(circuit)
-        setType(type)
-        setNotasExercise(notas)
-
-    }    
 
     const handleClose = () => {
         setShow(false);
@@ -274,370 +183,461 @@ useEffect(() => {
         
     } 
 
-    const deleteExercise = (event,id,name) => {
-
-        name == null || name == undefined ? name = "Sin nombre" : name = name
+    const closeDialog = (close) => setVisibleExercises(close)
 
 
-        confirmDialog({
-            trigger:            event.currentTarget,
-            message:            `¡Cuidado! Estás por eliminar "${name}". ¿Estás seguro?`,
-            icon:               'pi pi-exclamation-triangle',
-            header:             `Eliminar ${name}`,
-            accept:             () => acceptDeleteExercise(id),
-            acceptLabel:        "Sí, eliminar",
-            acceptClassName:    "p-button-danger",
-            rejectLabel:        "No",
-            rejectClassName:    "closeDialog",
-            blockScroll:        true,
-            dismissableMask:    true,
+    const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
 
+    const productRefs = useRef([]);
+
+
+
+    const propiedades = ['#', 'Nombre', 'Series', 'Reps', 'Peso', 'Rest', 'Video', 'Notas', 'Acciones'];
+    
+
+    // --------------------- EDIT CIRCUIT FUNCTIONS
+
+    function handleShowEditCircuit(circuit, index,  id){
+        setIndexOfCircuit(index)
+        setCompleteCircuit(circuit)
+        setShowEditCircuit(true)
+
+    }    
+
+
+
+
+
+
+
+
+    
+
+    // ------------  EDIT FUNCTIONS
+
+    function handleEditMobileExercise(elementsExercise, index){
+        setIndexOfExercise(index)
+        setCompleteExercise(elementsExercise)
+        setEditExerciseMobile(true)
+    }
+
+    const changeModifiedData = (index, value, field, aa) => {
+        console.log(index, value, field, aa)
+        setIsEditing(true)
+        const updatedExercises = [...modifiedDay];
+        updatedExercises[index] = { ...updatedExercises[index], [field]: value };
+        setModifiedDay(updatedExercises);
+        console.log(index, value, field, aa)
+    };
+
+    const customInputEditDay = (data, index, field) =>{
+
+
+
+        if(field === 'sets' || field === 'reps'){
+            return <CustomInputNumber initialValue={data}
+            onChange={(e) => changeModifiedData(index, e, field)}
+            isRep={field === 'reps' ? true : false}
+            onValueChange={() => handleInputFocus(index)}
+            value={data} 
+            className={`mt-5`}/>
+        } else if (field  === 'video') {
+            return <>
+           <IconButton
+            aria-label="video"
+            className="w-100"
+            onClick={(e) => {
+              productRefs.current[index].toggle(e);
+            }}
+            >
+            <YouTubeIcon className='colorIconYoutube' />
+            </IconButton>
+            <OverlayPanel ref={(el) => (productRefs.current[index] = el)}>
+                <input
+                className='form-control ellipsis-input text-center'
+                type="text"
+                defaultValue={data}
+                onChange={(e) => changeModifiedData(index, e.target.value, field)}
+                />
+            </OverlayPanel>
+                </>
+        } else if(field === 'notas'){        
+            return <InputTextarea className='textAreaResize' autoResize value={data == null ? "" : data} onChange={(e) => changeModifiedData(index, e.target.value, field)} />
+  
+        } else{
+            return <input 
+            className={`form-control ${firstWidth ? 'border' : 'border-0'} ellipsis-input text-center`} 
+            type="text" 
+            defaultValue={data}
+            onChange={(e) => changeModifiedData(index, e.target.value, field)}
+            
+        />
+        }
+
+    }
+
+    const applyChanges = () => {
+
+        ExercisesService.editExercise(week_id, day_id, modifiedDay)
+            .then((data) => {
+                setStatus(idRefresh)
+                setIsEditing(false)
+            } )
+        
+      };
+
+
+
+    // --------------------- DELETE ACTIONS
+
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [exerciseToDelete, setExerciseToDelete] = useState(null);
+
+    const handleDeleteClick = (exercise) => {
+        setExerciseToDelete(exercise);
+        setShowDeleteDialog(true);
+    };
+    
+    const handleDeleteConfirm = () => {
+        if (exerciseToDelete) {
+            acceptDeleteExercise(exerciseToDelete.exercise_id);
+        }
+        setShowDeleteDialog(false);
+        setExerciseToDelete(null);
+    };
+    
+
+    const handleDeleteCancel = () => {
+        setShowDeleteDialog(false);
+        setExerciseToDelete(null);
+    };
+
+    const deleteExercise = (event, id, name) => {
+        name = name || "Sin nombre";
+        handleDeleteClick({ exercise_id: id, name });
+    };
+
+    function acceptDeleteExercise(id) {
+        Notify.notifyA("Cargando");
+
+        ExercisesService.deleteExercise(week_id, day_id, id)
+        .then(() => {
+            // Actualizar el estado modifiedDay eliminando el ejercicio por id
+            const updatedExercises = modifiedDay.filter(exercise => exercise.exercise_id !== id);
+            setModifiedDay(updatedExercises);
+            setStatus(idRefresh); // Opcional, si es necesario
+            setLoading(false)
+            setIsEditing(false)
+
+            Notify.updateToast()
+        })       
+        .catch(error => {
+            console.error("Error aplicando cambios:", error);
+            Notify.notifyA("Error aplicando cambios");
         });
     };
 
-    
-  const sidebarStyles = {
-    height: '90%', // Establece la altura al 100% de la pantalla
-    zIndex: 1000, // Asegura que el Sidebar esté por encima del contenido principal
-  };
-    
-    function acceptDeleteExercise(id) {
-        setLoading(true)
+    const transitions = useTransition(modifiedDay, {
+        from: { opacity: 0, scale: 0.9,},
+        enter: { opacity: 1, scale: 1, },
+        leave: { opacity: 0, scale: 0.9},
+        config: { tension: 350, friction: 20 },
+        delay: 200,
+        keys: item => item.exercise_id,
+      });
 
-        ExercisesService.deleteExercise(week_id, day_id, id)
-            .then(() => setStatus(idRefresh))
-    };
+    const tableMobile = () => {
 
-    const handleInputFocus = (index) => { setInputEnFoco(index); setConfirm(true); console.log(index)};
+        return <div className="table-responsiveCss">
+                    <table className="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Peso</th>
+                                    <th>Sets</th>
+                                    <th>Reps</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {transitions((styles, exercise, i) => (
+                            <animated.tr key={exercise.exercise_id} style={styles}>
+                                
+                                    {exercise.type == 'exercise' ?
+                                        <>                                    
 
-    const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
-  
+                                            <td data-th="Nombre">{customInputEditDay(exercise.name, i, 'name')}</td>
+                                            <td data-th="Peso">{customInputEditDay(exercise.peso, i, 'peso')}</td>
+                                            <td data-th="Sets">{customInputEditDay(exercise.sets, i, 'sets')}</td>
+                                            <td data-th="Reps">{customInputEditDay(exercise.reps, i, 'reps')}</td>
+                                            <td className='notStyle'>
+                                                <div className='row justify-content-center mt-2'>
+                                                    <div className='col-6'>
+                                                        <Dropdown 
+                                                        value={exercise.numberExercise} 
+                                                        options={options} 
+                                                        onChange={(e) => {changeModifiedData(i,e.target.value, 'numberExercise')}}
+                                                        placeholder="Select an item"
+                                                        optionLabel="label"
+                                                        className="p-dropdown-group w-100"
+                                                    />
+                                                    </div>
+                                                    <div className='col-6'>
+                                                        <IconButton aria-label="video" className=" styleButtonsEdit  me-5 rounded-0" onClick={(e) => deleteExercise(e, exercise.exercise_id, exercise.name)}>
+                                                                    <CancelIcon className='bbbbb' />
+                                                                </IconButton>
+                                                                <IconButton aria-label="edit" className=" btn btn-outline-light me-3 rounded-0" onClick={() => handleEditMobileExercise(exercise, i)}>
+                                                                    <EditIcon className='colorPencil text-end'  />
+                                                        </IconButton>
+                                                    </div>
+                                                        
+                                                </div>
+                                            </td> 
+                                        </>
+                                    
+                                : <>
+                                            <td data-th={"Nombre"} className=''>{exercise.type}</td>
+                                            <td data-th={"Series"} className=''>{exercise.typeOfSets}</td>
+                                            <td className='notStyle'>{exercise.circuit.map(item => 
+                                                <div className='row justify-content-around' key={item.idRefresh}>
+                                                <span className='col-6'>{item.name}</span><span className='col-3'>{item.reps}</span><span className='col-3' >{item.peso}</span>
+                                                </div>)}
+                                            </td>
+
+                                            <td className='notStyle'>
+                                                <div className='row justify-content-center mt-2'>
+                                                    <div className='col-6'>
+                                                        <Dropdown 
+                                                        value={exercise.numberExercise} 
+                                                        options={options} 
+                                                        onChange={(e) => {changeModifiedData(i,e.target.value, 'numberExercise')}}
+                                                        placeholder="Select an item"
+                                                        optionLabel="label"
+                                                        className="p-dropdown-group w-100"
+                                                    />
+                                                    </div>
+                                                    <div className='col-6'>
+                                                        <IconButton aria-label="video" className=" styleButtonsEdit  me-5 rounded-0" onClick={(e) => deleteExercise(e, exercise.exercise_id, exercise.name)}>
+                                                                    <CancelIcon className='bbbbb' />
+                                                                </IconButton>
+                                                                <IconButton aria-label="edit" className=" btn btn-outline-light me-3 rounded-0" onClick={() => handleShowEditCircuit(exercise, i)}>
+                                                                    <EditIcon className='colorPencil text-end'  />
+                                                        </IconButton>
+                                                    </div>
+                                                        
+                                                </div>
+                                            </td> 
+                                            </>}
+                                        </animated.tr>
+                             
+                              ))}
+                                
+                            </tbody>
+                     </table>
+                        
+                </div>
+                            
+
+    }
 
 
-    const handleInputChangeSet = (newValue,e ) => console.log(newValue, e);
-    const handleInputChangeRep = (newValue) => setNewRep(newValue);
+    const handleShowWarmup = () => setWarmup(true)
 
-    //<button className="btn BlackBGtextWhite col-12" onClick={() => setEditExerciseMobile(true)}>Formulas</button>
-
-    //                            {firstLoading == true || day.length == 0 ? Array.from({ length: firstLoading == true && secondLoad == numberExercises ? numberExercises : secondLoad }).map((_, index) => (
-        //<SkeletonExercises ancho={anchoPagina} key={index} />
-        //)) : 
-    
-    const [anchoPagina, setAnchoPagina] = useState(window.innerWidth);
-
-
-
-
-
-
-
-
-
-
-    
     return (
 
         <section className='container-fluid'>
             <Logo />
 
             <div className='row justify-content-center'>
-                    <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `${color}` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(modifiedDay)} >Añadir Ejercicio</button>
+                <div className='col-10 col-lg-6 text-center'>
 
-                    <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `${color}` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)} >Añadir Circuito</button>
+                    <p className='fs-5'>Planificación de {username} - <b>{weekName}</b></p>
+
                 </div>
-
-                <div className="row justify-content-center">
-
-                <div className='row justify-content-center'>
-                    <Dialog 
-                        className='col-12 col-md-10 col-xxl-5' 
-                        contentClassName={'colorDialog'} 
-                        headerClassName={'colorDialog'}  
-                        header="Header" 
-                        visible={visibleCircuit} 
-                        modal={false} 
-                        onHide={() => setVisibleCircuit(false)}
-                        blockScroll={window.innerWidth > 600 ? false : true}>
-                        <AddCircuit 
-                            databaseExercises={databaseUser} 
-                            handleCloseDialog={handleCloseDialog} 
-                            closeDialog={closeDialog} 
-                            refresh={refresh}/>
-                    </Dialog>
-                    <Dialog 
-                        className='col-12 col-md-10 col-xxl-5' 
-                        contentClassName={'colorDialog'} 
-                        headerClassName={'colorDialog'} 
-                        header="Header" 
-                        visible={visibleExercises} 
-                        modal={false} 
-                        onHide={() => setVisibleExercises(false)}
-                        blockScroll={window.innerWidth > 600 ? false : true}>
-                        <AddExercise 
-                            databaseExercises={databaseUser}
-                            handleCloseDialog={handleCloseDialog} 
-                            refresh={refresh}/>
-                    </Dialog>
-                </div>
-
             </div>
 
+            <div className='row justify-content-center mb-5'>
+                    <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `${color}` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleExercises(modifiedDay)}>Añadir Ejercicio</button>
 
-            <article  className='row justify-content-center'>
-
-           
-            <button onClick={handleShowWarmup} className='btn border buttonColor col-9 col-md-5 my-5'>Administrar bloque de entrada en calor</button>
-            <div className='row justify-content-center'>
-                {warmup.length > 0 && <div className='col-11 col-xxl-10'>
-                    <WarmupExercises /> 
-
-                </div>}
-
-            </div>
-                <div className={`row justify-content-center align-items-center text-center mt-5 px-0 ${inputEnFoco !== null ? 'colorDisabled' : null}`}>
+                    <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} col-6 col-lg-2 my-2 mx-1`} style={{ "backgroundColor": `${color}` }} label="Show" icon="pi pi-external-link" onClick={() => setVisibleCircuit(true)}>Añadir Circuito</button>
 
                     
+                <div className='col-12 mt-4 text-center'>
+
+<button onClick={handleShowWarmup} className='btn border buttonColor '>Administrar bloque de entrada en calor</button>
+
+</div>
+
+                </div>
 
 
-                    <div className={`table-responsive col-11 col-xxl-10 m-0 p-0 pt-3 `}>
-                        <table className="table align-middle table-bordered ">
-                            <thead>
+                <div className='row justify-content-center'>
+                    {warmup.length > 0 && <div className='col-11 col-xxl-10'>
+                        <WarmupExercises /> 
 
-                                <tr>
-                                    <th className='TableResponsiveDayEditDetailsPage tdNumber' scope="col">#</th>
-                                    <th scope="col" className='tdName'>Ejercicio</th>
-                                    <th scope="col" className='tdSets'>Series</th>
-                                    <th scope="col" className='tdReps'>Reps</th>
-                                    <th scope="col" className=' TableResponsiveDayEditDetailsPage tdReps '>Rest</th>
-                                    <th className='TableResponsiveDayEditDetailsPage tdPeso' scope="col">Peso</th>
-                                    <th className='TableResponsiveDayEditDetailsPage tdVideo' scope="col">Video</th>
-                                    <th className='TableResponsiveDayEditDetailsPage tdNotas' scope="col">Notas</th>
-                                    <th scope="col" className='tdActions'>Acciones</th>
-                                </tr> 
-                            </thead>
-                            <tbody>
-                            
+                    </div>}
+                </div>
 
-                            <TransitionGroup component={null} className="todo-list">
-                                { day.map((exercise, index) =>
-                                <CSSTransition
-                                key={exercise.exercise_id}
-                                timeout={day.length == 0 ? 0 : 400}
-                                classNames="item"
-                                >                               
-                                    <tr key={exercise.exercise_id} className={`oo`}>
-                                        <th className='TableResponsiveDayEditDetailsPage' >
-                                        {exercise.type != 'exercise' ? <span>{exercise.numberExercise}</span> :
-                                         <select  
-                                            onFocus={exercise.type != 'exercise' ? null : () => handleInputFocus(index)}
-                                            ref={(input) => (inputRefs.current[index] = input)}
-                                            defaultValue={exercise.numberExercise} 
-                                            onChange={(e) => {changeNumberExercise(index, e)}}
-                                            >
-                                            {options.map(option =>
-                                            <optgroup 
-                                                key={option.value} 
-                                                label={option.name} >
+                    <div className='row justify-content-center'>
+                        <Dialog 
+                            className='col-12 col-md-10 col-xl-5' 
+                            contentClassName={'colorDialog'} 
+                            headerClassName={'colorDialog'}  
+                            header="Crear circuito" 
+                            visible={visibleCircuit} 
+                            modal={false} 
+                            onHide={() => setVisibleCircuit(false)}
+                            blockScroll={window.innerWidth > 600 ? false : true}>
+                            <AddCircuit 
+                                databaseExercises={databaseUser} 
+                                handleCloseDialog={handleCloseDialog} 
+                                closeDialog={closeDialog} 
+                                refresh={refresh}/>
+                        </Dialog>
+                        <Dialog 
+                            className='col-12 col-md-10 col-xl-5' 
+                            contentClassName={'colorDialog'} 
+                            headerClassName={'colorDialog'} 
+                            header="Crear ejercicio" 
+                            visible={visibleExercises} 
+                            modal={false} 
+                            onHide={() => setVisibleExercises(false)}
+                            blockScroll={window.innerWidth > 600 ? false : true}>
+                            <AddExercise 
+                                databaseExercises={databaseUser}
+                                handleCloseDialog={handleCloseDialog} 
+                                refresh={refresh}/>
+                        </Dialog>
+                    </div>
 
-                                                    <option value={option.value} > {option.name} </option>
-                                                    {option.extras.map(element => <option key={element.name} >{element.name}</option> )}
+                
 
-                                            </optgroup>
-                                            )}
-                                        </select>}
+            <div className='row justify-content-center'>
 
-                                        </th>
-                                        {exercise.type != 'exercise' ? <td colSpan={anchoPagina > 992 ? 5 : 3} >
-                                                                <table className='table align-middle'>
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th colSpan={anchoPagina > 992 ? 5 : 3}>{exercise.type} x {exercise.typeOfSets}</th>
-                                                                        </tr>
-                                                                        <tr>
-
-                                                                            <th scope='col' className='mx-2'>Ejercicio</th>
-                                                                            <th className='mx-2' scope='col' >Reps</th>
-                                                                            <th className='TableResponsiveDayEditDetailsPage mx-2' scope='col'>Peso</th>
-                                                                            <th className='TableResponsiveDayEditDetailsPage tdNotasCircuit' scope='col'>Video</th>
-                                                                        </tr>
-                                                                        </thead>
-                                                                    <tbody>
-                                                                        {exercise.circuit.map(element =>
-                                                                        <tr key={element.idRefresh}>
-
-                                                                            <td>{element.name}</td>
-                                                                            <td>{element.reps}</td>
-                                                                            <td className='TableResponsiveDayEditDetailsPage'>{element.peso}</td>
-                                                                            <td className='TableResponsiveDayEditDetailsPage tdNotasCircuit'>{element.video}</td>
-                                                                        </tr>)}
-                                                                    </tbody>
-                                                                </table> 
-                                                            </td>: 
-                                    <td className='tdName'>
-                                        <input 
-                                        className='form-control border-0' 
-                                        type="text" 
-                                        defaultValue={exercise.name} 
-                                        
-                                        onChange={(e) => changeNameEdit(index, e)}
-                                        onFocus={() => handleInputFocus(index)}
-                                        autoComplete='off'
-                                        />
-                                    </td>}
-
-                                    {exercise.sets === undefined ? null :
-                                    <td className='tdSets c' >
-                                        <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : exercise.sets}
-                                            onChange={(e) => changeSetEdit(index, e)}
-                                            onValueChange={() => handleInputFocus(index)}
-                                            onFocus={() => handleInputFocus(index)}
-
-                                            
-                                            className="" 
-                                            />
-  
-                                    </td>} 
-                                    {exercise.reps === undefined ? null  : 
-                                    <td className='tdReps'>
-                                            <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco === index && !confirm ? newRep : exercise.reps}
-                                            onChange={(e) => changeRepEdit(index, e)}
-                                            onValueChange={() => handleInputFocus(index)}
-                                            ref={(input) => (inputRefs.current[index] = input)}
-                                            isTextMode={inputEnFoco !== null && inputEnFoco === index && !confirm}
-
+                {firstWidth > 992 ? <div className={`table-responsive col-11 col-lg-11`}>
+                    <table className={`table table-hover align-middle fontTable text-center ${isEditing && 'table-light'} `}>
+                        <thead>
+                        <tr>
+                            {propiedades.map((propiedad, index) => (
+                            <th key={propiedad} className={`td-${index}`} scope="col">{propiedad == 'Acciones' ? '#' : propiedad}</th>
+                            ))}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {modifiedDay.map((exercise, i) => (
+                            <tr key={exercise.exercise_id}>
+                                    <td className='td-0'>
+                                        <Dropdown 
+                                                value={exercise.numberExercise} 
+                                                options={options} 
+                                                onChange={(e) => {changeModifiedData(i, e.target.value, 'numberExercise')}}
+                                                placeholder="Select an item"
+                                                optionLabel="label"
+                                                className="p-dropdown-group w-100"
                                             />
                                     </td>
-                                    }
-
-                                        {exercise.rest === undefined ? null :
-                        
-                                        <td className='tdReps TableResponsiveDayEditDetailsPage'>
-                                            <input 
-                                                className='form-control border-0' 
-                                                type="text" 
-                                                defaultValue={exercise.rest}
-                                                onChange={(e) => changeRestEdit(index, e)}
-                                                onFocus={() => handleInputFocus(index)}
-                                                
-                                            />
-                                        </td>}
-                                    
-
-                                    {exercise.peso === undefined ? null :
-
-                                        <td className='TableResponsiveDayEditDetailsPage tdPeso'>
-                                            
-                                            <input 
-                                            className='form-control border-0' 
-                                            type="text" 
-                                            defaultValue={exercise.peso}
-                                            onChange={(e) => changePesoEdit(index, e)}
-                                            onFocus={() => handleInputFocus(index)}
-                                            
-                                            />
-                                            
-                                        
-                                        </td> 
-                                    }
-                                    
-                                    {exercise.video === undefined ? null : 
-                                    
-                                        <td className='TableResponsiveDayEditDetailsPage tdVideo' >
-                                            
-                                            <input 
-                                            className='form-control border-0' 
-                                            type="text" 
-                                            defaultValue={exercise.video}
-                                            onChange={(e) => changeVideoEdit(index, e)}
-                                            onFocus={() => handleInputFocus(index)}
-                                            />
-                                        
-                                        </td>
-                                    }
-
-                                    <td className='TableResponsiveDayEditDetailsPage tdNotas'>
-                                        
-                                        <textarea 
-                                        className='form-control border-0' 
-                                        type="text" 
-                                        defaultValue={exercise.notas}
-                                        onChange={(e) => changeNotasEdit(index, e)}
-                                        onClick={
-                                            exercise.type != 'exercise' ? () => handleShowEditCircuit(
-                                            exercise.exercise_id, 
-                                            exercise.type, 
-                                            exercise.typeOfSets, 
-                                            exercise.circuit, 
-                                            exercise.notas, 
-                                            exercise.numberExercise) : null}
-                                        onFocus={exercise.type != 'exercise' ? null : () => handleInputFocus(index)}
-                                        ref={(input) => (inputRefs.current[index] = input)}
-                                        />
-
-                                    </td> 
-                                    
-                                    <td className='tdActions'>
-
+                                    {exercise.type === 'exercise' ? (
                                         <>
-                                       
-                                            <button onClick={(e) => deleteExercise(e,exercise.exercise_id,exercise.name)} className='btn buttonsEdit'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
-                                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                                                </svg>
-                                            </button>
-                                            {anchoPagina < 986 && <button 
-                                            className='btn buttonsEdit'
-                                            onClick={() => exercise.type != 'exercise' ? 
-                                                handleShowEditCircuit(
-                                                    exercise.exercise_id, 
-                                                    exercise.type, 
-                                                    exercise.typeOfSets, 
-                                                    exercise.circuit, 
-                                                    exercise.notas, 
-                                                    exercise.numberExercise) : 
-                                                    
-                                                handleEditMobileExercise(exercise, index)}>
+                                            <td className='td-1'>{customInputEditDay(exercise.name, i,'name')}</td>
+                                            <td className='td-2'>{customInputEditDay(exercise.sets, i, 'sets')}</td>
+                                            <td className='td-3'>{customInputEditDay(exercise.reps, i, 'reps')}</td>
+                                            <td className='td-4'>{customInputEditDay(exercise.peso, i, 'peso')}</td>
+                                            <td className='td-5'>{customInputEditDay(exercise.rest, i, 'rest')}</td>
+                                            <td className='td-6'>{customInputEditDay(exercise.video, i, 'video')}</td>
+                                            <td className='td-7'>{customInputEditDay(exercise.notas, i, 'notas')}</td>
+                                            <td className='td-8'>
+                                                <div className='row justify-content-center'>
+                                                    <IconButton aria-label="video" className="col-12" onClick={(e) => deleteExercise(e, exercise.exercise_id, exercise.name)}>
+                                                        <CancelIcon className='colorIconDeleteExercise' />
+                                                    </IconButton>
+                                                    {firstWidth < 700 && (
+                                                        <IconButton aria-label="edit" className="col-12">
+                                                            <EditIcon className='colorPencil' onClick={() => handleEditMobileExercise(exercise, i)} />
+                                                        </IconButton>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
 
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-pencil-square" viewBox="0 0 16 16">
-                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                                                <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
-                                                </svg>
-                                            </button>}
-                                        </> 
-
-                                    </td>
-                                </tr>
-                                
-                                    </CSSTransition>
-                                )}
-                                </TransitionGroup>
                                 
 
-                            </tbody>
-                            
-                        
-                            
-                        </table>
-                        {inputEnFoco == null ? null :
-                        <>
-                            <button className='btn btn-secondary mb-2 me-2' onClick={() => setInputEnFoco(null)}>
-                            Cancelar edición
-                        </button>
-                            <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mb-2 ms-2`} style={{ "backgroundColor": `${color}` }} onClick={applyChanges} >
-                                Aplicar cambios
-                            </button>
-                        </>
-                        }
-                        
-                    </div>
-                    </div>
+                                            <td colSpan="7" className='td-3'>
+                                                <table className="table text-center">
+                                                    <thead className='text-center'>
+                                                        <tr  >
+                                                        <th colSpan={8} className='td-1'>Nombre: {exercise.type}</th>
+                                                        </tr>
+                                                        <tr className='text-center'>
+                                                        <th  colSpan={8} className='td-1'>Series: {exercise.typeOfSets}</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Nombre</th>
+                                                            <th>Reps</th>
+                                                            <th>Peso</th>
+                                                            <th>Video</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
 
-                    <Link to={`/user/routine/${id}/${username}`} className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} text-center mt-5 mb-3 col-4`} style={{ "backgroundColor": `${color}` }} >Volver atrás</Link>
-                </article>
 
-                <Floating link={`/user/routine/${id}/${username}`} />
+
+                                                        {exercise.circuit.map((circuitExercise, j) => (
+                                                            <tr key={circuitExercise.idRefresh}>
+                                                                <td>{circuitExercise.name}</td>
+                                                                <td>{circuitExercise.reps}</td>
+                                                                <td>{circuitExercise.peso}</td>
+                                                                <td>{circuitExercise.video}</td>
+                                                            </tr>
+                                                        ))}
+                                </tbody>
+                            </table>
+                        </td>
+                        <td className='td-8'>
+                            <div className='row justify-content-center'>
+                                <IconButton aria-label="video" className="col-10 my-1" onClick={(e) => deleteExercise(e, exercise.exercise_id, exercise.name)}>
+                                    <CancelIcon className='colorIconDeleteExercise' />
+                                </IconButton>
+
+                                <IconButton aria-label="edit" className="col-8 my-1 colorIcon"  onClick={() => handleShowEditCircuit(exercise, i)}>
+                                        <EditIcon className='colorPencil'  />
+                                </IconButton>
+
+                            </div>
+                        </td>
+                    </>
+                )}
+            </tr>
+        ))}
+    </tbody>
+                    </table>
+                
+                </div> : tableMobile()}
+          
+            </div>
+
+            {isEditing && (
+                 <div className="floating-button">
+                 <button className="btn colorRed p-4 my-3 fs-5"  onClick={() => applyChanges()} >Guardar</button>
+                 <button className="btn colorCancel p-4 my-3 fs-5" onClick={() => setIsEditing(false)}>Cancelar</button>
+             </div>
+            )}
+
+            <ConfirmDialog
+            visible={visible}
+            onHide={() => setVisible(false)}
+            message="¿Estás seguro de que deseas eliminar este elemento?"
+            header="Confirmación"
+            icon="pi pi-exclamation-triangle"
+            acceptLabel="Eliminar"
+            acceptClassName="p-button-danger"
+            rejectLabel="Cancelar"
+            accept={confirmDelete}
+            reject={() => setVisible(false)}
+        />
+
+                {!isEditing && <Floating link={`/user/routine/${id}/${username}`} />}
 
                 <Dialog 
                     className='col-12 col-md-10 col-xxl-5' 
@@ -650,9 +650,9 @@ useEffect(() => {
 
                 </Dialog>
 
-                <ModalConfirmDeleteExercise show={show} handleClose={handleClose} closeModal={closeModal} week_id={week_id} day_id={day_id} exercise_id={exercise_id} name={nameExercise}/>
+      
 
-                <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
+                {completeCircuit && <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} circuit={completeCircuit} />}
 
                
                 <ToastContainer
@@ -673,12 +673,34 @@ useEffect(() => {
                 <Sidebar visible={editExerciseMobile} position="right" onHide={() => {setEditExerciseMobile(false)}}>
                     <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refresh={refresh} refreshEdit={refreshEdit} isAthlete={false}/>
                 </Sidebar>
+
+                <Dialog
+                    header={`${exerciseToDelete?.name || ''}`}
+                    className='dialogDeleteExercise'
+                    visible={showDeleteDialog}
+                    style={{  width: `${firstWidth > 991 ? '50vw' : '80vw'}` }}
+                    footer={
+                        <div className='row justify-content-center '>
+                            <div className='col-lg-12 me-3'>
+
+                                <button className="btn btn-outlined-secondary" onClick={handleDeleteCancel}>No</button>
+                                <button className="btn btn-danger" onClick={handleDeleteConfirm}>Sí, eliminar</button>
+                                                            
+                            </div>
+                        </div>
+                    }
+                    onHide={handleDeleteCancel}
+                >
+                    <p className='p-4'>¡Cuidado! Estás por eliminar <b>"{exerciseToDelete?.name}"</b>. ¿Estás seguro?</p>
+                </Dialog>
+
                     <Dialog 
                         className='col-12 col-md-10' 
                         contentClassName={'colorDialog'} 
                         headerClassName={'colorDialog'}  
                         header="Header" 
                         visible={warmup} 
+                        scrollable={"true"}
                         modal={false} 
                         onHide={() => setWarmup(false)}
                         blockScroll={window.innerWidth > 600 ? false : true}>

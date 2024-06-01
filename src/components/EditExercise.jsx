@@ -6,6 +6,7 @@ import Options from '../assets/json/options.json';
 import * as ExercisesService from '../services/exercises.services.js';
 
 import { ToastContainer } from './../helpers/notify.js';
+import { Dropdown } from 'primereact/dropdown';
 
 function EditExercise({refreshEdit, indexOfExercise, completeExercise, week_id, day_id, isAthlete}) {
 
@@ -25,8 +26,15 @@ const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
 
 useEffect(() => {
-  console.log(completeExercise[indexOfExercise].numberExercise)
-  setOptions(Options)
+  const groupedOptions = Options.reduce((acc, group) => {
+    acc.push({ label: group.label, value: group.value, disabled: null });
+    acc.push(...group.items);
+    console.log(acc)
+    return acc;
+  }, [])
+  
+  setOptions(groupedOptions)
+
   setModifiedDay(completeExercise)
 
 }, []);
@@ -115,23 +123,15 @@ function onSubmit(e){
     <form className='row justify-content-center' onSubmit={onSubmit}>
     {isAthlete && <p className='fs-5'>{completeExercise[indexOfExercise].name}</p>}
     {!isAthlete &&  
-        <div  className='col-6'>
-          <select  
+        <div  className='col-6 mb-3'>
+          <Dropdown 
             value={completeExercise[indexOfExercise].numberExercise} 
+            options={options} 
             onChange={(e) => {changeNumberExercise(indexOfExercise,e)}}
-            className='form-control col-6 mb-2'
-            >
-            {options && options.map(option =>
-            <optgroup 
-                key={option.value} 
-                label={option.name} >
-
-                    <option value={option.value} > {option.name} </option>
-                    {option.extras.map(element => <option key={element.name} >{element.name}</option> )}
-
-            </optgroup>
-            )}
-        </select>
+            placeholder="Select an item"
+            optionLabel="label"
+            className="p-dropdown-group w-100"
+          />
         </div>}
         
       {!isAthlete && <div className="mb-3 col-11">

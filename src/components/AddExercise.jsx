@@ -30,6 +30,7 @@ function AddExercise({refresh, handleCloseDialog,databaseExercises}) {
   const [peso, setPeso] = useState(); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
   const [notas, setNotas] = useState();
   const [video, setVideo] = useState();
+  const [isCreated, setIsCreated] = useState(false);
 
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -71,13 +72,20 @@ let idRefresh = generateUUID()
   Notify.notifyA("Cargando nuevo ejercicio...")
 	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, rest, peso, video, notas })
     .then((data) => {
-      refresh(idRefresh)
-      setSelectedExercise("")
-      setPeso("")
-      setNotas("")
-      setVideo("")
+      console.log(data)
       if(closeAfterCreate == true){
+        refresh(idRefresh)
+        setSelectedExercise("")
+        setNotas("")
+        setVideo("")
         handleCloseDialog()
+        Notify.updateToast()
+      } else{
+        refresh(idRefresh)
+        setSelectedExercise("")
+        setNotas("")
+        setVideo("")
+        Notify.updateToast()
       }
     })
   }
@@ -154,9 +162,9 @@ useEffect(() => {
                   
 </div>
           <div className="col-12 text-center mb-2">
-            <span className="p-float-label p-fluid">
-            <AutoComplete appendTo={null} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
-            <label htmlFor="name">Nombre del ejercicio</label>
+            <span className="p-float-label p-fluid ">
+            <AutoComplete appendTo={null} inputClassName={""} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
+            <label htmlFor="name" className="mb-2">Nombre del ejercicio</label>
             </span>
           </div>
 
@@ -195,7 +203,7 @@ useEffect(() => {
                 /> 
           </div>
 
-          <div className="col-2 my-2 text-center">
+          <div className="col-4 my-2 text-center">
             <label htmlFor="rest" className="form-label d-block text-center">
               Rest
             </label>
@@ -228,9 +236,9 @@ useEffect(() => {
             <label htmlFor="peso" className="form-label d-block">
               Anotaciones
             </label>
-              <input
+              <textarea
                 type="text"
-                className="form-control rounded-0"
+                className="form-control rounded-0 textAreaResize"
                 id="notas"
                 name="notas"
                 defaultValue={notas}
@@ -239,7 +247,7 @@ useEffect(() => {
           </div>
 
           <div className="col-12 col-md-10 my-2 text-center">
-            <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} border input-group-text`} style={{ "backgroundColor": `${color}` }}>Crear</button>
+            <button  className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} border input-group-text`} style={{ "backgroundColor": `${color}` }}>Crear</button>
           </div>
 
         </form>

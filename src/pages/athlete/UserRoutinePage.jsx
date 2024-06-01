@@ -1,12 +1,14 @@
 
 import { useEffect, useState } from 'react';
 import {Link, useParams} from 'react-router-dom';
-import * as WeekService from '../../services/week.services.js';
-import Logo from '../../components/Logo.jsx'
-import { Dialog } from 'primereact/dialog';
 
+import * as WeekService from '../../services/week.services.js';
 import  * as NotifyHelper from './../../helpers/notify.js'
+
+import Logo from '../../components/Logo.jsx'
 import ActionAreaCard from '../../components/MUI/ActionAreaCard.jsx';
+
+import { Dialog } from 'primereact/dialog';
 
 function UserRoutinePage(){
     const {id} = useParams()
@@ -15,9 +17,6 @@ function UserRoutinePage(){
     const [pressedRoutine, setPressedRoutine] = useState([])
     const [indexRoutine, setIndexRoutine] = useState([])
 
-    const [days, setDays] = useState([])
-    const [warmup, setWarmup] = useState([])
-    const [exercises, setExercises] = useState([])
     const [visibleEdit, setVisibleEdit] = useState(false);              //-------------------*
 
     const handleCloseDialog = () => setVisibleEdit(false)
@@ -39,12 +38,6 @@ function UserRoutinePage(){
         setVisibleEdit(true)
         // abrir modal con el objeto entero, y luego seppararlo dentro de la modal.
     }
-
-    const openRoutine = () => {
-
-       
-    }
-
 
     return (
         

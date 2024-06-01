@@ -1,14 +1,25 @@
-import React, { useState, useRef } from 'react';
-import { BsPlus, BsDash } from 'react-icons/bs';
+import React, { useState, useEffect } from 'react';
 import { SelectButton } from 'primereact/selectbutton';
+import IconButton from '@mui/material/IconButton';
+
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const CustomInputNumber = React.forwardRef(
-  ({ initialValue, onChange, onValueChange, disabled }, ref) => {
+  ({ initialValue, onChange, disabled, isRep }, ref) => {
     const hasNonNumber = !/^\d+$/.test(String(initialValue));
-
     const [value, setValue] = useState(initialValue);
     const [isTextMode, setIsTextMode] = useState(hasNonNumber);
-    const [textValue, setTextValue] = useState('');
+    const [firstWidth, setFirstWidth] = useState();
+
+    useEffect(() => {
+      setFirstWidth(window.innerWidth)
+      console.log(window.innerWidth)
+      if (isTextMode && initialValue !== value) {
+        setValue(initialValue);
+      }
+    }, [initialValue, isTextMode]);
 
     const handleInputChange = (newValue) => {
       if (!disabled) {
@@ -16,76 +27,81 @@ const CustomInputNumber = React.forwardRef(
           newValue = parseInt(newValue, 10) || 0;
         }
         setValue(newValue);
-        onChange(newValue);
-        if (onValueChange) {
-          onValueChange();
+        if (onChange) {
+          onChange(newValue);
         }
-
       }
     };
 
     const handleKeyDown = (event) => {
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        handleInputChange(value + 1);
-      } else if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        if (value > 0) {
-          handleInputChange(value - 1);
+      if (!disabled && !isTextMode) {
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          handleInputChange(value + 1);
+        } else if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          if (value > 0) {
+            handleInputChange(value - 1);
+          }
         }
       }
     };
 
     const handleSelectChange = (e) => {
       setIsTextMode(e.value === 'text');
+      setValue('');  // Reset value when switching modes
     };
 
     return (
-      <div className='row justify-content-center mx-2'>
-        <div className='col-12 text-center m-0 p-0'>
+      <>
+      <div className={`row justify-content-center text-center ${isRep && firstWidth > 992 && 'pt-4 mt-1 '} ${isRep && 'mb-2'}`}>
           <div className="input-number-container">
-            <button
-              type="button"
-              className='buttonLeft px-2'
+
+              <IconButton               
+              className={`buttonRight ${isTextMode && 'd-none'}`}
               onClick={() => handleInputChange(value - 1)}
-              disabled={disabled || isTextMode}
-            >
-              <BsDash size={'1.8em'} />
-            </button>
+              disabled={disabled || isTextMode}>
+                  <ChevronLeftIcon  />
+              </IconButton>
+
             <input
-              type={'text'}
+              type={isTextMode ? 'text' : 'number'}
               value={value}
               onChange={(e) => {
-                if (isTextMode) {
-                  handleInputChange(e.target.value);
-                }
+                handleInputChange(e.target.value);
               }}
-              readOnly={!isTextMode}
               disabled={disabled}
               onKeyDown={handleKeyDown}
-              className="form-control rounded-0 inp text-center"
+              className={`form-control rounded-0 inp text-center inputFontSize ${isTextMode && 'w-100'}`}
               ref={ref}
             />
-            <button
-              type="button"
-              className="buttonRight px-2"
+
+              <IconButton               
+              className={`buttonLeft ${isTextMode && 'd-none'}`}
               onClick={() => handleInputChange(value + 1)}
-              disabled={disabled || isTextMode}
-            >
-              <BsPlus size={'1.8em'} />
-            </button>
+              disabled={disabled || isTextMode}>
+                  <ChevronRightIcon  />
+              </IconButton>
+
           </div>
         </div>
-        <div className='col-12 mt-2 p-0'>
-              <SelectButton  className='styleSelectButton' value={isTextMode ? 'text' : 'number'} onChange={handleSelectChange} options={[
-                { label: 'Texto', value: 'text' },
-                { label: 'Número', value: 'number' }
-              ]} />
-            </div>
 
-      </div>
+              {isRep && (
+                <div className='styleSelectButton text-center'>
+                  <SelectButton
+                    className='styleSelectButton '
+                    value={isTextMode ? 'text' : 'number'}
+                    onChange={handleSelectChange}
+                    options={[
+                      { label: 'Modo texto', value: 'text' }
+                    ]}
+                  />
+                </div>
+              )}
+              </>
     );
   }
+  
 );
 
 export default CustomInputNumber;

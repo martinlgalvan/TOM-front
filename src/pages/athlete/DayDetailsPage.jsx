@@ -1,17 +1,19 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
+
 import * as WeekService from "../../services/week.services.js";
+
 import Logo from "../../components/Logo.jsx";
+import EditExercise from '../../components/EditExercise.jsx';
+import Contador from "../../helpers/Contador.jsx";
+import Floating from "../../helpers/Floating.jsx";
 
 import ReactPlayer from 'react-player';
-import { Sidebar } from 'primereact/sidebar';
-import { Button } from 'primereact/button';
-import { Segmented } from 'antd';
-import EditExercise from '../../components/EditExercise.jsx';
-
 import * as _ from "lodash";
 
 import { Carousel } from 'primereact/carousel';
+import { Sidebar } from 'primereact/sidebar';
+import { Segmented } from 'antd';
 
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -24,8 +26,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 
 
-import Contador from "../../helpers/Contador.jsx";
-import Floating from "../../helpers/Floating.jsx";
+
 
 
 //QUE PUEDA SER PERSONALIZABLE PARA CADA ENTRENADOR
@@ -49,13 +50,13 @@ function DayDetailsPage() {
     const lastDay = parseInt(localStorage.getItem("LastDay"));
 
     const [currentDay, setCurrentDay] = useState(null);
-    const [currentLastDay, setCurrentLastDay] = useState(null);
+
 
     const [color, setColor] = useState(localStorage.getItem('color'))
     const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);        // Modal para canvas de edit exercises
-    const [dayName, setDayName] = useState(false);        // Modal para canvas de edit exercises
+
 
     const [completeExercise, setCompleteExercise] = useState()                  // Futuro uso para editar la semana
 
