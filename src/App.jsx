@@ -25,7 +25,7 @@ import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
 import AddColorToUser from './components/Users/AddColorToUser.jsx'
 import { useColor } from './components/Context/ColorContext.jsx';
 import { Sidebar } from 'primereact/sidebar';
-import Profile from './pages/athlete/Profile.jsx'
+//import Profile from './pages/athlete/Profile.jsx'
 
 function RoutePrivate( {isAutenticate, children}){
     return (
