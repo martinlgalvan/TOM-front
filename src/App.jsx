@@ -25,7 +25,7 @@ import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
 import AddColorToUser from './components/Users/AddColorToUser.jsx'
 import { useColor } from './components/Context/ColorContext.jsx';
 import { Sidebar } from 'primereact/sidebar';
-//import Profile from './pages/athlete/Profile.jsx'
+
 
 function RoutePrivate( {isAutenticate, children}){
     return (
@@ -234,11 +234,6 @@ function App(){
                     </RoutePrivate>}
                 />
 
-                <Route path="/perfil/:userId" element={
-                    <RoutePrivate isAutenticate={isAutenticated}>
-                        <Profile/>
-                    </RoutePrivate>}
-                />
 
                 <Route path="/planificator" element={
                     <RoutePrivate isAutenticate={isAutenticated}>

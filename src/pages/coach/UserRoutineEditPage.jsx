@@ -15,9 +15,7 @@ import EditWeek from '../../components/EditActions/EditWeek.jsx';
 
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ToastContainer, toast } from 'react-toastify';
-import { animated, useTransition } from '@react-spring/web';
 
 
 import Floating from '../../helpers/Floating.jsx';
@@ -145,14 +143,7 @@ function UserRoutineEditPage(){
     } 
 
 
-    const transitions = useTransition(routine, {
-        from: { opacity: 0, scale: 0.9,},
-        enter: { opacity: 1, scale: 1, },
-        leave: { opacity: 0, scale: 0.9},
-        config: { tension: 350, friction: 20 },
-        delay: 200,
-        keys: item => item._id,
-      });
+
 
     return (
 
