@@ -47,6 +47,7 @@ function DayEditDetailsPage(){
 
     const [databaseUser, setDatabaseUser] = useState()
     const [weekName, setWeekName] = useState()
+    const [dayName, setDayName] = useState()
     const [color, setColor] = useState(localStorage.getItem('color'))
     const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
     const [status, setStatus] = useState(1)                             // Manejo de renderizado
@@ -102,6 +103,7 @@ function DayEditDetailsPage(){
                 setWeekName(data[0].name)
                 let indexDay = data[0].routine.findIndex(dia => dia._id === day_id) // De la base de datos, selecciono el día correspondiente
                 let day = data[0].routine[indexDay].exercises                       // Cargo únicamente los ejercicios
+                setDayName(data[0].routine[indexDay].name)
                 let onlyExercises = day != null ? day.filter(circuito => circuito.type == 'exercise') : null                     // Cargo únicamente los ejercicios
 
                 let circuit = day != null ? day.filter(circuito => circuito.type != 'exercise') : null  // Cargo únicamente los ejercicios del circuito
@@ -337,15 +339,6 @@ const confirmDelete = () => {
         });
     };
 
-    const transitions = useTransition(modifiedDay, {
-        from: { opacity: 0, scale: 0.9,},
-        enter: { opacity: 1, scale: 1, },
-        leave: { opacity: 0, scale: 0.9},
-        config: { tension: 350, friction: 20 },
-        delay: 200,
-        keys: item => item.exercise_id,
-      });
-
     const tableMobile = () => {
 
         return <div className="table-responsiveCss">
@@ -453,6 +446,8 @@ const confirmDelete = () => {
                 <div className='col-10 col-lg-6 text-center'>
 
                     <p className='fs-5'>Planificación de {username} - <b>{weekName}</b></p>
+
+                    <p className='fs-5'><b>{dayName}</b></p>
 
                 </div>
             </div>

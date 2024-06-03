@@ -200,6 +200,7 @@ useEffect(() => {
               <CustomInputNumber 
                 initialValue={reps}
                 onChange={(value) => setReps(value)}
+                isRep={true}
                 /> 
           </div>
 
