@@ -70,16 +70,16 @@ function DayDetailsPage() {
         WeekService.findRoutineByUserId(id).then((data) => {
 
             setAllDays(data[index].routine)
-            console.log(data[index].routine.length, lastDay)
+            console.log(index)
             if (lastDay == null || isNaN(lastDay) || lastDay >= data[index].routine.length ) {
                 setCurrentDay(0);
-                setModifiedDay(0)
-                setDay_id(data[0].routine[lastDay]._id)
+                setModifiedDay(data[0].routine[0].exercises)
+                setDay_id(data[0].routine[0]._id)
             } else{
                 setCurrentDay(lastDay);
                 setDay_id(data[index].routine[lastDay]._id)
-                setModifiedDay(data[index].routine[lastDay].exercises)
                 console.log(data[index].routine[lastDay].exercises)
+                setModifiedDay(data[index].routine[lastDay].exercises)
 
             }
 
@@ -117,7 +117,6 @@ function DayDetailsPage() {
       const [indexOfExercise, setIndexOfExercise] = useState()
     
     const refresh = (refresh) => {
-        setStatus(refresh)
         setEditExerciseMobile(false)
     }
 
@@ -136,6 +135,7 @@ function DayDetailsPage() {
     }    
 
     function handleEditMobileExercise(elementsExercise, index){
+        console.log(elementsExercise)
         setIndexOfExercise(index)
         setCompleteExercise(elementsExercise)
         setEditExerciseMobile(true)

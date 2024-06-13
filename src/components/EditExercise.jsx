@@ -29,7 +29,6 @@ useEffect(() => {
   const groupedOptions = Options.reduce((acc, group) => {
     acc.push({ label: group.label, value: group.value, disabled: null });
     acc.push(...group.items);
-    console.log(acc)
     return acc;
   }, [])
   
@@ -39,12 +38,10 @@ useEffect(() => {
 
 }, []);
 
-/*const changeNameEdit = (e) => setCompleteName(e.target.value)
-const changeSetsEdit = (e) => setCompleteSets(e.target.value)
-const changeRepsEdit = (e) => setCompleteReps(e.target.value)
-const changePesoEdit = (e) => setCompletePeso(e.target.value)
-const changeVideoEdit = (e) => setCompleteVideo(e.target.value)
-const changeNotasEdit = (e) => setCompleteNotas(e.target.value)*/
+useEffect(() => {
+ console.log(completeExercise)
+
+}, []);
 
 
     // EDIT EXERCISES
