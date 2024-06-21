@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 import * as WeekService from '../../services/week.services.js';
+import * as UserService from '../../services/users.services.js';
 import * as DayService from '../../services/day.services.js';
 import * as NotifyHelper from './../../helpers/notify.js'
 import * as RefreshFunction from './../../helpers/generateUUID.js'
@@ -16,6 +17,9 @@ import EditWeek from '../../components/EditActions/EditWeek.jsx';
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
 import { ToastContainer, toast } from 'react-toastify';
+import { Dialog } from 'primereact/dialog';
+import { Segmented } from 'antd';
+import { SelectButton } from 'primereact/selectbutton';
 
 
 import Floating from '../../helpers/Floating.jsx';
@@ -30,6 +34,8 @@ function UserRoutineEditPage(){
 
     const [routine, setRoutine] = useState([])
     const [weekNumber, setWeekNumber] = useState(0)
+    const [days, setDays] = useState("")
+
 
     const [show, setShow] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
@@ -45,9 +51,32 @@ function UserRoutineEditPage(){
 
     let idRefresh = RefreshFunction.generateUUID()
 
+    const [profileData, setProfileData] = useState(null);
+    const [visible, setVisible] = useState(false);
 
     const [color, setColor] = useState(localStorage.getItem('color'))
     const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+
+    useEffect(() => {
+        UserService.getProfileById(id)
+            .then((data) => {
+                setProfileData(data);
+                setDays(Object.keys(data.details).map(day => ({ label: day, value: day })))
+            })
+            .catch((error) => {
+                console.error('Error fetching profile data:', error);
+            });
+    }, [id]);
+
+    useEffect(() => {
+        if (profileData && profileData.details) {
+            const days = Object.keys(profileData.details);
+            if (days.length > 0) {
+                setSelectedDay(days[0]);
+            }
+        }
+    }, [profileData]);
+
     
     //Routine - API
     useEffect(() => {
@@ -98,6 +127,7 @@ function UserRoutineEditPage(){
 
     const [showDeleteWeekDialog, setShowDeleteWeekDialog] = useState()
     const [showEditWeekDialog, setShowEditWeekDialog] = useState()
+    const [selectedDay, setSelectedDay] = useState(null);
 
     const deleteWeek = (week_id, name) => {
         setWeekName(name)
@@ -143,6 +173,161 @@ function UserRoutineEditPage(){
     } 
 
 
+    const openDialog = () => {
+        setVisible(true);
+    };
+
+    const closeDialog = () => {
+        setVisible(false);
+    };
+
+    const calculateNumericAverage = (details, field) => {
+        const validValues = Object.values(details)
+            .map(day => day[field])
+            .filter(value => value !== undefined && value !== null);  // Filtrar valores indefinidos o nulos
+    
+        if (validValues.length === 0) return 'N/A';  // Si no hay valores válidos, devolver 'N/A'
+    
+        const total = validValues.reduce((sum, value) => sum + value, 0);
+        return (total / validValues.length).toFixed(2);
+    };
+
+    const calculateCategoricalAverage = (details, field) => {
+        const options = [
+            { label: 'Muy bajo', value: 1 },
+            { label: 'Bajo', value: 2 },
+            { label: 'Moderado', value: 3 },
+            { label: 'Alto', value: 4 },
+            { label: 'Muy alto', value: 5 }
+        ];
+        const total = Object.values(details).reduce((sum, day) => sum + day[field], 0);
+        const average = total / Object.keys(details).length;
+        const closestOption = options.reduce((prev, curr) => Math.abs(curr.value - average) < Math.abs(prev.value - average) ? curr : prev);
+        return closestOption.label;
+    };
+
+    const getLabel = (value) => {
+        const options = [
+            { label: 'Muy bajo', value: 1 },
+            { label: 'Bajo', value: 2 },
+            { label: 'Moderado', value: 3 },
+            { label: 'Alto', value: 4 },
+            { label: 'Muy alto', value: 5 }
+        ];
+        const option = options.find(option => option.value === value);
+        return option ? option.label : 'Desconocido';
+    };
+
+
+    const justifyTemplate = (option) => {
+        return <div className='col-2'>d</div>;
+    }
+
+
+    const renderProfileData = () => {
+        if (!profileData) {
+            return <p>No hay datos disponibles.</p>;
+        }
+
+        return (
+            <div className="row justify-content-center text-center">
+
+            <div>
+                <p>{username} editó esto por última vez el</p>
+                <p><b>{profileData.last_edit.fecha}</b> - <b>{profileData.last_edit.hora}</b></p>
+                
+            </div>
+
+
+            <div className="col-10">
+                <p className='text-center'><strong className='d-block'>Peso Corporal</strong> {profileData.bodyWeight} kg</p>
+                <p className='text-center'><strong className='d-block'>Resumen semanal</strong>{profileData.summary}</p>
+            </div>
+
+            <div className="col-10 col-lg-6">
+                <div className='row justify-content-center'>
+                    <div className='col-10 col-lg-6 text-center'>
+                        <h4 className='mb-4'>Promedio semanal</h4>
+                        <table className="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Fatiga</strong></td>
+                                    <td>{calculateNumericAverage(profileData.details, 'fatigueLevel')}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Horas de Sueño</strong></td>
+                                    <td>{calculateNumericAverage(profileData.details, 'sleepHours')}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DOMS</strong></td>
+                                    <td>{calculateNumericAverage(profileData.details, 'domsLevel')}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NEAT</strong></td>
+                                    <td>{calculateCategoricalAverage(profileData.details, 'neatLevel')}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estrés</strong></td>
+                                    <td>{calculateCategoricalAverage(profileData.details, 'stressLevel')}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nutrición</strong></td>
+                                    <td>{calculateCategoricalAverage(profileData.details, 'nutrition')}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div className='col-10 col-lg-6'>
+                <div className="row ">
+                        <SelectButton
+                            value={selectedDay}
+                            options={days}
+                            onChange={(e) => setSelectedDay(e.value)}
+                            className='select-button'
+                        />
+                </div>
+                <div className="day-profileData.details mt-4">
+                    {selectedDay && (
+                        <div className='text-center'>
+                            <table className="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Fatiga</strong></td>
+                                        <td>{profileData.details[selectedDay].fatigueLevel == null ? 'Sin datos' : profileData.details[selectedDay].fatigueLevel}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Horas de Sueño</strong></td>
+                                        <td>{profileData.details[selectedDay].sleepHours  == null ? 'Sin datos' : profileData.details[selectedDay].sleepHours}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>DOMS</strong></td>
+                                        <td>{profileData.details[selectedDay].domsLevel  == null ? 'Sin datos' : profileData.details[selectedDay].domsLevel}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>NEAT</strong></td>
+                                        <td>{getLabel(profileData.details[selectedDay].neatLevel) == null ? 'Sin datos' : getLabel(profileData.details[selectedDay].neatLevel)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estrés</strong></td>
+                                        <td>{getLabel(profileData.details[selectedDay].stressLevel) == null ? 'Sin datos' : getLabel(profileData.details[selectedDay].stressLevel)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Nutrición</strong></td>
+                                        <td>{getLabel(profileData.details[selectedDay].nutrition) == null ? 'Sin datos' : getLabel(profileData.details[selectedDay].nutrition)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 
     return (
@@ -156,10 +341,14 @@ function UserRoutineEditPage(){
 
                 <p className='col-10 text-center mt-2'>Estás en la planificación de <b>{username}</b> </p>
 
+                    <p className='text-center'>Acá tendrás el perfil de tu alumno, toda la información necesaria para mejorar la calidad de tus planificaciones.</p>
+
+                    <button className='btn colorProfile text-light col-4 mb-3' onClick={openDialog}>Ver perfil</button>
 
                     <p className='col-10 text-center mb-2'>
-                        <b>Para comenzar, por favor, creá una semana. Vas a poder:</b>
+                        <b>Para comenzar, por favor, creá una semana. Vas a poder</b>
                     </p>
+
                     <ul className="list-group list-group-flush text-center">
                         <li className="list-group-item">Añadir días de entrenamiento</li>
                         <li className="list-group-item">Dentro de los días, vas a poder añadir tanto su entrada en calor, como su planificación.</li>
@@ -261,7 +450,10 @@ function UserRoutineEditPage(){
             </article>
 
             <Floating link={`/users/${user_id}`} />
-            
+
+            <Dialog header={`Perfil de ${username}`} visible={visible} style={{ width: '90vw' }} modal onHide={closeDialog}>
+                {renderProfileData()}
+            </Dialog>
            
             
             <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} week_id={week_id} dayID={dayID} nameExercise={weekName}/>

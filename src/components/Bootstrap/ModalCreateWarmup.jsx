@@ -100,6 +100,8 @@ const changeRepsWarmup = (e) => setNewRep(e.value)
 
 function editWarmup(warmup_id, name, StrSets, StrReps,peso, video, notas, numberWarmup){
 
+  console.log(warmup_id, name, StrSets, StrReps,peso, video, notas, numberWarmup)
+
   let sets = parseInt(StrSets)
   let reps = parseInt(StrReps)
 
@@ -241,6 +243,7 @@ useEffect(() => {
     // Resto de funciones de cambio...
 
     const applyChanges = () => {
+      console.log(week_id, day_id, modifiedDay)
 
       setWarmup(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
       WarmupServices.editWarmup(week_id, day_id, modifiedDay)

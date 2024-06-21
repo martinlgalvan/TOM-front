@@ -18,6 +18,11 @@
   min-width: 170px !important;
 }
 
+.select-button .p-button {
+  
+  width: 15%;
+}
+
 /* Autocomplete clase */
 
 
@@ -275,6 +280,11 @@
 
   }
 
+  .spanLow{
+    color: #888888;
+    font-size: 0.7em;
+  }
+
   .BlackBGtextWhite:hover{
     background-color: black;
     color: white;
@@ -464,6 +474,10 @@
 .dialogStyleProfile .p-dialog-title{
   margin-top: 10px;
   margin-left: 15px;
+}
+
+.largeItemsProfile{
+  width: 150px !important;
 }
 
 .p-slider-range{
@@ -1190,7 +1204,10 @@ width: 50px;
 }
 
 
+.colorProfile {
+  background-color: #0d89ec !important;
 
+}
 
 
 
@@ -1255,6 +1272,22 @@ width: 50px;
 
 
 @media screen and (max-width: 992px) {
+
+  
+.select-button .p-button {
+  width: 80%;
+}
+
+.select-button  .p-highlight {
+  background-color: #0d89ec !important;
+
+}
+
+.select-button .p-focus {
+  background-color: #0d89ec !important;
+
+}
+
 
   .td-0{
     display: none;

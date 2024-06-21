@@ -1,6 +1,6 @@
 import Logo from '../components/Logo.jsx';
 const name = localStorage.getItem('name')
-
+import { Fieldset } from 'primereact/fieldset';
 // to do chequear semántica, ortografía, agregar videos explicativos con edición
 
 function HomePage() {

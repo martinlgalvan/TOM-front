@@ -14,6 +14,7 @@ import UsersListPage from "./pages/coach/UsersListPage.jsx"
 import UserRoutineEditPage from "./pages/coach/UserRoutineEditPage.jsx"
 import DayEditDetailsPage from "./pages/coach/DayEditDetailsPage.jsx"
 import UserPersonalize from "./pages/coach/UserPersonalize.jsx"
+import Profile from "./pages/athlete/Profile.jsx"
 
 import RandomizerPage from "./pages/coach/Randomizer.jsx"
 
@@ -172,6 +173,9 @@ function App(){
                             {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Personalizar</Link></>}
                         </li>
                         <li className="nav-item">
+                        {isAutenticated && !isAdmin() && <><Link className='nav-link' to={`/perfil/${id}`}>Perfil</Link></>}
+                        </li>
+                        <li className="nav-item">
                         {isAutenticated && !isAdmin() && <><Link className='nav-link' to={`/routine/${id}`}>Ver rutina</Link></>}
                         </li>
                         <li className="nav-item">
@@ -219,6 +223,14 @@ function App(){
                     </RoutePrivate>}
                 />
 
+                <Route path="/perfil/:id" element={
+                    <RoutePrivate isAutenticate={isAutenticated}>
+                        <Profile/>
+                    </RoutePrivate>}
+                />
+
+                
+
                 <Route path="/routine/:id" element={
                     <RoutePrivate isAutenticate={isAutenticated}>
                         <UserRoutinePage/>
@@ -265,6 +277,12 @@ function App(){
                         <li className="list-group-item">
                            <Link className='nav-link' to={`/personalize/`} onClick={() => setMenuSidebar(false)}>Personalizar</Link>
                         </li>
+                        }
+
+                        {isAutenticated && !isAdmin() &&
+                            <li className="list-group-item">
+                                <Link className='nav-link' to={`/perfil/${id}`} onClick={() => setMenuSidebar(false)}>Perfil</Link>
+                            </li>
                         }
 
 

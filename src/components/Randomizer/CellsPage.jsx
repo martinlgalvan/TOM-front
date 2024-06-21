@@ -1,12 +1,13 @@
 import { useState,useRef, useEffect } from "react";
+
 import * as RandomizerColumns from "../../services/randomizerColumn.services.js";
 import * as PARService from "../../services/par.services.js";
+import * as NotifyHelper from './../../helpers/notify.js'
+import Options from './../../assets/json/options.json';
+
 import { Dropdown } from 'primereact/dropdown';
 import { generateMongoDBObjectId } from "../../helpers/generateUUID.js";
 import { Tooltip } from 'primereact/tooltip';
-import * as NotifyHelper from './../../helpers/notify.js'
-
-import Options from './../../assets/json/options.json';
 
 
 function CellsPage({ onUpdateRoutine, onRefreshCells }) {
@@ -33,9 +34,16 @@ function CellsPage({ onUpdateRoutine, onRefreshCells }) {
   const [color, setColor] = useState(localStorage.getItem('color'))
   const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
+
   useEffect(() => {
     NotifyHelper.notifyA("Cargando...")
-    setOptions(Options)                   
+    const groupedOptions = Options.reduce((acc, group) => {
+      acc.push({ label: group.label, value: group.value, disabled: null });
+      acc.push(...group.items);
+      return acc;
+  }, [])
+  
+  setOptions(groupedOptions)                 
     RandomizerColumns.getColumns(user_id)
       .then(data => {
         setColumns(data)
@@ -195,20 +203,15 @@ function onChangeName(event){
 
                   <td className='' >
                                         
-                      <select  
-                        defaultValue={row.numberExercise} 
-                        onChange={(e) => handleSelectChange(index, e)}>
-                        {options && options.map(option =>
-                        <optgroup 
-                            key={option.value} 
-                            label={option.name} >
-                  
-                                <option value={option.value} > {option.name} </option>
-                                {option.extras.map(element => <option key={element.name} >{element.name}</option> )}
-                  
-                        </optgroup>
-                        )}
-                    </select>
+                      <Dropdown 
+                          value={row.numberExercise} 
+                          options={options} 
+                          onChange={(e) => {changeModifiedData(i,e.target.value, 'numberExercise')}}
+                          placeholder="Select an item"
+                          optionLabel="label"
+                          className="p-dropdown-group w-100"
+                      />
+     
                   </td>
 
                   <td className="">

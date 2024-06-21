@@ -191,6 +191,47 @@ async function findRoutineById(id) {
 }
 
 
+//Busca los alumnos del entrenador(que tienen entrenador_id)
+async function getProfileById(id) {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${id}/routine/clon`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        }
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            }
+            else {
+                throw new Error('No se pudo obtener la rutina')
+            }
+        })
+}
+
+
+
+async function editProfile(user_id, data) {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+        }
+        else {
+            throw new Error('No se pudo editar el ejercicio')
+        }
+    })
+}
+
+
 export {
     find,
     findUserById,
@@ -201,5 +242,7 @@ export {
     editExercise,
     //findExercises,
     deleteExercise,
-    findRoutineById
+    findRoutineById,
+    getProfileById,
+    editProfile
 }
