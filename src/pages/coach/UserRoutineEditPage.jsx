@@ -60,8 +60,9 @@ function UserRoutineEditPage(){
     useEffect(() => {
         UserService.getProfileById(id)
             .then((data) => {
-                setProfileData(data);
-                setDays(Object.keys(data.details).map(day => ({ label: day, value: day })))
+                const filteredDetails = filterInvalidDays(data.details);
+                setProfileData({ ...data, details: filteredDetails });
+                setDays(Object.keys(filteredDetails).map(day => ({ label: day, value: day })));
             })
             .catch((error) => {
                 console.error('Error fetching profile data:', error);
@@ -184,14 +185,14 @@ function UserRoutineEditPage(){
     const calculateNumericAverage = (details, field) => {
         const validValues = Object.values(details)
             .map(day => day[field])
-            .filter(value => value !== undefined && value !== null);  // Filtrar valores indefinidos o nulos
+            .filter(value => value !== undefined && value !== null && value !== 0);
     
-        if (validValues.length === 0) return 'N/A';  // Si no hay valores válidos, devolver 'N/A'
+        if (validValues.length === 0) return 'N/A';
     
         const total = validValues.reduce((sum, value) => sum + value, 0);
         return (total / validValues.length).toFixed(2);
     };
-
+    
     const calculateCategoricalAverage = (details, field) => {
         const options = [
             { label: 'Muy bajo', value: 1 },
@@ -200,10 +201,26 @@ function UserRoutineEditPage(){
             { label: 'Alto', value: 4 },
             { label: 'Muy alto', value: 5 }
         ];
-        const total = Object.values(details).reduce((sum, day) => sum + day[field], 0);
-        const average = total / Object.keys(details).length;
+        const validValues = Object.values(details)
+            .map(day => day[field])
+            .filter(value => value !== undefined && value !== null && value !== 0);
+    
+        if (validValues.length === 0) return 'N/A';
+    
+        const total = validValues.reduce((sum, value) => sum + value, 0);
+        const average = total / validValues.length;
         const closestOption = options.reduce((prev, curr) => Math.abs(curr.value - average) < Math.abs(prev.value - average) ? curr : prev);
         return closestOption.label;
+    };
+
+    const filterInvalidDays = (details) => {
+        return Object.entries(details).reduce((acc, [day, values]) => {
+            const validValues = Object.values(values).filter(value => value !== undefined && value !== null && value !== 0);
+            if (validValues.length > 0) {
+                acc[day] = values;
+            }
+            return acc;
+        }, {});
     };
 
     const getLabel = (value) => {

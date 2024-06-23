@@ -34,7 +34,7 @@ function Profile(){
             <h2 className='text-center'>Bienvenido a tu perfil {username}!</h2>
             <p className='text-center my-4'>A continuación, podés editar tus sensaciones de la última semana. <b>Presioná</b> los días de la semana que entrenás e indicá tus sensaciones. Esta información le servirá a tu entrenador para mejorar la calidad de tu entrenamiento.</p>
             <p className='text-center my-4'>Simplemente actualizalo cada semana, tu entrenador sabrá la última vez que actualizaste esto.</p>
-
+            <p className='text-center my-4'>¿No sabes que significa DOMS, NEAT, y demás? Presioná el botón de preguntas frecuentes.</p>
             <button onClick={openDialog} className='btn BlackBGtextWhite col-6 mb-4'>Preguntas frecuentes</button>
 
             <div>
