@@ -2,8 +2,11 @@
 import { useEffect, useState } from 'react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
+
+
 import * as WeekService from '../../services/week.services.js';
 import * as UserService from '../../services/users.services.js';
+import * as ParService from '../../services/par.services.js';
 import * as DayService from '../../services/day.services.js';
 import * as NotifyHelper from './../../helpers/notify.js'
 import * as RefreshFunction from './../../helpers/generateUUID.js'
@@ -24,12 +27,17 @@ import { SelectButton } from 'primereact/selectbutton';
 
 import Floating from '../../helpers/Floating.jsx';
 
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
 function UserRoutineEditPage(){
     const {id} = useParams()
     const {username} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
-
+    const [copyWeekStorage, setCopyWeekStorage] = useState()
 
 
     const [routine, setRoutine] = useState([])
@@ -65,7 +73,7 @@ function UserRoutineEditPage(){
                 setDays(Object.keys(filteredDetails).map(day => ({ label: day, value: day })));
             })
             .catch((error) => {
-                console.error('Error fetching profile data:', error);
+                console.log('Error fetching profile data:');
             });
     }, [id]);
 
@@ -77,6 +85,14 @@ function UserRoutineEditPage(){
             }
         }
     }, [profileData]);
+
+    useEffect(() => {
+        if(localStorage.getItem('userWeek') != null){
+            setCopyWeekStorage(localStorage.getItem('userWeek'))
+        } else{
+            setCopyWeekStorage(null)
+        }
+    }, []);
 
     
     //Routine - API
@@ -108,15 +124,16 @@ function UserRoutineEditPage(){
     function createWeek(){
         setLoading(true)
         let number = `Semana ${weekNumber}`
-        if(copyWeek == true){
-            WeekService.createClonWeek(id)
-                .then((data) => {
-                    setStatus(idRefresh)
-                })
-        } else {
-            WeekService.createWeek({name: number}, id)
-                .then(() => setStatus(idRefresh))
-        }
+        WeekService.createWeek({name: number}, id)
+            .then(() => setStatus(idRefresh))
+    }
+
+    function createWeekCopyLastWeek(){
+        setLoading(true)
+        WeekService.createClonWeek(id)
+        .then((data) => {
+            setStatus(idRefresh)
+        })
     }
 
     function addDayToWeek(week_id,number){
@@ -243,7 +260,23 @@ function UserRoutineEditPage(){
 
     const renderProfileData = () => {
         if (!profileData) {
-            return <p>No hay datos disponibles.</p>;
+            return  <div className='row justify-content-center'>
+                        <div className='col-10 col-lg-4'>
+
+                            <div className=' text-center'>
+                                <p>No hay datos disponibles.</p>
+                                <p>Estos datos pueden ayudarte a la hora de planificar, por lo tanto, podés pedirle a tus alumnos que lo completen al finalizar su semana de entrenamiento.</p>
+                            </div>
+
+                            <div className=' text-center m-3'>
+                                <p>Los datos que se analizan, son: <strong>fatiga, horas de sueño, DOMS, NEAT, estrés, nutrición</strong></p>
+                                <p>También, pueden añadir datos como su peso corporal, y un resumen semanal sobre como fue su semana.</p>
+                            </div>
+                        </div>;
+
+                                            
+                    </div>
+
         }
 
         return (
@@ -345,6 +378,62 @@ function UserRoutineEditPage(){
     );
 };
 
+/*function filterObject(originalObject) {
+    const { created_at, _id, user_id, timestamp, ...filteredObject } = originalObject;
+    return filteredObject;
+  }
+
+
+const exportToExcel = (data) => {
+    const newObject = filterObject(data);
+
+    console.log(data)
+    WeekService.exportToExcel(newObject)
+        .then((data) =>{console.log(data)})
+};*/
+
+
+
+
+const saveToLocalStorage = (data) => {
+    setLoading(true)
+    try {
+        localStorage.setItem('userWeek', JSON.stringify(data))
+        setCopyWeekStorage(JSON.stringify(data))
+        NotifyHelper.instantToast("Copiado con éxito!")
+    } catch (err) {
+      console.error('Error al guardar en localStorage: ', err);
+    }
+  };
+
+  const loadFromLocalStorage = () => {
+    setLoading(true)
+    try {
+      if (copyWeekStorage) {
+        const parsedData = JSON.parse(copyWeekStorage);
+        console.log(parsedData)
+        ParService.createPARroutine(parsedData, id)
+            .then((data) => {
+                setLoading(idRefresh)
+                setStatus(idRefresh)
+                NotifyHelper.updateToast()
+            })
+      } else {
+        alert('No hay datos en localStorage!');
+      }
+    } catch (err) {
+      console.error('Error al cargar desde localStorage: ', err);
+    }
+  };
+
+  //  ACA HACER UNA SEMANA CON  UN + Y SACAR EL BOTON
+
+
+
+
+
+
+
 
 
     return (
@@ -360,7 +449,7 @@ function UserRoutineEditPage(){
 
                     <p className='text-center'>Acá tendrás el perfil de tu alumno, toda la información necesaria para mejorar la calidad de tus planificaciones.</p>
 
-                    <button className='btn colorProfile text-light col-4 mb-3' onClick={openDialog}>Ver perfil</button>
+                    <button className='btn colorProfile text-light col-4 my-3' onClick={openDialog}>Ver perfil</button>
 
                     <p className='col-10 text-center mb-2'>
                         <b>Para comenzar, por favor, creá una semana. Vas a poder</b>
@@ -376,88 +465,79 @@ function UserRoutineEditPage(){
             </div>
 
             <article className='row justify-content-center'>
-                <div className='col-12 mx-2 text-center mb-2'>
-                    <button onClick={createWeek} className={`input-group-text btn ${textColor == 'false' ? "bbb" : "blackColor"} text-center`} style={{ "backgroundColor": `${color}` }} >Crear semana <b className='fs-6'>{weekNumber}</b></button>
-                </div>
-                    {routine.length > 0 &&
-                    
-                    <div className='col-3 mt-4'> 
-                        <div className='row justify-content-center my-3'>
-
-                            <div className='col-6 text-end p-0 fs-5'>
-                                <InputSwitch checked={copyWeek} onChange={(e) => setCopyWeek(e.value)} />
-                            </div>
-
-                            <div className='col-6 text-start'>
-                                <Tooltip target=".custom-target-icon" />
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
-                                className="bi bi-question-circle custom-target-icon"
-                                data-pr-tooltip="Copiar automaticamente una plantilla de la última semana. ¡Podés desactivarla en cualquier momento y crear una semana de 0!"
-                                data-pr-position="right"
-                                data-pr-at="right+5 top"
-                                data-pr-my="left center-20"
-                                data-pr-classname='largoTooltip p-0 m-0'
-                                style={{ fontSize: '3rem', cursor: 'pointer' }} 
-                                viewBox="0 0 16 16">
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                    <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
-                                </svg>
-                            </div>
-                            
-                        </div>
-                    </div>}
-
 
                 <div className='col-12'>
 
                     <div className='row justify-content-center'>
 
+
+                    
+                        <div className="row justify-content-center align-items-center" >
+                            
+                                <button className='col-10 col-lg-3 py-2 border card-shadow m-4' onClick={createWeek}>
+                                    <div className='py-3'>
+                                  
+                                        <AddIcon />
+                                    
+                                    <p className='m-0'>Crear nueva semana</p>
+                                    </div>
+                                </button>
+
+                                {routine.length > 0 && <button className='col-10 col-lg-3 py-2 border card-shadow m-3' onClick={createWeekCopyLastWeek}>
+                                    <div className='py-3'>
+                                    
+                                        <LibraryAddIcon />
+                                    
+                                    <p className='m-0'>Continuar con la rutina</p>
+                                    </div>
+                                </button> }
+
+                                <button className='col-10 col-lg-3 py-2 border card-shadow m-4' onClick={loadFromLocalStorage}>
+                                    <div className='py-3'>
+                                    
+                                        <ContentCopyIcon />
+                                    
+                                    <p className='m-0'>Pegar rutina del portapapeles</p>
+                                    </div>
+                                </button>
+                        
+                        </div>
                         {routine.length > 0 && routine.map((elemento, index) =>
 
-                        <div key={elemento._id} className="card col-12 col-lg-3 text-center m-3">
+                            <div key={elemento._id} className="card col-12 col-lg-3 text-center m-3">
                             <div className="card-body m-0 p-0">
-                                <div className="menuColor py-1 row justify-content-center titleWeek">
-
+                                <div className="menuColor py-1 row justify-content-center titleWeek2">
                                     <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
-              
+                                    <IconButton aria-label="add" className="letterA "  onClick={() => saveToLocalStorage(elemento)}>
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                   
                                 </div>
-                                
-
-                                    {elemento.routine.map(element => 
-
-                                        <div key={element._id} className='row justify-content-center mx-0 py-1 border-bottom'>
-
-                                            <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/user/${id}/week/${elemento._id}/day/${element._id}/${username}`}>{element.name}</Link>
-                                            
-                                            <button onClick={() => handleShowEdit(elemento._id,element._id, element.name)} className=' col-2 btn ClassBGHover'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-three-dots-vertical" viewBox="0 0 16 16">
-                                                    <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                                                </svg>
-                                            </button>
-
-                                        </div>
-                                  
-                                    )}
-       
-                                    <button disabled={loading} onClick={() => addDayToWeek(elemento._id,elemento.routine.length)} className='input-group-text btn border buttonColor mb-5 mt-3'>Añadir día</button>
-
+                                {elemento.routine.map(element => 
+                                    <div key={element._id} className='row justify-content-center mx-0 py-1 border-bottom'>
+                                        <Link className='LinkDays col-10 ClassBGHover pt-2' to={`/routine/user/${id}/week/${elemento._id}/day/${element._id}/${username}`}>{element.name}</Link>
+                                        <button onClick={() => handleShowEdit(elemento._id,element._id, element.name)} className=' col-2 btn ClassBGHover'>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                                <button disabled={loading} onClick={() => addDayToWeek(elemento._id,elemento.routine.length)} className='input-group-text btn border buttonColor mb-5 mt-3'>Añadir día</button>
                             </div>
-                            
                             <div className='row justify-content-between'>
                                 <div className='col-5'>
                                     <button onClick={() => deleteWeek(elemento._id, elemento.name)} className='btn border buttonColor buttonColorDelete'>Eliminar</button>
                                 </div>
                                 <div className='col-5'>
                                     <button onClick={() => editWeek(elemento._id, elemento.name)} className='btn border buttonColor'>Editar</button> 
-
                                 </div>
                                 <div className="card-footer textCreated mt-3">
-                                {elemento.created_at.fecha} - {elemento.created_at.hora}
+                                    {elemento.created_at.fecha} - {elemento.created_at.hora}
                                 </div>
                             </div>
-           
-                        </div>
-          
+                            </div>
+
                         )}
 
                     </div>
@@ -467,11 +547,13 @@ function UserRoutineEditPage(){
             </article>
 
             <Floating link={`/users/${user_id}`} />
+            <div className='row justify-content-center'>
 
-            <Dialog header={`Perfil de ${username}`} visible={visible} style={{ width: '90vw' }} modal onHide={closeDialog}>
-                {renderProfileData()}
-            </Dialog>
-           
+                <Dialog header={`Perfil de ${username}`} className='col-10 col-lg-8' visible={visible}  modal onHide={closeDialog}>
+                    {renderProfileData()}
+                </Dialog>
+                           
+            </div>
             
             <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} week_id={week_id} dayID={dayID} nameExercise={weekName}/>
             <EditWeek visible={showEditWeekDialog} onHide={hideDialog} week_id={week_id} defaultName={weekName}  />

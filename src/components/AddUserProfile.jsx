@@ -85,6 +85,7 @@ const AddUserProfile = ({ user_id }) => {
             .then((data) => {
                 setIsEditing(false);
                 setStatus(idRefresh);
+                NotifyHelper.instantToast("Perfil actualizado con éxito!")
             })
             .catch((error) => {
                 console.error('Error updating profile:', error);

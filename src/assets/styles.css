@@ -1,4 +1,16 @@
+*{
+  font-family: montserrat;
+}
 
+h2 {
+  font-size: 2em;
+  color: #000000;
+}
+
+p {
+  font-size: 1em;
+  color: #000000;
+}
 
 .buttonCancelDialog{
   background-color: white;
@@ -1209,13 +1221,58 @@ width: 50px;
 
 }
 
+.p-autocomplete-panel ul{
+  padding: 0 !important;
+}
 
+.repsImp{
+  padding: 0 !important;
+}
 
+.custom-table td {
+  border: none; /* Elimina los bordes de los td */
+}
 
+.w-50 {
+  width: 50%; /* Da más ancho al campo del nombre */
+}
 
+.w-small {
+  width: 5rem; /* Ancho pequeño para peso y rest */
+}
 
+.stylesAutocomplete input{
+  width: 100% !important;
+}
 
+.card-shadow {
+  background-color: #ffffff;
+  box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.199);
+}
 
+.marginReps{
+  padding-top: 35px  !important;
+}
+
+.titleWeek2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Para posicionar la letra A */
+}
+
+.titleWeek2 .FontTitles {
+  flex: 1;
+  text-align: center;
+}
+
+.titleWeek2 .letterA {
+  position: absolute;
+  right: 10px; /* Ajusta este valor según tu necesidad */
+  width: 50px;
+ 
+
+}
 
 
 

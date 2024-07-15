@@ -528,7 +528,7 @@ const confirmDelete = () => {
                                         <>
                                             <td className='td-1'>{customInputEditDay(exercise.name, i,'name')}</td>
                                             <td className='td-2'>{customInputEditDay(exercise.sets, i, 'sets')}</td>
-                                            <td className='td-3'>{customInputEditDay(exercise.reps, i, 'reps')}</td>
+                                            <td className='td-3 marginReps'>{customInputEditDay(exercise.reps, i, 'reps')}</td>
                                             <td className='td-4'>{customInputEditDay(exercise.peso, i, 'peso')}</td>
                                             <td className='td-5'>{customInputEditDay(exercise.rest, i, 'rest')}</td>
                                             <td className='td-6'>{customInputEditDay(exercise.video, i, 'video')}</td>
