@@ -396,7 +396,7 @@ const exportToExcel = (data) => {
 
 
 const saveToLocalStorage = (data) => {
-    setLoading(true)
+
     try {
         localStorage.setItem('userWeek', JSON.stringify(data))
         setCopyWeekStorage(JSON.stringify(data))
@@ -407,7 +407,7 @@ const saveToLocalStorage = (data) => {
   };
 
   const loadFromLocalStorage = () => {
-    setLoading(true)
+
     try {
       if (copyWeekStorage) {
         const parsedData = JSON.parse(copyWeekStorage);
