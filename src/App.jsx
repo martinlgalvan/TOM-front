@@ -27,7 +27,7 @@ import AddColorToUser from './components/Users/AddColorToUser.jsx'
 import { useColor } from './components/Context/ColorContext.jsx';
 import { Sidebar } from 'primereact/sidebar';
 import Novedades from './pages/coach/Novedades.jsx'
-
+//a
 
 function RoutePrivate( {isAutenticate, children}){
     return (
