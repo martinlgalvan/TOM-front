@@ -78,7 +78,7 @@ async function findByWeekId(week_id) {
 //Editar el nombre de una semana 
 
 async function editWeek(week_id, routine) {
-    return fetch(`http://localhost:2022/api/week/${week_id}`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ async function editWeek(week_id, routine) {
 }
 
 async function editNameWeek(week_id, name) {
-    return fetch(`http://localhost:2022/api/week/${week_id}/day/`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ async function deleteWeek(week_id) {
 
 
 async function exportToExcel(data) {
-    return fetch(`http://localhost:2022/api/excel`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/excel`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

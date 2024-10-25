@@ -38,7 +38,7 @@ async function createWarmup(week_id, day_id, warmup) {
 //Editar un día
 
 async function editWarmup(week_id, day_id, warmup) {
-  return fetch(`http://localhost:2022/api/week/${week_id}/day/${day_id}/warmup/`, {
+  return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/warmup/`, {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
