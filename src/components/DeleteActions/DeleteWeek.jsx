@@ -8,14 +8,17 @@ import { Button } from 'primereact/button';
 
 
 
-function DeleteWeek({ visible, onHide, week_id, name }) {
+function DeleteWeek({ visible, onHide, week_id, name, onDelete }) {
 
   const handleAccept = () => {
     Notify.notifyA("Eliminando semana...")
 
       WeekService.deleteWeek(week_id)
         .then(() => {
+          onDelete()
           onHide('delete')
+          Notify.updateToast()
+          
         })
    
   };

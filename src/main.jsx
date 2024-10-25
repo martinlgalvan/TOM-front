@@ -11,7 +11,8 @@ import 'primereact/resources/primereact.css';
 import 'primereact/resources/themes/saga-blue/theme.css';
 
 
-
+//react-toastify
+import 'react-toastify/dist/ReactToastify.css';
 
 
 //rsuit styles

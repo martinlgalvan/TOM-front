@@ -15,7 +15,7 @@ const CustomInputNumber = React.forwardRef(
 
     useEffect(() => {
       setFirstWidth(window.innerWidth)
-      console.log(window.innerWidth)
+
       if (isTextMode && initialValue !== value) {
         setValue(initialValue);
       }
@@ -54,7 +54,7 @@ const CustomInputNumber = React.forwardRef(
 
     return (
       <>
-      <div className={`row justify-content-center text-center ${isRep && firstWidth > 992 && ''} ${isRep && 'mb-2'}`}>
+      <div className={`row justify-content-center text-center aa ${isRep && firstWidth > 992 && ''} ${isRep && 'mb-2'}`}>
           <div className="input-number-container">
 
               <IconButton               

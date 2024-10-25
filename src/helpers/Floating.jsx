@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const Floating = ({link}) => {
   return (
@@ -10,8 +11,8 @@ const Floating = ({link}) => {
       to={link}
       rel="noopener noreferrer"
     >
-      <IconButton aria-label="video" className="p-1"  >
-          <ArrowBackIosIcon className="arrowStyle" />
+      <IconButton  className=""  >
+          <ArrowBackIcon  />
       </IconButton>
       </Link>
   );

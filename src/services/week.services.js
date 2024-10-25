@@ -77,8 +77,27 @@ async function findByWeekId(week_id) {
 
 //Editar el nombre de una semana 
 
-async function editWeek(week_id, name) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}`, {
+async function editWeek(week_id, routine) {
+    return fetch(`http://localhost:2022/api/week/${week_id}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify(routine)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+        }
+        else {
+            throw new Error('No se pudo editar el dia')
+        }
+    })
+}
+
+async function editNameWeek(week_id, name) {
+    return fetch(`http://localhost:2022/api/week/${week_id}/day/`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -112,6 +131,26 @@ async function deleteWeek(week_id) {
 
 
 
+async function exportToExcel(data) {
+    return fetch(`http://localhost:2022/api/excel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+        }
+        else {
+            throw new Error('No se pudo crear el dia')
+        }
+    })
+}
+
+
 
 export {
     findRoutineByUserId,
@@ -119,5 +158,8 @@ export {
     createClonWeek,
     findByWeekId,
     editWeek,
-    deleteWeek
+    editNameWeek,
+    deleteWeek,
+
+    exportToExcel
 }

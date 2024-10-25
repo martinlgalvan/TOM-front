@@ -8,8 +8,8 @@ import * as WeekService from '../../services/week.services.js';
 import * as UserService from '../../services/users.services.js';
 import * as ParService from '../../services/par.services.js';
 import * as DayService from '../../services/day.services.js';
-import * as NotifyHelper from './../../helpers/notify.js'
-import * as RefreshFunction from './../../helpers/generateUUID.js'
+import * as NotifyHelper from '../../helpers/notify.js'
+import * as RefreshFunction from '../../helpers/generateUUID.js'
 
 
 import Logo from '../../components/Logo.jsx'
@@ -24,6 +24,7 @@ import { Dialog } from 'primereact/dialog';
 import { Segmented } from 'antd';
 import { SelectButton } from 'primereact/selectbutton';
 
+
 import Floating from '../../helpers/Floating.jsx';
 
 import IconButton from '@mui/material/IconButton';
@@ -31,25 +32,6 @@ import AddIcon from '@mui/icons-material/Add';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-
-import { styled } from '@mui/material/styles';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Collapse from '@mui/material/Collapse';
-import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
-import { red } from '@mui/material/colors';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
-
-
 
 function UserRoutineEditPage(){
     const {id} = useParams()
@@ -75,7 +57,6 @@ function UserRoutineEditPage(){
 
 
     const [copyWeek, setCopyWeek] = useState();
-    const [weekClipboardLocalStorage, setWeekClipboardLocalStorage] = useState();
 
     let idRefresh = RefreshFunction.generateUUID()
 
@@ -84,9 +65,6 @@ function UserRoutineEditPage(){
 
     const [color, setColor] = useState(localStorage.getItem('color'))
     const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
-
-
-    // PROFILE DATA --------------------------------------------------  //
 
     useEffect(() => {
         UserService.getProfileById(id)
@@ -109,21 +87,16 @@ function UserRoutineEditPage(){
         }
     }, [profileData]);
 
-    //--------- GET ITEM FROM LOCALSTORAGE  ---------------
-
-    const copyRoutine = (data) =>{
-        console.log(data)
-        setWeekClipboardLocalStorage(data)
-    }
-
     useEffect(() => {
-        setWeekClipboardLocalStorage(localStorage.getItem('userWeek'))
-    }, [copyRoutine]);
-
+        if(localStorage.getItem('userWeek') != null){
+            setCopyWeekStorage(localStorage.getItem('userWeek'))
+        } else{
+            setCopyWeekStorage(null)
+        }
+    }, []);
 
     
-    // Routine data main ------------------------------------------------ //
-
+    //Routine - API
     useEffect(() => {
         setLoading(true)
         NotifyHelper.notifyA("Cargando semanas...")
@@ -167,8 +140,7 @@ function UserRoutineEditPage(){
     function addDayToWeek(week_id,number){
         setLoading(true)
 
-        DayService.createDay({name: `Día ${number + 1}`}, week_id)
-            .then(() => setStatus(idRefresh))
+        DayService.createDay({name: `Día ${number + 1}`}, week_id).then(() => setStatus(idRefresh))
 
     }
 
@@ -280,6 +252,12 @@ function UserRoutineEditPage(){
         const option = options.find(option => option.value === value);
         return option ? option.label : 'Desconocido';
     };
+
+
+    const justifyTemplate = (option) => {
+        return <div className='col-2'>d</div>;
+    }
+
 
     const renderProfileData = () => {
         if (!profileData) {
@@ -417,13 +395,23 @@ const exportToExcel = (data) => {
 
 
 
-// COPY PASTE THINGS  ------------------------------------------- //
+
+const saveToLocalStorage = (data) => {
+
+    try {
+        localStorage.setItem('userWeek', JSON.stringify(data))
+        setCopyWeekStorage(JSON.stringify(data))
+        NotifyHelper.instantToast("Copiado con éxito!")
+    } catch (err) {
+      console.error('Error al guardar en localStorage: ', err);
+    }
+  };
 
   const loadFromLocalStorage = () => {
-    console.log(weekClipboardLocalStorage)
+
     try {
-      if (weekClipboardLocalStorage) {
-        const parsedData = JSON.parse(weekClipboardLocalStorage);
+      if (copyWeekStorage) {
+        const parsedData = JSON.parse(copyWeekStorage);
         console.log(parsedData)
         ParService.createPARroutine(parsedData, id)
             .then((data) => {
@@ -439,6 +427,9 @@ const exportToExcel = (data) => {
     }
   };
 
+  //  ACA HACER UNA SEMANA CON  UN + Y SACAR EL BOTON
+
+
 
 
 
@@ -447,13 +438,10 @@ const exportToExcel = (data) => {
 
 
     return (
-    <>
-        <div className='container-fluid p-0'>
-            <Logo />
-        </div>
 
         <section className='container'>
 
+            <Logo />
             <div className='row justify-content-center mt-2 mb-5'>
 
                 <h2 className='col-10 text-center mb-2'>Administración de semanas</h2>
@@ -515,16 +503,51 @@ const exportToExcel = (data) => {
                                 </button>
                         
                         </div>
+                        {routine.length > 0 && routine.map((elemento, index) =>
 
-                    <article className='row justify-content-center'>
+                            <div key={elemento._id} className="card col-12 col-lg-3 text-center m-3">
+                            <div className="card-body m-0 p-0">
+                                <div className="menuColor py-1 row justify-content-center titleWeek2">
+                                    <h2 className='FontTitles m-0 py-2'>{elemento.name}</h2>
+                                    <IconButton aria-label="add" className="letterA "  onClick={() => saveToLocalStorage(elemento)}>
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                   
+                                </div>
+                                {elemento.routine.map(element => 
+                                    <div key={element._id} className='row justify-content-center border-bottom titleWeek2'>
+                                        <Link className='py-2 my-1 LinkDays' to={`/routine/user/${id}/week/${elemento._id}/day/${element._id}/${username}`}>{element.name}</Link>
+                                      
+                                        <IconButton aria-label="addDay" className="letterA " onClick={() => handleShowEdit(elemento._id,element._id, element.name)}>
+                                            <MoreVertIcon />
+                                        </IconButton>
+                                       
+                                    </div>
+                                )}
+                                <div className='row justify-content-center'>
+                                
+                                <IconButton aria-label="add" className="letterA col-10" disabled={loading} onClick={() => addDayToWeek(elemento._id,elemento.routine.length)} >
+                                        <AddIcon className='d-block'/>
 
-                        
+                                    </IconButton>
+                                    <button onClick={() => addDayToWeek(elemento._id,elemento.routine.length)}>Añadir día</button>
+                                        
+                                </div>
+                            </div>
+                            <div className='row justify-content-between'>
+                                <div className='col-5'>
+                                    <button onClick={() => deleteWeek(elemento._id, elemento.name)} className='btn border buttonColor buttonColorDelete'>Eliminar</button>
+                                </div>
+                                <div className='col-5'>
+                                    <button onClick={() => editWeek(elemento._id, elemento.name)} className='btn border buttonColor'>Editar</button> 
+                                </div>
+                                <div className="card-footer textCreated mt-3">
+                                    {elemento.created_at.fecha} - {elemento.created_at.hora}
+                                </div>
+                            </div>
+                            </div>
 
-
-                    </article>
-
-                    <PrimeReactTable_Routines id={id} username={username} routine={routine} setRoutine={setRoutine} copyRoutine={copyRoutine}/>
-
+                        )}
 
                     </div>
 
@@ -533,7 +556,6 @@ const exportToExcel = (data) => {
             </article>
 
             <Floating link={`/users/${user_id}`} />
-
             <div className='row justify-content-center'>
 
                 <Dialog header={`Perfil de ${username}`} className='col-10 col-lg-8' visible={visible}  modal onHide={closeDialog}>
@@ -561,8 +583,7 @@ const exportToExcel = (data) => {
                     />
 
         </section>
-    </>    
-)
+    )
 }
 
 export default UserRoutineEditPage

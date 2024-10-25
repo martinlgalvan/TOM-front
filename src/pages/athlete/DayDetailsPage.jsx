@@ -1,4 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Fragment } from 'react';
+
 import { Link, useParams } from "react-router-dom";
 
 import * as WeekService from "../../services/week.services.js";
@@ -8,12 +10,15 @@ import EditExercise from '../../components/EditExercise.jsx';
 import Contador from "../../helpers/Contador.jsx";
 import Floating from "../../helpers/Floating.jsx";
 
+
 import ReactPlayer from 'react-player';
 import * as _ from "lodash";
 
 import { Carousel } from 'primereact/carousel';
 import { Sidebar } from 'primereact/sidebar';
 import { Segmented } from 'antd';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
 
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -24,7 +29,8 @@ import IconButton from '@mui/material/IconButton';
 
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import EditNoteIcon from '@mui/icons-material/EditNote';
-
+import PercentIcon from '@mui/icons-material/Percent';
+import PercentageCalculator from "../../components/PercentageCalculator.jsx";
 
 
 
@@ -36,15 +42,13 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 //Confirmación al escribir de eliminación de usuario
 
 function DayDetailsPage() {
-    const { id } = useParams();
-    const { week_id } = useParams();
-    const { index } = useParams();
+    const { id, week_id, index } = useParams();
     const op = useRef(null);
 
     const [day_id, setDay_id] = useState()                                  // Carga del array principal de ejercicios
     const [allDays, setAllDays] = useState([]) 
     const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
-    const [warmupDay, setWarmupDay] = useState([]);
+    const [nameWeek, setNameWeek] = useState();
     const [status, setStatus] = useState()
 
     const lastDay = parseInt(localStorage.getItem("LastDay"));
@@ -59,19 +63,29 @@ function DayDetailsPage() {
 
 
     const [completeExercise, setCompleteExercise] = useState()                  // Futuro uso para editar la semana
-
+    const [showCalculator, setShowCalculator] = useState(false);
     const [expanded, setExpanded] = useState(false);
+
+    // Crear refs para las cards
+    const cardRefs = useRef([]);
 
     const handleExpandClick = () => {
         setExpanded(!expanded);
+      };
+
+
+
+      // Función para alternar la visibilidad de la calculadora
+      const toggleCalculator = () => {
+        setShowCalculator(!showCalculator);
       };
 
     useEffect(() => {
         WeekService.findRoutineByUserId(id).then((data) => {
 
             setAllDays(data[index].routine)
-            console.log(index)
-            if (lastDay == null || isNaN(lastDay) || lastDay >= data[index].routine.length ) {
+            setNameWeek(data[index].name)
+            if (!lastDay || isNaN(lastDay) || lastDay >= data[index].routine.length) {
                 setCurrentDay(0);
                 setModifiedDay(data[0].routine[0].exercises)
                 setDay_id(data[0].routine[0]._id)
@@ -86,6 +100,37 @@ function DayDetailsPage() {
                 
         });
     }, [status]);
+
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                } else {
+                    entry.target.classList.remove('in-view');
+                }
+            });
+        }, {
+            threshold: 0.1,
+        });
+    
+        // Solo observa cuando ref existe
+        cardRefs.current.forEach(ref => {
+            if (ref) {
+                observer.observe(ref);
+            }
+        });
+    
+        return () => {
+            cardRefs.current.forEach(ref => {
+                if (ref) {
+                    observer.unobserve(ref);
+                }
+            });
+        };
+    }, [modifiedDay, currentDay]);
+
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -166,7 +211,9 @@ function DayDetailsPage() {
     }
 ];
 
-const productTemplate = (exercise) => {
+
+
+const productTemplate = useCallback((exercise) => {
     return (
         <div className="border-1 surface-border border-round m-2  mb-0 text-center py-3 ">
             <div>
@@ -190,12 +237,20 @@ const productTemplate = (exercise) => {
             </div>
         </div>
     );
-};
+}, []);
 
     return (
-        <section className="container-fluid">
-            <Logo />
 
+        <>
+        <div className="container-fluid p-0">
+        <Logo />
+
+        </div>
+
+
+        <section className="container-fluid">
+         
+            <h2 className="my-5 text-center">{nameWeek}</h2>
 
             <div className="text-center">
                 <Segmented
@@ -218,6 +273,7 @@ const productTemplate = (exercise) => {
     
                     <h2 className="text-center mb-4">{allDays[currentDay].name}</h2>
                     {allDays[currentDay].warmup != null ? 
+                    
 
                         <div className="card ">
                             <h3 className="mt-3">Entrada en calor</h3>
@@ -232,81 +288,101 @@ const productTemplate = (exercise) => {
             <div className="row justify-content-center text-center">
                 <h2 className="mt-4">Rutina del día</h2>
 
-                                {allDays[currentDay].exercises.map((element, index) => (
-                                    <>
-                                    {element.type == 'exercise' ?
-                                    <Card key={element.exercise_id} className="my-3 cardShadow titleCard" >
-                                    <CardHeader 
-                                    avatar={
-                                        
-                                        <Avatar aria-label="recipe" className="avatarSize avatarColor">
-                                            
-                                        {element.numberExercise}
-                                        </Avatar>
-                                    }
-                                    action={
-                                        <Avatar aria-label="recipe" className="avatarSize bg-dark me-1 mt-1 p-1">
-                                        <Contador className={'p-2'}  max={element.sets} />
-                                        </Avatar>
-                                    }
-                                    title={element.name}
-                                    />
-
-                                    <CardContent className="p-0">
+                                {allDays[currentDay].exercises.map((element, index) => {
+                                    const animationClass = index % 3 === 0
+                                    ? 'from-left'
+                                    : index % 3 === 1
+                                    ? 'from-center'
+                                    : 'from-right';
 
                                     
-                                <div className="card border-0">
-                                    <table className="table border-0">
-                                        <thead >
-                                        <tr className="border-0">
-                                            <th className="border-0">Series</th>
-                                            <th className="border-0">Reps</th>
-                                            <th className="border-0">Peso</th>
-                                            <th className="border-0">Descanso</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody className="border-0">
-                                        <tr className="border-0">
-                                            <td className="border-0">{element.sets}</td>
-                                            <td className="border-0">{element.reps}</td>
-                                            <td className="border-0">{element.peso}</td>
-                                            <td className="border-0">{element.rest}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    </div>
-                                    {element.notas  && <div >
-                                        
-                                        <p className="titleObservaciones">Observaciones</p>
-                                        <p className="paraphObservaciones">{element.notas}</p>
-                                    </div>}
-                                    </CardContent>
-                                    <CardActions  className="p-0 row justify-content-between" >
-                                        <IconButton aria-label="video" className="p-0 col-3 mb-2" disabled={element.video == null || element.video == ''}  onClick={() => handleButtonClick(element)} >
-                                            <YouTubeIcon  className={element.video == null || element.video == "" ? 'ytColor-disabled' : ' ytColor'} />
-                                        </IconButton>
-                                        <IconButton aria-label="video" className="p-0 col-3 mb-2" onClick={() => element.type != 'exercise' ? 
-                                        handleShowEditCircuit(
-                                            element.exercise_id, 
-                                            element.type, 
-                                            element.typeOfSets, 
-                                            element.circuit, 
-                                            element.notas, 
-                                            element.numberExercise) : 
+
+
+                                    return(
+                                    <Fragment key={element.exercise_id}>
+                                    
+                                    {element.type == 'exercise' ?
+                                    
+                                    (<Card 
+                                        key={element.exercise_id}
+                                        ref={(el) => (cardRefs.current[index] = el)}  // Referencia de cada card
+                                        className={`my-3 cardShadow titleCard box ${animationClass}`} 
+                                    >
+                                        <CardHeader 
+                                        avatar={
                                             
-                                        handleEditMobileExercise(element, index)}  >
-                                        <EditNoteIcon className="editStyle  p-0"  />
+                                            <Avatar aria-label="recipe" className="avatarSize avatarColor">
+                                                
+                                            {element.numberExercise}
+                                            </Avatar>
+                                        }
+                                        action={
+                                            <Avatar aria-label="recipe" className="avatarSize bg-dark me-1 mt-1 p-1">
+                                            <Contador className={'p-2'}  max={element.sets} />
+                                            </Avatar>
+                                        }
+                                        title={element.name}
+                                        />
 
-                                        </IconButton>
+                                        <CardContent className="p-0">
 
-                                    </CardActions>
+                                        
+                                    <div className="card border-0">
+                                        <table className="table border-0">
+                                            <thead >
+                                            <tr className="border-0">
+                                                <th className="border-0">Series</th>
+                                                <th className="border-0">Reps</th>
+                                                <th className="border-0">Peso</th>
+                                                <th className="border-0">Descanso</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody className="border-0">
+                                            <tr className="border-0">
+                                                <td className="border-0">{element.sets}</td>
+                                                <td className="border-0">{element.reps}</td>
+                                                <td className="border-0">{element.peso}</td>
+                                                <td className="border-0">{element.rest}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                        {element.notas  && <div >
+                                            
+                                            <p className="titleObservaciones">Observaciones</p>
+                                            <p className="paraphObservaciones">{element.notas}</p>
+                                        </div>}
+                                        </CardContent>
+                                        <CardActions  className="p-0 row justify-content-between" >
+                                            <IconButton aria-label="video" className="p-0 col-3 mb-2" disabled={element.video == null || element.video == ''}  onClick={() => handleButtonClick(element)} >
+                                                <YouTubeIcon  className={element.video == null || element.video == "" ? 'ytColor-disabled' : ' ytColor'} />
+                                            </IconButton>
+                                            <IconButton aria-label="video" className="p-0 col-3 mb-2" onClick={() => element.type != 'exercise' ? 
+                                            handleShowEditCircuit(
+                                                element.exercise_id, 
+                                                element.type, 
+                                                element.typeOfSets, 
+                                                element.circuit, 
+                                                element.notas, 
+                                                element.numberExercise) : 
+                                                
+                                            handleEditMobileExercise(element, index)}  >
+                                            <EditNoteIcon className="editStyle  p-0"  />
 
-                                    </Card> 
+                                            </IconButton>
+
+                                        </CardActions>
+
+                                    </Card> )
                                     :
 
        
-
-                                    <Card key={element.exercise_id} className="my-3 cardShadow titleCard" > {/*Card actions*/ }
+                                     // Referencia de cada card
+                                     
+                                    (<Card 
+                                        key={`circuit-${element.exercise_id}-${index}`}
+                                    ref={(el) => (cardRefs.current[index] = el)}
+                                    className={`my-3 cardShadow titleCard box ${animationClass}`} > {/*Card actions*/ }
                                     <CardHeader className="me-4 ps-1"
                                     avatar={
                                         
@@ -336,14 +412,16 @@ const productTemplate = (exercise) => {
                                         </tr>
                                         </thead>
 
-                                        {element.circuit.map((circuit) => (<tbody className="border-0">
-                                        <tr className="border-0">
-                                            <td className="border-0">{circuit.name}</td>
-                                            <td className="border-0">{circuit.reps}</td>
-                                            <td className="border-0">{circuit.peso}</td>
-                                           
-                                        </tr>
-                                        </tbody>))}
+                                        {element.circuit.map((circuit) => (
+                                        <tbody key={circuit.idRefresh} className="border-0">
+                                            <tr className="border-0">
+                                                <td className="border-0">{circuit.name}</td>
+                                                <td className="border-0">{circuit.reps}</td>
+                                                <td className="border-0">{circuit.peso}</td>
+                                            
+                                            </tr>
+                                            </tbody>
+                                        ))}
                                     </table>
                                     </div>
                                     {element.notas  && <div >
@@ -359,12 +437,12 @@ const productTemplate = (exercise) => {
 
                                     </CardActions>
 
-                                    </Card>
+                                    </Card>)
 
                                     }
-                                    </>
+                                    </Fragment>
                              
-                                    ))}
+                            )})}
 
             </div> 
             </div> 
@@ -397,11 +475,29 @@ const productTemplate = (exercise) => {
                 </Sidebar>
             </div>  
 
+            
+            <div className={`navbar-transition ${showCalculator ? 'Edit-float-button-active' : 'Edit-float-button'}  ${showCalculator ? 'editActive' : 'btn-primary'}`}>
+                <IconButton onClick={toggleCalculator}>
+                <PercentIcon className={`${showCalculator ? 'text-light' : 'btn-primary'}`} />
+                </IconButton>
+            </div>
+
+            <Dialog 
+            header="Calculadora de Porcentaje"
+            visible={showCalculator} 
+            style={{ width: '80vw' }} 
+            onHide={toggleCalculator}
+            draggable={true} // Hacer que el modal sea movible
+        >
+            <PercentageCalculator />
+        </Dialog>
+
             <Sidebar visible={editExerciseMobile} position="right" onHide={() => {setEditExerciseMobile(false)}}>
                 <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refreshEdit={refresh} isAthlete={true}/>
             </Sidebar>
             <Floating link={`/routine/${id}`}  />
         </section>
+        </>
     );
 }
 

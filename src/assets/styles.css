@@ -2,11 +2,29 @@
   font-family: montserrat;
 }
 
-h2 {
-  font-size: 2em;
-  color: #000000;
+.tipografia-titulos {
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+  font-size: 1.9em;
 }
 
+.tipografia-subtitulos {
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+  font-size: 1.55em;
+}
+
+.color-icons{
+  color: #242424;
+}
 p {
   font-size: 1em;
   color: #000000;
@@ -77,11 +95,37 @@ p {
   }
 
   .LinkDays {
-    text-decoration: none;
+    text-decoration: none  !important;
+  }
+
+  .sizeFontCard span{
+    font-size: 0.85em !important;
+  }
+
+
+
+  .usersListTable td{
+    text-align: center !important;
+  }
+
+  .usersListTable tr{
+    border-bottom: 1px solid rgb(233, 233, 233);
+  }
+
+
+  .usersListTable .p-column-header-content{
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+
+  }
+
+  .usersListTable tbody{
+    padding: 10px !important;
   }
 
   .ClassBGHover:hover{
     background-color: #d1d1d1;
+    color: #000000;
   }
 
   .mouseUp{
@@ -515,9 +559,7 @@ p {
 .dataTableStyles td{
   margin-top: 30px;
   text-align: center !important;
-  border: 1px solid rgba(75, 75, 75, 0.123);
-  border-left: 0;
-  border-right: 0;
+
 }
 
 .p-column-header-content{
@@ -940,12 +982,12 @@ p {
   background-color: #000000 !important;
 }*/
 
-.whatsapp-button {
+.save-float-button {
   position: fixed;
-  bottom: 20px;
+  bottom: 180px;
   left: 20px;
   background-color: #e0e0e0fb; /* Color de fondo de WhatsApp */
-  padding: 15px;
+  padding: 10px;
   border-radius: 50%;
   box-shadow: 0 4px 13px rgba(0, 0, 0, 0.733);
   transition: background-color 0.3s ease-in-out;
@@ -956,8 +998,92 @@ p {
   z-index: 1000; /* Asegura que esté por encima de otros elementos */
 }
 
+.save-float-button-active {
+  position: fixed;
+  bottom: 210px;
+  left: 20px;
+  background-color: #e0e0e0fb; /* Color de fondo de WhatsApp */
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 0 4px 13px rgba(0, 0, 0, 0.733);
+  transition: background-color 0.3s ease-in-out;
+  color: #fff; /* Color del ícono de WhatsApp */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+.Edit-float-button {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  background-color: #e0e0e0fb; /* Color de fondo de WhatsApp */
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 0 4px 13px rgba(0, 0, 0, 0.733);
+  transition: background-color 0.3s ease-in-out;
+  color: #fff; /* Color del ícono de WhatsApp */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+.Edit-float-button-active {
+  position: fixed;
+  bottom: 130px;
+  left: 20px;
+  background-color: #e0e0e0fb; /* Color de fondo de WhatsApp */
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 0 4px 13px rgba(0, 0, 0, 0.733);
+  transition: background-color 0.3s ease-in-out;
+  color: #fff; /* Color del ícono de WhatsApp */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+.editActive{
+  background-color: #0044fffb;
+  color: white;
+}
+
+.largoAddon{
+  width: 15px !important;
+  text-align: center !important;
+  margin: auto !important;
+}
+
+.saveActive{
+  background-color: #0a7e00fb;
+  color: white;
+}
+
+.whatsapp-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: #e0e0e0fb; /* Color de fondo de WhatsApp */
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 0 4px 13px rgba(0, 0, 0, 0.733);
+  transition: background-color 0.3s ease-in-out;
+  color: #fff; /* Color del ícono de WhatsApp */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+.shadowCards{
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.233);
+}
+
 .arrowStyle{
-  margin-left: 6px;
+  margin-left: 9px;
 }
 
 .navbar-transition {
@@ -1044,7 +1170,7 @@ width: 50px;
 
 .textAreaResize {
   resize: none; /* Evita que el usuario pueda redimensionar el textarea */
-  border: none !important; /* Elimina el borde inferior */
+  margin-right: 20px !important;
   box-shadow: none !important; /* Elimina cualquier sombra que pueda estar presente */
 }
 
@@ -1142,6 +1268,8 @@ width: 50px;
   }
 }
 
+
+
 .floating-button {
   position: fixed;
   bottom: 0.5px;
@@ -1151,7 +1279,7 @@ width: 50px;
   width: 100%;
   background-color: #00000067;
   gap: 10px;
-  z-index: 1000;
+  z-index: 52000;
   justify-content: center;
   animation: slideUp 0.5s ease forwards;
 }
@@ -1273,6 +1401,255 @@ width: 50px;
  
 
 }
+
+.app-small-font {
+  font-size: 12px; /* Tamaño de fuente general más pequeño */
+}
+
+
+
+.app-small-font h2 {
+  font-size: 18px; /* Tamaño de fuente específico para títulos */
+}
+
+.app-small-font .btn {
+  font-size: 12px; /* Tamaño de fuente más pequeño para botones */
+}
+
+.app-small-font .form-control {
+  font-size: 12px; /* Tamaño de fuente más pequeño para campos de entrada */
+}
+
+.app-small-font .table {
+  font-size: 12px; /* Tamaño de fuente más pequeño para tablas */
+}
+
+.app-small-font .card-title {
+  font-size: 14px; /* Tamaño de fuente más pequeño para títulos de tarjeta */
+}
+
+.app-small-font .inputtextarea {
+  font-size: 12px; /* Tamaño de fuente más pequeño para textareas */
+}
+
+.autocomplete {
+  position: relative; /* Necesario para la posición absoluta de las sugerencias */
+}
+
+.suggestions-list {
+  position: absolute; /* Para evitar mover el contenido al mostrarse */
+  top: 100%; /* Para que aparezca justo debajo del input */
+
+  padding: 6px;
+  width: 450px; /* Establece un ancho fijo de 300px */
+  max-height: 250px; /* Ajusta la altura máxima según tus necesidades */
+  overflow-y: auto; /* Permite desplazamiento vertical si el contenido excede la altura máxima */
+  background-color: white;
+  border: 1px solid #ccc;
+  z-index: 4000 !important; /* Mayor z-index para superponerse sobre otros elementos */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+
+}
+
+
+.suggestions-list ul {
+  padding: 0;
+}
+
+.suggestions-list li {
+  padding: 4px;
+  cursor: pointer; /* Cambia el cursor al pasar por encima */
+  white-space: nowrap; /* Evita que el texto se apile */
+
+}
+
+.suggestions-list li ul li:hover {
+  background-color: #f0f0f0; /* Efecto hover en cada elemento individual */
+  transition: background 0.2s;
+}
+
+.suggestions-list span {
+  display: block;
+  font-weight: 500;
+  font-size: 1.1em;
+  color: #1d1d1d;
+  margin-bottom: 8px;
+
+
+}
+
+.altoTable{
+  padding-bottom: 180px;
+}
+
+.background-logo {
+  object-fit: cover;
+  z-index: 1;
+  top: 0;
+  left: 0;
+}
+
+.divPrincipal{
+  height: 50vh ;
+
+}
+
+.image-container {
+  z-index: 2;
+  background-color: rgba(255, 255, 255, 0.5); /* Fondo blanco con opacidad */
+  border-radius: 10px; /* Opcional: para esquinas redondeadas */
+  max-width: 50%; /* Ajusta el ancho máximo si es necesario */
+  height: 50%; /* Altura del 50% del viewport */
+  animation: slide-in-left 0.8s ease-in-out forwards;
+}
+
+.centered-img {
+  max-height: 100%; /* La imagen ocupa el 100% de la altura disponible */
+  max-width: 100%; /* La imagen ocupa el 100% del ancho disponible */
+  height: auto; /* Mantener proporciones */
+}
+
+@media (max-width: 768px) {
+  .image-container {
+      max-width: 90%; /* Ajuste en pantallas móviles */
+      height: 50%; /* Permitir que la altura se ajuste automáticamente */
+  }
+}
+
+@keyframes slide-in-left {
+  0% {
+      transform: translateX(-100%); /* Comienza fuera de la pantalla por la izquierda */
+  }
+  100% {
+      transform: translateX(0); /* Llega a su posición original */
+  }
+}
+
+
+.transition-rigth-to-medium{
+  animation: slide-in-rigth 0.8s ease-in-out forwards;
+}
+
+@keyframes slide-in-rigth {
+  0% {
+      transform: translateX(100%); /* Comienza fuera de la pantalla por la izquierda */
+  }
+  100% {
+      transform: translateX(0); /* Llega a su posición original */
+  }
+}
+
+
+
+@media (max-width: 768px) {
+  .suggestions-list {
+    max-width: 345px;
+    right: 0;
+
+    padding: 10px; /* Agrega algo de padding extra si es necesario */
+  }
+
+  .suggestions-list ul {
+    padding: 0;
+  }
+
+  .suggestions-list li {
+    padding: 8px; /* Un poco más de espacio para mejorar la usabilidad en mobile */
+  }
+
+  .suggestions-list span {
+    font-size: 1em; /* Reduce ligeramente el tamaño de la fuente para pantallas pequeñas */
+  }
+}
+
+
+
+/* Personalizar la barra de scroll */
+.suggestions-list::-webkit-scrollbar {
+  width: 15px; /* Ancho de la barra de scroll */
+}
+
+.suggestions-list::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color de fondo de la pista */
+}
+
+.suggestions-list::-webkit-scrollbar-thumb {
+  background: #575757; /* Color de la barra de scroll */
+  border-radius: 2px; /* Bordes redondeados para la barra de scroll */
+
+}
+
+.suggestions-list::-webkit-scrollbar-thumb:hover {
+  background: #444444; /* Color al pasar el mouse por encima */
+}
+
+.margin-custom .aa{
+  margin-top: 27px !important;
+}
+
+.font-icons{
+  font-size: 0.6em;
+}
+
+.fontUsersList{
+  font-size: 0.5em !important;
+}
+
+
+
+
+/* Estilos iniciales comunes */
+.box {
+  opacity: 0 !important;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out !important;
+}
+
+/* Elemento que entra desde la izquierda */
+.from-left {
+  transform: translateX(-100px) !important; /* Comienza fuera de la pantalla, a la izquierda */
+}
+
+.from-left.in-view {
+  opacity: 1 !important;
+  transform: translateX(0) !important; /* Vuelve a su posición original */
+}
+
+/* Elemento que entra desde la derecha */
+.from-right {
+  transform: translateX(100px) !important; /* Comienza fuera de la pantalla, a la derecha */
+}
+
+.from-right.in-view {
+  opacity: 1 !important;
+  transform: translateX(0) !important; /* Vuelve a su posición original */
+}
+
+/* Elemento que entra desde el centro */
+.from-center {
+  transform: scale(0.5) !important; /* Comienza más pequeño (50% de su tamaño original) */
+}
+
+.from-center.in-view {
+  opacity: 1 !important;
+  transform: scale(1) !important; /* Vuelve a su tamaño original */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

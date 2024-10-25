@@ -24,12 +24,16 @@ function Profile(){
 
 
     return (
+
+        <>
+        
+        <div className='container-fluid p-0'>
+            <Logo />
+        </div>
         
         <section className='container-fluid'>
 
-            <Logo />
-
-            <div className='row justify-content-center'>
+            <div className='row justify-content-center mt-3'>
 
             <h2 className='text-center'>Bienvenido a tu perfil {username}!</h2>
             <p className='text-center my-4'>A continuación, podés editar tus sensaciones de la última semana. <b>Presioná</b> los días de la semana que entrenás e indicá tus sensaciones. Esta información le servirá a tu entrenador para mejorar la calidad de tu entrenamiento.</p>
@@ -82,7 +86,7 @@ function Profile(){
                 />
 
         </section>
-        
+        </>
     )
 }
 

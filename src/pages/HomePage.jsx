@@ -1,70 +1,138 @@
+import { useEffect, useRef } from 'react';
+
 import Logo from '../components/Logo.jsx';
-const name = localStorage.getItem('name')
-import { Fieldset } from 'primereact/fieldset';
-// to do chequear semántica, ortografía, agregar videos explicativos con edición
+const name = localStorage.getItem('name');
+import { IconButton } from '@mui/material';
+import GroupIcon from '@mui/icons-material/Group';
+import LaptopChromebookIcon from '@mui/icons-material/LaptopChromebook';
+import SettingsIcon from '@mui/icons-material/Settings';
+import MessageIcon from '@mui/icons-material/Message';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import WorkIcon from '@mui/icons-material/Work';
 
 function HomePage() {
+  // Crear refs únicos para cada card
+  const leftRef1 = useRef(null);
+  const leftRef2 = useRef(null);
+  const rightRef1 = useRef(null);
+  const rightRef2 = useRef(null);
+  const centerRef1 = useRef(null);
+  const centerRef2 = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+          } else {
+            entry.target.classList.remove('in-view'); // Remover la clase cuando el elemento sale de la vista
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+      }
+    );
+  
+    // Observando cada ref individualmente
+    if (leftRef1.current) observer.observe(leftRef1.current);
+    if (leftRef2.current) observer.observe(leftRef2.current);
+    if (rightRef1.current) observer.observe(rightRef1.current);
+    if (rightRef2.current) observer.observe(rightRef2.current);
+    if (centerRef1.current) observer.observe(centerRef1.current);
+    if (centerRef2.current) observer.observe(centerRef2.current);
+  
+    return () => {
+      if (leftRef1.current) observer.unobserve(leftRef1.current);
+      if (leftRef2.current) observer.unobserve(leftRef2.current);
+      if (rightRef1.current) observer.unobserve(rightRef1.current);
+      if (rightRef2.current) observer.unobserve(rightRef2.current);
+      if (centerRef1.current) observer.unobserve(centerRef1.current);
+      if (centerRef2.current) observer.unobserve(centerRef2.current);
+    };
+  }, []);
+
   return (
+    <>  
+      <div className='container-fluid mb-4 p-0'>
+        <Logo />
+      </div>
 
-<main className="container-fluid">
-    
-    <Logo />
-    
-    <div className="row justify-content-center colorFondo">
-
-        <h2 className="my-4 col-12 text-center">¿Que hace nuestra aplicación?</h2>
-        <p className="mt-4 mb-5 col-10 col-lg-6 text-center">Digitaliza la planificación del entrenamiento. Tené a todos tus alumnos en un mismo sitio, actualizando su planificación con todas las herramientas necesarias para hacer el trabajo lo más ameno posible. ¿También tenés alumnos online? Te brindamos una base de datos llena de videos explicativos sobre todos los ejercicios básicos del entrenamiento, ¡Con la posibilidad de que subas los tuyos!</p>
-    
-    </div>
-
-    <h2 className="text-center my-5">Características</h2>
-
-    <div className="card-group">
-        <div className="card border-white">
-            <div className="card-body text-center">
-                
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="bi bi-bookmark-check text-center mb-2" viewBox="0 0 16 16">
-                    <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
-                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/>
-                </svg>
-
-                <h3 className="card-title">Sencilla y rápida</h3>
-                <p className="card-text">Simplificá tu trabajo. Contá con todas las herramientas necesarias para la planificación. Además, contás con una amplia variedad de videos explicativos de ejercicios.</p>
-            </div>
+      <main className="container-fluid">
+        <div className="row justify-content-center colorFondo transition-rigth-to-medium">
+          <h2 className="my-4 col-12 text-center tipografia-titulos">¿QUE BRINDA NUESTRO SOFTWARE?</h2>
+          <p className="mt-4 mb-5 col-10 col-lg-6 text-center">
+            Acá vas a encontrar todas las herramientas para <b>gestionar la planificación de tus alumnos.</b> Nuestro software está en continuo desarrollo, codo a codo junto a los entrenadores que la utilizan (podés ser uno), ya que nuestro objetivo es tu <b>comodidad</b>, un software hecho 100% para los entrenadores, para que planificar sea una tarea mucho más <b>sencilla</b>. No nos interesa que cobrés cuotas, ni que gestiones turnos, <b>nos interesa que el trabajo que hagas, sea lo más cómodo y profesional posible.</b>
+          </p>
         </div>
 
-        <div className="card border-white">
+        <h2 className="text-center my-5 tipografia-titulos">CARACTERÍSTICAS</h2>
+
+        <div className="row justify-content-center">
+          <div ref={leftRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-left">
             <div className="card-body text-center">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"  className="bi bi-calendar-minus text-center mb-2" viewBox="0 0 16 16">
-                    <path d="M5.5 9.5A.5.5 0 0 1 6 9h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5z"/>
-                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                </svg>
-
-                <h3 className="card-title">Organización</h3>
-                <p className="card-text">Contás con un panel de control de tus alumnos, para ver a todos tus alumnos de la manera más sencilla posible.</p>
+              <IconButton>
+                <GroupIcon className='fs-1 color-icons' />
+              </IconButton>
+              <h3 className="card-title tipografia-subtitulos">Gestión de alumnos</h3>
+              <p className="card-text">Contá con un panel de alumnos, donde podés agregar, buscar o eliminar alumnos de forma sencilla.</p>
             </div>
-        </div>
+          </div>
 
-        <div className="card border-white">
+          <div ref={centerRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-center">
             <div className="card-body text-center">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="bi bi-person-circle text-center mb-2" viewBox="0 0 16 16">
-                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-                </svg>
-
-                <h3 className="card-title">Profesionalismo</h3>
-                <p className="card-text">Es tu carta de presentación. Llevá tus servicios a otro nivel, y brindales a tus alumnos una aplicación para que tengan la planificación en su celular.</p>
+              <IconButton>
+                <LaptopChromebookIcon className='fs-1 color-icons' />
+              </IconButton>
+              <h3 className="card-title tipografia-subtitulos">Planificación</h3>
+              <p className="card-text">Gestioná la planificación de cada alumno, donde podés agregar semanas, e ir guardando el progreso de cada uno.</p>
             </div>
+          </div>
+
+          <div ref={rightRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-right">
+            <div className="card-body text-center">
+              <IconButton>
+                <SettingsIcon className='fs-1 color-icons' />
+              </IconButton>
+              <h3 className="card-title tipografia-subtitulos">Versatilidad</h3>
+              <p className="card-text">Crea semanas, días, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b className='d-block'>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
+            </div>
+          </div>
+
+          <div ref={leftRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-left">
+            <div className="card-body text-center">
+              <IconButton>
+                <MessageIcon className='fs-1 color-icons' />
+              </IconButton>
+              <h3 className="card-title tipografia-subtitulos">Comunicación con tus alumnos</h3>
+              <p className="card-text">Tus alumnos te van a poder comentar sus sensaciones, tanto semanales, como en cada ejercicio.</p>
+            </div>
+          </div>
+
+          <div ref={centerRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-center">
+            <div className="card-body text-center">
+              <IconButton>
+                <MenuBookIcon className='fs-1 color-icons' />
+              </IconButton>
+              <h3 className="card-title tipografia-subtitulos">Biblioteca de ejercicios</h3>
+              <p className="card-text">Accedé a nuestra biblioteca de ejercicios, con subdivisiones en los básicos, y grupo musculares. También podrás cargar la tuya propia.</p>
+            </div>
+          </div>
+
+          <div ref={rightRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-right">
+            <div className="card-body text-center">
+              <IconButton>
+                <WorkIcon className='fs-1 color-icons' />
+              </IconButton>
+              <h3 className="card-title tipografia-subtitulos">Profesionalismo</h3>
+              <p className="card-text">Es tu carta de presentación. Llevá tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificación en su celular.</p>
+            </div>
+          </div>
         </div>
-    </div>
-
-</main>
-
-
-  )
+      </main>
+    </>
+  );
 }
 
-
-export default HomePage
+export default HomePage;

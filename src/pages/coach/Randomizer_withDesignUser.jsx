@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import * as NotifyHelper from './../../helpers/notify.js';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import * as NotifyHelper from '../../helpers/notify.js';
 import * as UserService from '../../services/users.services.js';
-import * as PARService from '../../services/par.services.js';
+import * as PARService from "../../services/par.services.js";
 import Options from '../../assets/json/options.json';
 import Exercises from '../../assets/json/NEW_EXERCISES.json';
 import CustomInputNumber from '../../components/CustomInputNumber.jsx';
@@ -14,11 +14,10 @@ import IconButton from '@mui/material/IconButton';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ObjectId from 'bson-objectid';
 
 const App = () => {
     const [nombreSemana, setNombreSemana] = useState('Semana 1');
-    const [dias, setDias] = useState([{ id: new ObjectId().toString(), ejercicios: [{ id: new ObjectId().toString(), numberExercise: 1, name: '', reps: 1, sets: 1, peso: '', rest: '', video: '', notas: '' }] }]);
+    const [dias, setDias] = useState([{ id: 1, ejercicios: [{ id: 1, numberExercise: 1, name: '', reps: 1, sets: 1, peso: '', rest: '', video: '', notas: '' }] }]);
     const [showModal, setShowModal] = useState(false);
     const [diaAEliminar, setDiaAEliminar] = useState(null);
     const [options, setOptions] = useState([]);
@@ -29,7 +28,7 @@ const App = () => {
     const [actualUser, setActualUser] = useState(null);
     const [users, setUsers] = useState([]);
 
-    const inputRefs = useRef({});
+
 
     useEffect(() => {
         const groupedOptions = Options.reduce((acc, group) => {
@@ -61,8 +60,8 @@ const App = () => {
         setDias(prevDias => [
             ...prevDias,
             {
-                id: new ObjectId().toString(),
-                ejercicios: [{ id: new ObjectId().toString(), numberExercise: 1, name: '', reps: 1, sets: 1, peso: '', rest: '', video: '', notas: '' }]
+                id: prevDias.length > 0 ? prevDias[prevDias.length - 1].id + 1 : 1,
+                ejercicios: [{ id: 1, numberExercise: 1, name: '', reps: 1, sets: 1, peso: '', rest: '', video: '', notas: '' }]
             }
         ]);
     }, []);
@@ -85,7 +84,7 @@ const App = () => {
                     ejercicios: [
                         ...dia.ejercicios,
                         {
-                            id: new ObjectId().toString(),
+                            id: dia.ejercicios.length > 0 ? dia.ejercicios[dia.ejercicios.length - 1].id + 1 : 1,
                             numberExercise: dia.ejercicios.length + 1,
                             name: '', reps: 1, sets: 1, peso: '', rest: '', video: '', notas: ''
                         }
@@ -104,16 +103,18 @@ const App = () => {
     }, []);
 
     const actualizarEjercicio = useCallback((diaId, ejercicioId, campo, valor) => {
-        setDias(prevDias => {
-            const newDias = [...prevDias];
-            const diaIndex = newDias.findIndex(dia => dia.id === diaId);
-            const ejercicioIndex = newDias[diaIndex].ejercicios.findIndex(ej => ej.id === ejercicioId);
-            newDias[diaIndex].ejercicios[ejercicioIndex] = {
-                ...newDias[diaIndex].ejercicios[ejercicioIndex],
-                [campo]: valor
-            };
-            return newDias;
-        });
+        setDias(prevDias => prevDias.map(dia =>
+            dia.id === diaId
+                ? {
+                    ...dia,
+                    ejercicios: dia.ejercicios.map(ejercicio =>
+                        ejercicio.id === ejercicioId
+                            ? { ...ejercicio, [campo]: valor }
+                            : ejercicio
+                    )
+                }
+                : dia
+        ));
     }, []);
 
     const search = useCallback((event) => {
@@ -154,59 +155,6 @@ const App = () => {
             .catch(() => setLoading(false));
     }, [dias, actualUser]);
 
-
-
-    const handleSave = () => {
-        const updatedDias = dias.map(dia => ({
-            ...dia,
-            ejercicios: dia.ejercicios.map(ejercicio => ({
-                ...ejercicio,
-                name: inputRefs.current[`${dia.id}-${ejercicio.id}-name`]?.value || '',
-                reps: inputRefs.current[`${dia.id}-${ejercicio.id}-reps`]?.value || 1,
-                sets: inputRefs.current[`${dia.id}-${ejercicio.id}-sets`]?.value || 1,
-                peso: inputRefs.current[`${dia.id}-${ejercicio.id}-peso`]?.value || '',
-                rest: inputRefs.current[`${dia.id}-${ejercicio.id}-rest`]?.value || '',
-                video: inputRefs.current[`${dia.id}-${ejercicio.id}-video`]?.value || '',
-                notas: inputRefs.current[`${dia.id}-${ejercicio.id}-notas`]?.value || ''
-            }))
-        }));
-
-        setDias(updatedDias);
-        console.log('Datos guardados', updatedDias);
-    };
-
-
-    const actualizarDropdown = (diaId, ejercicioId, value) => {
-        setDias(prevDias =>
-            prevDias.map(dia =>
-                dia.id === diaId
-                    ? {
-                        ...dia,
-                        ejercicios: dia.ejercicios.map(ejercicio =>
-                            ejercicio.id === ejercicioId ? { ...ejercicio, numberExercise: value } : ejercicio
-                        )
-                    }
-                    : dia
-            )
-        );
-    };
-
-    const actualizarAutoComplete = (diaId, ejercicioId, value) => {
-        setDias(prevDias =>
-            prevDias.map(dia =>
-                dia.id === diaId
-                    ? {
-                        ...dia,
-                        ejercicios: dia.ejercicios.map(ejercicio =>
-                            ejercicio.id === ejercicioId ? { ...ejercicio, name: value } : ejercicio
-                        )
-                    }
-                    : dia
-            )
-        );
-    };
-    
-
     return (
         <div className="container-fluid mt-5">
 
@@ -243,7 +191,17 @@ const App = () => {
             {dias.map(dia => (
                 <div key={dia.id} className="card mb-3 mx-4 card-shadow">
                     <div className="card-body">
-                        <h5>Día {dia.id}</h5>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="card-title">Día {dia.id}</h5>
+                            <div>
+                                <Button variant="secondary" onClick={() => agregarEjercicio(dia.id)} className="mx-2">
+                                    <AddIcon /> Añadir Ejercicio
+                                </Button>
+                                <Button variant="danger" onClick={() => confirmarEliminarDia(dia.id)}>
+                                    <DeleteIcon /> Eliminar Día
+                                </Button>
+                            </div>
+                        </div>
                         <table className="table table-sm text-center">
                             <thead>
                                 <tr>
@@ -265,55 +223,61 @@ const App = () => {
                                             <Dropdown
                                                 value={ejercicio.numberExercise}
                                                 options={options}
-                                                onChange={(e) => actualizarDropdown(dia.id, ejercicio.id, e.value)}
+                                                onChange={(e) => actualizarEjercicio(dia.id, ejercicio.id, 'numberExercise', e.value)}
                                                 placeholder="Select an item"
                                                 optionLabel="label"
                                                 className="p-dropdown-group w-100"
                                             />
                                         </td>
                                         <td>
-                                            <AutoComplete
-                                                value={ejercicio.name}
-                                                onChange={(e) => actualizarAutoComplete(dia.id, ejercicio.id, e.value)}
-                                                suggestions={filteredCities}
-                                                completeMethod={search}
-                                                field="label"
+                                            <div className="card flex justify-content-center stylesAutocomplete">
+                                                <AutoComplete
+                                                    value={ejercicio.name}
+                                                    onChange={(e) => actualizarEjercicio(dia.id, ejercicio.id, 'name', e.value)}
+                                                    suggestions={filteredCities}
+                                                    completeMethod={search}
+                                                    field="label"
                                                     optionGroupLabel="label"
                                                     optionGroupChildren="items"
                                                     optionGroupTemplate={groupedItemTemplate}
                                                     placeholder="Sentadilla..."
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                defaultValue={ejercicio.reps}
-                                                ref={el => inputRefs.current[`${dia.id}-${ejercicio.id}-reps`] = el}
-                                                className="form-control"
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                defaultValue={ejercicio.sets}
-                                                ref={el => inputRefs.current[`${dia.id}-${ejercicio.id}-sets`] = el}
-                                                className="form-control"
-                                            />
-                                        </td>
-                                        <td>
-                                        <CustomInputNumber
-                                                    initialValue={ejercicio.sets}
-                                                    ref={el => inputRefs.current[`${dia.id}-${ejercicio.id}-peso`] = el}
                                                 />
-
+                                            </div>
                                         </td>
                                         <td>
-                                        <CustomInputNumber
+                                            <div className="mx-2 mt-1">
+                                                <CustomInputNumber
+                                                    initialValue={ejercicio.sets}
+                                                    onChange={(newValue) => actualizarEjercicio(dia.id, ejercicio.id, 'sets', newValue)}
+                                                />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="mx-2 mt-1">
+                                                <CustomInputNumber
                                                     initialValue={ejercicio.reps}
-                                                    ref={el => inputRefs.current[`${dia.id}-${ejercicio.id}-rest`] = el}
+                                                    onChange={(newValue) => actualizarEjercicio(dia.id, ejercicio.id, 'reps', newValue)}
                                                     isRep={true}
                                                 />
-
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="form-control w-small"
+                                                name="peso"
+                                                value={ejercicio.peso}
+                                                onChange={(e) => actualizarEjercicio(dia.id, ejercicio.id, 'peso', e.target.value)}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="form-control  w-small"
+                                                name="rest"
+                                                value={ejercicio.rest}
+                                                onChange={(e) => actualizarEjercicio(dia.id, ejercicio.id, 'rest', e.target.value)}
+                                            />
                                         </td>
                                         <td>
                                             <IconButton
@@ -329,27 +293,28 @@ const App = () => {
                                                 <input
                                                     className='form-control ellipsis-input text-center'
                                                     type="text"
-                                                    ref={el => inputRefs.current[`${dia.id}-${ejercicio.id}-video`] = el}
                                                     defaultValue={ejercicio.video}
                                                     onChange={(e) => actualizarEjercicio(dia.id, ejercicio.id, 'video', e.target.value)}
                                                 />
                                             </OverlayPanel>
                                         </td>
                                         <td>
-                                            <textarea
+                                            <InputTextarea
+                                                autoResize
+                                                rows={1}
                                                 className="form-control"
-                                                defaultValue={ejercicio.notas}
-                                                ref={el => inputRefs.current[`${dia.id}-${ejercicio.id}-notas`] = el}
+                                                name="notas"
+                                                value={ejercicio.notas}
+                                                onChange={(e) => actualizarEjercicio(dia.id, ejercicio.id, 'notas', e.target.value)}
                                             />
                                         </td>
                                         <td>
-                                            <button className="btn btn-danger" onClick={() => {/* lógica para eliminar el ejercicio */ }}>Eliminar</button>
+                                            <button className="btn btn-danger" onClick={() => eliminarEjercicio(dia.id, ejercicio.id)}>Eliminar</button>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                        <button className="btn btn-secondary" onClick={() => agregarEjercicio(dia.id)}>Añadir Ejercicio</button>
                     </div>
                 </div>
             ))}
@@ -357,7 +322,20 @@ const App = () => {
             <div className='row justify-content-center'>
 
                 <div className='col-6 text-center'>
-                <button className="btn btn-primary" onClick={handleSave}>Guardar Rutina</button>
+                    {users && <Dropdown
+                        value={actualUser}
+                        options={users}
+                        optionLabel="name"
+                        placeholder="Seleccioná un alumno"
+                        onChange={(e) => handleDropdownChange(e.value)}
+                        className=""
+                        filter
+                        scrollHeight={"360px"}
+                        filterPlaceholder={"Buscar alumno"}
+                        emptyFilterMessage={"No se encontró ningún alumno"}
+                        emptyMessage={"No se encontró ningún alumno"}
+                    />}
+                    <button className={`btn w-100`} disabled={!actualUser} onClick={designWeekToUser}>Designar semana</button>
 
                 </div>
 

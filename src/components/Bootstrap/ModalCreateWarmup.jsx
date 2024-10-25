@@ -1,505 +1,437 @@
-import { useState,useRef } from "react";
-import Modal from 'react-bootstrap/Modal';
+import { useState, useEffect, useRef } from "react";
 
-import * as WeekService from '../../services/week.services.js'
+import * as WeekService from '../../services/week.services.js';
 import * as WarmupServices from "../../services/warmup.services.js";
-import * as Notify from './../../helpers/notify.js'
-import { ToastContainer } from "./../../helpers/notify.js";
-import Exercises from './../../assets/json/exercises.json';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { useEffect } from "react";
-import { confirmDialog } from 'primereact/confirmdialog';
+import * as Notify from './../../helpers/notify.js';
+import * as RefreshFunction from "./../../helpers/generateUUID.js";
 
 import CustomInputNumber from '../../components/CustomInputNumber.jsx';
-import { AutoComplete } from "primereact/autocomplete";
+import AutoComplete from "../../components/Autocomplete.jsx";
 
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "../../helpers/notify.js";
+import { InputTextarea } from "primereact/inputtextarea";
+import { OverlayPanel } from "primereact/overlaypanel";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Dropdown } from "primereact/dropdown";
 
-function ModalCreateWarmup({showCreateWarmup, closeModal, week_id, day_id}) {
+import IconButton from "@mui/material/IconButton";
+import CancelIcon from "@mui/icons-material/Cancel";
+import YouTubeIcon from "@mui/icons-material/YouTube";
+import AddIcon from '@mui/icons-material/Add';
 
-  const [stat, setStat] = useState()
-  const [confirm, setConfirm] = useState()
-  const [warmup, setWarmup] = useState()
+import options from '../../assets/json/options.json'; // Importa options como en la otra parte
 
-  const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
+function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
+    const [warmup, setWarmup] = useState([]);
+    const [warmupName, setWarmupName] = useState([]);
+    const [modifiedWarmup, setModifiedWarmup] = useState([]); // Array donde se copia la nueva rutina
+    const inputRefs = useRef([]); // Usamos refs para manejar inputs no controlados
+    const [filteredExercises, setFilteredExercises] = useState(null);
+    const [exercisesDatabase, setExercisesDatabase] = useState([]);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editMode, setEditMode] = useState(false); // Estado para el "Modo Edición"
 
-  function generateUUID() {
-    let d = new Date().getTime();
-    let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        let r = (d + Math.random() * 16) % 16 | 0;
-        d = Math.floor(d / 16);
-        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-    return uuid;
-}
+    const [statusCancel, setStatusCancel] = useState(1); // Manejo de renderizado
 
-let idRefresh = generateUUID()
+    const [color, setColor] = useState(localStorage.getItem('color'));
+    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'));
 
-  useEffect(() => {
-    setExercises(Exercises)
-    Notify.notifyA("Cargando...")
-    WeekService.findByWeekId(week_id)
-        .then(data => {
-            let indexWarmup = data[0].routine.findIndex(dia => dia._id === day_id)
-            let exists = data[0].routine[indexWarmup].warmup
-            setModifiedDay(exists)                           // array de objetos inicial, son los ejercicios
-            setWarmup(exists)
-            setInputEnFoco(null)
-            Notify.updateToast()
-
-
-         })
-},[stat])
-
-
-  const [exercises, setExercises] = useState([]);
-  const [selectedExercise, setSelectedExercise] = useState(null);
-  const [filteredExercises, setFilteredExercises] = useState(null);
-
-  //---variables para la carga
-
-  const [name, setName] = useState("");
-  const [sets, setSets] = useState(1);
-  const [reps, setReps] = useState(1);
-  const [peso, setPeso] = useState(); //Si peso es 0, al alumno no le aparecera este apartado. (TO DO)
-  const [video, setVideo] = useState();
-  const [notas, setNotas] = useState("");
-
-  //Variables para cambiar individualmente los ejercicios
-  const [newName, setNewName] = useState()
-  const [newSet, setNewSet] = useState()
-  const [newRep, setNewRep] = useState()
-  const [newPeso, setNewPeso] = useState()
-  const [newVideo, setNewVideo] = useState()
-  const [newNotas, setNewNotas] = useState()
-
-  const [color, setColor] = useState(localStorage.getItem('color'))
-  const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
-
-  function onSubmit(e) {
-      e.preventDefault()
-	    WarmupServices.createWarmup(week_id, day_id, { name, sets, reps, peso, video, notas })
-        .then(() => {
-          setStat(idRefresh)
-        })
-  }
-
-const changeNameWarmup = (e) => {setNewName(e.target.value)}
-
-const changePesoWarmup = (e) => setPeso(e.target.value)
-
-const changeVideoWarmup = (e) => setNewVideo(e.target.value)
-
-const changeNotasWarmup = (e) => setNotas(e.target.value)
-
-const changeSetsWarmup = (e) => setNewSet(e.value)
-
-const changeRepsWarmup = (e) => setNewRep(e.value)
-
-
-
-function editWarmup(warmup_id, name, StrSets, StrReps,peso, video, notas, numberWarmup){
-
-  console.log(warmup_id, name, StrSets, StrReps,peso, video, notas, numberWarmup)
-
-  let sets = parseInt(StrSets)
-  let reps = parseInt(StrReps)
-
-  notas == undefined ? "" : notas
-
-  WarmupServices.editWarmup(week_id, day_id, warmup_id, {name, sets, reps, peso, video, notas, numberWarmup})
-    .then(() => {
-      setStat(idRefresh)
-    })
-
-}
-
-const [inputEnFoco, setInputEnFoco] = useState(null);
-
-const inputRefs = useRef([]);
-
-const handleInputFocus = (index) => {
-    setInputEnFoco(index);
-  };
-  
-
-function acceptDeleteWarmup(id) {
-  WarmupServices.deleteWarmup(week_id, day_id, id)
-    .then(() => {
-      setStat(idRefresh)
-    })
-};
-
-
-  const deleteWarmup = (event,id,name) => {
-        
-    confirmDialog({
-        trigger:          event.currentTarget,
-        message:          `¿Estás seguro de que querés eliminar el ejercicio ${name}`,
-        icon:             'pi pi-exclamation-triangle',
-        accept:           () => {acceptDeleteWarmup(id)},
-        acceptLabel:      "Sí, eliminar",
-        acceptClassName:    "p-button-danger",
-        rejectLabel:        "No",
-        rejectClassName:    "closeDialog",
-        appendTo:         "self"
-
-    });
-};
-
-  const options = [
-    {value:1, name: 1, extras: [{value: 1, name: "1-A"},{value: 1, name: "1-B"},{value: 1, name: "1-C"},{value: 1, name: "1-D"},{value: 1, name: "1-F"}]},
-    {value:2, name: 2, extras: [{value: 2, name: "2-A"},{value: 2, name: "2-B"},{value: 2, name: "2-C"},{value: 2, name: "2-D"},{value: 2, name: "2-F"}]},
-    {value:3, name: 3, extras: [{value: 3, name: "3-A"},{value: 3, name: "3-B"},{value: 3, name: "3-C"},{value: 3, name: "3-D"},{value: 3, name: "3-F"}]},
-    {value:4, name: 4, extras: [{value: 4, name: "4-A"},{value: 4, name: "4-B"},{value: 4, name: "4-C"},{value: 4, name: "4-D"},{value: 4, name: "4-F"}]},
-    {value:5, name: 5, extras: [{value: 5, name: "5-A"},{value: 5, name: "5-B"},{value: 5, name: "5-C"},{value: 5, name: "5-D"},{value: 5, name: "5-F"}]},
-    {value:6, name: 6, extras: [{value: 6, name: "6-A"},{value: 6, name: "6-B"},{value: 6, name: "6-C"},{value: 6, name: "6-D"},{value: 6, name: "6-F"}]},
-    {value:7, name: 7, extras: [{value: 7, name: "7-A"},{value: 7, name: "7-B"},{value: 7, name: "7-C"},{value: 7, name: "7-D"},{value: 7, name: "7-F"}]},
-    {value:8, name: 8, extras: [{value: 8, name: "8-A"},{value: 8, name: "8-B"},{value: 8, name: "8-C"},{value: 8, name: "8-D"},{value: 8, name: "8-F"}]},
-    {value:9, name: 9, extras: [{value: 9, name: "9-A"},{value: 9, name: "9-B"},{value: 9, name: "9-C"},{value: 9, name: "9-D"},{value: 9, name: "9-F"}]},
-    {value:10, name: 10, extras: [{value: 10, name: "10-A"},{value: 10, name: "10-B"},{value: 10, name: "10-C"},{value: 10, name: "10-D"},{value: 10, name: "10-F"}]},
-    {value:11, name: 11, extras: [{value: 11, name: "11-A"},{value: 11, name: "11-B"},{value: 11, name: "11-C"},{value: 11, name: "11-D"},{value: 11, name: "11-F"}]},
-    {value:12, name: 12, extras: [{value: 12, name: "12-A"},{value: 12, name: "12-B"},{value: 12, name: "12-C"},{value: 12, name: "12-D"},{value: 12, name: "12-F"}]},
-    {value:13, name: 13, extras: [{value: 13, name: "13-A"},{value: 13, name: "13-B"},{value: 13, name: "13-C"},{value: 13, name: "13-D"},{value: 13, name: "13-F"}]},
-    {value:14, name: 14, extras: [{value: 14, name: "14-A"},{value: 14, name: "14-B"},{value: 14, name: "14-C"},{value: 14, name: "14-D"},{value: 14, name: "14-F"}]},
-    {value:15, name: 15, extras: [{value: 15, name: "15-A"},{value: 15, name: "15-B"},{value: 15, name: "15-C"},{value: 15, name: "15-D"},{value: 15, name: "15-F"}]}
-
-]
-
-  const search = (event) => {
-
-    let filteredExercises;
-
-    if (!event.query.trim().length) {
-      _filteredExercises = [...exercises];
-    } else {
-
-      filteredExercises = exercises.filter((exercise) => {
-      return exercise.name.toLowerCase().startsWith(event.query.toLowerCase());
-      });
-    }
-
-    setFilteredExercises(filteredExercises);
-
-}
-
-// Dependiendo el ejercicio elegido, se pone automaticamente el video en el input.
-useEffect(() => {
-
-  if(selectedExercise != null && selectedExercise.length == undefined){
-    setName(selectedExercise.name)
-    setVideo(selectedExercise.video)
-  } else{
-    setName(selectedExercise)
-  }
-
-}, [selectedExercise]);
-
-
-
-    const handleInputChangeSet = (newValue) => setNewSet(newValue);
-    const handleInputChangeRep = (newValue) => setNewRep(newValue);
-
-    // Edit warmup
-
-    // EDIT EXERCISES
-
-    const changeNameEdit = (index, e) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].name = e.target.value;
-      setModifiedDay(updatedModifiedDay);
-    };
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [firstWidth, setFirstWidth] = useState(); //Variables para las modales de primeReact
     
-    const changePesoEdit = (index, e) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].peso = e.target.value;
-      setModifiedDay(updatedModifiedDay);
+    let idRefresh = RefreshFunction.generateUUID();
+
+    const productRefs = useRef([]); // Refs para manejar los videos de YouTube
+
+    useEffect(() => {
+        setExercisesDatabase(JSON.parse(localStorage.getItem("DATABASE_USER")) || []);
+        Notify.notifyA("Cargando...");
+        WeekService.findByWeekId(week_id).then(data => {
+            console.log(data,week_id, day_id)
+            const indexWarmup = data[0].routine.findIndex(dia => dia._id === day_id);
+            const exists = data[0].routine[indexWarmup].warmup || [];
+            const nombre = data[0].routine[indexWarmup].name || [];
+            setWarmupName(nombre)
+            setModifiedWarmup(exists); // array de objetos inicial, son los ejercicios
+            setWarmup(exists);
+            Notify.updateToast();
+        });
+    }, [week_id, day_id, statusCancel]);
+
+    useEffect(() => {
+        setFirstWidth(window.innerWidth);
+
+    }, []);
+
+    // Función genérica para manejar todos los cambios en los inputs
+    const handleInputChange = (index, value, field) => {
+        console.log(index, value, field);
+        setIsEditing(true);
+        const updatedWarmup = [...modifiedWarmup];
+        updatedWarmup[index] = {
+            ...updatedWarmup[index],
+            [field]: value
+        };
+        setModifiedWarmup(updatedWarmup);
     };
 
-    const changeSetEdit = (index, newValue) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].sets = newValue;
-      setModifiedDay(updatedModifiedDay);
+    // Función para renderizar los inputs, basada en `customInputEditDay`
+    const customInputEditWarmup = (data, index, field) => {
+        if (field === "numberWarmup") {
+            return (
+                <select
+                    defaultValue={data || ""}  // Usamos defaultValue para mantener no controlado
+                    ref={(el) => (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })}
+                    onChange={(e) => handleInputChange(index, e.target.value, field)}
+                >
+                    {options.map(option => (
+                        <optgroup key={option.value} label={option.label}>
+                            {option.items.map(item => (
+                                <option key={item.value} value={item.value}>{item.label}</option>
+                            ))}
+                        </optgroup>
+                    ))}
+                </select>
+            );
+        } else if (field === "name") {
+            return (
+                <AutoComplete
+                    defaultValue={data}
+                    ref={(el) => (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })}
+                    onChange={(e) => handleInputChange(index, e, field)}
+                />
+            );
+        } else if (field === "sets" || field === "reps") {
+            return (
+                <CustomInputNumber
+                    initialValue={data}
+                    ref={(el) => (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })}
+                    onChange={(value) => handleInputChange(index, value, field)}
+                    isRep={field === "reps"}
+                    className={`margin-custom`}
+                />
+            );
+        } else if (field === "notas") {
+            return (
+                <div className="row">
+
+                <InputTextarea
+                    ref={(el) => (inputRefs.current[`${index}-${field}`] = el)} // Asigna una referencia única
+                    className={`textAreaResize ${firstWidth < 600 && 'col-11'}`}
+                    autoResize
+                    defaultValue={data}
+                    onChange={(e) => handleInputChange(index, e.target.value, field)} // Asegúrate de capturar `e.target.value`
+                />
+                                    
+            </div>
+            );
+        } else if (field === "video") {
+            return (
+                <>
+                    <IconButton
+                        aria-label="video"
+                        className="w-100"
+                        onClick={(e) => {
+                            productRefs.current[index].toggle(e);
+                        }}
+                    >
+                        <YouTubeIcon className="colorIconYoutube" />
+                    </IconButton>
+                    <OverlayPanel
+                        ref={(el) => (productRefs.current[index] = el)}
+                    >
+                        <input
+                            ref={(el) => (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })}
+                            className="form-control ellipsis-input text-center"
+                            type="text"
+                            defaultValue={data}
+                            onChange={(e) => handleInputChange(index, e.target.value, field)}
+                        />
+                    </OverlayPanel>
+                </>
+            );
+        } else {
+            return (
+                <input
+                    ref={(el) => (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })}
+                    className="form-control text-center"
+                    type="text"
+                    defaultValue={data}
+                    onChange={(e) => handleInputChange(index, e.target.value, field)}
+                />
+            );
+        }
     };
-    
-    const changeRepEdit = (index, newValue) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].reps = newValue;
-      setModifiedDay(updatedModifiedDay);
+
+    // Función para agregar un nuevo warmup
+    const addNewWarmupExercise = () => {
+        setIsEditing(true);
+
+        const nextNumberExercise = warmup.length + 1;
+
+        const newExercise = {
+            warmup_id: generateUUID(),
+            numberWarmup: nextNumberExercise,
+            name: "",
+            sets: 1,
+            reps: 1,
+            peso: "",
+            video: "",
+            notas: "",
+        };
+        const updatedWarmup = [...modifiedWarmup, newExercise];
+        inputRefs.current.push({}); // Asegurarse de agregar también en los refs
+        setModifiedWarmup(updatedWarmup);
+        console.log(updatedWarmup)
     };
-    
-    const changeVideoEdit = (index, e) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].video = e.target.value;
-      setModifiedDay(updatedModifiedDay);
+
+    // Generar UUID
+    const generateUUID = () => {
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
     };
-    
-    const changeNotasEdit = (index, e) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].notas = e.target.value;
-      setModifiedDay(updatedModifiedDay);
+
+    // Función para confirmar eliminación
+    const deleteWarmup = (event, index, name) => {
+        confirmDialog({
+            message: `¿Estás seguro de que deseas eliminar el warmup "${name}"?`,
+            header: 'Confirmación',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Sí, eliminar',
+            rejectLabel: 'No',
+            acceptClassName: 'p-button-danger',
+            accept: () => acceptDeleteWarmup(index),
+        });
     };
-    
-    // Resto de funciones de cambio...
+
+    const acceptDeleteWarmup = (index) => {
+        Notify.instantToast();  // Notificar al eliminar
+        setIsEditing(true);
+
+        // Eliminar tanto el warmup como su referencia
+        inputRefs.current.splice(index, 1); // Eliminar referencia del warmup
+        const updatedWarmup = [...modifiedWarmup];
+        updatedWarmup.splice(index, 1);
+        setModifiedWarmup(updatedWarmup);  // Actualizar la lista modificada
+    };
 
     const applyChanges = () => {
-      console.log(week_id, day_id, modifiedDay)
-
-      setWarmup(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
-      WarmupServices.editWarmup(week_id, day_id, modifiedDay)
-          .then((data) => {setStat(idRefresh)} )
-      
+        WarmupServices.editWarmup(week_id, day_id, modifiedWarmup)
+            .then((data) => {
+                setWarmup(modifiedWarmup);
+                setIsEditing(false);
+                Notify.instantToast("Guardado con éxito");
+            })
+            .catch(error => {
+                console.error("Error al guardar cambios:", error);
+            });
     };
 
-    function handleEditMobileExercise(elementsExercise, index){
-      setIndexOfExercise(index)
-      setCompleteExercise(elementsExercise)
-      setEditExerciseMobile(true)
-  }
 
-  const deleteExercise = (event,id,name) => {
+    const confirmCancel = () => {
+        setShowCancelDialog(true);
+    };
 
-    name == null || name == undefined ? name = "Sin nombre" : name = name
+    const handleCancel = () => {
+        setShowCancelDialog(false);
+        setModifiedWarmup(null)
+        setStatusCancel(idRefresh)
+        setWarmup(null)
+        setIsEditing(false)
+    };
 
+    
+    const tableMobile = () => {
+        return (
+            <div className="table-responsiveCss">
+                
+                <table className="table table-bordered">
+    
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Peso</th>
+                            <th>Sets</th>
+                            <th>Reps</th>
+                            <th>Rest</th>
+                            <th>Notas</th>
+                            <th>Video</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {modifiedWarmup && modifiedWarmup.map((exercise, i) => (
+                            <tr className="shadowCards" key={exercise.exercise_id}>
+                                    <>
+                                        <td data-th="Nombre" className="text-center">
+                                            
+                                                <AutoComplete
+                                                defaultValue={exercise.name}
+                                                onChange={(e) => handleInputChange(i, e, 'name')}/> 
 
-    confirmDialog({
-        trigger:            event.currentTarget,
-        message:            `¡Cuidado! Estás por eliminar "${name}". ¿Estás seguro?`,
-        icon:               'pi pi-exclamation-triangle',
-        header:             `Eliminar ${name}`,
-        accept:             () => acceptDeleteExercise(id),
-        acceptLabel:        "Sí, eliminar",
-        acceptClassName:    "p-button-danger",
-        rejectLabel:        "No",
-        rejectClassName:    "closeDialog",
-        blockScroll:        true,
-        dismissableMask:    true,
-
-    });
-};
-
-function acceptDeleteExercise(id) {
-
-
-  WarmupServices.deleteWarmup(week_id, day_id, id)
-      .then(() => setStat(idRefresh))
-};
-
-const handleCloseDialog = () => {setVisibleCircuit(false), setVisibleExercises(false), setVisibleEdit(false)}
-
-  return (
-<>
-        <section className="row justify-content-center">
-          <article className="col-10 ">
-            <form className="row justify-content-center align-items-center" onSubmit={onSubmit}>
-              <h2 className="text-center my-3">Agregar entrada en calor</h2>
-              <div className="col-10 col-xl-6 my-3">
-                <span className="p-float-label p-fluid">
-                  <AutoComplete appendTo={"self"} inputClassName={"rounded-0 w-100"} field="name" value={selectedExercise} suggestions={filteredExercises} completeMethod={search} onChange={(e) => setSelectedExercise(e.value)} />    
-                  <label htmlFor="name">Nombre del ejercicio</label>
-                </span>
-              </div>
-
-              <div className="col-10 col-xl-6">
-                <label htmlFor="video" className="form-label visually-hidden">
-                  Video
-                </label>
-                <input
-                  type="text"
-                  className="form-control rounded-0"
-                  id="video"
-                  name="video"
-                  defaultValue={video}
-                  onChange={changeVideoWarmup}
-                  placeholder="Video"
-                />
-              </div>
-
-              <div className="col-5 col-xl-4 text-center my-2">
-                <label htmlFor="series" className="form-label d-block">
-                  Series
-                </label>
-                  <CustomInputNumber 
-                    initialValue={reps}
-                    onChange={(value) => setSets(value)}
-                  /> 
-              </div>
-
-              <div className="col-5 col-xl-4 my-2 text-center">
-                <label htmlFor="reps" className="form-label d-block">
-                  Reps
-                </label>
-                  <CustomInputNumber 
-                    initialValue={reps}
-                    onChange={(value) => setReps(value)}
-                  />   
-              </div>
-
-              <div className="col-10 col-xl-4 my-2 text-center">
-                <label htmlFor="peso" className="form-label d-block">
-                  Peso
-                </label>
-                  <input
-                    type="text"
-                    className="form-control rounded-0"
-                    id="peso"
-                    name="peso"
-                    onChange={changePesoWarmup}
-                    placeholder="Kg / RPE / etc"
-                  />
-              </div>
-
-              <div className="col-10 my-2 text-center">
-                <label htmlFor="notas" className="form-label d-block">
-                  Notas
-                </label>
-                  <input
-                    type="text"
-                    className="form-control rounded-0"
-                    id="notas"
-                    name="notas"
-                    onChange={changeNotasWarmup}
-                    placeholder=""
-                  />
-              </div>
+                                        </td>
+                                        <td data-th="Peso" className="text-center">{customInputEditWarmup(exercise.peso, i, 'peso')}</td>
+                                        <td data-th="Sets" className="text-center">{customInputEditWarmup(exercise.sets, i, 'sets')}</td>
+                                        <td data-th="Reps" className="text-center">{customInputEditWarmup(exercise.reps, i, 'reps')}</td>
+                                        <td data-th="Rest" className="text-center">{customInputEditWarmup(exercise.rest, i, 'rest')}</td>
+                                        <td data-th="Video" className="text-center">{customInputEditWarmup(exercise.video, i, 'video')}</td>
+                                        <td data-th="Notas" className="text-center">{customInputEditWarmup(exercise.notas, i, 'notas')}</td>
+                                        <td className="notStyle" >
+                                            <div className="row justify-content-center">
+                                                <div className="col-6">
+                                                    <Dropdown
+                                                        value={exercise.numberWarmup}
+                                                        options={options}
+                                                        onChange={(e) => handleInputChange(i, e.target.value, 'numberWarmup')}
+                                                        placeholder="Select an item"
+                                                        optionLabel="label"
+                                                        className="p-dropdown-group w-100"
+                                                    />
+                                                </div>
+                                                <div className="col-6">
+                                                    <IconButton
+                                                        aria-label="video"
+                                                        className="styleButtonsEdit rounded-0"
+                                                        onClick={() => deleteWarmup(i)}  // Usamos la nueva función
+                                                    >
+                                                        <CancelIcon className="bbbbb" />
+                                                    </IconButton>
+    
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </>
+                            </tr>
+                        ))}
+    
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
 
 
-              <div className="text-center">
-                <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} my-4`} style={{ "backgroundColor": `${color}` }}>Crear</button>
-              </div>
 
-            </form>
-          </article>
-        </section>
 
-        {warmup != null  && 
-                <article className="table-responsive-xxl border-bottom mb-5  text-center">
-                    <table className={`table align-middle table-bordered caption-top text-center`}>
+
+
+    
+
+
+
+
+
+
+
+
+
+    return (
+        <>
+            <section className="row justify-content-center ">
+                <article className="col-10">
+                    <h2 className="text-center my-3">Entrada en calor - {warmupName}</h2>
+                    <div className="text-center mb-3">
+                        <IconButton
+                            aria-label="video"
+                            className="bgColor rounded-2 text-light me-2"
+                            onClick={() => addNewWarmupExercise()}
+                        >
+                            <AddIcon className="" />
+                            <span className="font-icons me-1">Añadir ejercicio</span>
+                        </IconButton>
+                    </div>
+                </article>
+            </section>
+
+            {firstWidth > 993 && modifiedWarmup && modifiedWarmup.length > 0 ? (
+                <article className="table-responsive-xxl border-bottom text-center altoTable ">
+                    <table className="table table-hover align-middle text-center pb-5">
                         <thead>
                             <tr>
-                                <th scope="col" className="">#</th>
-                                <th scope="col" className="largeThName">Ejercicio</th>
-                                <th scope="col" className="largeTh">Series</th>
-                                <th scope="col" className="largeTh">Reps</th>
-                                <th scope="col" className="largeTh">Peso</th>
-                                <th scope="col" className="largeTh">Video</th>
-                                <th scope="col" className="largeTh">Notas</th>
-                                <th scope="col" className="">Acciones</th>
+                                <th>#</th>
+                                <th>Ejercicio</th>
+                                <th>Series</th>
+                                <th>Reps</th>
+                                <th>Peso</th>
+                                <th>Video</th>
+                                <th>Notas</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                        <TransitionGroup component={null} className="todo-list">
-                        {warmup != null && warmup.map(({ warmup_id, name, sets, reps, peso, video, notas, numberWarmup }, index) =>
-                         <CSSTransition
-                         key={warmup_id}
-                         timeout={500}
-                         classNames="item"
-                         >
-                            <tr key={warmup_id} className={`oo `}>
-                            <th scope="row">
-                            <select 
-                            defaultValue={numberWarmup === null ? options[index].name : numberWarmup} 
-                            onChange={(e) => {editWarmup(warmup_id, name, sets, reps, peso, video,notas, e.target.value)}}>
-                                {options.map(option =>
-                                <optgroup key={option.value} label={option.name} >
-                                    <option value={option.name}>{option.name}</option>
-
-                                    {option.extras.map(element => 
-
-                                        <option key={element.name} >{element.name}</option>
-
-                                    )}
-
-                                </optgroup>
-                                )}
-                                </select>
-                               </th>
-                            <td>
-                                <input 
-                                id='name' 
-                                className='form-control border-0' 
-                                type="text" 
-                                defaultValue={name} 
-                                onChange={(e) => changeNameEdit(index, e)}
-                                onFocus={() => handleInputFocus(index)}
-                                />
-                            </td>
-                            <td>
-                            <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newSet : sets}
-                                            onChange={(e) => changeSetEdit(index, e)}
-                                            onValueChange={() => handleInputFocus(index)}
-                                            onFocus={() => handleInputFocus(index)}
-                                            />  
-                            </td>
-                            <td>
-                            <CustomInputNumber 
-                                            initialValue={inputEnFoco !== null && inputEnFoco == index && confirm != true ? newRep : reps}
-                                            onChange={(e) => changeRepEdit(index, e)}
-                                            onValueChange={() => handleInputFocus(index)}
-                                            />
-                            </td>
-                            <td>
-                                <input 
-                                className='form-control border-0' 
-                                type="text" 
-                                defaultValue={peso}
-                                onChange={(e) => changePesoEdit(index, e)}
-                                onFocus={() => handleInputFocus(index)}
-                                />
-                            </td>
-                            <td>
-                                <input 
-                                className='form-control border-0' 
-                                type="text" 
-                                defaultValue={video}
-                                onChange={(e) => changeVideoEdit(index, e)}
-                                onFocus={() => handleInputFocus(index)}
-                                
-                                />
-                            </td>
-
-                            <td>
-                                <input 
-                                className='form-control border-0' 
-                                type="text" 
-                                defaultValue={notas}
-                                onChange={changeNotasWarmup}                                
-                                onFocus={() => handleInputFocus(index)}           
-                                />
-                            </td>
-
-
-                            <td className='tdActions'>
-                                <button onClick={(e) => deleteExercise(e, warmup_id , name)} className='btn buttonsEdit'>
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className=" bi bi-trash3" viewBox="0 0 16 16">
-                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                                  </svg>
-                                </button>
-                            </td>
-
-                          </tr>
-                        </CSSTransition>
-                        )}
-                        </TransitionGroup>
+                            {modifiedWarmup.map((item, index) => (
+                                <tr key={item.warmup_id}>
+                                    <td>{customInputEditWarmup(item.numberWarmup, index, "numberWarmup")}</td>
+                                    <td>{customInputEditWarmup(item.name, index, "name")}</td>
+                                    <td>{customInputEditWarmup(item.sets, index, "sets")}</td>
+                                    <td className="margin-custom">{customInputEditWarmup(item.reps, index, "reps")}</td>
+                                    <td>{customInputEditWarmup(item.peso, index, "peso")}</td>
+                                    <td>{customInputEditWarmup(item.video, index, "video")}</td>
+                                    <td>{customInputEditWarmup(item.notas, index, "notas")}</td>
+                                    <td>
+                                        <IconButton
+                                            aria-label="video"
+                                            className="styleButtonsEdit me-5 rounded-0"
+                                            onClick={(e) => deleteWarmup(e, index, item.name)}
+                                        >
+                                            <CancelIcon className="bbbbb" />
+                                        </IconButton>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
-                      
                 </article>
-                }
-                {inputEnFoco == null ? null :
-                        <div className="text-center mb-3">
-                            <button className='btn btn-secondary mb-2 mx-2' onClick={() => setInputEnFoco(null)}>
-                            Cancelar edición
-                        </button>
-                            <button className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} mb-2 mx-2`} style={{ "backgroundColor": `${color}` }} onClick={applyChanges} >
-                                Aplicar cambios
-                            </button>
-                        </div>
-                        }
-                </>
-  );
+            ) : tableMobile()}
+
+            {isEditing && (
+                <div className="text-center my-3">
+                    <button
+                        className="btn btn-dark mx-2"
+                        onClick={applyChanges}
+                    >
+                        Guardar cambios
+                    </button>
+                    <button
+                        className="btn btn-secondary mx-2"
+                        onClick={() => confirmCancel()}
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            )}
+
+            <ConfirmDialog
+                visible={showCancelDialog}
+                onHide={() => setShowCancelDialog(false)}
+                message="¿Estás seguro de que deseas cancelar los cambios? Se perderán todos los cambios no guardados."
+                header="Confirmación"
+                icon="pi pi-exclamation-triangle"
+                acceptLabel="Sí"
+                rejectLabel="No"
+                accept={() => handleCancel()}
+                reject={() => setShowCancelDialog(false)}
+            />
+
+            <ToastContainer
+                position="bottom-center"
+                autoClose={200}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+        </>
+    );
 }
 
 export default ModalCreateWarmup;
-

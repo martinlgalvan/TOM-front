@@ -12,4 +12,3 @@ sha256.update(password, 'utf8');
 // Obtiene la contraseña digerida en formato hexadecimal
 const digestedPassword = sha256.digest('hex');
 
-console.log("Contraseña digerida:", digestedPassword);

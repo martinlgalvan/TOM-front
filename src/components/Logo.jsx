@@ -1,5 +1,7 @@
 import {useState, useEffect} from 'react'
 
+import BackgroundLogo from '/src/assets/img/backgroundLogo.png'
+
 import TOM from '/src/assets/img/TOM.png';
 import JESUSOLIVA from '/src/assets/img/jesus-logo.jpeg';
 import POWERHOUSE from '/src/assets/img/Powerhouse.png';
@@ -37,12 +39,32 @@ function Logo(){
     
     }, [])
 
+    console.log(urlPath)
+
 
     return (
-        <div className='row justify-content-center align-items-center y-2'>
+        <>
+        {urlPath == TOM ? 
+            <div className='row justify-content-center align-items-center position-relative divPrincipal' >
+                <h1 className="visually-hidden">TOM</h1>
+                
+                {/* Imagen de fondo */}
+                <img className="background-logo position-absolute w-100 h-100" src={BackgroundLogo} alt="TOM" />
+                
+                {/* Imagen centrada con fondo blanco y opacidad */}
+                <div className="image-container position-relative d-flex justify-content-center align-items-center">
+                    <img className="img-fluid centered-img" src={urlPath} alt="TOM" />
+                </div>
+            </div>
+        
+            :
+            <div className='row justify-content-center align-items-center y-2'>
             <h1 className="visually-hidden">TOM</h1>
             <img className="img-fluid Largo text-center my-5 pt-3 pb-3" src={urlPath} alt="TOM" />
         </div>
+        }
+
+</>
     )
 }
 

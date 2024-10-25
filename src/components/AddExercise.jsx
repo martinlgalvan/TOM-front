@@ -193,7 +193,7 @@ useEffect(() => {
                 />
           </div>
 
-          <div className="col-6 marginReps text-center">
+          <div className="col-6 pt-3 mt-3 text-center">
             <label htmlFor="reps" className="form-label d-block">
               Reps
             </label>

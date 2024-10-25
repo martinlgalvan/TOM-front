@@ -171,8 +171,15 @@ function UsersListPage() {
 
     return (
     <>
-        <section className="container-fluid">
+
+        <div className="container-fluid p-0">
+
         <Logo />
+
+        </div>
+        
+        <section className="container-fluid">
+        
             <article className="row justify-content-center">
 
             <h2 className="text-center my-5">Biblioteca de ejercicios</h2>

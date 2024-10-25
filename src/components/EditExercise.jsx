@@ -34,6 +34,9 @@ useEffect(() => {
   
   setOptions(groupedOptions)
 
+  console.log('Datos iniciales de completeExercise:', completeExercise);
+  console.log('Índice del ejercicio a editar:', indexOfExercise);
+
   setModifiedDay(completeExercise)
 
 }, []);
@@ -44,55 +47,22 @@ useEffect(() => {
 }, []);
 
 
-    // EDIT EXERCISES
-
-    const changeNumberExercise = (index, e) => {
-
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].numberExercise = e.target.value;
-      setModifiedDay(updatedModifiedDay);
-    };
-
-    const changeNameEdit = (index, e) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].name = e.target.value;
-      setModifiedDay(updatedModifiedDay);
-    };
     
     const changePesoEdit = (index, e) => {
       const updatedModifiedDay = [...modifiedDay];
       updatedModifiedDay[index].peso = e.target.value;
       setModifiedDay(updatedModifiedDay);
+      console.log('Estado modificado después de cambiar el peso:', updatedModifiedDay);
     };
 
-    const changeSetEdit = (index, newValue) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].sets = newValue;
-      setModifiedDay(updatedModifiedDay);
-    };
-    
-    const changeRepEdit = (index, newValue) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].reps = newValue;
-      setModifiedDay(updatedModifiedDay);
-    };
 
-    const changeRestEdit = (index, e) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].rest = e.target.value;
-      setModifiedDay(updatedModifiedDay);
-    };
-    
-    const changeVideoEdit = (index, e) => {
-      const updatedModifiedDay = [...modifiedDay];
-      updatedModifiedDay[index].video = e.target.value;
-      setModifiedDay(updatedModifiedDay);
-    };
-    
     const changeNotasEdit = (index, e) => {
       const updatedModifiedDay = [...modifiedDay];
       updatedModifiedDay[index].notas = e.target.value;
       setModifiedDay(updatedModifiedDay);
+
+      console.log('Estado modificado después de cambiar las notas:', updatedModifiedDay);
+
     };
     
     // Resto de funciones de cambio...
@@ -102,11 +72,12 @@ useEffect(() => {
 
 
 function onSubmit(e){
-  console.log(modifiedDay)
+  console.log('Datos a enviar:', modifiedDay);
   e.preventDefault()
   Notify.notifyA("Cargando")
   ExercisesService.editExercise(week_id, day_id, modifiedDay)
-      .then(() => {
+      .then((data) => {
+        console.log(data)
         refreshEdit(false)
         Notify.updateToast()
       } )
@@ -157,17 +128,21 @@ function onSubmit(e){
       <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Peso</label>
         {isAthlete && <p>Peso</p>}
-        <input type="text" className="form-control" id="peso" placeholder="Peso" defaultValue={completeExercise[indexOfExercise].peso} onChange={(e) => changePesoEdit(indexOfExercise, e)}   />
+        <input type="text" className="form-control" id="peso" placeholder="Peso" value={completeExercise[indexOfExercise].peso}   
+        onInput={(e) => {
+        console.log('Evento onChange disparado:', e.target.value);
+        changePesoEdit(indexOfExercise, e);
+  }} />
       </div>
 
       {!isAthlete && <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Rest</label>
-        <input disabled={isAthlete} type="text" className="form-control" id="rest" placeholder="Descanso" defaultValue={completeExercise[indexOfExercise].rest} onChange={(e) => changeRestEdit(indexOfExercise, e)}   />
+        <input disabled={isAthlete} type="text" className="form-control" id="rest" placeholder="Descanso" value={completeExercise[indexOfExercise].rest}  />
       </div>}
 
       {!isAthlete && <div className="mb-3">
         <label htmlFor="peso" className="visually-hidden">Video</label>
-        <input disabled={isAthlete} type="text" className="form-control" id="peso" placeholder="Video" defaultValue={completeExercise[indexOfExercise].video} onChange={(e) => changeVideoEdit(indexOfExercise, e)}   />
+        <input disabled={isAthlete} type="text" className="form-control" id="peso" placeholder="Video" defaultValue={completeExercise[indexOfExercise].video} />
       </div>}
 
       <div className="mb-3">

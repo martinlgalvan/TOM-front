@@ -34,8 +34,13 @@ function LoginPage({onLogin}){
     }
 
     return (
-        <main className='container-fluid'>
+        <>
+        <div className='container-fluid p-0'>
             <Logo />
+        </div>
+        
+        <main className='container-fluid'>
+          
             <h2 className='text-center my-5'>Iniciar Sesión</h2>
             
             {error && 
@@ -58,7 +63,8 @@ function LoginPage({onLogin}){
                     </div>
                 </form>
             </section> 
-        </main>)           
+        </main>
+        </>)           
 }
 
 

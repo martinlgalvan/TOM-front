@@ -9,25 +9,7 @@ import * as RandomizerColumns from  './../../services/randomizerColumn.services.
 
 function ActionAreaCard({title, body, id}) {
 
-  const editColumn = (name) => {
-    
-    setLoading(true)
-    RandomizerColumns.editColumn(columnId, {name})
-        .then(() => {
-            setAdministerColumn(false)
-        })
-  
-  }
-  
-  const deleteColumn = () => {
-  
-    RandomizerColumns.deleteColumn(id)
-        .then(() => {
 
-  
-        })
-  
-  }
 
   return (
     <Card className='m-0 px-0 nnn'>

@@ -52,6 +52,7 @@ async function addAmrap(week_id,day_id, amrap) {
 //Editar un ejercicio del amrap
 
 async function editExerciseAmrap(week_id, day_id,exercise_id, amrap) {
+    console.log('Datos recibidos en el servicio:', week_id, day_id, exercises);
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}/amrap`, {
         method: 'PUT',
         headers: {

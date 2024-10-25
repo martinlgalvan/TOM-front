@@ -26,6 +26,7 @@ import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
 import AddColorToUser from './components/Users/AddColorToUser.jsx'
 import { useColor } from './components/Context/ColorContext.jsx';
 import { Sidebar } from 'primereact/sidebar';
+import Novedades from './pages/coach/Novedades.jsx'
 
 
 function RoutePrivate( {isAutenticate, children}){
@@ -167,7 +168,7 @@ function App(){
                         {isAdmin() && <><Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link></>}
                         </li>
                         <li className="nav-item">
-                        {isAdmin() && <><Link className='nav-link' to={`/exercises/${id}`}>Database videos</Link></>}
+                            {isAdmin() && <><Link className='nav-link' to={`/novedades/`}>Novedades</Link></>}
                         </li>
                         <li className="nav-item">
                             {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Personalizar</Link></>}
@@ -223,6 +224,12 @@ function App(){
                     </RoutePrivate>}
                 />
 
+                <Route path="/novedades" element={
+                    <RoutePrivate isAutenticate={isAutenticated}>
+                        <Novedades/>
+                    </RoutePrivate>}
+                />
+
                 <Route path="/perfil/:id" element={
                     <RoutePrivate isAutenticate={isAutenticated}>
                         <Profile/>
@@ -269,7 +276,7 @@ function App(){
 
                         {isAdmin() && 
                         <li className="list-group-item">
-                            <Link className='nav-link' to={`/exercises/${id}`} onClick={() => setMenuSidebar(false)}>Database videos</Link>
+                           <Link className='nav-link' to={`/novedades/`} onClick={() => setMenuSidebar(false)}>Novedades</Link>
                         </li>
                         }
                         

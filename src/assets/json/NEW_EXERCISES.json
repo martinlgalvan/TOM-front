@@ -1,0 +1,209 @@
+[
+  {
+  "label": "Sentadilla",
+  "items": [
+    {"label":"Sentadilla con barra","video":""},
+    {"label":"Sentadilla con mancuerna","video":""},
+    {"label":"Sentadilla con kettlebell","video":""},
+    {"label":"Sentadilla con safety bar","video":""},
+    {"label":"Sentadilla con cambered bar","video":""},
+    {"label":"Sentadilla frontal con barra","video":""},
+    {"label":"Sentadilla frontal con mancuerna","video":""},
+    {"label":"Sentadilla frontal con kettlebell","video":""},
+    {"label":"Sentadilla sumo con barra","video":""},
+    {"label":"Sentadilla sumo con mancuerna","video":""},
+    {"label":"Sentadilla sumo con kettlebell","video":""}
+  ]
+},
+{
+  "label": "Peso muerto",
+  "items": [
+    {"label":"Peso muerto convencional con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Peso muerto sumo con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Peso muerto sumo con kettlebell","video":""},
+    {"label":"Peso muerto con pausa","video":""},
+    {"label":"Peso muerto rumano con barra","video":""},
+    {"label":"Peso muerto rumano con mancuernas","video":""}
+  ]
+},
+{
+  "label": "Banco plano",
+  "items": [
+    {"label":"Banco plano con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Banco plano con mancuernas","video":""},
+    {"label":"Banco plano con pausa","video":""},
+    {"label":"Banco plano larssen","video":""},
+    {"label":"Banco plano spoto","video":""}
+  ]
+},
+{
+  "label": "Banco inclinado",
+  "items": [
+
+  ]
+},
+{
+  "label": "Pectorales",
+  "items": [
+    {"label":"Banco inclinado con barra","video":""},
+    {"label":"Banco inclinado con mancuernas","video":""},
+    {"label":"Banco inclinado con pausa","video":""},
+    {"label":"Banco declinado con barra","video":""},
+    {"label":"Banco declinado con mancuernass","video":""},
+    {"label":"Floor press con barra","video":""},
+    {"label":"Aperturas con mancuernas","video":""},
+    {"label":"Fondos","video":""},
+    {"label":"Pectoralela","video":""},
+    {"label":"Vuelos cruzados en polea","video":""},
+    {"label":"Vuelos cruzados bajos en polea","video":""},
+    {"label":"Flexiones de brazos","video":""},
+    {"label":"Flexiones de brazos abiertas","video":""},
+    {"label":"Flexiones de brazos diamante","video":""},
+    {"label":"Cruce de pectorales superior con mancuerna","video":""}
+
+  ]
+},
+{
+  "label": "Biceps",
+  "items": [
+    {"label":"Biceps martillo con mancuernas","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Biceps con barra","video":""},
+    {"label":"Biceps con barra Z","video":""},
+    {"label":"Biceps con mancuernas","video":""},
+    {"label":"Biceps en polea","video":""},
+    {"label":"Biceps en banco inclinado","video":""}
+
+  ]
+},
+{
+  "label": "Triceps",
+  "items": [
+    {"label":"Triceps tras nuca con mancuerna ","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Triceps tras nuca con barra Z","video":""},
+    {"label":"Triceps en polea","video":""},
+    {"label":"Triceps en polea tras nuca","video":""},
+    {"label":"Triceps acostado/a con barra Z","video":""},
+    {"label":"Flexiones de brazos cerradas","video":""}
+  ]
+},
+{
+  "label": "Hombros",
+  "items": [
+    {"label":"Press militar con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Press militar con mancuernas","video":""},
+    {"label":"Press arnold con mancuernas","video":""},
+    {"label":"Vuelos frontales con mancuernas","video":""},
+    {"label":"Vuelos laterales con mancuernas","video":""},
+    {"label":"Vuelos combinados con mancuerna","video":""},
+    {"label":"Vuelos posteriores con mancuernas","video":""},
+    {"label":"Vuelos cruzados en polea","video":""},
+    {"label":"Vuelos frontales en polea unilateral","video":""},
+    {"label":"Vuelos laterales en polea unilateral","video":""},
+    {"label":"Remo al mentón con barra","video":""},
+    {"label":"Remo al mentón en polea","video":""}
+  ]
+},
+{
+  "label": "Remo",
+  "items": [
+    {"label":"Remo 90 con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Remo 90 con mancuernas","video":""},
+    {"label":"Remo pendlay con barra","video":""},
+    {"label":"Remo con mancuerna unilateral","video":""},
+    {"label":"Remo bajo con triangulo","video":""},
+    {"label":"Remo bajo con barra","video":""},
+    {"label":"Remo en barra T","video":""},
+    {"label":"Remo seal con barra","video":""},
+    {"label":"Remo seal con mancuernas","video":""}
+
+  ]
+},{ 
+  "label": "Espalda",
+  "items": [
+    {"label":"Buenos dias con barra","video":""},
+    {"label":"Buenos dias con safety bar","video":""},
+    {"label":"Buenos dias con cambered bar","video":""},
+    {"label":"Buenos dias con mancuerna","video":""},
+    {"label":"Buenos dias con disco","video":""},
+    {"label":"Jalon al pecho con barra","video":""},
+    {"label":"Jalon al pecho con triangulo","video":""},
+    {"label":"Pull over con mancuerna","video":""}, 
+    {"label":"Pull over con triangulo","video":""},
+    {"label":"Pull over en polea","video":""},
+    {"label":"Hiperextensiones con disco","video":""},
+    {"label":"Reverse hyper","video":""},
+    {"label":"Dominadas","video":""},
+    {"label":"Dominadas agarre abierto","video":""},
+    {"label":"Dominadas agarre nuetro","video":""},
+    {"label":"Facepulls en polea","video":""}
+
+  ]
+
+
+},
+{
+  "label": "Gluteos",
+  "items": [
+    {"label":"Hip thrust con barra","video":""},
+    {"label":"Hip thrust con disco","video":""},
+    {"label":"Puente de gluteos con barra","video":""},
+    {"label":"Puente de gluteos con mancuerna","video":""},
+    {"label":"Abductores en máquina","video":""},
+    {"label":"Patada de gluteos en polea","video":""},
+    {"label":"Patada de gluteos lateral en polea","video":""}
+  ]
+},
+{
+  "label": "Abdominales",
+  "items": [
+    {"label":"Plancha","video":""},
+    {"label":"Plancha lateral","video":""},
+    {"label":"Abdominales crunch","video":""},
+    {"label":"Abdominales bicho muerto","video":""},
+    {"label":"Abdominales V-Up","video":""},
+    {"label":"Abdominales twitch ruso con disco","video":""},
+    {"label":"Abdominales colgado/a en barra","video":""},
+    {"label":"Abdominales crunch en polea","video":""},
+    {"label":"Abdominales crunch","video":""}
+  ]
+},
+
+{
+  "label": "Cuadriceps",
+  "items": [
+    {"label":"Camilla de cuadriceps","video":""},
+    {"label":"Estocadas con mancuernas","video":""},
+    {"label":"Estocadas con barra","video":""},
+    {"label":"Prensa","video":""},
+    {"label":"Bulgaras con mancuernas","video":""},
+    {"label":"Bulgaras con barra","video":""},
+    {"label":"Bulgaras con safety bar","video":""}
+  ]
+},
+{
+  "label": "Isquiotibiales",
+  "items": [
+    {"label":"Camilla de isquiotibiales","video":""},
+    {"label":"Isquiotibiales con banda","video":""},
+    {"label":"Puente con pies en balón","video":"https://www.calistenia.net/ejercicios-para-isquiotibiales/"}
+  ]
+},
+{
+  "label": "Gemelos",
+  "items": [
+    {"label":"Gemelos en maquina","video":""},
+    {"label":"Elevacion de talones","video":""},
+    {"label":"Gemelos en prensa","video":""}
+  ]
+},
+{
+  "label": "Trapecios",
+  "items": [
+    {"label":"Trapecios con mancuernas","video":""},
+    {"label":"Trapecios con barra","video":""},
+    {"label":"Trapecios en polea","video":""},
+    {"label":"Trapecios sentado con barra","video":""}
+  ]
+}
+
+]
