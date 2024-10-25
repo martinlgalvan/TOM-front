@@ -1457,22 +1457,25 @@ const saveNewWeekName = () => {
 
 
 
-            
-                <div className="text-center">
+            {isEditing && (
+                <div className="floating-button index-up">
                     <button
                         className="btn colorRed p-4 my-3 fs-5"
                         onClick={() => applyChanges()}
+                        onTouchStart={() => applyChanges()}
                     >
                         Guardar
                     </button>
                     <button
                         className="btn colorCancel p-4 my-3 fs-5"
                         onClick={() => confirmCancel()}
+                        onTouchStart={() => confirmCancel()}
                     >
                         Cancelar
                     </button>
+
                 </div>
-         
+            )}
 
 
 

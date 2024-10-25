@@ -1051,6 +1051,10 @@ p {
   color: white;
 }
 
+.index-up{
+  z-index: 5000 !important;
+}
+
 .largoAddon{
   width: 15px !important;
   text-align: center !important;
