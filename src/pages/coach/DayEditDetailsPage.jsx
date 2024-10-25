@@ -1457,8 +1457,8 @@ const saveNewWeekName = () => {
 
 
 
-            {isEditing && (
-                <div className="floating-button">
+            
+                <div className="text-center">
                     <button
                         className="btn colorRed p-4 my-3 fs-5"
                         onClick={() => applyChanges()}
@@ -1472,7 +1472,7 @@ const saveNewWeekName = () => {
                         Cancelar
                     </button>
                 </div>
-            )}
+         
 
 
 
