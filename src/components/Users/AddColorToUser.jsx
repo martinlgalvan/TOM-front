@@ -20,7 +20,6 @@ function AddColorToUser(){
     const { textColor } = useColor();
     const [colorText, setColorText] = useState();
     useEffect(() =>{
-        console.log(textColor)
         if(textColor == true){
             setColorText(true)
         } else{

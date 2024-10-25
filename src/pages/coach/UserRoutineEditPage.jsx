@@ -96,7 +96,6 @@ function UserRoutineEditPage(){
                 setDays(Object.keys(filteredDetails).map(day => ({ label: day, value: day })));
             })
             .catch((error) => {
-                console.log('Error fetching profile data:');
             });
     }, [id]);
 
@@ -112,7 +111,6 @@ function UserRoutineEditPage(){
     //--------- GET ITEM FROM LOCALSTORAGE  ---------------
 
     const copyRoutine = (data) =>{
-        console.log(data)
         setWeekClipboardLocalStorage(data)
     }
 
@@ -401,30 +399,14 @@ function UserRoutineEditPage(){
     );
 };
 
-/*function filterObject(originalObject) {
-    const { created_at, _id, user_id, timestamp, ...filteredObject } = originalObject;
-    return filteredObject;
-  }
-
-
-const exportToExcel = (data) => {
-    const newObject = filterObject(data);
-
-    console.log(data)
-    WeekService.exportToExcel(newObject)
-        .then((data) =>{console.log(data)})
-};*/
-
 
 
 // COPY PASTE THINGS  ------------------------------------------- //
 
   const loadFromLocalStorage = () => {
-    console.log(weekClipboardLocalStorage)
     try {
       if (weekClipboardLocalStorage) {
         const parsedData = JSON.parse(weekClipboardLocalStorage);
-        console.log(parsedData)
         ParService.createPARroutine(parsedData, id)
             .then((data) => {
                 setLoading(idRefresh)

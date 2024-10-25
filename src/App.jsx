@@ -55,11 +55,7 @@ function App(){
 
     const [isAutenticated, setIsAutenticated] = useState(null)
 
-    /*const refreshUsers = (a) => {
-        console.log(a)
-        setStatus(RefreshUUID.generateUUID())
-        console.log(RefreshUUID.generateUUID())
-    }*/
+
 
     useEffect(() => {
         
@@ -80,7 +76,6 @@ function App(){
      
         function onLogin(user, token){
             setUser(user)
-            console.log(user)
             setIsAutenticated(true)
             localStorage.setItem('token', token)
             localStorage.setItem('role', user.role)

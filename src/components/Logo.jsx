@@ -39,7 +39,6 @@ function Logo(){
     
     }, [])
 
-    console.log(urlPath)
 
 
     return (

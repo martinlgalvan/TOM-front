@@ -110,11 +110,9 @@ function DayEditDetailsPage(){
 
                 let warmup  =  data[0].routine[indexDay].warmup
                 
-                console.log(circuit)
                 setCircuit(circuit)                     // establece los ejercicios del circuito para renderizarlo luego a la hora de editar
                 setDay(day)   
                 setExercises(onlyExercises)
-                console.log(day)
                 setModifiedDay(day)                           // array de objetos inicial, son los ejercicios
                 setLoading(false)                       // load principal
 
@@ -159,7 +157,6 @@ const handleButtonClick = (rowData) => {
 };
 
 const confirmDelete = () => {
-    console.log("eliminado!");
     setVisible(false);
 
 };
@@ -224,12 +221,10 @@ const confirmDelete = () => {
     }
 
     const changeModifiedData = (index, value, field, aa) => {
-        console.log(index, value, field, aa)
         setIsEditing(true)
         const updatedExercises = [...modifiedDay];
         updatedExercises[index] = { ...updatedExercises[index], [field]: value };
         setModifiedDay(updatedExercises);
-        console.log(index, value, field, aa)
     };
 
     const customInputEditDay = (data, index, field) =>{

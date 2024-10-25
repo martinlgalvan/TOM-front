@@ -46,7 +46,6 @@ function DayDetailsPage() {
 
             setAllDays(data[index].routine)
 
-            console.log(localStorage.getItem('LastDay'))
             if (lastDay == null || isNaN(lastDay)) {
                 setCurrentDay(0);
                 setModifiedDay(0)
@@ -55,7 +54,6 @@ function DayDetailsPage() {
                 setCurrentDay(lastDay);
                 setDay_id(data[index].routine[lastDay]._id)
                 setModifiedDay(data[index].routine[lastDay].exercises)
-                console.log("USE EFFECT", data[index].routine[lastDay].exercises)
 
             }
 
@@ -99,7 +97,6 @@ function DayDetailsPage() {
     }    
 
     function handleEditMobileExercise(elementsExercise, index){
-        console.log(elementsExercise, index)
         setIndexOfExercise(index)
         setCompleteExercise(elementsExercise)
         setEditExerciseMobile(true)
@@ -112,7 +109,6 @@ function DayDetailsPage() {
     setModifiedDay(dia.exercises)
     localStorage.setItem("LastDay", index);
     setCurrentDay(index);
-    console.log(allDays[index]._id)
     setDay_id(allDays[index]._id)
 
   };

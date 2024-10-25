@@ -88,7 +88,6 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
     };
 
     const showDialogDelete = (_id, name) => {
-        console.log(_id, name)
         setNameUser(name);
         setId_user(_id);
         setShowDialog(true);

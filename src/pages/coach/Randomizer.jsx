@@ -172,7 +172,6 @@ const App = () => {
         }));
 
         setDias(updatedDias);
-        console.log('Datos guardados', updatedDias);
     };
 
 

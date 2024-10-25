@@ -34,25 +34,15 @@ useEffect(() => {
   
   setOptions(groupedOptions)
 
-  console.log('Datos iniciales de completeExercise:', completeExercise);
-  console.log('Índice del ejercicio a editar:', indexOfExercise);
-
   setModifiedDay(completeExercise)
 
 }, []);
-
-useEffect(() => {
- console.log(completeExercise)
-
-}, []);
-
 
     
     const changePesoEdit = (index, e) => {
       const updatedModifiedDay = [...modifiedDay];
       updatedModifiedDay[index].peso = e.target.value;
       setModifiedDay(updatedModifiedDay);
-      console.log('Estado modificado después de cambiar el peso:', updatedModifiedDay);
     };
 
 
@@ -60,8 +50,6 @@ useEffect(() => {
       const updatedModifiedDay = [...modifiedDay];
       updatedModifiedDay[index].notas = e.target.value;
       setModifiedDay(updatedModifiedDay);
-
-      console.log('Estado modificado después de cambiar las notas:', updatedModifiedDay);
 
     };
     
@@ -72,12 +60,10 @@ useEffect(() => {
 
 
 function onSubmit(e){
-  console.log('Datos a enviar:', modifiedDay);
   e.preventDefault()
   Notify.notifyA("Cargando")
   ExercisesService.editExercise(week_id, day_id, modifiedDay)
       .then((data) => {
-        console.log(data)
         refreshEdit(false)
         Notify.updateToast()
       } )
@@ -130,7 +116,6 @@ function onSubmit(e){
         {isAthlete && <p>Peso</p>}
         <input type="text" className="form-control" id="peso" placeholder="Peso" value={completeExercise[indexOfExercise].peso}   
         onInput={(e) => {
-        console.log('Evento onChange disparado:', e.target.value);
         changePesoEdit(indexOfExercise, e);
   }} />
       </div>

@@ -74,7 +74,7 @@ function UserRoutineEditPage(){
                 setDays(Object.keys(filteredDetails).map(day => ({ label: day, value: day })));
             })
             .catch((error) => {
-                console.log('Error fetching profile data:');
+          
             });
     }, [id]);
 
@@ -379,19 +379,6 @@ function UserRoutineEditPage(){
     );
 };
 
-/*function filterObject(originalObject) {
-    const { created_at, _id, user_id, timestamp, ...filteredObject } = originalObject;
-    return filteredObject;
-  }
-
-
-const exportToExcel = (data) => {
-    const newObject = filterObject(data);
-
-    console.log(data)
-    WeekService.exportToExcel(newObject)
-        .then((data) =>{console.log(data)})
-};*/
 
 
 
@@ -412,7 +399,6 @@ const saveToLocalStorage = (data) => {
     try {
       if (copyWeekStorage) {
         const parsedData = JSON.parse(copyWeekStorage);
-        console.log(parsedData)
         ParService.createPARroutine(parsedData, id)
             .then((data) => {
                 setLoading(idRefresh)

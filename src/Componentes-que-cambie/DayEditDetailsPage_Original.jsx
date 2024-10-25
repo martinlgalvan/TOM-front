@@ -227,7 +227,6 @@ useEffect(() => {
       // Resto de funciones de cambio...
 
       const applyChanges = () => {
-        console.log(modifiedDay)
         setDay(modifiedDay);        // Gracias a esto se ven los cambios reflejados en pantalla.
         ExercisesService.editExercise(week_id, day_id, modifiedDay)
             .then((data) => {setStatus(idRefresh)} )

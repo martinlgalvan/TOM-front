@@ -145,7 +145,7 @@ function DayEditDetailsPage() {
             setOriginalDay(data[0].routine[0]); // Almacena el estado original
             setCurrentDay(data[0].routine[0]);
             Notify.updateToast();
-            console.log(data)
+
        
         });
     }, [statusCancel]);
@@ -336,14 +336,11 @@ function DayEditDetailsPage() {
     
     const applyChanges = () => {
 
-        console.log(modifiedDay)
-
         WeekService.editWeek(week_id, modifiedDay)
             .then((data) => {
                 Notify.instantToast("Rutina guardada con éxito!")
                 setStatus(idRefresh);
                 setIsEditing(false);
-                console.log(data)
               
             });
     };
@@ -400,7 +397,6 @@ function DayEditDetailsPage() {
 
     const handleShowWarmup = () => {
         setWarmup(true);
-        console.log(currentDay)
     }
 
     const tableRef = useRef(null);
@@ -735,7 +731,6 @@ const customInputEditExerciseInCircuit = (data, circuitIndex, exerciseIndex, fie
 };
 
 const changeExerciseInCircuit = (circuitIndex, exerciseIndex, field, repsValue) => {
-    console.log(circuitIndex, exerciseIndex, field, repsValue)
     setIsEditing(true); // Activar el estado de edición al cambiar datos
     const updatedDays = [...day];
 

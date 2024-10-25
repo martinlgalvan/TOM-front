@@ -47,7 +47,6 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
         setExercisesDatabase(JSON.parse(localStorage.getItem("DATABASE_USER")) || []);
         Notify.notifyA("Cargando...");
         WeekService.findByWeekId(week_id).then(data => {
-            console.log(data,week_id, day_id)
             const indexWarmup = data[0].routine.findIndex(dia => dia._id === day_id);
             const exists = data[0].routine[indexWarmup].warmup || [];
             const nombre = data[0].routine[indexWarmup].name || [];
@@ -65,7 +64,6 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
 
     // Función genérica para manejar todos los cambios en los inputs
     const handleInputChange = (index, value, field) => {
-        console.log(index, value, field);
         setIsEditing(true);
         const updatedWarmup = [...modifiedWarmup];
         updatedWarmup[index] = {
@@ -182,7 +180,6 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
         const updatedWarmup = [...modifiedWarmup, newExercise];
         inputRefs.current.push({}); // Asegurarse de agregar también en los refs
         setModifiedWarmup(updatedWarmup);
-        console.log(updatedWarmup)
     };
 
     // Generar UUID

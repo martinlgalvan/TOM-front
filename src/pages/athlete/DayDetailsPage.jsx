@@ -92,7 +92,6 @@ function DayDetailsPage() {
             } else{
                 setCurrentDay(lastDay);
                 setDay_id(data[index].routine[lastDay]._id)
-                console.log(data[index].routine[lastDay].exercises)
                 setModifiedDay(data[index].routine[lastDay].exercises)
 
             }
@@ -180,7 +179,6 @@ function DayDetailsPage() {
     }    
 
     function handleEditMobileExercise(elementsExercise, index){
-        console.log(elementsExercise)
         setIndexOfExercise(index)
         setCompleteExercise(elementsExercise)
         setEditExerciseMobile(true)

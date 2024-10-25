@@ -44,7 +44,6 @@ function ModalEditCircuit({ showEditCircuit, handleClose, closeModal, week_id, d
 
   function editAmrap(){
 
-    console.log(week_id, day_id, updatedModifiedCircuit.exercise_id, updatedModifiedCircuit )
    ExercisesService.editExerciseAmrap(week_id, day_id, updatedModifiedCircuit.exercise_id, updatedModifiedCircuit )
       .then(() => {
         handleClose()

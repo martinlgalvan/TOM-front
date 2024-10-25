@@ -72,7 +72,6 @@ let idRefresh = generateUUID()
   Notify.notifyA("Cargando nuevo ejercicio...")
 	ExercisesServices.addExerciseToDay(week_id, day_id, { name, sets, reps, rest, peso, video, notas })
     .then((data) => {
-      console.log(data)
       if(closeAfterCreate == true){
         refresh(idRefresh)
         setSelectedExercise("")

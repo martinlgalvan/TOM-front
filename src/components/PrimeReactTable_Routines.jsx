@@ -133,7 +133,6 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
         try {
             if (copyWeekStorage) {
                 const parsedData = JSON.parse(copyWeekStorage);
-                console.log(parsedData);
                 ParService.createPARroutine(parsedData, id).then((data) => {
                     setLoading(idRefresh);
                     setStatus(idRefresh);
@@ -160,7 +159,6 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
     };
 
     const hideDialog = (load) => {
-        console.log(load)
         
         setShowDeleteWeekDialog(false);
    
