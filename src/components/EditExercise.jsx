@@ -8,7 +8,7 @@ import * as ExercisesService from '../services/exercises.services.js';
 import { ToastContainer } from './../helpers/notify.js';
 import { Dropdown } from 'primereact/dropdown';
 
-function EditExercise({refreshEdit, indexOfExercise, completeExercise, week_id, day_id, isAthlete}) {
+function EditExercise({refreshEdit,  onHide, indexOfExercise, completeExercise, week_id, day_id, isAthlete}) {
 
 const [options, setOptions] = useState()  
 
@@ -35,6 +35,7 @@ useEffect(() => {
   setOptions(groupedOptions)
 
   setModifiedDay(completeExercise)
+  console.log(indexOfExercise, completeExercise, week_id, day_id, isAthlete)
 
 }, []);
 
@@ -61,11 +62,11 @@ useEffect(() => {
 
 function onSubmit(e){
   e.preventDefault()
-  Notify.notifyA("Cargando")
   ExercisesService.editExercise(week_id, day_id, modifiedDay)
       .then((data) => {
         refreshEdit(false)
-        Notify.updateToast()
+        onHide()
+        Notify.instantToast('Rutina actualizada con éxito!')
       } )
   
   

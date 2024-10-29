@@ -21,15 +21,16 @@ import AddIcon from '@mui/icons-material/Add';
 
 import options from '../../assets/json/options.json'; // Importa options como en la otra parte
 
-function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
+function ModalCreateWarmup({ showCreateWarmup, closeModal,week, week_id, day_id }) {
     const [warmup, setWarmup] = useState([]);
     const [warmupName, setWarmupName] = useState([]);
+    const [indexWarmupA, setIndexWarmupA] = useState(0)
     const [modifiedWarmup, setModifiedWarmup] = useState([]); // Array donde se copia la nueva rutina
     const inputRefs = useRef([]); // Usamos refs para manejar inputs no controlados
     const [filteredExercises, setFilteredExercises] = useState(null);
     const [exercisesDatabase, setExercisesDatabase] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [editMode, setEditMode] = useState(false); // Estado para el "Modo Edición"
+    const [dataWeek, setDataweek] = useState(false); // Estado para el "Modo Edición"
 
     const [statusCancel, setStatusCancel] = useState(1); // Manejo de renderizado
 
@@ -45,33 +46,61 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
 
     useEffect(() => {
         setExercisesDatabase(JSON.parse(localStorage.getItem("DATABASE_USER")) || []);
-        Notify.notifyA("Cargando...");
-        WeekService.findByWeekId(week_id).then(data => {
-            const indexWarmup = data[0].routine.findIndex(dia => dia._id === day_id);
-            const exists = data[0].routine[indexWarmup].warmup || [];
-            const nombre = data[0].routine[indexWarmup].name || [];
-            setWarmupName(nombre)
-            setModifiedWarmup(exists); // array de objetos inicial, son los ejercicios
-            setWarmup(exists);
-            Notify.updateToast();
-        });
-    }, [week_id, day_id, statusCancel]);
+    
+        // Validamos si `week` y `week.routine` están definidos antes de buscar en `routine`
+        if (week) {
+            const indexWarmup = week.findIndex(day => day._id === day_id);
+            setIndexWarmupA(indexWarmup)
+            const dayData = week[indexWarmup];
+            console.log(week)
+            const existingWarmup = dayData?.warmup || [];
+            const warmupDayName = dayData?.name || "";
+            setWarmupName(warmupDayName);
+            setModifiedWarmup(week); // array de objetos inicial, son los ejercicios
+            setWarmup(week);
+        } else {
+            console.warn("La semana o la rutina no están disponibles");
+        }
+    
+    }, [week, day_id, statusCancel]);
 
     useEffect(() => {
         setFirstWidth(window.innerWidth);
-
     }, []);
 
+    
     // Función genérica para manejar todos los cambios en los inputs
     const handleInputChange = (index, value, field) => {
+
         setIsEditing(true);
-        const updatedWarmup = [...modifiedWarmup];
-        updatedWarmup[index] = {
-            ...updatedWarmup[index],
+        const updatedWarmup = [...warmup];
+
+
+        updatedWarmup[indexWarmupA].warmup[index] = {
+            ...updatedWarmup[indexWarmupA].warmup[index],
             [field]: value
         };
+
+        console.log(updatedWarmup)
+        
         setModifiedWarmup(updatedWarmup);
     };
+
+    const applyChanges = () => {
+        console.log(dataWeek, modifiedWarmup)
+        WeekService.editWeek(week_id, modifiedWarmup)
+            .then((data) => {
+                setWarmup(modifiedWarmup);
+                setIsEditing(false);
+                console.log(data)
+                Notify.instantToast("Guardado con éxito");
+            })
+            .catch(error => {
+                console.error("Error al guardar cambios:", error);
+            });
+    };
+
+
 
     // Función para renderizar los inputs, basada en `customInputEditDay`
     const customInputEditWarmup = (data, index, field) => {
@@ -164,9 +193,16 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
     // Función para agregar un nuevo warmup
     const addNewWarmupExercise = () => {
         setIsEditing(true);
-
-        const nextNumberExercise = warmup.length + 1;
-
+    
+        const updatedWarmup = [...modifiedWarmup];
+    
+        // Verifica que el warmup esté definido, si no, inicialízalo como un array vacío
+        if (!updatedWarmup[indexWarmupA].warmup) {
+            updatedWarmup[indexWarmupA].warmup = [];
+        }
+    
+        const nextNumberExercise = updatedWarmup[indexWarmupA].warmup.length + 1;
+    
         const newExercise = {
             warmup_id: generateUUID(),
             numberWarmup: nextNumberExercise,
@@ -177,10 +213,13 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
             video: "",
             notas: "",
         };
-        const updatedWarmup = [...modifiedWarmup, newExercise];
+    
+        updatedWarmup[indexWarmupA].warmup.push(newExercise);
         inputRefs.current.push({}); // Asegurarse de agregar también en los refs
+    
         setModifiedWarmup(updatedWarmup);
     };
+    
 
     // Generar UUID
     const generateUUID = () => {
@@ -217,17 +256,6 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
         setModifiedWarmup(updatedWarmup);  // Actualizar la lista modificada
     };
 
-    const applyChanges = () => {
-        WarmupServices.editWarmup(week_id, day_id, modifiedWarmup)
-            .then((data) => {
-                setWarmup(modifiedWarmup);
-                setIsEditing(false);
-                Notify.instantToast("Guardado con éxito");
-            })
-            .catch(error => {
-                console.error("Error al guardar cambios:", error);
-            });
-    };
 
 
     const confirmCancel = () => {
@@ -361,7 +389,7 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {modifiedWarmup.map((item, index) => (
+                            {modifiedWarmup[indexWarmupA].warmup && modifiedWarmup[indexWarmupA].warmup.map((item, index) => (
                                 <tr key={item.warmup_id}>
                                     <td>{customInputEditWarmup(item.numberWarmup, index, "numberWarmup")}</td>
                                     <td>{customInputEditWarmup(item.name, index, "name")}</td>
@@ -387,15 +415,15 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
             ) : tableMobile()}
 
             {isEditing && (
-                <div className="text-center my-3">
+                <div className="text-center my-3 floating-button ">
                     <button
-                        className="btn btn-dark mx-2"
+                        className="btn colorRed p-4 my-3 fs-5"
                         onClick={applyChanges}
                     >
                         Guardar cambios
                     </button>
                     <button
-                        className="btn btn-secondary mx-2"
+                        className="btn colorCancel p-4 my-3 fs-5"
                         onClick={() => confirmCancel()}
                     >
                         Cancelar
@@ -415,18 +443,6 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal, week_id, day_id }) {
                 reject={() => setShowCancelDialog(false)}
             />
 
-            <ToastContainer
-                position="bottom-center"
-                autoClose={200}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
         </>
     );
 }

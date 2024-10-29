@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import * as WeekService from '../../services/week.services.js';
 import * as NotifyHelper from './../../helpers/notify.js';
+import { ToastContainer } from './../../helpers/notify.js';
 
 import Logo from '../../components/Logo.jsx';
 import ActionAreaCard from '../../components/MUI/ActionAreaCard.jsx';
@@ -24,12 +25,12 @@ function UserRoutinePage() {
     const handleCloseDialog = () => setVisibleEdit(false);
 
     useEffect(() => {
-        NotifyHelper.notifyA("Cargando rutina...");
 
         WeekService.findRoutineByUserId(id)
             .then(data => {
                 setRoutine(data);
-                NotifyHelper.updateToast();
+                console.log(data)
+                NotifyHelper.instantToast('Semanas cargadas con éxito');
             });
     }, [id]);
 
@@ -179,6 +180,20 @@ function UserRoutinePage() {
                     </Dialog>
                 )}
             </section>
+
+            <ToastContainer
+        position="bottom-center"
+        autoClose={200}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+     />
+     
         </>
     );
 }

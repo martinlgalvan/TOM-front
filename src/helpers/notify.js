@@ -19,9 +19,10 @@ const updateToast = () =>
       TOASTID, { 
       render:             "Listo!", 
       type:               toast.TYPE.SUCCESS, 
-      autoClose:          200, 
+      autoClose:          300, 
       isLoading:          false,
       pauseOnFocusLoss:   false,
+      closeOnClick:       true,
       hideProgressBar:    true,
       limit:              1,
       className:          'rotateY animated'
@@ -31,11 +32,12 @@ const updateToast = () =>
 const instantToast = (message) => 
   toast.success(message, {
     position: "bottom-center",
-    autoClose: 200,
+    autoClose:          300, 
     hideProgressBar: true,
     closeOnClick: true,
     pauseOnHover: true,
     draggable: true,
+    limit: 1,
     progress: undefined,
     theme: "light",
     });

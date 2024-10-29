@@ -173,6 +173,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
             <div className="col-12 col-sm-10 mb-5">
                 <DataTable
                     className="usersListTable m-auto pt-0"
+                    emptyMessage="Cargando semanas..."
                     paginator
                     rows={10}
                     value={routine}

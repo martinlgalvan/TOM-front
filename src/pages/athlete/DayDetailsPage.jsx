@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Fragment } from 'react';
 
 import { Link, useParams } from "react-router-dom";
+import { ToastContainer } from './../../helpers/notify.js';
 
 import * as WeekService from "../../services/week.services.js";
 
@@ -83,12 +84,14 @@ function DayDetailsPage() {
     useEffect(() => {
         WeekService.findRoutineByUserId(id).then((data) => {
 
+            console.log(data[index].routine[0].exercises)
+
             setAllDays(data[index].routine)
             setNameWeek(data[index].name)
             if (!lastDay || isNaN(lastDay) || lastDay >= data[index].routine.length) {
                 setCurrentDay(0);
-                setModifiedDay(data[0].routine[0].exercises)
-                setDay_id(data[0].routine[0]._id)
+                setModifiedDay(data[index].routine[0].exercises)
+                setDay_id(data[index].routine[0]._id)
             } else{
                 setCurrentDay(lastDay);
                 setDay_id(data[index].routine[lastDay]._id)
@@ -99,6 +102,8 @@ function DayDetailsPage() {
                 
         });
     }, [status]);
+
+
 
 
     useEffect(() => {
@@ -154,6 +159,7 @@ function DayDetailsPage() {
     const [selectedObject, setSelectedObject] = useState(null);
     
     const handleButtonClick = (object) => {
+        console.log(object)
         setSelectedObject(object);
         setVisible(true);
       };
@@ -161,9 +167,13 @@ function DayDetailsPage() {
       const [indexOfExercise, setIndexOfExercise] = useState()
     
     const refresh = (refresh) => {
-        setEditExerciseMobile(false)
+        setStatus(false)
     }
 
+    
+    const hideDialogEditExercises = () => {
+        setEditExerciseMobile(false)
+    }
     
     function handleShowEditCircuit(id, type, typeOfSets, circuit,notas, numberExercise){
 
@@ -237,6 +247,21 @@ const productTemplate = useCallback((exercise) => {
     );
 }, []);
 
+// Nueva función handleDayChange
+const handleDayChange = (value) => {
+    console.log(value)
+    const actualDay = allDays.find(item => item.name === value);
+    const index = allDays.findIndex(item => item._id === actualDay._id);
+
+    setModifiedDay(actualDay.exercises);
+    localStorage.setItem("LastDay", index);
+    localStorage.setItem("LastDayName", actualDay.name);
+
+    setCurrentDay(index);
+    setDay_id(allDays[index]._id);
+};
+
+
     return (
 
         <>
@@ -255,15 +280,7 @@ const productTemplate = useCallback((exercise) => {
                     options={allDays.map((dia) => (dia.name))}
                     className="stylesSegmented"
                     defaultValue={localStorage.getItem('LastDayName') == undefined  ? 'Día 1' : localStorage.getItem('LastDayName') }
-                    onChange={(value) => {
-                        const actualDay = allDays.find(item => item.name === value);
-                        const index = allDays.findIndex(item => item._id === actualDay._id);
-                        setModifiedDay(actualDay.exercises)
-                        localStorage.setItem("LastDay", index);
-                        localStorage.setItem("LastDayName", actualDay.name);
-                        setCurrentDay(index);
-                        setDay_id(allDays[index]._id)
-                    }}
+                    onChange={handleDayChange}
                 />
             </div>
             {currentDay !== null && 
@@ -490,11 +507,25 @@ const productTemplate = useCallback((exercise) => {
             <PercentageCalculator />
         </Dialog>
 
-            <Sidebar visible={editExerciseMobile} position="right" onHide={() => {setEditExerciseMobile(false)}}>
-                <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} refreshEdit={refresh} isAthlete={true}/>
+            <Sidebar visible={editExerciseMobile} position="right" onHide={() => hideDialogEditExercises()}>
+                <EditExercise  completeExercise={modifiedDay} week_id={week_id} day_id={day_id} indexOfExercise={indexOfExercise} onHide={hideDialogEditExercises} refreshEdit={refresh} isAthlete={true}/>
             </Sidebar>
             <Floating link={`/routine/${id}`}  />
         </section>
+
+        <ToastContainer
+        position="bottom-center"
+        autoClose={200}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+     />
+
         </>
     );
 }

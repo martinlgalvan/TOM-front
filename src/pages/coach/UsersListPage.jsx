@@ -36,9 +36,9 @@ function UsersListPage() {
 
     const [name, setName] = useState(); // Variable para la eliminación
     const [user_id, setUser_id] = useState(); // ----------------------------*
-
+    
     let idRefresh = RefreshFunction.generateUUID();
-
+      
     useEffect(() => {
         Notify.notifyA("Cargando usuarios...");
 
@@ -80,8 +80,8 @@ function UsersListPage() {
         </div>       
         
         <section className="container-fluid">
-            
-            <h2 className="text-center mb-5 col-12">
+
+            <h2 className="text-center mb-5">
                 ¡Bienvenido/a {localStorage.getItem("name")}!
             </h2>
 

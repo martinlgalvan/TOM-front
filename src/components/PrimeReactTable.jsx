@@ -346,7 +346,7 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
             </div>
             <div className='col-12 col-sm-10 m-0 mb-5 fontUsersList'>
                 
-                <DataTable className='usersListTable alignDatatable  pt-0' paginator rows={10} value={filteredUsers} >
+                <DataTable emptyMessage="Cargando usuarios..." className='usersListTable alignDatatable  pt-0' paginator rows={10} value={filteredUsers} >
                     <Column body={linksTemplate} field="name" header="Nombre" />
                     {widthPage > 600 ? <Column body={linksTemplate} field="email" header="Email"/> : null}
                     <Column body={actionsTemplate} header="Acciones" />

@@ -15,15 +15,29 @@ function Novedades() {
             <article className='row justify-content-center'>
                 <div className='col-10 col-lg-6 text-center'>
 
-                <h2>Versión actual: 2.2.4</h2>
+                <h2>Versión actual: 2.3.5</h2>
 
                 </div>
 
                 <div className='row justify-content-center text-start mt-4'>
                     <div className='col-11 col-lg-6'>
 
-                    <h3>Nueva versión ya disponible!</h3>
-                    <p>logs.</p>
+                    
+                    <p>logs. 29/10/2024</p>
+                    <ul className='list-group list-group-flush'>
+                        <li className='list-group-item'><b>Arreglo.</b> Ahora los alumnos no notarán más inconsistencias a la hora de editar su planificación</li>
+                        <li className='list-group-item'><b>Arreglo.</b> Ya no habrá inconsistencias en la creación de días - entrada en calor</li>
+                        <li className='list-group-item'><b>Arreglo.</b> Ahora se guarda correctamente el nombre de la semana al editarse.</li>
+                        
+                    </ul>
+                </div>
+                </div>
+
+                <div className='row justify-content-center text-start mt-4'>
+                    <div className='col-11 col-lg-6'>
+
+                    
+                    <p>logs. 24/10/2024</p>
                     <ul className='list-group list-group-flush'>
                         <li className='list-group-item'><b>Cambios visuales en las **listas de usuarios**</b></li>
                         <li className='list-group-item'><b>Cambio visuales y estructurales en las **semanas**.</b>

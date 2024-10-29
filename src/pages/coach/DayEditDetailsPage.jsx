@@ -111,6 +111,9 @@ function DayEditDetailsPage() {
     const [editMode, setEditMode] = useState(false); // Estado para el "Modo Edición"
     const overlayNotesRefs = useRef([]); // Referencias para los overlay panels de las notas
 
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [exerciseToDelete, setExerciseToDelete] = useState(null);
+
 
     useEffect(() => {
         const local = localStorage.getItem("DATABASE_USER");
@@ -132,14 +135,15 @@ function DayEditDetailsPage() {
         }
     }, []);
 
+
     useEffect(() => {
         setLoading(true);
         Notify.notifyA("Cargando");
 
         WeekService.findByWeekId(week_id).then((data) => {
-
             setRoutine(data[0]); // Guardar toda la estructura
             setWeekName(data[0].name)
+            setModifiedDay(data[0].routine)
             setAllDays(data[0].routine);
             setDay(data[0].routine);
             setOriginalDay(data[0].routine[0]); // Almacena el estado original
@@ -150,12 +154,14 @@ function DayEditDetailsPage() {
         });
     }, [statusCancel]);
 
+        
     useEffect(() => {
 
         setCurrentDay(null)
 
 
     }, [statusCancel]);
+
 
     useEffect(() => {
         setFirstWidth(window.innerWidth);
@@ -205,18 +211,15 @@ function DayEditDetailsPage() {
         setStatus(idRefresh);
     };
 
+    const hideDialogWarmup = () => {
+        setWarmup(false)
+    };
+
     const closeModal = () => {
         setShow(false);
         setShowEditCircuit(false);
     };
 
-    const closeDialog = (close) => setVisibleExercises(close);
-
-    const handleCloseDialog = () => {
-        setVisibleCircuit(false),
-            setVisibleExercises(false),
-            setVisibleEdit(false);
-    };
 
     const productRefs = useRef([]);
 
@@ -231,14 +234,6 @@ function DayEditDetailsPage() {
         "Notas",
         "Acciones",
     ];
-
-    // --------------------- EDIT CIRCUIT FUNCTIONS
-
-    function handleShowEditCircuit(circuit, index, id) {
-        setIndexOfCircuit(index);
-        setCompleteCircuit(circuit);
-        setShowEditCircuit(true);
-    }
 
     // ------------  EDIT FUNCTIONS
 
@@ -305,7 +300,7 @@ function DayEditDetailsPage() {
                 <input
                     ref={(el) => (inputRefs.current[`${index}-${field}`] = el)} // Asigna una referencia única
                     className={`form-control ${firstWidth ? "border" : "border-0"} ellipsis-input text-center`}
-                    placeholder={ field == 'rest' ? `2'...` : "10kg..."}
+                    placeholder={ field == 'rest' ? `2'...` : "kg..."}
                     type="text"
                     defaultValue={data}
                     onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar `e.target.value`
@@ -347,8 +342,7 @@ function DayEditDetailsPage() {
 
     // --------------------- DELETE ACTIONS
 
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [exerciseToDelete, setExerciseToDelete] = useState(null);
+
 
     const handleDeleteClick = (exercise) => {
         setExerciseToDelete(exercise);
@@ -374,7 +368,7 @@ function DayEditDetailsPage() {
     };
 
     function acceptDeleteExercise(id) {
-        Notify.notifyA("Cargando");
+
 
         ExercisesService.deleteExercise(week_id, day_id, id)
             .then(() => {
@@ -386,17 +380,18 @@ function DayEditDetailsPage() {
                 setStatus(idRefresh); // Opcional, si es necesario
                 setLoading(false);
                 setIsEditing(false);
+                Notify.instantToast('Ejercicio eliminado con éxito')
 
-                Notify.updateToast();
             })
             .catch((error) => {
-                console.error("Error aplicando cambios:", error);
-                Notify.notifyA("Error aplicando cambios");
+                Notify.instantToast('Error')
+                
             });
     }
 
     const handleShowWarmup = () => {
         setWarmup(true);
+        setIsEditing(false)
     }
 
     const tableRef = useRef(null);
@@ -405,7 +400,7 @@ function DayEditDetailsPage() {
 
     const AddNewExercise = () => {
 
-        Notify.instantToast("Ejercicio creado con éxito!")
+
         // Crear una copia del estado actual de 'day'
         const updatedDays = [...day];
     
@@ -433,7 +428,7 @@ function DayEditDetailsPage() {
         setDay(updatedDays);
         setModifiedDay(updatedDays);
         setCurrentDay(updatedDays[indexDay]);
-        
+        Notify.instantToast("Ejercicio creado con éxito!")
     
 
     };
@@ -971,7 +966,7 @@ const tableMobile = () => {
                                                     value={exercise.numberExercise}
                                                     options={options}
                                                     onChange={(e) => changeModifiedData(i, e.target.value, 'numberExercise')}
-                                                    placeholder="Select an item"
+                                                    placeholder="Seleccioanr numero"
                                                     optionLabel="label"
                                                     className="p-dropdown-group w-100"
                                                 />
@@ -1050,8 +1045,6 @@ const tableMobile = () => {
 const openEditWeekNameDialog = () => {
         setNewWeekName(weekName); // Inicializa el campo con el nombre actual de la semana
         setIsEditingWeekName(true);
-        setIsEditing(true);
-   
 
 };
 
@@ -1252,7 +1245,7 @@ const saveNewWeekName = () => {
                                                         "numberExercise"
                                                     );
                                                 }}
-                                                placeholder="Select an item"
+                                                placeholder="Seleccionar numero"
                                                 optionLabel="label"
                                                 className="p-dropdown-group w-100"
                                             />
@@ -1462,14 +1455,14 @@ const saveNewWeekName = () => {
                     <button
                         className="btn colorRed p-4 my-3 fs-5"
                         onClick={() => applyChanges()}
-                        onTouchStart={() => applyChanges()}
+                   
                     >
                         Guardar
                     </button>
                     <button
                         className="btn colorCancel p-4 my-3 fs-5"
                         onClick={() => confirmCancel()}
-                        onTouchStart={() => confirmCancel()}
+                  
                     >
                         Cancelar
                     </button>
@@ -1629,11 +1622,11 @@ const saveNewWeekName = () => {
                 visible={warmup}
                 scrollable={"true"}
                 modal={false}
-                onHide={() => setWarmup(false)}
+                onHide={() => hideDialogWarmup()}
                 blockScroll={window.innerWidth > 600 ? false : true}
             >
                 <ModalCreateWarmup
-                    completeExercise={day}
+                    week={modifiedDay}
                     week_id={week_id}
                     day_id={currentDay && currentDay._id}
                     indexOfExercise={indexOfExercise}
@@ -1671,19 +1664,17 @@ const saveNewWeekName = () => {
                     </div>
                 </div>
             </Dialog>
-
-            <ToastContainer
-                    position="bottom-center"
-                    autoClose={200}
-                    hideProgressBar={false}
+            
+                <ToastContainer
+                    position="top-right"
+                    autoClose={false}
                     newestOnTop={false}
                     closeOnClick
                     rtl={false}
                     pauseOnFocusLoss
                     draggable
-                    pauseOnHover
                     theme="light"
-                />
+                    />
 
                 <Dialog
                     header="Editar Nombre de la Semana"
