@@ -290,7 +290,7 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal,week, week_id, day_id 
                         </tr>
                     </thead>
                     <tbody>
-                        {modifiedWarmup && modifiedWarmup.map((exercise, i) => (
+                        {modifiedWarmup[indexWarmupA] && modifiedWarmup[indexWarmupA].warmup && modifiedWarmup[indexWarmupA].warmup.map((exercise, i) => (
                             <tr className="shadowCards" key={exercise.exercise_id}>
                                     <>
                                         <td data-th="Nombre" className="text-center">

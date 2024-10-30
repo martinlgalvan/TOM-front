@@ -108,12 +108,7 @@ function App(){
         function onLogout(){
             
             setIsAutenticated(false)
-            localStorage.removeItem('token')
-            localStorage.removeItem('role')
-            localStorage.removeItem('_id')
-            localStorage.removeItem('name')
-            localStorage.removeItem('logo')
-            
+            localStorage.clear();
             authService.logout()
             setMenuSidebar(false)
             navigate('/')
@@ -147,7 +142,7 @@ function App(){
 
         <>
 
-        <nav className={`navbar navbar-expand-lg navbar-dark ${textColor == 'false' || !textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} >
+        <nav className={`navbar navbar-expand-lg navbar-dark fixed-top ${textColor == 'false' || !textColor ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }} >
             
             <div className="container-fluid ">
                 <a className="navbar-brand " href="/">TOM</a>
