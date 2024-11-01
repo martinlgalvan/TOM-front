@@ -212,7 +212,7 @@ function HomePage() {
          
         </div>
       ) : (
-        <h2 className="text-center my-5">Hola!</h2>
+        <h2 className="text-center my-5"></h2>
       )}
        </main>
     </>
