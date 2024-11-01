@@ -2039,6 +2039,9 @@ width: 50px;
   margin-top: 39px;
 }
 
+.p-datatable-emptymessage td{
+  padding: 20px 0px;
+}
 
 
 

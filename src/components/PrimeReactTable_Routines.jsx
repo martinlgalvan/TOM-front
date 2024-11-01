@@ -23,17 +23,8 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteWeek from "./DeleteActions/DeleteWeek.jsx";
 
 export default function PrimeReactTable_Routines({ id, username, routine, setRoutine, copyRoutine }) {
-    const [users, setUsers] = useState([]);
-    const [searchText, setSearchText] = useState("");
-    const [showDialog, setShowDialog] = useState(false);
-    const [visible, setVisible] = useState(false);
+
     const [loading, setLoading] = useState(false);
-
-    const [nameUser, setNameUser] = useState([]);
-    const [id_user, setId_user] = useState([]);
-    const [profileData, setProfileData] = useState();
-    const [days, setDays] = useState([]);
-
     const [widthPage, setWidthPage] = useState();
     let idRefresh = RefreshFunction.generateUUID();
     const [copyWeekStorage, setCopyWeekStorage] = useState();
@@ -45,6 +36,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
 
     useEffect(() => {
         setFirstWidth(window.innerWidth);
+        console.log(routine)
     }, []);
 
     const actionsTemplate = (routine, e) => {
@@ -173,7 +165,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
             <div className="col-12 col-sm-10 mb-5">
                 <DataTable
                     className="usersListTable m-auto pt-0"
-                    emptyMessage="Cargando semanas..."
+                    emptyMessage={routine ? ' ' : ' '}
                     paginator
                     rows={10}
                     value={routine}

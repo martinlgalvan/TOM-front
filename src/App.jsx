@@ -249,9 +249,9 @@ function App(){
                         <li className="nav-item">
                         {isAdmin() && <><Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link></>}
                         </li>
-                        <li className="nav-item">
+                        {/*<li className="nav-item">
                         {isAdmin() && <><Link className='nav-link' to={`/planificator/${id}`}>Planificador</Link></>}
-                        </li>
+                        </li>*/}
                         <li className="nav-item">
                             {isAdmin() && <><Link className='nav-link' to={`/novedades/`}>Novedades</Link></>}
                         </li>
