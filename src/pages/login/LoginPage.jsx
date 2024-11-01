@@ -10,7 +10,6 @@ function LoginPage({onLogin}){
 
     const [color, setColor] = useState(localStorage.getItem('color'))
     const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
-    console.log(localStorage.getItem('textColor'))
     
     function onSubmit(event){
         event.preventDefault()

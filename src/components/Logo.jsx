@@ -44,7 +44,7 @@ function Logo(){
     return (
         <>
         {urlPath == TOM ? 
-            <div className='row justify-content-center align-items-center position-relative divPrincipal' >
+            <div className='row justify-content-center align-items-center position-relative divPrincipal marginNavBar' >
                 <h1 className="visually-hidden">TOM</h1>
                 
                 {/* Imagen de fondo */}

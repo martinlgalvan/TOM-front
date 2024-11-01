@@ -15,8 +15,10 @@ import UserRoutineEditPage from "./pages/coach/UserRoutineEditPage.jsx"
 import DayEditDetailsPage from "./pages/coach/DayEditDetailsPage.jsx"
 import UserPersonalize from "./pages/coach/UserPersonalize.jsx"
 import Profile from "./pages/athlete/Profile.jsx"
-
+import Novedades from './pages/coach/Novedades.jsx'
 import RandomizerPage from "./pages/coach/Randomizer.jsx"
+import DownloadIcon from '@mui/icons-material/Download';
+import IconButton from "@mui/material/IconButton";
 
 import DatabaseExercises from './pages/coach/DatabaseExercises.jsx'
 
@@ -26,8 +28,11 @@ import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
 import AddColorToUser from './components/Users/AddColorToUser.jsx'
 import { useColor } from './components/Context/ColorContext.jsx';
 import { Sidebar } from 'primereact/sidebar';
-import Novedades from './pages/coach/Novedades.jsx'
-//a
+import Spinner from 'react-bootstrap/Spinner';
+import Logo from './assets/img/TOM.png'
+import { registerServiceWorker } from './serviceWorkerRegistration.js';
+import { Checkbox, FormControlLabel } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
 
 function RoutePrivate( {isAutenticate, children}){
     return (
@@ -36,6 +41,8 @@ function RoutePrivate( {isAutenticate, children}){
         </>
     )
 }
+
+
 
 function App(){
     const navigate = useNavigate()
@@ -51,22 +58,98 @@ function App(){
     const [menuSidebar, setMenuSidebar] = useState(null);
 
 
-
-
     const [isAutenticated, setIsAutenticated] = useState(null)
 
-
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const [showInstallButton, setShowInstallButton] = useState(false);
+    const [showInstallPopup, setShowInstallPopup] = useState(false);
 
     useEffect(() => {
-        
+        registerServiceWorker();
+      }, []);
 
-    }, [])
+
+      useEffect(() => {
+        const isCheckboxChecked = localStorage.getItem('noShowPopup') ;
+        if ( isAutenticated) {
+          window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            if(isCheckboxChecked ===  'false'){
+                setShowInstallPopup(true); // Muestra el popup de instalación
+            }
+            setShowInstallButton(true); // Muestra el botón solo si es necesario
+
+          });
+        }
+      
+        return () => window.removeEventListener('beforeinstallprompt', () => {});
+      }, [isAutenticated]);
+
+
+        const handleInstallClick = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            setDeferredPrompt(null);
+            setShowInstallPopup(false); // Oculta el popup
+        }
+        };
+
+    const handleCheckboxChange = (event) => {
+        const isChecked = event.target.checked;
+        localStorage.setItem('noShowPopup', isChecked.toString());
+        setShowInstallPopup(!isChecked); // Ocultar popup si está marcado
+    };
+
     
+
+    const showInstallToast = () => {
+
+        toast.info(
+          <div className='row justify-content-center text-center'>
+            <div className='col-10'>
+                <button className='row justify-content-center bg-primary rounded-3 ' onClick={handleInstallClick}>
+
+                    <div className='col-3  text-light'>
+                        <IconButton aria-label="download" >
+                        <DownloadIcon className='text-light'/>
+                        </IconButton>
+                    </div>
+                    <div className='col-9 m-auto'>
+                        <p className='m-0 text-light'>Descargar TOM</p>
+                    </div>
+                </button>
+            </div>
+           
+            <div>
+            <FormControlLabel
+            className='text-center'
+              control={<Checkbox onChange={handleCheckboxChange} />}
+              label="No volver a mostrar"
+            />
+            </div>
+
+          </div>,
+          {
+            autoClose: false, // Evita que el popup se cierre automáticamente
+          }
+        );
+      };
+
+    useEffect(() => {
+        if (showInstallPopup) {
+            showInstallToast();
+        }
+    }, [showInstallPopup]);
+
+
+
         useEffect(() => {
             //window.google.translate.disableAutoTranslation();
             const token = localStorage.getItem('token')
             if(token){
                 setIsAutenticated(true)
+                registerServiceWorker()
                 
             } else{
                 setIsAutenticated(false)
@@ -81,7 +164,7 @@ function App(){
             localStorage.setItem('role', user.role)
             localStorage.setItem('_id', user._id)
             localStorage.setItem('name', user.name)
-            
+            localStorage.setItem('noShowPopup', 'false')
 
             localStorage.setItem('email', user.email)
             localStorage.setItem('entrenador_id', user.entrenador_id)
@@ -114,9 +197,15 @@ function App(){
             navigate('/')
         }
 
-        if(isAutenticated === null){
-            //Realizar un load en caso de que ésta parte tarde
-            return <h1>Carga</h1>
+        if(isAutenticated === null ){
+            return (
+                <div className="loading-container">
+                  <img src={Logo} alt="TOM" className="TOM" />
+                  <Spinner animation="border" role="status" className="spinner">
+                    <span className="visually-hidden">Cargando...</span>
+                  </Spinner>
+                </div>
+              );
         }
     
         function isAdmin(){
@@ -151,11 +240,15 @@ function App(){
                 </button>
                 <div className="collapse navbar-collapse justify-content-end  " id="navbarNav">
                     <ul className="navbar-nav text-center ">
+                    
                         <li className="nav-item ">
                             <Link className='nav-link ' to="/">Inicio</Link>
                         </li>
                         <li className="nav-item">
                         {isAdmin() && <><Link className='nav-link' to={`/users/${id}`}>Lista de alumnos</Link></>}
+                        </li>
+                        <li className="nav-item">
+                        {isAdmin() && <><Link className='nav-link' to={`/planificator/${id}`}>Planificador</Link></>}
                         </li>
                         <li className="nav-item">
                             {isAdmin() && <><Link className='nav-link' to={`/novedades/`}>Novedades</Link></>}
@@ -175,8 +268,20 @@ function App(){
                         <li className="nav-item">
                         {isAutenticated && <><Link className='nav-link' onClick={onLogout}>Cerrar sesión</Link> </>}
                         </li>
+                        {isAutenticated && showInstallButton && (
+                        <li className="nav-item  aaa" onClick={handleInstallClick}>
+                            <Link className='nav-link ' >                         <IconButton
+                            aria-label="video"
+                            className="p-0"
+                            onClick={handleInstallClick}
+                        >
+                            <DownloadIcon className="me-1" />
+                            
+                        </IconButton>Descargar TOM</Link>
+                        </li> )}
                     </ul>
                 </div>
+                
             </div>
         </nav>
 
@@ -241,7 +346,7 @@ function App(){
                 />
 
 
-                <Route path="/planificator" element={
+                <Route path="/planificator/:id" element={
                     <RoutePrivate isAutenticate={isAutenticated}>
                         <RandomizerPage/>
                     </RoutePrivate>}
@@ -300,6 +405,17 @@ function App(){
                             <Link className='nav-link' onClick={onLogout} >Cerrar sesión</Link>
                         </li> 
                         }
+                        {isAutenticated && showInstallButton && (
+                        <li className="nav-item aaa mt-3" onClick={handleInstallClick}>
+                            <Link className='nav-link ' >                         <IconButton
+                            aria-label="video"
+                            className="text-light"
+                            onClick={handleInstallClick}
+                        >
+                            <DownloadIcon className="me-1" />
+                            
+                        </IconButton>Descargar TOM</Link>
+                        </li> )}
             </ul>
         
         </Sidebar>
@@ -319,6 +435,8 @@ function App(){
             </div>
         </footer>
 
+
+        <ToastContainer />
         </>
     )
 }

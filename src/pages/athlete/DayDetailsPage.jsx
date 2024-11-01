@@ -50,15 +50,12 @@ function DayDetailsPage() {
     const [allDays, setAllDays] = useState([]) 
     const [modifiedDay, setModifiedDay] = useState([])                  // Array donde se copia la nueva rutina
     const [nameWeek, setNameWeek] = useState();
+    const [firstValue, setFirstValue] = useState();
     const [status, setStatus] = useState()
 
-    const lastDay = parseInt(localStorage.getItem("LastDay"));
 
     const [currentDay, setCurrentDay] = useState(null);
 
-
-    const [color, setColor] = useState(localStorage.getItem('color'))
-    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
 
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);        // Modal para canvas de edit exercises
 
@@ -84,24 +81,19 @@ function DayDetailsPage() {
     useEffect(() => {
         WeekService.findRoutineByUserId(id).then((data) => {
 
-            console.log(data[index].routine[0].exercises)
+            console.log(data[index].routine)
 
             setAllDays(data[index].routine)
             setNameWeek(data[index].name)
-            if (!lastDay || isNaN(lastDay) || lastDay >= data[index].routine.length) {
-                setCurrentDay(0);
-                setModifiedDay(data[index].routine[0].exercises)
-                setDay_id(data[index].routine[0]._id)
-            } else{
-                setCurrentDay(lastDay);
-                setDay_id(data[index].routine[lastDay]._id)
-                setModifiedDay(data[index].routine[lastDay].exercises)
-
-            }
+            setCurrentDay(0);
+            setFirstValue(data[index].routine[0].name)
+            setModifiedDay(data[index].routine[0].exercises)
+            setDay_id(data[index].routine[0]._id)
+            
 
                 
         });
-    }, [status]);
+    }, []);
 
 
 
@@ -250,13 +242,10 @@ const productTemplate = useCallback((exercise) => {
 // Nueva función handleDayChange
 const handleDayChange = (value) => {
     console.log(value)
-    const actualDay = allDays.find(item => item.name === value);
+    const actualDay = allDays.find(item => item._id === value);
     const index = allDays.findIndex(item => item._id === actualDay._id);
 
     setModifiedDay(actualDay.exercises);
-    localStorage.setItem("LastDay", index);
-    localStorage.setItem("LastDayName", actualDay.name);
-
     setCurrentDay(index);
     setDay_id(allDays[index]._id);
 };
@@ -277,9 +266,12 @@ const handleDayChange = (value) => {
 
             <div className="text-center">
                 <Segmented
-                    options={allDays.map((dia) => (dia.name))}
+                    options={allDays.map((day) => ({
+                        label: day.name,    // Muestra el nombre del día
+                        value: day._id      // Usa el ID como valor interno
+                    }))}
                     className="stylesSegmented"
-                    defaultValue={localStorage.getItem('LastDayName') == undefined  ? 'Día 1' : localStorage.getItem('LastDayName') }
+                    value={day_id}
                     onChange={handleDayChange}
                 />
             </div>
