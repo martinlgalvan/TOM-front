@@ -8,7 +8,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { InputNumber } from 'primereact/inputnumber';
 import { useMediaQuery } from 'react-responsive';
-import { ToastContainer, toast } from 'react-toastify';
+
 
 import * as UserServices from './../services/users.services.js';
 import * as RefreshFunction from './../helpers/generateUUID.js';
@@ -238,18 +238,7 @@ const AddUserProfile = ({ user_id }) => {
                 </div>
             )}
 
-            <ToastContainer
-                position="bottom-center"
-                autoClose={1000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
+
         </div>
     );
 };

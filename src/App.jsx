@@ -106,7 +106,7 @@ function App(){
     const showInstallToast = () => {
 
         toast.info(
-          <div className='row justify-content-center text-center'>
+          <div className='row justify-content-center text-center '>
             <div className='col-10'>
                 <button className='row justify-content-center bg-primary rounded-3 ' onClick={handleInstallClick}>
 
@@ -115,8 +115,8 @@ function App(){
                         <DownloadIcon className='text-light'/>
                         </IconButton>
                     </div>
-                    <div className='col-9 m-auto'>
-                        <p className='m-0 text-light'>Descargar TOM</p>
+                    <div className='col-9 m-auto '>
+                        <p className='m-0 text-light '>Descargar TOM</p>
                     </div>
                 </button>
             </div>
@@ -132,9 +132,11 @@ function App(){
           </div>,
           {
             autoClose: false, // Evita que el popup se cierre automáticamente
+            position: "bottom-center"
           }
         );
       };
+
 
     useEffect(() => {
         if (showInstallPopup) {
@@ -269,7 +271,7 @@ function App(){
                         {isAutenticated && <><Link className='nav-link' onClick={onLogout}>Cerrar sesión</Link> </>}
                         </li>
                         {isAutenticated && showInstallButton && (
-                        <li className="nav-item  aaa" onClick={handleInstallClick}>
+                        <li className="nav-item ms-5 aaa" onClick={handleInstallClick}>
                             <Link className='nav-link ' >                         <IconButton
                             aria-label="video"
                             className="p-0"
@@ -434,7 +436,18 @@ function App(){
                 <p className=" text-center mt-3 ">&copy; 2022 | TOM </p>
             </div>
         </footer>
-
+        <ToastContainer
+        position="bottom-center"
+        autoClose={200}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+     />
 
 
         </>

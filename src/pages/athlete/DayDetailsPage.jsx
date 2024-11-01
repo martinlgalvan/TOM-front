@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Fragment } from 'react';
 
 import { Link, useParams } from "react-router-dom";
-import { ToastContainer } from './../../helpers/notify.js';
+
 
 import * as WeekService from "../../services/week.services.js";
 
@@ -505,18 +505,7 @@ const handleDayChange = (value) => {
             <Floating link={`/routine/${id}`}  />
         </section>
 
-        <ToastContainer
-        position="bottom-center"
-        autoClose={200}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-     />
+
 
         </>
     );

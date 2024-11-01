@@ -15,10 +15,27 @@ function Novedades() {
             <article className='row justify-content-center'>
                 <div className='col-10 col-lg-6 text-center'>
 
-                <h2>Versión actual: 2.3.5</h2>
+                <h2>Versión actual: 2.4.8</h2>
 
                 </div>
 
+                <div className='row justify-content-center text-start mt-4'>
+                    <div className='col-11 col-lg-6'>
+
+                    
+                        <p>logs. 01/11/2024</p>
+                        <ul className='list-group list-group-flush'>
+                            <li className='list-group-item'><b>Descarga disponible. **BETA</b> Se añado la funcionalidad de descarga.
+                                <ul className='list-group list-group-flush'>
+                                    <li className='list-group list-group-flush'>En PC y android está disponible. Aún se trabaja para el sistema operativo IOS</li>
+                                </ul>
+                            </li>
+                            <li className='list-group-item'><b>UX y reestructura del inicio.</b> Se optó por un diseño más amigable, los alumnos no deberán ver una descripción del software si asi lo desean.</li>
+                            <li className='list-group-item'><b>UX y reestructura del inicio de sesión.</b> Se realizó un cambio de diseño. Se añado la opción de ver la contraseña al iniciar sesión.</li>
+                            
+                        </ul>
+                    </div>
+                </div>
                 <div className='row justify-content-center text-start mt-4'>
                     <div className='col-11 col-lg-6'>
 

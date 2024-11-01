@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import * as WeekService from '../../services/week.services.js';
 import * as NotifyHelper from './../../helpers/notify.js';
-import { ToastContainer } from './../../helpers/notify.js';
+
 
 import Logo from '../../components/Logo.jsx';
 import ActionAreaCard from '../../components/MUI/ActionAreaCard.jsx';
@@ -181,18 +181,7 @@ function UserRoutinePage() {
                 )}
             </section>
 
-            <ToastContainer
-        position="bottom-center"
-        autoClose={200}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-     />
+
      
         </>
     );

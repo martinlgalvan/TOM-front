@@ -9,7 +9,7 @@ import ModalEditDatabase from "../../components/Bootstrap/ModalEdit/ModalEditDat
 
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import { ToastContainer, toast } from "react-toastify";
+import {  toast } from "react-toastify";
 import { InputSwitch } from "primereact/inputswitch";
 import { Tooltip } from 'primereact/tooltip';
 
@@ -324,18 +324,7 @@ function UsersListPage() {
                 </div>
             </article>
             <ConfirmDialog />
-            <ToastContainer
-                position="bottom-center"
-                autoClose={1000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
+
 
     <ModalEditDatabase showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} exercise_id={exercise_id} nameExercise={name} videoExercise={video}/>
 

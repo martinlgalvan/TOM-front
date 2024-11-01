@@ -12,7 +12,7 @@ import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
 import { SelectButton } from "primereact/selectbutton";
 import { InputText } from "primereact/inputtext";
-import { ToastContainer, toast } from "react-toastify";
+import {  toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 import IconButton from "@mui/material/IconButton";
@@ -184,7 +184,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
                     <Column body={actionsTemplate} header="Acciones" />
                 </DataTable>
 
-                <ToastContainer />
+             
             </div>
 
             <DeleteWeek

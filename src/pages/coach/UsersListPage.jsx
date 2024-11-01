@@ -10,17 +10,9 @@ import UserRegister from "../../components/Users/UserRegister.jsx";
 import Logo from "../../components/Logo.jsx";
 import DeleteUserDialog from "../../components/DeleteActions/DeleteUserDialog.jsx";
 
-import { CSSTransition, TransitionGroup } from "react-transition-group";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import { ToastContainer } from "../../helpers/notify.js";
-import { animated, useTransition } from "@react-spring/web";
-import { Dialog } from "primereact/dialog";
-import { SelectButton } from "primereact/selectbutton";
 
-import IconButton from "@mui/material/IconButton";
-import PersonIcon from "@mui/icons-material/Person";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CancelIcon from "@mui/icons-material/Cancel";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+
 import PrimeReactTable from "../../components/PrimeReactTable.jsx";
 
 function UsersListPage() {
@@ -104,18 +96,6 @@ function UsersListPage() {
             </article>
 
             <ConfirmDialog />
-            <ToastContainer
-                position="bottom-center"
-                autoClose={200}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
 
             <DeleteUserDialog
                 showDialog={showDialog}

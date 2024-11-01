@@ -2031,9 +2031,13 @@ width: 50px;
   letter-spacing: 1px;
 }
 
+.textPopup{
+  font-size: 1.4em !important;
+}
 
-
-
+.marginEye{
+  margin-top: 39px;
+}
 
 
 

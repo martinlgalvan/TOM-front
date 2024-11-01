@@ -9,7 +9,7 @@ import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { SelectButton } from 'primereact/selectbutton';
 import { InputText } from 'primereact/inputtext';
-import { ToastContainer, toast } from 'react-toastify';
+import {  toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 
@@ -352,7 +352,7 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
                     <Column body={actionsTemplate} header="Acciones" />
                 </DataTable>
 
-                <ToastContainer />
+         
 
                 <Dialog header={`${nameUser}`} visible={visible} onHide={() => closeDialog()} className={`${widthPage > 900 ? 'col-8' : 'col-10'}`} >
                     {renderProfileData()}

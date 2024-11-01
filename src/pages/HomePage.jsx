@@ -71,7 +71,15 @@ function HomePage() {
   // Función para manejar la selección de tipo de usuario
   const handleUserType = (type) => {
     if(type === 'atleta'){
-      navigate('/login')
+      if(localStorage.getItem('token')){
+        if(localStorage.getItem('role') === 'common'){
+          navigate(`/routine/${localStorage.getItem('_id')}`)
+        } else if(localStorage.getItem('role') === 'admin')
+          navigate(`/users/${localStorage.getItem('_id')}`)
+      } else{
+        navigate('/login')
+      }
+
     } else{
       setUserType(type);
 

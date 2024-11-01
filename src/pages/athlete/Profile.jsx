@@ -5,7 +5,6 @@ import { Dialog } from 'primereact/dialog';
 import Logo from '../../components/Logo.jsx'
 import AddUserProfile from '../../components/AddUserProfile.jsx';
 
-import { ToastContainer, toast } from 'react-toastify';
 
 function Profile(){
     const {id} = useParams()
@@ -72,18 +71,7 @@ function Profile(){
             </div>
             </Dialog>
 
-            <ToastContainer
-                    position="bottom-center"
-                    autoClose={1000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                />
+
 
         </section>
         </>

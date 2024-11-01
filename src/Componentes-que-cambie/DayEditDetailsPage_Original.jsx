@@ -13,7 +13,7 @@ import { ConfirmDialog, confirmDialog  } from 'primereact/confirmdialog';
 import { Sidebar } from 'primereact/sidebar';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Dialog } from 'primereact/dialog';
-import { ToastContainer } from '../../helpers/notify.js';
+
 
 import Logo from '../../components/Logo.jsx'
 import AddExercise from '../../components/AddExercise.jsx'
@@ -653,18 +653,7 @@ useEffect(() => {
                 <ModalEditCircuit showEditCircuit={showEditCircuit} handleClose={handleClose} closeModal={closeModal} refresh={refresh} week_id={week_id} day_id={day_id} exercise_id={exercise_id} circuitExercises={circuit} type={type} typeOfSets={typeOfSets} notasCircuit={notas} numberExercise={numberExercise}/>
 
                
-                <ToastContainer
-                    position="bottom-center"
-                    autoClose={200}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                />
+
                 
                 <ConfirmDialog />
 

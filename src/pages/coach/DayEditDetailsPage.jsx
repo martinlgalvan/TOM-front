@@ -29,7 +29,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Sidebar } from "primereact/sidebar";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { Dialog } from "primereact/dialog";
-import { ToastContainer } from "../../helpers/notify.js";
+
 import { OverlayPanel } from "primereact/overlaypanel";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
@@ -1665,16 +1665,7 @@ const saveNewWeekName = () => {
                 </div>
             </Dialog>
             
-                <ToastContainer
-                    position="top-right"
-                    autoClose={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    theme="light"
-                    />
+
 
                 <Dialog
                     header="Editar Nombre de la Semana"

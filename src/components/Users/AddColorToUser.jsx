@@ -8,7 +8,6 @@ import { ColorPicker } from 'primereact/colorpicker';
 import { useColor } from './../Context/ColorContext.jsx';
 
 import { InputSwitch } from "primereact/inputswitch";
-import { ToastContainer } from './../../helpers/notify.js';
 
 
 function AddColorToUser(){
@@ -106,18 +105,7 @@ function AddColorToUser(){
                 </div>
  
 
-                <ToastContainer
-                    position="bottom-center"
-                    autoClose={200}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                    />
+
 
 
             </div>

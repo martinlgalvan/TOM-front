@@ -17,36 +17,13 @@ import ModalEditDay from '../../components/Bootstrap/ModalEdit/ModalEditDay.jsx'
 import DeleteWeek from '../../components/DeleteActions/DeleteWeek.jsx';
 import EditWeek from '../../components/EditActions/EditWeek.jsx';
 
-import { InputSwitch } from "primereact/inputswitch";
-import { Tooltip } from 'primereact/tooltip';
-import { ToastContainer, toast } from 'react-toastify';
-import { Dialog } from 'primereact/dialog';
-import { Segmented } from 'antd';
-import { SelectButton } from 'primereact/selectbutton';
-
 import Floating from '../../helpers/Floating.jsx';
 
-import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 
-import { styled } from '@mui/material/styles';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Collapse from '@mui/material/Collapse';
-import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
-import { red } from '@mui/material/colors';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
 
 
@@ -56,12 +33,12 @@ function UserRoutineEditPage(){
     const {username} = useParams()
     const [status, setStatus] = useState()
     const [loading, setLoading] = useState(false)
-    const [copyWeekStorage, setCopyWeekStorage] = useState()
+
 
 
     const [routine, setRoutine] = useState([])
     const [weekNumber, setWeekNumber] = useState(0)
-    const [days, setDays] = useState("")
+
 
 
     const [show, setShow] = useState(false);
@@ -79,34 +56,13 @@ function UserRoutineEditPage(){
 
     let idRefresh = RefreshFunction.generateUUID()
 
-    const [profileData, setProfileData] = useState(null);
     const [visible, setVisible] = useState(false);
 
-    const [color, setColor] = useState(localStorage.getItem('color'))
-    const [textColor, setColorButton] = useState(localStorage.getItem('textColor'))
+
 
 
     // PROFILE DATA --------------------------------------------------  //
 
-    useEffect(() => {
-        UserService.getProfileById(id)
-            .then((data) => {
-                const filteredDetails = filterInvalidDays(data.details);
-                setProfileData({ ...data, details: filteredDetails });
-                setDays(Object.keys(filteredDetails).map(day => ({ label: day, value: day })));
-            })
-            .catch((error) => {
-            });
-    }, [id]);
-
-    useEffect(() => {
-        if (profileData && profileData.details) {
-            const days = Object.keys(profileData.details);
-            if (days.length > 0) {
-                setSelectedDay(days[0]);
-            }
-        }
-    }, [profileData]);
 
     //--------- GET ITEM FROM LOCALSTORAGE  ---------------
 
@@ -157,9 +113,9 @@ function UserRoutineEditPage(){
     function createWeekCopyLastWeek(){
         setLoading(true)
         WeekService.createClonWeek(id)
-        .then((data) => {
-            setStatus(idRefresh)
-        })
+            .then((data) => {
+                setStatus(idRefresh)
+            })
     }
 
     function addDayToWeek(week_id,number){
@@ -226,178 +182,6 @@ function UserRoutineEditPage(){
         setVisible(false);
     };
 
-    const calculateNumericAverage = (details, field) => {
-        const validValues = Object.values(details)
-            .map(day => day[field])
-            .filter(value => value !== undefined && value !== null && value !== 0);
-    
-        if (validValues.length === 0) return 'N/A';
-    
-        const total = validValues.reduce((sum, value) => sum + value, 0);
-        return (total / validValues.length).toFixed(2);
-    };
-    
-    const calculateCategoricalAverage = (details, field) => {
-        const options = [
-            { label: 'Muy bajo', value: 1 },
-            { label: 'Bajo', value: 2 },
-            { label: 'Moderado', value: 3 },
-            { label: 'Alto', value: 4 },
-            { label: 'Muy alto', value: 5 }
-        ];
-        const validValues = Object.values(details)
-            .map(day => day[field])
-            .filter(value => value !== undefined && value !== null && value !== 0);
-    
-        if (validValues.length === 0) return 'N/A';
-    
-        const total = validValues.reduce((sum, value) => sum + value, 0);
-        const average = total / validValues.length;
-        const closestOption = options.reduce((prev, curr) => Math.abs(curr.value - average) < Math.abs(prev.value - average) ? curr : prev);
-        return closestOption.label;
-    };
-
-    const filterInvalidDays = (details) => {
-        return Object.entries(details).reduce((acc, [day, values]) => {
-            const validValues = Object.values(values).filter(value => value !== undefined && value !== null && value !== 0);
-            if (validValues.length > 0) {
-                acc[day] = values;
-            }
-            return acc;
-        }, {});
-    };
-
-    const getLabel = (value) => {
-        const options = [
-            { label: 'Muy bajo', value: 1 },
-            { label: 'Bajo', value: 2 },
-            { label: 'Moderado', value: 3 },
-            { label: 'Alto', value: 4 },
-            { label: 'Muy alto', value: 5 }
-        ];
-        const option = options.find(option => option.value === value);
-        return option ? option.label : 'Desconocido';
-    };
-
-    const renderProfileData = () => {
-        if (!profileData) {
-            return  <div className='row justify-content-center'>
-                        <div className='col-10 col-lg-4'>
-
-                            <div className=' text-center'>
-                                <p>No hay datos disponibles.</p>
-                                <p>Estos datos pueden ayudarte a la hora de planificar, por lo tanto, podés pedirle a tus alumnos que lo completen al finalizar su semana de entrenamiento.</p>
-                            </div>
-
-                            <div className=' text-center m-3'>
-                                <p>Los datos que se analizan, son: <strong>fatiga, horas de sueño, DOMS, NEAT, estrés, nutrición</strong></p>
-                                <p>También, pueden añadir datos como su peso corporal, y un resumen semanal sobre como fue su semana.</p>
-                            </div>
-                        </div>;
-
-                                            
-                    </div>
-
-        }
-
-        return (
-            <div className="row justify-content-center text-center">
-
-            <div>
-                <p>{username} editó esto por última vez el</p>
-                <p><b>{profileData.last_edit.fecha}</b> - <b>{profileData.last_edit.hora}</b></p>
-                
-            </div>
-
-
-            <div className="col-10">
-                <p className='text-center'><strong className='d-block'>Peso Corporal</strong> {profileData.bodyWeight} kg</p>
-                <p className='text-center'><strong className='d-block'>Resumen semanal</strong>{profileData.summary}</p>
-            </div>
-
-            <div className="col-10 col-lg-6">
-                <div className='row justify-content-center'>
-                    <div className='col-10 col-lg-6 text-center'>
-                        <h4 className='mb-4'>Promedio semanal</h4>
-                        <table className="table table-bordered">
-                            <tbody>
-                                <tr>
-                                    <td><strong>Fatiga</strong></td>
-                                    <td>{calculateNumericAverage(profileData.details, 'fatigueLevel')}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Horas de Sueño</strong></td>
-                                    <td>{calculateNumericAverage(profileData.details, 'sleepHours')}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>DOMS</strong></td>
-                                    <td>{calculateNumericAverage(profileData.details, 'domsLevel')}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>NEAT</strong></td>
-                                    <td>{calculateCategoricalAverage(profileData.details, 'neatLevel')}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Estrés</strong></td>
-                                    <td>{calculateCategoricalAverage(profileData.details, 'stressLevel')}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Nutrición</strong></td>
-                                    <td>{calculateCategoricalAverage(profileData.details, 'nutrition')}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div className='col-10 col-lg-6'>
-                <div className="row ">
-                        <SelectButton
-                            value={selectedDay}
-                            options={days}
-                            onChange={(e) => setSelectedDay(e.value)}
-                            className='select-button'
-                        />
-                </div>
-                <div className="day-profileData.details mt-4">
-                    {selectedDay && (
-                        <div className='text-center'>
-                            <table className="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td><strong>Fatiga</strong></td>
-                                        <td>{profileData.details[selectedDay].fatigueLevel == null ? 'Sin datos' : profileData.details[selectedDay].fatigueLevel}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Horas de Sueño</strong></td>
-                                        <td>{profileData.details[selectedDay].sleepHours  == null ? 'Sin datos' : profileData.details[selectedDay].sleepHours}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>DOMS</strong></td>
-                                        <td>{profileData.details[selectedDay].domsLevel  == null ? 'Sin datos' : profileData.details[selectedDay].domsLevel}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>NEAT</strong></td>
-                                        <td>{getLabel(profileData.details[selectedDay].neatLevel) == null ? 'Sin datos' : getLabel(profileData.details[selectedDay].neatLevel)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Estrés</strong></td>
-                                        <td>{getLabel(profileData.details[selectedDay].stressLevel) == null ? 'Sin datos' : getLabel(profileData.details[selectedDay].stressLevel)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Nutrición</strong></td>
-                                        <td>{getLabel(profileData.details[selectedDay].nutrition) == null ? 'Sin datos' : getLabel(profileData.details[selectedDay].nutrition)}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
 
 
 
@@ -478,7 +262,7 @@ function UserRoutineEditPage(){
                                     </div>
                                 </button>
 
-                                {routine.length > 0 && <button className='col-10 col-lg-3 py-2 border card-shadow m-3' onClick={createWeekCopyLastWeek}>
+                                {routine.length > 0 && <button className='col-10 col-lg-3 py-2 border card-shadow m-3' onClick={() => createWeekCopyLastWeek()}>
                                     <div className='py-3'>
                                     
                                         <LibraryAddIcon />
@@ -516,31 +300,13 @@ function UserRoutineEditPage(){
 
             <Floating link={`/users/${user_id}`} />
 
-            <div className='row justify-content-center'>
-
-                <Dialog header={`Perfil de ${username}`} className='col-10 col-lg-8' visible={visible}  modal onHide={closeDialog}>
-                    {renderProfileData()}
-                </Dialog>
-                           
-            </div>
             
             <ModalEditDay showEdit={showEdit} handleClose={handleClose} actionConfirm={actionConfirm} week_id={week_id} dayID={dayID} nameExercise={weekName}/>
             <EditWeek visible={showEditWeekDialog} onHide={hideDialog} week_id={week_id} defaultName={weekName}  />
             
             <DeleteWeek visible={showDeleteWeekDialog} onHide={hideDialog} week_id={week_id} name={weekName} />
 
-            <ToastContainer
-                    position="bottom-center"
-                    autoClose={1000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                    />
+
 
         </section>
     </>    

@@ -5,7 +5,7 @@ import * as Notify from './../helpers/notify.js'
 import Options from '../assets/json/options.json';
 import * as ExercisesService from '../services/exercises.services.js';
 
-import { ToastContainer } from './../helpers/notify.js';
+
 import { Dropdown } from 'primereact/dropdown';
 
 function EditExercise({refreshEdit,  onHide, indexOfExercise, completeExercise, week_id, day_id, isAthlete}) {
@@ -142,18 +142,7 @@ function onSubmit(e){
 
   </form>
 
-    <ToastContainer
-        position="bottom-center"
-        autoClose={200}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-     />
+
 
     </>
   );
