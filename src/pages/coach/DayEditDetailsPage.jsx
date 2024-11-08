@@ -188,6 +188,7 @@ function DayEditDetailsPage() {
         setWarmup(false);
     };
 
+    const editAndClose = () => {
     const handleButtonClick = (rowData) => {
         setSelectedRow(rowData);
         setVisible(true);
@@ -1630,7 +1631,7 @@ const saveNewWeekName = () => {
                     week_id={week_id}
                     day_id={currentDay && currentDay._id}
                     indexOfExercise={indexOfExercise}
-                    refreshEdit={refreshEdit}
+                    editAndClose={editAndClose}
                 />
             </Dialog>
 
