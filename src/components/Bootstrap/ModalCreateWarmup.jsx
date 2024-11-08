@@ -21,7 +21,7 @@ import AddIcon from '@mui/icons-material/Add';
 
 import options from '../../assets/json/options.json'; // Importa options como en la otra parte
 
-function ModalCreateWarmup({ showCreateWarmup, closeModal,week, week_id, day_id }) {
+function ModalCreateWarmup({ showCreateWarmup, editAndClose, week, week_id, day_id }) {
     const [warmup, setWarmup] = useState([]);
     const [warmupName, setWarmupName] = useState([]);
     const [indexWarmupA, setIndexWarmupA] = useState(0)
@@ -87,12 +87,11 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal,week, week_id, day_id 
     };
 
     const applyChanges = () => {
-        console.log(dataWeek, modifiedWarmup)
         WeekService.editWeek(week_id, modifiedWarmup)
             .then((data) => {
                 setWarmup(modifiedWarmup);
                 setIsEditing(false);
-                console.log(data)
+                editAndClose()
                 Notify.instantToast("Guardado con éxito");
             })
             .catch(error => {
@@ -263,11 +262,8 @@ function ModalCreateWarmup({ showCreateWarmup, closeModal,week, week_id, day_id 
     };
 
     const handleCancel = () => {
-        setShowCancelDialog(false);
-        setModifiedWarmup(null)
-        setStatusCancel(idRefresh)
-        setWarmup(null)
         setIsEditing(false)
+        editAndClose()
     };
 
     

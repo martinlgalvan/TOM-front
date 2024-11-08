@@ -2043,9 +2043,13 @@ width: 50px;
   padding: 20px 0px;
 }
 
+.altoTry{
+  min-height: 700px;
+}
 
-
-
+.altoName{
+  height: 50px;
+}
 
 
 
