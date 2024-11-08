@@ -190,6 +190,10 @@ function DayEditDetailsPage() {
     };
 
     const editAndClose = () => {
+        setWarmup(false)
+    };
+
+
     const handleButtonClick = (rowData) => {
         setSelectedRow(rowData);
         setVisible(true);
