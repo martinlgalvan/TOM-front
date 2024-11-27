@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import * as UsersService from './../services/users.services.js';
 import * as Notify from './../helpers/notify.js';
+import * as QRServices from './../services/loginWithQR.js';
 import DeleteUserDialog from './../components/DeleteActions/DeleteUserDialog.jsx';
 
 import { DataTable } from 'primereact/datatable';
@@ -17,13 +18,19 @@ import IconButton from '@mui/material/IconButton';
 import PersonIcon from '@mui/icons-material/Person';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
-
+import QrCode2Icon from '@mui/icons-material/QrCode2'; // Ícono de QR
 
 export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
 
     const [searchText, setSearchText] = useState('');
     const [showDialog, setShowDialog] = useState(false);
     const [visible, setVisible] = useState(false);
+
+    const [qrDialogVisible, setQrDialogVisible] = useState(false); // Controla el modal
+    const [currentQrUser, setCurrentQrUser] = useState(null); // Usuario actual para el QR
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+    const [qrImage, setQrImage] = useState(false);
 
     const [filteredUsers, setFilteredUsers] = useState([]);
 
@@ -60,6 +67,8 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
             }
         }
     }, [profileData]);
+
+
 
     const onSearchChange = (event) => {
         setSearchText(event.target.value);
@@ -101,44 +110,46 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
     };
 
     const actionsTemplate = (user) => {
-        
-        return <div className=''>
-
-
-            <Link className={`LinkDays iconButtons `} to={`/user/routine/${user._id}/${user.name}`}>
+        return (
+            <div className="d-flex justify-content-center">
+                <Link className="LinkDays iconButtons" to={`/user/routine/${user._id}/${user.name}`}>
+                    <IconButton aria-label="edit" className="btn p-1 my-2">
+                        <EditIcon className="text-dark" />
+                    </IconButton>
+                </Link>
+    
+                <IconButton
+                    aria-label="profile"
+                    onClick={() => openDialog(user._id, user.name)}
+                    className="btn p-1 my-2"
+                >
+                    <PersonIcon className="text-dark" />
+                </IconButton>
+    
                 <IconButton
                     aria-label="delete"
-                    className='btn p-1 my-2 '
-                >   
-                    <EditIcon className='text-dark ' />
-            </IconButton>
-            </Link>
-
-            <IconButton
-                aria-label="video"
-                onClick={() => openDialog(user._id, user.name)}
-                className='btn p-1 my-2'
-            >
-                <PersonIcon className='text-dark ' />
-            </IconButton>
-
-            <IconButton
-                aria-label="delete"
-                onClick={() => showDialogDelete(user._id, user.name)}
-                className='btn p-1 my-2'
-            >
-                <CancelIcon className='colorIconYoutube ' />
-            </IconButton>
-
-
-        </div>;
+                    onClick={() => showDialogDelete(user._id, user.name)}
+                    className="btn p-1 my-2"
+                >
+                    <CancelIcon className="colorIconYoutube" />
+                </IconButton>
+    
+                {/* Nuevo ícono para QR */}
+                <IconButton
+                    aria-label="qr"
+                    onClick={() => showQrDialog(user)}
+                    className="btn p-1 my-2"
+                >
+                    <QrCode2Icon className="text-dark" />
+                </IconButton>
+            </div>
+        );
     };
-
     const linksTemplate = (user,e) => {
         if(e.field == 'email'){
-            return <Link className='LinkDays p-3 w-100 ClassBGHover text-start' to={`/user/routine/${user._id}/${user.name}`}>{user.email}</Link>;
+            return <Link className='LinkDays p-3 w-100 ClassBGHover text-start ' to={`/user/routine/${user._id}/${user.name}`}>{user.email}</Link>;
         } else{
-            return <Link className='LinkDays p-3 w-100 ClassBGHover text-start' to={`/user/routine/${user._id}/${user.name}`}>{user.name}</Link>;
+            return <Link className='LinkDays p-3 w-100 ClassBGHover text-start ' to={`/user/routine/${user._id}/${user.name}`}>{user.name}</Link>;
 
         }
     };
@@ -324,7 +335,21 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
     
 
 
-
+      const showQrDialog = async (user) => {
+        setLoading(true);
+        setError(null);
+    
+        try {
+            const response = await QRServices.generateQR(user._id); // Llama al servicio
+            setQrImage(response.qrImage); // Establece la imagen del QR
+            setCurrentQrUser(user); // Guarda al usuario actual
+            setQrDialogVisible(true); // Muestra el modal
+        } catch (err) {
+            setError('Error al generar el QR. Por favor, intenta nuevamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
 
@@ -344,7 +369,7 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
                     />
                 </div>
             </div>
-            <div className='col-12 col-sm-10 m-0 mb-5 fontUsersList'>
+            <div className='col-12 col-sm-10 m-0 mb-5 fontUserList'>
                 
                 <DataTable emptyMessage="Cargando usuarios..." className='usersListTable alignDatatable  pt-0' paginator rows={10} value={filteredUsers} >
                     <Column body={linksTemplate} field="name" header="Nombre" />
@@ -378,7 +403,42 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
                 </div>
                 </Dialog>
 
-
+                <Dialog
+                    header={`Código QR - ${currentQrUser?.name}`}
+                    visible={qrDialogVisible}
+                    onHide={() => setQrDialogVisible(false)}
+                    style={{ width: `${widthPage > 900 ? '30%' : '90%'}` }}
+                >
+                    <div className="text-center">
+                        {loading && <p>Generando QR...</p>}
+                        {error && <p style={{ color: 'red' }}>{error}</p>}
+                        {qrImage && (
+                            <div>
+                                <p>Este es el codigo QR para que <b>{currentQrUser?.name}</b> inicie sesión.</p>
+                                <img
+                                    src={qrImage}
+                                    alt="Código QR"
+                                    style={{ width: '200px', height: '200px' }}
+                                />
+                                <div className="mt-3">
+                                    {/* Botón de descarga */}
+                                    <a
+                                        href={qrImage}
+                                        download={`QR-${currentQrUser?.name || 'usuario'}.png`}
+                                        style={{ textDecoration: 'none' }}
+                                    >
+                                        <button
+                                            aria-label="download"
+                                            className="btn btn-primary p-2"
+                                        >
+                                            Descargar QR
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </Dialog>
 
             </div>
         </div>

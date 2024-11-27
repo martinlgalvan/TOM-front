@@ -154,7 +154,6 @@ function onChangeName(event){
   
 
   const SaveRoutine = () => {
-    console.log(routine)
     setLoading(true)
     PARService.createPAR(routine, user_id)
       .then(data => {

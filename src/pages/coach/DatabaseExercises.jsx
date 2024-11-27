@@ -137,7 +137,7 @@ function UsersListPage() {
         toast.update(TOASTID, {
             render: "Carga completa",
             isLoading: false,
-            type: toast.TYPE.SUCCESS,
+            type: "success", 
             hideProgressBar: true,
             autoClose: 1000,
             limit: 1,

@@ -29,7 +29,6 @@ function UserRoutinePage() {
         WeekService.findRoutineByUserId(id)
             .then(data => {
                 setRoutine(data);
-                console.log(data)
                 NotifyHelper.instantToast('Semanas cargadas con éxito');
             });
     }, [id]);

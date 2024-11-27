@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-
 //sadd
 import * as ExercisesService from "../../services/exercises.services.js";
 import * as WeekService from "../../services/week.services.js";
@@ -11,7 +10,8 @@ import * as Notify from "../../helpers/notify.js";
 import * as RefreshFunction from "../../helpers/generateUUID.js";
 import Options from "../../assets/json/options.json";
 import Exercises from "../../assets/json/NEW_EXERCISES.json";
-
+import { TimePicker, CustomProvider } from 'rsuite';
+import esES from 'rsuite/locales/es_ES'; // Importa un objeto de idioma completo
 
 import Logo from "../../components/Logo.jsx";
 import AddExercise from "../../components/AddExercise.jsx";
@@ -36,9 +36,9 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { animated, useTransition } from "@react-spring/web";
 import { Segmented } from "antd";
+
+
 import SaveIcon from '@mui/icons-material/Save';
-
-
 import IconButton from "@mui/material/IconButton";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import EditIcon from "@mui/icons-material/Edit";
@@ -46,6 +46,9 @@ import AutoComplete from "../../components/Autocomplete.jsx";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CancelIcon from "@mui/icons-material/Cancel";
+import UpgradeIcon from '@mui/icons-material/Upgrade';
+import PlusOneIcon from '@mui/icons-material/PlusOne';
+
 
 import ObjectId from 'bson-objectid';
 import { update } from "lodash";
@@ -164,6 +167,7 @@ function DayEditDetailsPage() {
     }, [statusCancel]);
 
 
+
     useEffect(() => {
         setFirstWidth(window.innerWidth);
 
@@ -250,16 +254,35 @@ function DayEditDetailsPage() {
     }
 
     
+    const customLocale = {
+        ...esES,
+        TimePicker: {
+          ...esES.TimePicker,
+          hours: 'Horas',
+          minutes: 'Minutos',
+          seconds: 'Segundos'
+        }
+      };
 
+      function parseTimeStringToDate(timeString) {
+        if (typeof timeString === 'string' && /^\d{2}:\d{2}$/.test(timeString)) {
+          const [minutes, seconds] = timeString.split(':').map(Number);
+          const date = new Date();
+          date.setHours(0, minutes, seconds, 0);
+          return date;
+        }
+        return new Date(0, 0, 0, 0, 0, 0); // Valor predeterminado
+      }
 
 
     const customInputEditDay = (data, index, field) => {
+
         if (field === "sets" || field === "reps") {
             return (
                 <CustomInputNumber
                     ref={(el) => (inputRefs.current[`${index}-${field}`] = el)} // Asigna una referencia única para cada campo
                     initialValue={data}
-                    onChange={(e) => changeModifiedData(index, e, field)} // Utiliza el valor correcto de `e.target.value`
+                    onChange={(e) => changeModifiedData(index, e, field)} // Utiliza el valor correcto de e.target.value
                     isRep={field === "reps"}
                     className={`mt-5`}
                 />
@@ -282,7 +305,7 @@ function DayEditDetailsPage() {
                             className="form-control ellipsis-input text-center"
                             type="text"
                             defaultValue={data}
-                            onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar `e.target.value`
+                            onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar e.target.value
                         />
                     </OverlayPanel>
                 </>
@@ -296,20 +319,41 @@ function DayEditDetailsPage() {
                         className={`textAreaResize ${firstWidth < 600 && 'col-11'}`}
                         autoResize
                         defaultValue={data}
-                        onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar `e.target.value`
+                        onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar e.target.value
                     />
                                         
                 </div>
             );
-        } else {
+        } else if (field === "rest") {
+            return (
+                <CustomProvider locale={customLocale}>
+                    <TimePicker
+                        format="mm:ss"
+                        defaultValue={data instanceof Date ? data : parseTimeStringToDate(data)} // Verifica y convierte el formato
+                        hideMinutes={(minute) => minute < 1 || minute > 10}
+                        hideSeconds={(second) => second % 5 !== 0}
+                        size="xs"
+                        ranges={[]}
+                        placeholder="min..."
+                        editable
+                        onChange={(e) => {
+                            const minutes = e.getMinutes().toString().padStart(2, '0');
+                            const seconds = e.getSeconds().toString().padStart(2, '0');
+                            changeModifiedData(index,`${minutes}:${seconds}`, field)
+                          }}
+                    />
+                </CustomProvider>
+
+            );
+        }   else {
             return (
                 <input
                     ref={(el) => (inputRefs.current[`${index}-${field}`] = el)} // Asigna una referencia única
                     className={`form-control ${firstWidth ? "border" : "border-0"} ellipsis-input text-center`}
-                    placeholder={ field == 'rest' ? `2'...` : "kg..."}
+                    placeholder={ field == 'rest' ? `2...`: "kg..."}
                     type="text"
                     defaultValue={data}
-                    onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar `e.target.value`
+                    onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar e.target.value
                 />
             );
         }
@@ -327,7 +371,7 @@ function DayEditDetailsPage() {
             [field]: value,
         };
     
-        // Actualizar el campo `lastEdited` con la fecha actual
+        // Actualizar el campo lastEdited con la fecha actual
         updatedDays[indexDay].lastEdited = new Date().toISOString();
     
         setModifiedDay(updatedDays);
@@ -445,9 +489,6 @@ function DayEditDetailsPage() {
 const handleCancel = () => {
 
     setCurrentDay[null]
-    setRoutine[null]
-    setModifiedDay(null)
-    setDay(null)
     setStatusCancel(idRefresh)
     setIsEditing(false)
 };
@@ -634,7 +675,7 @@ const customInputEditCircuit = (data, circuitIndex, field) => {
         className={`textAreaResize ${firstWidth < 600 && 'col-11'}`}
         autoResize
         defaultValue={data}
-        onChange={() => changeCircuitData(circuitIndex, field)} // Asegúrate de capturar `e.target.value`
+        onChange={() => changeCircuitData(circuitIndex, field)} // Asegúrate de capturar e.target.value
     />
        </div>)
 
@@ -814,27 +855,51 @@ const inputRefs = useRef([]);
 const tableMobile = () => {
     return (
         <div className="table-responsiveCss">
+
+
             
             <div className="row justify-content-center text-center mb-3">
+
+            <div className="col-6 mb-3">
+                <button
+                    aria-label="video"
+                    className="btn btn-outline-dark me-2"
+                    onClick={() => incrementAllSeries()}
+                >
+                    <UpgradeIcon className="" /> 1+ All sets
+                </button>
+
+            </div>
+
+            <div className="col-6 mb-3">
+
+                <button
+                    aria-label="video"
+                    className="btn btn-outline-dark me-2"
+                    onClick={() => incrementAllReps()}
+                >
+                    <UpgradeIcon className="" /> 1+ All repss
+                </button>
+            </div>
                 <div className="col-6">
-                    <IconButton
+                    <button
                         aria-label="video"
-                        className="bgColor rounded-2 text-light "
+                        className="btn btn-outline-dark"
                         onClick={() => AddNewExercise()}
                     >
                         <AddIcon className="" />
-                        <span className="font-icons me-1">Añadir ejercicio</span>
-                    </IconButton>
+                        <span className=" me-1">Añadir ejercicio</span>
+                    </button>
                 </div>
                 <div className="col-6">
-                    <IconButton
+                    <button
                         aria-label="video"
-                        className="bgColor rounded-2 text-light "
+                        className="btn btn-outline-dark"
                         onClick={() => AddNewCircuit()}
                     >
                         <AddIcon className="" />
-                        <span className="font-icons me-1">Añadir circuito</span>
-                    </IconButton>
+                        <span className=" me-1">Añadir circuito</span>
+                    </button>
 
                 </div>
 
@@ -1010,25 +1075,25 @@ const tableMobile = () => {
 
             </table>
             <div className="row justify-content-center text-center mb-3">
-                <div className="col-6">
-                    <IconButton
+            <div className="col-6">
+                    <button
                         aria-label="video"
-                        className="bgColor rounded-2 text-light "
+                        className="btn btn-outline-dark"
                         onClick={() => AddNewExercise()}
                     >
                         <AddIcon className="" />
-                        <span className="font-icons me-1">Añadir ejercicio</span>
-                    </IconButton>
+                        <span className=" me-1">Añadir ejercicio</span>
+                    </button>
                 </div>
                 <div className="col-6">
-                    <IconButton
+                    <button
                         aria-label="video"
-                        className="bgColor rounded-2 text-light "
+                        className="btn btn-outline-dark"
                         onClick={() => AddNewCircuit()}
                     >
                         <AddIcon className="" />
-                        <span className="font-icons me-1">Añadir circuito</span>
-                    </IconButton>
+                        <span className=" me-1">Añadir circuito</span>
+                    </button>
 
                 </div>
             </div>
@@ -1075,6 +1140,79 @@ const saveNewWeekName = () => {
 
 };
 
+useEffect(() => {
+    if (day[indexDay]) {
+        setCurrentDay({ ...day[indexDay] });
+    } 
+}, [day, indexDay]);
+
+const [updatedCurrentDay, setUpdatedCurrentDay] = useState()
+
+const incrementAllSeries = () => {
+    // Crea una copia profunda de 'day' para evitar mutaciones no deseadas
+    const updatedDays = day.map((dayItem, index) => {
+        if (index === indexDay) {
+            // Incrementa las series solo en el día actual
+            return {
+                ...dayItem,
+                exercises: dayItem.exercises.map((exercise) => {
+                    if (exercise.type === 'exercise') {
+                        return {
+                            ...exercise,
+                            sets: (exercise.sets || 0) + 1, // Incrementa las series en 1
+                        };
+                    }
+                    return exercise;
+                }),
+            };
+        }
+        return dayItem; // Retorna el resto de días sin cambios
+    });
+
+    setIsEditing(true)
+    // Actualiza 'day' y 'modifiedDay' con la nueva estructura
+    setDay(updatedDays);
+    setModifiedDay(updatedDays);
+
+    const updatedAllDays = [...allDays];
+    updatedAllDays[indexDay] = updatedDays[indexDay];
+    setAllDays(updatedAllDays); // Sincronizamos allDays con los cambios
+    // Sincroniza currentDay con el día actualizado
+    setCurrentDay(null); // Esto forzará el re-renderizado de currentDay
+};
+
+const incrementAllReps = () => {
+    const updatedDays = day.map((dayItem, index) => {
+        if (index === indexDay) {
+            return {
+                ...dayItem,
+                exercises: dayItem.exercises.map((exercise) => {
+                    if (exercise.type === 'exercise') {
+                        return {
+                            ...exercise,
+                            reps: (exercise.reps || 0) + 1,
+                        };
+                    }
+                    return exercise;
+                }),
+            };
+        }
+        return dayItem;
+    });
+
+    setIsEditing(true);
+    setDay(updatedDays);
+    setModifiedDay(updatedDays);
+
+    // Aquí aseguramos que allDays también reciba los cambios
+    const updatedAllDays = [...allDays];
+    updatedAllDays[indexDay] = updatedDays[indexDay];
+    setAllDays(updatedAllDays); // Sincronizamos allDays con los cambios
+
+    setCurrentDay(null);
+};
+
+const [value, setValue] = React.useState(null);
 
 
 
@@ -1123,32 +1261,32 @@ const saveNewWeekName = () => {
                 </div>
             </div>
 
-            <div className="row justify-content-center text-center mb-4 mt-3">
+            <div className="row justify-content-center text-center mb-3 altoName">
                 <h3>{currentDay && currentDay.name}</h3>
 
             </div>
 
             <div className="row justify-content-center align-middle text-center">
+
                 <div className={`col-10 col-sm-6 ${firstWidth > 550 ? 'text-end mb-4' : 'text-center mb-4'}`}>
                     <>
-                        <Segmented
-                            options={allDays.map((day) => ({
-                                label: day.name,    // Muestra el nombre del día
-                                value: day._id      // Usa el ID como valor interno
-                            }))}
-                            className="stylesSegmented"
-                            value={currentDay ? currentDay._id : ''}  // Asegura que se seleccione el día basado en el ID
-                            onChange={(value) => {
-                                // Buscar el día actual basado en el ID seleccionado
-                                const selectedDay = allDays.find(day => day._id === value);
+                    <Segmented
+                        options={allDays.map((day) => ({
+                            label: day.name,
+                            value: day._id,
+                        }))}
+                        className="stylesSegmented"
+                        value={currentDay ? currentDay._id : ''}
+                        onChange={(value) => {
+                            const selectedDay = allDays.find((day) => day._id === value);
 
-                                if (selectedDay) {
-                                    // Actualizar el estado con el día seleccionado
-                                    setIndexDay(allDays.findIndex(day => day._id === selectedDay._id));
-                                    setCurrentDay(selectedDay);
-                                }
-                            }}
-                        />
+                            if (selectedDay) {
+                                const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
+                                setIndexDay(selectedIndex);
+                                setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
+                            }
+                        }}
+                    />
 
                         
                     </>
@@ -1182,8 +1320,8 @@ const saveNewWeekName = () => {
                 </div>
             </div>
 
-            <div  className="row justify-content-center mb-5 ">
- 
+            <div  className="row justify-content-center mb-5 altoTry">
+                
                 {firstWidth > 992 ? <div className={`table-responsive col-11 col-lg-11 col-xl-10 col-xxl-9 altoTable`}>
                         <table
                             
@@ -1196,29 +1334,48 @@ const saveNewWeekName = () => {
                                     <td colSpan={9} >
                                         <div className="row justify-content-between align-items-center py-2">
 
+                                                <div className="col-6 text-start">
+                                                    <button
+                                                        aria-label="video"
+                                                        className="btn btn-outline-dark me-2"
+                                                        onClick={() => incrementAllSeries()}
+                                                    >
+                                                        <UpgradeIcon className="" /> All sets
+                                                    </button>
 
-                                            <div className="text-end">
-                                                <IconButton
-                                                    aria-label="video"
-                                                    className="bgColor rounded-2 text-light me-2"
-                                                    onClick={() => AddNewExercise()}
-                                                >
-                                                    <AddIcon className="" />
-                                                    <span className="font-icons me-1">Añadir ejercicio</span>
-                                                </IconButton>
+                                                    <button
+                                                        aria-label="video"
+                                                        className="btn btn-outline-dark me-2"
+                                                        onClick={() => incrementAllReps()}
+                                                    >
+                                                        <UpgradeIcon className="" /> All reps
+                                                    </button>
 
-                                                <IconButton
-                                                    aria-label="video"
-                                                    className="bgColor rounded-2 text-light me-2"
-                                                    onClick={() => AddNewCircuit()}
-                                                >
-                                                    <AddIcon className="" />
-                                                    <span className="font-icons me-1">Añadir circuito</span>
-                                                </IconButton>
+                                                </div>
+
+                                                <div className="col-6 text-end">
+
+                                                    <button
+                                                        aria-label="video"
+                                                        className="btn btn-outline-dark me-2"
+                                                        onClick={() => AddNewExercise()}
+                                                    >
+                                                        <AddIcon className="" />
+                                                        <span className=" me-1">Añadir ejercicio</span>
+                                                    </button>
+
+                                                    <button
+                                                        aria-label="video"
+                                                        className="btn btn-outline-dark x"
+                                                        onClick={() => AddNewCircuit()}
+                                                    >
+                                                        <AddIcon className="" />
+                                                        <span className=" me-1">Añadir circuito</span>
+                                                    </button>
+
+                                                </div>
 
                                             </div>
-
-                                        </div>
                                     </td>
                                 </tr>
 
@@ -1400,11 +1557,11 @@ const saveNewWeekName = () => {
                                                                 <td colSpan="5">
                                                                     <IconButton
                                                                         aria-label="video"
-                                                                        className="bgColor rounded-2 text-light my-4"
+                                                                        className="btn btn-outline-dark my-4"
                                                                         onClick={() => AddExerciseToCircuit(i)}
                                                                     >
                                                                         <AddIcon className="" />
-                                                                        <span className="font-icons me-1">Añadir Ejercicio al Circuito</span>
+                                                                        <span className=" me-1">Añadir Ejercicio al Circuito</span>
                                                                     </IconButton>
                                                                 </td>
                                                             </tr>
@@ -1425,27 +1582,26 @@ const saveNewWeekName = () => {
                                                                 <div className="row justify-content-between align-items-center py-2">
 
 
-                                                                    <div className="text-end">
-                                                                        <IconButton
-                                                                            aria-label="video"
-                                                                            className="bgColor rounded-2 text-light me-2"
-                                                                            onClick={() => AddNewExercise()}
-                                                                        >
-                                                                            <AddIcon className="" />
-                                                                            <span className="font-icons me-1">Añadir ejercicio</span>
-                                                                        </IconButton>
+                                                                <div className="text-end">
+                                                                    <button
+                                                                        aria-label="video"
+                                                                        className="btn btn-outline-dark me-2"
+                                                                        onClick={() => AddNewExercise()}
+                                                                    >
+                                                                        <AddIcon className="" />
+                                                                        <span className=" me-1">Añadir ejercicio</span>
+                                                                    </button>
 
-                                                                        <IconButton
-                                                                            aria-label="video"
-                                                                            className="bgColor rounded-2 text-light me-2"
-                                                                            onClick={() => AddNewCircuit()}
-                                                                        >
-                                                                            <AddIcon className="" />
-                                                                            <span className="font-icons me-1">Añadir circuito</span>
-                                                                        </IconButton>
+                                                                    <button
+                                                                        aria-label="video"
+                                                                        className="btn btn-outline-dark me-2"
+                                                                        onClick={() => AddNewCircuit()}
+                                                                    >
+                                                                        <AddIcon className="" />
+                                                                        <span className=" me-1">Añadir circuito</span>
+                                                                    </button>
 
-                                                                    </div>
-
+                                                                </div>
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -1593,7 +1749,7 @@ const saveNewWeekName = () => {
                 header={`${exerciseToDelete?.name || ""}`}
                 className="dialogDeleteExercise"
                 visible={showDeleteDialog}
-                style={{ width: `${firstWidth > 991 ? "50vw" : "80vw"}` }}
+                style={{ width: `${firstWidth > 991 ? "50vw" : "80vw"} `}}
                 footer={
                     <div className="row justify-content-center ">
                         <div className="col-lg-12 me-3">

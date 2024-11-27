@@ -32,6 +32,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import PercentIcon from '@mui/icons-material/Percent';
 import PercentageCalculator from "../../components/PercentageCalculator.jsx";
+import CountdownTimer from "../../components/CountdownTimer.jsx";
 
 
 
@@ -80,8 +81,6 @@ function DayDetailsPage() {
 
     useEffect(() => {
         WeekService.findRoutineByUserId(id).then((data) => {
-
-            console.log(data[index].routine)
 
             setAllDays(data[index].routine)
             setNameWeek(data[index].name)
@@ -151,7 +150,6 @@ function DayDetailsPage() {
     const [selectedObject, setSelectedObject] = useState(null);
     
     const handleButtonClick = (object) => {
-        console.log(object)
         setSelectedObject(object);
         setVisible(true);
       };
@@ -241,7 +239,6 @@ const productTemplate = useCallback((exercise) => {
 
 // Nueva función handleDayChange
 const handleDayChange = (value) => {
-    console.log(value)
     const actualDay = allDays.find(item => item._id === value);
     const index = allDays.findIndex(item => item._id === actualDay._id);
 
@@ -335,7 +332,7 @@ const handleDayChange = (value) => {
 
                                         
                                     <div className="card border-0">
-                                        <table className="table border-0">
+                                        <table className="table  border-0">
                                             <thead >
                                             <tr className="border-0">
                                                 <th className="border-0">Series</th>
@@ -349,7 +346,7 @@ const handleDayChange = (value) => {
                                                 <td className="border-0">{element.sets}</td>
                                                 <td className="border-0">{element.reps}</td>
                                                 <td className="border-0">{element.peso}</td>
-                                                <td className="border-0">{element.rest}</td>
+                                                <td className="border-0"><CountdownTimer initialTime={element.rest}/></td>
                                             </tr>
                                             </tbody>
                                         </table>

@@ -1,5 +1,7 @@
 *{
   font-family: montserrat;
+  font-size: 1em;
+  font-family: "Open Sans", sans-serif;
 }
 
 .tipografia-titulos {
@@ -25,6 +27,7 @@
 .color-icons{
   color: #242424;
 }
+
 p {
   font-size: 1em;
   color: #000000;
@@ -2050,6 +2053,43 @@ width: 50px;
 .altoName{
   height: 50px;
 }
+
+.fontCronometer{
+  font-size: 1em !important;
+}
+
+.fontIcons{
+  font-size: 1em !important;
+  color: #000;
+}
+
+.fontUserList{
+  font-size: 1em;
+}
+
+.tableWarmupColor{
+  background-color: #d1d1d1 !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -37,6 +37,23 @@ async function createPAR(routine, user_id) {
     })
 }
 
+async function updatePAR(id, updatedPAR) {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/par/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token'),
+        },
+        body: JSON.stringify(updatedPAR),
+    }).then((response) => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('No se pudo actualizar el PAR');
+        }
+    });
+}
+
 async function deletePAR(id) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/par/${id}`, {
         method: 'DELETE',
@@ -80,6 +97,7 @@ async function createPARroutine(routine, user_id) {
 export {
     getPAR,
     createPAR,
+    updatePAR,
     deletePAR,
     createPARroutine
 }

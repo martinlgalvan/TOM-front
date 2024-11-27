@@ -35,7 +35,7 @@ useEffect(() => {
   setOptions(groupedOptions)
 
   setModifiedDay(completeExercise)
-  console.log(indexOfExercise, completeExercise, week_id, day_id, isAthlete)
+
 
 }, []);
 

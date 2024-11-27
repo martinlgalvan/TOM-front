@@ -19,8 +19,9 @@ import Novedades from './pages/coach/Novedades.jsx'
 import RandomizerPage from "./pages/coach/Randomizer.jsx"
 import DownloadIcon from '@mui/icons-material/Download';
 import IconButton from "@mui/material/IconButton";
-
+//asd
 import DatabaseExercises from './pages/coach/DatabaseExercises.jsx'
+import QrLogin from './pages/login/QrLogin.jsx'
 
 import * as authService from "./services/auth.services.js"
 import { Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom'
@@ -33,6 +34,7 @@ import Logo from './assets/img/TOM.png'
 import { registerServiceWorker } from './serviceWorkerRegistration.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
+
 
 function RoutePrivate( {isAutenticate, children}){
     return (
@@ -290,7 +292,8 @@ function App(){
             <Routes>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
-                
+                <Route path="/qr-login" element={<QrLogin onLogin={onLogin} />} />
+
                 <Route path="/users/:id/" element={
                     <RoutePrivate isAutenticate={isAutenticated}>
                         <UsersListPage/>

@@ -36,7 +36,6 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
 
     useEffect(() => {
         setFirstWidth(window.innerWidth);
-        console.log(routine)
     }, []);
 
     const actionsTemplate = (routine, e) => {

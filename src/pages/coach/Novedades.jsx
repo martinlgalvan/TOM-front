@@ -15,11 +15,23 @@ function Novedades() {
             <article className='row justify-content-center'>
                 <div className='col-10 col-lg-6 text-center'>
 
-                <h2>Versión actual: 2.4.8</h2>
+                <h2>Versión actual: 2.6.11</h2>
 
                 </div>
 
                 <div className='row justify-content-center text-start mt-4'>
+
+                <div className='col-11 col-lg-6'>
+
+                                        
+                    <p>logs. 26/11/2024</p>
+                    <ul className='list-group list-group-flush'>
+                        <li className='list-group-item'><b>QR para iniciar sesión.</b> Se añado la funcionalidad de inicio de sesion mediante QR, para que tus alumnos puedan ingresar escaneandolo.</li>
+                        <li className='list-group-item'><b>Incremento general de series y repeticiones</b> Se agregaron 2 botones que permiten aumentar una serie y rep en todos los ejercicios del día.</li>
+                        
+                    </ul>
+                </div>
+
                     <div className='col-11 col-lg-6'>
 
                     

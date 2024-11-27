@@ -18,7 +18,7 @@ const updateToast = () =>
   toast.update(
       TOASTID, { 
       render:             "Listo!", 
-      type:               toast.TYPE.SUCCESS, 
+      type:               "success", 
       autoClose:          300, 
       isLoading:          false,
       pauseOnFocusLoss:   false,
