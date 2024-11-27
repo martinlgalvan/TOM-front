@@ -325,11 +325,29 @@ function DayEditDetailsPage() {
                 </div>
             );
         } else if (field === "rest") {
+            const normalizeRestInput = (input) => {
+                if (typeof input !== "string") input = input.toString().trim();
+
+                if (input.includes(":")) {
+                    // Si ya está en formato mm:ss
+                    const [minutes, seconds] = input.split(":").map(Number);
+                    return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
+                }
+
+                const match = input.match(/\d+/g); // Extraer números
+                if (!match) return "00:00";
+
+                const minutes = parseInt(match[0], 10); // El primer número es minutos
+                const seconds = match.length > 1 ? parseInt(match[1], 10) : 0; // Segundo número opcional es segundos
+
+                return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+            };
+
             return (
                 <CustomProvider locale={customLocale}>
                     <TimePicker
                         format="mm:ss"
-                        defaultValue={data instanceof Date ? data : parseTimeStringToDate(data)} // Verifica y convierte el formato
+                        defaultValue={data instanceof Date ? data : parseTimeStringToDate(normalizeRestInput(data))} // Verifica, normaliza y convierte el formato
                         hideMinutes={(minute) => minute < 1 || minute > 10}
                         hideSeconds={(second) => second % 5 !== 0}
                         size="xs"
@@ -339,13 +357,12 @@ function DayEditDetailsPage() {
                         onChange={(e) => {
                             const minutes = e.getMinutes().toString().padStart(2, '0');
                             const seconds = e.getSeconds().toString().padStart(2, '0');
-                            changeModifiedData(index,`${minutes}:${seconds}`, field)
-                          }}
+                            changeModifiedData(index, `${minutes}:${seconds}`, field); // Actualiza el valor con formato consistente
+                        }}
                     />
                 </CustomProvider>
-
             );
-        }   else {
+        }  else {
             return (
                 <input
                     ref={(el) => (inputRefs.current[`${index}-${field}`] = el)} // Asigna una referencia única
@@ -1214,6 +1231,23 @@ const incrementAllReps = () => {
 
 const [value, setValue] = React.useState(null);
 
+const normalizeTimeInput = (input) => {
+    const str = input.toString().trim();
+
+    if (str.includes(":")) {
+        const [minutes, seconds] = str.split(":").map(Number);
+        return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
+    }
+
+    const match = str.match(/\d+/g);
+    if (!match) return "00:00";
+
+    const number = parseInt(match[0], 10);
+    const minutes = Math.floor(number);
+    const seconds = str.includes("''") || str.includes('"') ? parseInt(str.split('"')[0], 10) : 0;
+
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+};
 
 
     return (

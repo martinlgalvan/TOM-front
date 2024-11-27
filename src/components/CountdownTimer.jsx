@@ -6,11 +6,21 @@ import IconButton from "@mui/material/IconButton";
 
 const CountdownTimer = ({ initialTime }) => {
   const normalizeTimeInput = (input) => {
-    const match = input.toString().match(/\d+/g);
+    if (typeof input !== "string") input = input.toString().trim();
+
+    if (input.includes(":")) {
+      // Si ya está en formato mm:ss
+      const [minutes, seconds] = input.split(":").map(Number);
+      return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
+    }
+
+    const match = input.match(/\d+/g); // Extraer números
     if (!match) return "00:00";
-    const number = parseInt(match[0], 10);
-    const minutes = Math.floor(number);
-    return `${String(minutes).padStart(2, "0")}:00`;
+
+    const minutes = parseInt(match[0], 10); // El primer número es minutos
+    const seconds = match.length > 1 ? parseInt(match[1], 10) : 0; // Segundo número opcional es segundos
+
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
   const timeStringToSeconds = (timeString) => {
@@ -26,7 +36,7 @@ const CountdownTimer = ({ initialTime }) => {
 
   // Estado inicial: tiempo normalizado o sin especificar
   const [time, setTime] = useState(() => {
-    if (initialTime === 0) return null; // Caso especial para 0
+    if (!initialTime || initialTime === 0) return null; // Caso especial para 0 o tiempo no especificado
     const normalizedTime = normalizeTimeInput(initialTime);
     return timeStringToSeconds(normalizedTime);
   });
@@ -56,7 +66,7 @@ const CountdownTimer = ({ initialTime }) => {
   const resetTimer = () => {
     setIsRunning(false);
     setHasFinished(false); // Resetea la bandera
-    if (initialTime === 0) {
+    if (!initialTime || initialTime === 0) {
       setTime(null); // Caso especial para 0
     } else {
       const normalizedTime = normalizeTimeInput(initialTime);
