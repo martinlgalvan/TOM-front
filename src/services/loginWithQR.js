@@ -1,5 +1,5 @@
 async function generateQR(user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/generate-qr/${user_id}`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/generate-qr/${user_id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ async function generateQR(user_id) {
 }
 
 async function loginWithQR(token) {
-    return fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/qr-login', {
+    return fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/qr-login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
