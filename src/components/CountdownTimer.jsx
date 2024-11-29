@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import ReplayIcon from "@mui/icons-material/Replay";
@@ -9,16 +9,15 @@ const CountdownTimer = ({ initialTime }) => {
     if (typeof input !== "string") input = input.toString().trim();
 
     if (input.includes(":")) {
-      // Si ya está en formato mm:ss
       const [minutes, seconds] = input.split(":").map(Number);
       return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
     }
 
-    const match = input.match(/\d+/g); // Extraer números
+    const match = input.match(/\d+/g);
     if (!match) return "00:00";
 
-    const minutes = parseInt(match[0], 10); // El primer número es minutos
-    const seconds = match.length > 1 ? parseInt(match[1], 10) : 0; // Segundo número opcional es segundos
+    const minutes = parseInt(match[0], 10);
+    const seconds = match.length > 1 ? parseInt(match[1], 10) : 0;
 
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
@@ -34,54 +33,87 @@ const CountdownTimer = ({ initialTime }) => {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
-  // Estado inicial: tiempo normalizado o sin especificar
-  const [time, setTime] = useState(() => {
-    if (!initialTime || initialTime === 0) return null; // Caso especial para 0 o tiempo no especificado
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!initialTime || initialTime === 0) return null;
     const normalizedTime = normalizeTimeInput(initialTime);
     return timeStringToSeconds(normalizedTime);
   });
 
   const [isRunning, setIsRunning] = useState(false);
-  const [hasFinished, setHasFinished] = useState(false); // Bandera para detectar si el tiempo terminó
+  const [hasFinished, setHasFinished] = useState(false);
+
+  const startTimestampRef = useRef(null); // Referencia a la marca de tiempo inicial
+  const pauseTimestampRef = useRef(null); // Marca de tiempo en la última pausa
+  const remainingTimeRef = useRef(timeLeft); // Tiempo restante
 
   useEffect(() => {
-    if (!isRunning || time === null || time <= 0) {
-      if (time === 0 && isRunning) {
-        setHasFinished(true); // Marca que el tiempo ha finalizado
+    let animationFrameId;
+
+    const updateTimer = () => {
+      if (isRunning) {
+        const now = Date.now();
+        const elapsed = Math.floor((now - startTimestampRef.current) / 1000);
+        const updatedTimeLeft = Math.max(remainingTimeRef.current - elapsed, 0);
+        setTimeLeft(updatedTimeLeft);
+
+        if (updatedTimeLeft === 0) {
+          setIsRunning(false);
+          setHasFinished(true);
+        } else {
+          animationFrameId = requestAnimationFrame(updateTimer); // Actualización más fluida
+        }
       }
-      return;
+    };
+
+    if (isRunning) {
+      startTimestampRef.current = Date.now();
+      animationFrameId = requestAnimationFrame(updateTimer);
     }
 
-    const timerId = setInterval(() => {
-      setTime((prevTime) => Math.max(prevTime - 1, 0));
-    }, 1000);
-
-    return () => clearInterval(timerId);
-  }, [isRunning, time]);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isRunning]);
 
   const toggleTimer = () => {
-    if (time > 0) setIsRunning((prev) => !prev);
+    if (timeLeft > 0) {
+      if (isRunning) {
+        // Pausar
+        setIsRunning(false);
+        pauseTimestampRef.current = Date.now();
+        const elapsed = Math.floor((pauseTimestampRef.current - startTimestampRef.current) / 1000);
+        remainingTimeRef.current -= elapsed;
+      } else {
+        // Reanudar
+        setIsRunning(true);
+        startTimestampRef.current = Date.now();
+      }
+    }
   };
 
   const resetTimer = () => {
     setIsRunning(false);
-    setHasFinished(false); // Resetea la bandera
+    setHasFinished(false);
+    startTimestampRef.current = null;
+    pauseTimestampRef.current = null;
+
     if (!initialTime || initialTime === 0) {
-      setTime(null); // Caso especial para 0
+      setTimeLeft(null);
+      remainingTimeRef.current = null;
     } else {
       const normalizedTime = normalizeTimeInput(initialTime);
-      setTime(timeStringToSeconds(normalizedTime));
+      const initialSeconds = timeStringToSeconds(normalizedTime);
+      setTimeLeft(initialSeconds);
+      remainingTimeRef.current = initialSeconds;
     }
   };
 
   const renderMessage = () => {
-    if (time === null) {
+    if (timeLeft === null) {
       return <p className="text-warning font-weight-bold">No se especificó tiempo de descanso</p>;
     }
     if (hasFinished) {
       return <p className="text-danger font-weight-bold">¡Entrená!</p>;
     }
-    return <p className="fontCronometer m-0">{secondsToTimeString(time)}</p>;
+    return <p className="fontCronometer m-0">{secondsToTimeString(timeLeft)}</p>;
   };
 
   return (
@@ -93,7 +125,7 @@ const CountdownTimer = ({ initialTime }) => {
             className="p-1"
             onClick={toggleTimer}
             aria-label={isRunning ? "Pausar" : "Iniciar"}
-            disabled={time === 0 && hasFinished} // Deshabilita si el tiempo ha terminado
+            disabled={timeLeft === 0 && hasFinished}
           >
             {isRunning ? <PauseIcon className="fontIcons" /> : <PlayArrowIcon className="fontIcons" />}
           </IconButton>

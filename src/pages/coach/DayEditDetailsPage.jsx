@@ -469,8 +469,7 @@ function DayEditDetailsPage() {
 
 
         // Crear una copia del estado actual de 'day'
-        const updatedDays = [...day];
-    
+        const updatedDays = [...allDays];
         // Calcular el número del siguiente ejercicio en la secuencia
         const nextNumberExercise = updatedDays[indexDay].exercises.length + 1;
     
@@ -570,6 +569,7 @@ const confirmDeleteDay = () => {
     setAllDays(updatedDays);
     setCurrentDay(updatedDays[newDayIndex]);
     setIndexDay(newDayIndex);
+    console.log(newDayIndex, updatedDays)
     setModifiedDay(updatedDays)
 };
 
@@ -611,7 +611,7 @@ const saveNewDayName = () => {
 
 const AddNewCircuit = () => {
     // Crear una copia del estado actual de 'day'
-    const updatedDays = [...day];
+    const updatedDays = [...allDays];
 
     // Calcular el número del siguiente circuito en la secuencia
     const nextNumberExercise = updatedDays[indexDay].exercises.length + 1;
@@ -1589,14 +1589,14 @@ const normalizeTimeInput = (input) => {
 
                                                             <tr>
                                                                 <td colSpan="5">
-                                                                    <IconButton
+                                                                    <button
                                                                         aria-label="video"
                                                                         className="btn btn-outline-dark my-4"
                                                                         onClick={() => AddExerciseToCircuit(i)}
                                                                     >
                                                                         <AddIcon className="" />
                                                                         <span className=" me-1">Añadir Ejercicio al Circuito</span>
-                                                                    </IconButton>
+                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         </tbody>
