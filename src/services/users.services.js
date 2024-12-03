@@ -29,16 +29,28 @@ async function createAlumno(id, user) {
     })
     .then(async response => {
         if (response.ok) {
-            return response.json()
-        }
+            return response.json(); // Devuelve los datos si la creación es exitosa
+        } 
+        else if (response.status === 403) {
+            // Código de error 403: Manejo de límite de usuarios
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.message || 'Límite de usuarios alcanzado. No puedes crear más usuarios.');
+        } 
         else if (response.status === 400) {
-            throw await response.json()
-        }
+            // Código de error 400: Manejo de email duplicado
+            const errorResponse = await response.json();
+            if (errorResponse.message.includes('email')) {
+                throw new Error('El email que ingresaste ya existe. Por favor, ingresá otro.');
+            }
+            throw new Error(errorResponse.message || 'Error de validación en los datos proporcionados.');
+        } 
         else {
-            throw Error('El email que ingresaste ya existe. Por favor, ingresá otro.')
+            // Otros errores no manejados
+            throw new Error('Ocurrió un error inesperado. Por favor, intentá de nuevo.');
         }
-    })
+    });
 }
+
 
 //Elimino alumnos
 async function deleteUser(id) {

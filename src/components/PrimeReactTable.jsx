@@ -106,7 +106,6 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
 
     const hideDialog = (load) => {
         setShowDialog(false);
-        setDialogEditWeek(false)
     };
 
     const actionsTemplate = (user) => {

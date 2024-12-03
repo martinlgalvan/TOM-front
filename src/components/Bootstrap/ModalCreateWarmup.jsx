@@ -100,7 +100,7 @@ function ModalCreateWarmup({ isPAR, editAndClose ,user_id, week, week_id, day_id
                 console.error("Error al guardar cambios:", error);
             });
 
-        } else{
+        } /*else{
 
             PARService.createPAR({routine: modifiedWarmup}, user_id)
                 .then((data) => {
@@ -109,7 +109,7 @@ function ModalCreateWarmup({ isPAR, editAndClose ,user_id, week, week_id, day_id
 
                 // NO SE  GUARDA EL NOMBRE DE LA SEMANA  -- CHEQUEAR
 
-        }
+        }*/
 
     };
 

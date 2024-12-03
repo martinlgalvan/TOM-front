@@ -2072,7 +2072,24 @@ width: 50px;
 }
 
 
+.whatsapp-btn {
+  display: inline-block;
+  background-color: #25D366; /* Color verde de WhatsApp */
+  color: rgb(0, 0, 0); /* Color del texto */
+  font-size: 16px; /* Tamaño de fuente */
+  font-weight: bold; /* Negrita para el texto */
+  text-align: center;
+  text-decoration: none; /* Quitar subrayado */
+  padding: 10px 20px; /* Espaciado interno */
+  border-radius: 5px; /* Bordes redondeados */
+  transition: background-color 0.3s ease; /* Efecto suave en hover */
+  border: none; /* Sin borde */
+  cursor: pointer; /* Icono de mano al pasar sobre el botón */
+}
 
+.whatsapp-button:hover {
+  background-color: #1EBEA5; /* Color más oscuro al pasar el cursor */
+}
 
 
 

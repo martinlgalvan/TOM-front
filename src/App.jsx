@@ -258,7 +258,7 @@ function App(){
                             {isAdmin() && <><Link className='nav-link' to={`/novedades/`}>Novedades</Link></>}
                         </li>
                         <li className="nav-item">
-                            {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Personalizar</Link></>}
+                            {isAdmin() && <><Link className='nav-link' to={`/personalize/`}>Perfil</Link></>}
                         </li>
                         <li className="nav-item">
                         {isAutenticated && !isAdmin() && <><Link className='nav-link' to={`/perfil/${id}`}>Perfil</Link></>}
@@ -382,7 +382,7 @@ function App(){
                         
                         {isAdmin() && 
                         <li className="list-group-item">
-                           <Link className='nav-link' to={`/personalize/`} onClick={() => setMenuSidebar(false)}>Personalizar</Link>
+                           <Link className='nav-link' to={`/personalize/`} onClick={() => setMenuSidebar(false)}>Perfil</Link>
                         </li>
                         }
 

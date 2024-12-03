@@ -93,7 +93,9 @@ function HomePage() {
         <Logo />
       </div>
 
-
+      <div>
+        
+      </div>
 
   
       <main className="container-fluid">
