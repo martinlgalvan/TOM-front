@@ -161,6 +161,9 @@ function UsersListPage() {
                                         </p>
                                     )}
                                     </div>
+
+                                    <p className="text-danger mt-3">Recordá abonar antes del 10 para continuar utilizando la aplicación.</p>
+                                    <p className="text-danger">Si ya abonaste, ignorá este mensaje.</p>
                                      
                                 </div>
 
