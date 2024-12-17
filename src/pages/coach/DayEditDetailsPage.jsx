@@ -326,21 +326,20 @@ function DayEditDetailsPage() {
             );
         } else if (field === "rest") {
             const normalizeRestInput = (input) => {
+                if (!input) return "00:00"; // Valor predeterminado si no está definido
+            
                 if (typeof input !== "string") input = input.toString().trim();
-
                 if (input.includes(":")) {
-                    // Si ya está en formato mm:ss
                     const [minutes, seconds] = input.split(":").map(Number);
                     return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
                 }
-
-                const match = input.match(/\d+/g); // Extraer números
-                if (!match) return "00:00";
-
-                const minutes = parseInt(match[0], 10); // El primer número es minutos
-                const seconds = match.length > 1 ? parseInt(match[1], 10) : 0; // Segundo número opcional es segundos
-
-                return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+            
+                return "00:00"; // Valor predeterminado
+            };
+            
+            // Al usar `rest`:
+            const renderRestField = (rest) => {
+                return normalizeRestInput(rest ?? "00:00");
             };
 
             return (
