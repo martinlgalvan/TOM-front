@@ -290,7 +290,7 @@ function App(){
                             {isAdmin() && <><Link className={`nav-link ${location.pathname == `/personalize/` && 'active'}`} to={`/personalize/`}>Perfil</Link></>}
                         </li>
                         <li className="nav-item">
-                        {isAutenticated && !isAdmin() && <><Link className={`nav-link ${location.pathname == `/perfil/${id}` && 'active'}`} to={`/perfil/${id}`}>Perfiasl</Link></>}
+                        {isAutenticated && !isAdmin() && <><Link className={`nav-link ${location.pathname == `/perfil/${id}` && 'active'}`} to={`/perfil/${id}`}>Perfil</Link></>}
                         </li>
                         <li className="nav-item">
                         {isAutenticated && !isAdmin() && <><Link className={`nav-link ${location.pathname == `/routine/${id}` && 'active'}`} to={`/routine/${id}`}>Ver rutina</Link></>}

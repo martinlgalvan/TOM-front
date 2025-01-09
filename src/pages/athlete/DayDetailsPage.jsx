@@ -97,19 +97,28 @@ function DayDetailsPage() {
         setShowCalculator(!showCalculator);
     };
 
-    // Cargar rutina según el user y la week
+    // CHANGES: 1er useEffect para obtener la rutina, pero sin forzar 'currentDay' a 0
     useEffect(() => {
       if (!week_id) return; // Pequeña verificación
       WeekService.findByWeekId(week_id).then((data) => {
         if (!data?.length) return;
         setAllDays(data[0].routine);
         setNameWeek(data[0].name);
-        setCurrentDay(0);
-        setFirstValue(data[0].routine[0].name);
-        setModifiedDay(data[0].routine[0].exercises);
-        setDay_id(data[0].routine[0]._id);
+
+        // Si 'currentDay' nunca se definió (null), arrancamos en 0
+        // Si ya tenía valor, lo dejamos.
+        setCurrentDay(prev => (prev === null ? 0 : prev));
       });
-    }, [id, index, status]); // <--- mantenemos status en dependencia
+    }, [week_id, status]); 
+
+    // CHANGES: 2do useEffect para setear day_id, modifiedDay, etc. en base al currentDay
+    useEffect(() => {
+      if (allDays.length && currentDay !== null) {
+        setDay_id(allDays[currentDay]._id);
+        setModifiedDay(allDays[currentDay].exercises);
+        setFirstValue(allDays[currentDay].name);
+      }
+    }, [allDays, currentDay]);
 
     // Cargar URL del drive si no está en localStorage
     useEffect(() => {
@@ -210,10 +219,8 @@ function DayDetailsPage() {
     };
 
     // Función de refresco (la usas cuando editas, etc.)
-    // Antes: setStatus(false);
-    // Ahora: togglear para forzar que se dispare nuevamente el useEffect
     const refreshEdit = (refresh) => {
-        setStatus(prev => !prev); // <--- CAMBIO
+        setStatus(prev => !prev); // <--- CAMBIO: dispara el useEffect que recarga la data
     };
 
     // Cierra el Dialog de edición
@@ -243,8 +250,7 @@ function DayDetailsPage() {
         // Ahora llama a tu servicio para persistir el cambio en BD
         ExercisesService.editExercise(week_id, day_id, newExercises)
           .then((data) => {
-            // En lugar de setStatus(false), llamamos a:
-            refreshEdit(newExercises); // <--- conservar la lógica de refresco
+            refreshEdit(newExercises); // <--- conserva la lógica de refresco
             setEditExerciseMobile(false); // cierra el Dialog
 
             Notify.instantToast('Rutina actualizada con éxito!')
@@ -254,7 +260,6 @@ function DayDetailsPage() {
             Notify.instantToast('Hubo un error al actualizar la rutina');
           });
     };
-
 
     // Template para carrousel de "warmup"
     const productTemplate = useCallback((exercise) => {
@@ -285,16 +290,13 @@ function DayDetailsPage() {
                 </div>
             </div>
         );
-    }, []);
+    }, []); 
 
-    // Manejo del cambio de día en el Segmented
+    // CHANGES: El handleDayChange solo setea 'currentDay' según el valor que eligieron
     const handleDayChange = (value) => {
         const actualDay = allDays.find(item => item._id === value);
         const idx = allDays.findIndex(item => item._id === actualDay._id);
-
-        setModifiedDay(actualDay.exercises);
         setCurrentDay(idx);
-        setDay_id(allDays[idx]._id);
     };
 
     return (
@@ -313,6 +315,8 @@ function DayDetailsPage() {
                             value: day._id
                         }))}
                         className="stylesSegmented"
+                        // value = day_id? 
+                        // Ojo: podemos usar day_id directamente
                         value={day_id}
                         onChange={handleDayChange}
                     />
@@ -351,13 +355,14 @@ function DayDetailsPage() {
                             <div className="col-12 col-md-8 position-relative text-center">
                                 <h2 className="mt-4">Rutina del día</h2>
                                 {/* 
-                                  <button
-                                    className="btn btn-warning"
-                                    style={{ position: 'absolute', top: '20px', right: 0 }}
-                                    onClick={() => setTourVisible(true)}
-                                  >
-                                    Info
-                                  </button>
+                                  // Si quisieras un botón para iniciar el tour:
+                                  // <button
+                                  //   className="btn btn-warning"
+                                  //   style={{ position: 'absolute', top: '20px', right: 0 }}
+                                  //   onClick={() => setTourVisible(true)}
+                                  // >
+                                  //   Info
+                                  // </button>
                                 */}
                             </div>
                         </div>
@@ -699,15 +704,18 @@ function DayDetailsPage() {
                         </div>
 
                         <div className="col-12 text-center">
-
                           <button
                             className="btn btn-secondary me-3"
                             onClick={hideDialogEditExercises}
-                          > Cancelar </button>
+                          >
+                            Cancelar
+                          </button>
                           <button
-                            className="btn BlackBGtextWhite "
+                            className="btn BlackBGtextWhite"
                             onClick={handleUpdateExercise}
-                          > Guardar </button>
+                          >
+                            Guardar
+                          </button>
                         </div>
                       </div>
                     </div>
