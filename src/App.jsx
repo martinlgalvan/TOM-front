@@ -90,7 +90,7 @@ function App(){
       }, []);
 
       useEffect(() => {
-        console.log('Current Page:', location.pathname); // Muestra la ruta actual en la consola
+
       }, [location]); // Ejecuta el efecto cada vez que la ruta cambie
 
 
@@ -185,7 +185,7 @@ function App(){
 
      
         function onLogin(user, token){
-            console.log(user)
+
             setUser(user)
             setIsAutenticated(true)
             localStorage.setItem('token', token)
@@ -280,9 +280,9 @@ function App(){
                         <li className="nav-item">
                         {isAdmin() && <><Link className={`nav-link ${location.pathname == `/users/${id}` && 'active'}`} to={`/users/${id}`}>Lista de alumnos</Link></>}
                         </li>
-                        <li className="nav-item">
-                        {isAdmin() && <><Link className={`nav-link ${location.pathname == `/planificator/${id}` && 'active'}`} to={`/planificator/${id}`}>Planificador</Link></>}
-                        </li>
+                        {/*<li className="nav-item">
+                         {isAdmin() && <><Link className={`nav-link ${location.pathname == `/planificator/${id}` && 'active'}`} to={`/planificator/${id}`}>Planificador</Link></>}
+                        </li> */}
                         <li className="nav-item">
                             {isAdmin() && <><Link className={`nav-link ${location.pathname == `/novedades/` && 'active'}`} to={`/novedades/`}>Novedades</Link></>}
                         </li>
@@ -523,10 +523,10 @@ function App(){
                            <Link className='nav-link' to={`/novedades/`} onClick={() => setMenuSidebar(false)}>Novedades</Link>
                         </li>
                         }
-                        {isAdmin() && 
+                        {/*isAdmin() && 
                         <li className="list-group-item">
                         <Link className='nav-link' to={`/planificator/${id}`} onClick={() => setMenuSidebar(false)}>Planificador</Link>
-                        </li>}
+                        </li>*/}
                         
                         {isAdmin() && 
                         <li className="list-group-item">
