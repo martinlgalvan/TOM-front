@@ -48,6 +48,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CancelIcon from "@mui/icons-material/Cancel";
 import UpgradeIcon from '@mui/icons-material/Upgrade';
 import PlusOneIcon from '@mui/icons-material/PlusOne';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 
 import ObjectId from 'bson-objectid';
@@ -231,7 +232,8 @@ function DayEditDetailsPage() {
     };
 
 
-    const productRefs = useRef([]);
+    const productRefsSimple = useRef([]);
+    const productRefsCircuit = useRef([]);
 
     const propiedades = [
         "#",
@@ -288,26 +290,65 @@ function DayEditDetailsPage() {
                 />
             );
         } else if (field === "video") {
+            
             return (
                 <>
                     <IconButton
                         aria-label="video"
                         className="w-100"
                         onClick={(e) => {
-                            productRefs.current[index].toggle(e);
+                            productRefsSimple.current[index].toggle(e);
                         }}
                     >
                         <YouTubeIcon className="colorIconYoutube" />
                     </IconButton>
-                    <OverlayPanel ref={(el) => (productRefs.current[index] = el)}>
-                        <input
-                            ref={(el) => (inputRefs.current[`${index}-${field}`] = el)} // Asigna una referencia única
-                            className="form-control ellipsis-input text-center"
-                            type="text"
-                            defaultValue={data}
-                            onChange={(e) => changeModifiedData(index, e.target.value, field)} // Asegúrate de capturar e.target.value
-                        />
-                    </OverlayPanel>
+                    <div>
+                  
+                    <OverlayPanel 
+                    ref={(el) => (productRefsSimple.current[index] = el)}
+                    >
+
+{/* Checkbox para indicar si es imagen */}
+<div className="mb-3">
+    <div className="form-check">
+        <input
+            className="form-check-input"
+            type="checkbox"
+            id={`checkbox-image-${index}`}
+            // Aquí chequeamos el valor actual (puede estar en day[index].isImage)
+            // o en el propio "exercise" si lo tienes accesible
+            checked={!!day[indexDay].exercises[index].isImage} 
+            onChange={(e) => {
+                // Actualizamos el campo isImage
+                // -> Reusa tu función central de actualización
+                changeModifiedData(
+                    index,       // pos del ejercicio
+                    e.target.checked, 
+                    "isImage"    // nombre del campo
+                );
+            }}
+        />
+        <label
+            className="form-check-label"
+            htmlFor={`checkbox-image-${index}`}
+        >
+            ¿Es una imagen?
+        </label>
+        <span className="d-block textSpanVideo"> Si tildás esta opción, tu alumno verá una imagen. </span>
+    </div>
+</div>
+
+{/* Input donde pegas el link */}
+<input
+    ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
+    className="form-control ellipsis-input text-center"
+    type="text"
+    defaultValue={data}
+    onChange={(e) => changeModifiedData(index, e.target.value, field)}
+/>
+</OverlayPanel>
+                          
+                    </div>
                 </>
             );
         } else if (field === "notas") {
@@ -325,43 +366,53 @@ function DayEditDetailsPage() {
                 </div>
             );
         } else if (field === "rest") {
+            // 1. Reemplaza tu función interna por una que sí parsee valores tipo "2,30", "3'", etc.
             const normalizeRestInput = (input) => {
-                if (!input) return "00:00"; // Valor predeterminado si no está definido
-            
-                if (typeof input !== "string") input = input.toString().trim();
-                if (input.includes(":")) {
-                    const [minutes, seconds] = input.split(":").map(Number);
-                    return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
-                }
-            
-                return "00:00"; // Valor predeterminado
+              if (!input) return "00:00";
+              if (typeof input !== "string") input = String(input).trim();
+          
+              // Caso: si ya tiene ":", parseamos directamente
+              if (/\d+:\d+/.test(input)) {
+                const [m, s] = input.split(":").map(Number);
+                return `${String(m || 0).padStart(2, "0")}:${String(s || 0).padStart(2, "0")}`;
+              }
+          
+              // Caso general: "2", "2,30", "2'30", "2.30", "3'"
+              const match = input.match(/\d+/g);
+              if (!match || match.length === 0) return "00:00";
+          
+              const minutes = parseInt(match[0], 10) || 0;
+              // si hay un segundo grupo de dígitos, lo usamos para segundos
+              const seconds = match[1] ? parseInt(match[1], 10) : 0;
+              return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
             };
-            
-            // Al usar `rest`:
-            const renderRestField = (rest) => {
-                return normalizeRestInput(rest ?? "00:00");
-            };
-
+          
+            // 2. Asegúrate de no restringir tanto los rangos de minutos/segundos
+            //    O actualiza el rango si realmente quieres ese límite.
+            //    Por ejemplo, si deseas permitir 0-59 en minutos y segundos, quita
+            //    las dos líneas hideMinutes y hideSeconds o devuélvelas siempre false.
+          
             return (
-                <CustomProvider locale={customLocale}>
-                    <TimePicker
-                        format="mm:ss"
-                        defaultValue={data instanceof Date ? data : parseTimeStringToDate(normalizeRestInput(data))} // Verifica, normaliza y convierte el formato
-                        hideMinutes={(minute) => minute < 1 || minute > 10}
-                        hideSeconds={(second) => second % 5 !== 0}
-                        size="xs"
-                        ranges={[]}
-                        placeholder="min..."
-                        editable
-                        onChange={(e) => {
-                            const minutes = e.getMinutes().toString().padStart(2, '0');
-                            const seconds = e.getSeconds().toString().padStart(2, '0');
-                            changeModifiedData(index, `${minutes}:${seconds}`, field); // Actualiza el valor con formato consistente
-                        }}
-                    />
-                </CustomProvider>
+              <CustomProvider locale={customLocale}>
+                <TimePicker
+                  format="mm:ss"
+                  defaultValue={parseTimeStringToDate(normalizeRestInput(data))}
+                  // De ser necesario, elimina o personaliza el hideMinutes/hideSeconds
+                  hideMinutes={minute => minute > 10}           // <-- Permite todos los minutos
+                  hideSeconds={seconds => seconds % 15 !== 0}           // <-- Permite todos los segundos
+
+                  ranges={[]}
+                  placeholder="min..."
+                  editable
+                  onChange={(e) => {
+                    const minutes = String(e.getMinutes()).padStart(2, "0");
+                    const seconds = String(e.getSeconds()).padStart(2, "0");
+                    changeModifiedData(index, `${minutes}:${seconds}`, field);
+                  }}
+                />
+              </CustomProvider>
             );
-        }  else {
+          } else {
             return (
                 <input
                     ref={(el) => (inputRefs.current[`${index}-${field}`] = el)} // Asigna una referencia única
@@ -741,13 +792,13 @@ const customInputEditExerciseInCircuit = (data, circuitIndex, exerciseIndex, fie
             aria-label="video"
             className="w-100"
             onClick={(e) => {
-                productRefs.current[exerciseIndex].toggle(e);
+                productRefsCircuit .current[exerciseIndex].toggle(e);
             }}
         >
             <YouTubeIcon className="colorIconYoutube" />
         </IconButton>
         <OverlayPanel
-            ref={(el) => (productRefs.current[exerciseIndex] = el)}
+            ref={(el) => (productRefsCircuit .current[exerciseIndex] = el)}
         >
             <input
                 ref={(el) => inputRefs.current[`${circuitIndex}-${exerciseIndex}-${field}`] = el}
@@ -894,7 +945,7 @@ const tableMobile = () => {
                     className="btn btn-outline-dark me-2"
                     onClick={() => incrementAllReps()}
                 >
-                    <UpgradeIcon className="" /> 1+ All repss
+                    <UpgradeIcon className="" /> 1+ All reps
                 </button>
             </div>
                 <div className="col-6">
@@ -1646,16 +1697,16 @@ const normalizeTimeInput = (input) => {
 
 
             {isEditing && (
-                <div className="floating-button index-up">
+                <div className=" floating-button index-up ">
                     <button
-                        className="btn colorRed p-4 my-3 fs-5"
+                        className="px-5 btn colorRed py-2 my-4 "
                         onClick={() => applyChanges()}
                    
                     >
                         Guardar
                     </button>
                     <button
-                        className="btn colorCancel p-4 my-3 fs-5"
+                        className="px-5 btn colorCancel py-2 my-4 "
                         onClick={() => confirmCancel()}
                   
                     >
@@ -1709,30 +1760,12 @@ const normalizeTimeInput = (input) => {
                 reject={() => setVisible(false)}
             />
 
-            {!isEditing && (
-                <Floating link={`/user/routine/${id}/${username}`} />
-            )}
+
 
             
 
 
-            {firstWidth < 993 && 
-                <div  className={`navbar-transition ${isEditing ? 'save-float-button-active' : 'save-float-button'}  ${isEditing ? 'saveActive' : 'btn-success'}`} >
-                <IconButton                     
-                    
-                    onClick={() => setIsEditing(true)}>
-                    <SaveIcon className={`${isEditing ? 'text-light' : 'btn-success'} `} />
-                </IconButton>
-            </div>}
 
-            {firstWidth < 993 && 
-                <div  className={`navbar-transition ${isEditing ? 'Edit-float-button-active' : 'Edit-float-button'}  ${editMode ? 'editActive' : 'btn-primary'}`} >
-                <IconButton                     
-                    
-                    onClick={() => setEditMode(!editMode)}>
-                    <EditIcon className={`${editMode ? 'text-light' : 'btn-primary'} `} />
-                </IconButton>
-            </div>}
             
 
             <Dialog
@@ -1891,6 +1924,46 @@ const normalizeTimeInput = (input) => {
                         </div>
                     </div>
                 </Dialog>
+
+
+
+
+            
+                {firstWidth < 992 && <nav className="fixed-bottom colorNavBottom d-flex justify-content-around py-2 stylesNavBarBottom" >
+
+                <div className="row justify-content-center text-center ">
+
+                    <Link to={`/user/routine/${id}/${username}`} className="positionIconsNavBar">
+                        <IconButton className="buttonsNav fs-1 ">
+                            <ArrowBackIcon className="" />
+                        </IconButton>
+                        </Link>
+                        <span className='col-12 text-light pt-4'>Ir atrás</span>
+                </div>
+
+                <div className="row justify-content-center text-center ">
+                    <div className={`positionIconsNavBar ${editMode && "activeButton"}`}>
+                        <IconButton className="buttonsNav fs-1 " onClick={() => setEditMode(!editMode)}>
+                            <EditIcon  />
+                        </IconButton>
+                    </div>
+                    <span className={`col-12 text-light pt-4 ${editMode && "activeSpan"}`}>Modo edición</span>
+                </div>
+        
+                <div className="row justify-content-center text-center ">
+                    <div className="positionIconsNavBar">
+                        <IconButton className="buttonsNav fs-1 " onClick={() => setIsEditing(true)}>
+                            <SaveIcon  />
+                        </IconButton>
+                    </div>
+                    <span className='col-12 text-light pt-4'>Guardar</span>
+                    </div>
+
+          </nav>}
+          
+
+
+
 
         </section>
     </>

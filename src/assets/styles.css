@@ -947,6 +947,21 @@ p {
   font-size: 34px !important;
 }
 
+.imageIcon{
+  color: #0d89ec;
+  font-size: 34px !important;
+}
+
+.imageIconDisabled{
+  color: #696969;
+  font-size: 34px !important;
+}
+
+.imgModal{
+  max-width: 380px;
+  object-fit: cover;
+}
+
 .editStyle{
   font-size: 34px !important;
 }
@@ -1284,7 +1299,7 @@ width: 50px;
   transform: translateX(-50%);
   display: flex;
   width: 100%;
-  background-color: #00000067;
+  background-color: #414141;
   gap: 10px;
   z-index: 52000;
   justify-content: center;
@@ -1293,13 +1308,13 @@ width: 50px;
 
 .colorRed{
   background-color: rgb(0, 0, 0);
-  border: 1px solid white;
+
   color: white;
 }
 
 .colorCancel{
   background-color: #ffffff;
-  border: 1px solid #000000;
+
 }
 
 
@@ -2054,9 +2069,6 @@ width: 50px;
   height: 50px;
 }
 
-.fontCronometer{
-  font-size: 1em !important;
-}
 
 .fontIcons{
   font-size: 1em !important;
@@ -2091,36 +2103,140 @@ width: 50px;
   background-color: #1EBEA5; /* Color más oscuro al pasar el cursor */
 }
 
+.day-content-container {
+  min-height: 400px; /* Altura máxima del contenedor */
+  overflow-y: auto; /* Permite el scroll vertical */
+
+}
+
+.pointerClick{
+  cursor: pointer;
+}
 
 
 
+.darkStyle{
+  background-color: #000 !important;
+  color: white !important;
+}
 
 
+.line {
+  flex-grow: 1; /* Para que la línea ocupe el espacio disponible */
+  height: 0.5px; /* Grosor de la línea */
+  background-color: rgb(0, 0, 0); /* Color de la línea */
 
+}
 
+.line-container {
+  display: flex;
+  justify-content: space-between;
+  align-items:center;
 
+}
 
+.iconYT{
+  width: 25px !important;
+  height: 25px !important;
+  padding: 0 !important;
+}
 
+.fontCronometer{
+  font-size: 1.3em !important;
+  font-family: "Anton", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
 
+.colorRoutine{
+  background-color: #ffffff;
+  color: #000;
+}
 
+.styleBordersLeft{
+  border-radius: 0px 0px 10px 0px;
+  padding: 10px 20px !important;
+  background-color: white;
+}
 
+.styleBordersYT{
+  border-radius: 0px 10px 0px 0px ;
+  background-color: white !important;
 
+}
 
+.styleBordersRigth{
+  border-radius: 0px 0px 0px 10px;
 
+}
 
+.fontsIconsCard{
+  font-size: 1.4em !important;
+  color: rgb(80, 80, 80) !important;
+}
 
+.quadre{
+  background-color: #ffffff;
+  border: 1px solid rgb(255, 255, 255);
+  border-radius: 10px;
+  box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.432);
+  margin: 1px;
+}
 
+.asd{
+  height: 200px;
+}
 
+.styleCard{
 
+  box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.151);
+}
 
+.anton-regular span{
 
+    font-family: "Montserrat", serif !important;
+    font-optical-sizing: auto !important;
+    font-weight: 600 !important;
+    font-style: normal !important;
+    letter-spacing: 0.4px; /* Aumenta el espacio entre caracteres */
+}
 
+.anton-regular{
 
+  font-family: "Montserrat", serif !important;
+  font-optical-sizing: auto !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  letter-spacing: 0.4px; /* Aumenta el espacio entre caracteres */
+}
 
+.fonnt{
+  font-size: 16px;
+  font-weight: 400;
+}
 
+.colorNameExercise{
+  background-color: #f3f3f3d2;
+}
 
+.ssss{
+  height: 100% !important;
+}
 
+.title{
+  font-family: "Montserrat", serif !important;
+  font-optical-sizing: auto !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  letter-spacing: 0.4px; /* Aumenta el espacio entre caracteres */
+}
 
+.largeIcon{
+
+  height: 30px !important;
+
+  background-color: #7c7c7c !important;
+}
 
 
 
@@ -2135,6 +2251,157 @@ width: 50px;
     background-color: #000;
   }
     
+.textSpanVideo{
+  font-size: 0.8em;
+}
+
+.similarButton{
+  height: 42px !important;
+  width: 42px !important;
+  padding: 30%;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 50% !important;
+}
+
+.circleContador{
+  height: 100px;
+  width: 100px;
+  border: 1px solid darkblue;
+  border-radius: 50%;
+
+}
+
+.colorNavBottom{
+  background-color: #1b1b1b;
+  border-radius: 10px 10px 0px 0px;
+}
+
+
+.buttonsNav{
+  color: #ffffff !important;
+  padding: 0 !important;
+}
+
+.colorNavBar{
+  background-color: #1c1c1c;
+}
+
+.active{
+  background-color: rgb(58, 58, 58) !important;
+  border: #000;
+  color: #000 !important;
+  border-radius: 10px;
+}
+
+
+
+.stylesNavBarBottom span {
+  font-size: 0.8em;
+  color: #a0a0a0 !important;
+}
+
+.stylesNavBarBottom svg {
+
+  font-size: 1em;
+}
+
+.active-2 {
+  background-color: rgb(58, 58, 58) !important;
+  border: #000;
+  color: #000 !important;
+  border-radius: 10px;
+}
+
+.positionIconsNavBar{
+  position: absolute;
+  margin-bottom: 5px;
+  bottom: 30px;
+  width: 53px;
+  padding: 10px 0;
+  background-color: #1c1c1c;
+  border: 3px solid #ffffff !important;
+  border-radius: 50%;
+}
+
+.activeButton{
+  background-color: #174fe9;
+}
+
+.activeSpan{
+  color: red !important;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+  margin-left: 8px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Estilo de la “píldora” */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px; 
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+/* Cuando está activo (checked) */
+input:checked + .slider {
+  background-color: #2196F3; /* color principal del switch */
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2190,6 +2457,13 @@ width: 50px;
   
 }
 
+.td-2{
+  width: 10px;
+}
+
+.td-3{
+  width: 10px;
+}
 
 @media screen and (max-width: 992px) {
 

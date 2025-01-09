@@ -38,13 +38,14 @@ async function createWeek(name, user_id) {
     })
 }
 
-async function createClonWeek(user_id) {
+async function createClonWeek(user_id, fecha) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine/clon`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'auth-token': localStorage.getItem('token')
         },
+        body: JSON.stringify(fecha)
     })
     .then(response => {
         if (response.ok) {

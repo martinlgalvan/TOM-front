@@ -30,7 +30,11 @@ const CountdownTimer = ({ initialTime }) => {
   const secondsToTimeString = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")} '`;
+    return  <div className="fonnt  mb-2">
+              <span className="quadre p-2">{String(minutes).padStart(2, "0")}</span>
+              <span className="text-dark spanPuntitos">:</span>
+              <span className="quadre p-2">{String(seconds).padStart(2, "0")}</span>
+            </div>
   };
 
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -59,6 +63,7 @@ const CountdownTimer = ({ initialTime }) => {
         if (updatedTimeLeft === 0) {
           setIsRunning(false);
           setHasFinished(true);
+          playBeep();
         } else {
           animationFrameId = requestAnimationFrame(updateTimer); // Actualización más fluida
         }
@@ -116,25 +121,75 @@ const CountdownTimer = ({ initialTime }) => {
     return <p className="fontCronometer m-0">{secondsToTimeString(timeLeft)}</p>;
   };
 
+
+  function playBeep() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const beepDuration = 0.2; // Duración de cada beep en segundos
+    const pauseBetweenBeeps = 0.1; // Pausa breve entre beep y beep
+    const pairsCount = 3; // Cantidad de pares de beep (beep beep, beep beep, beep beep)
+
+    let startTime = audioCtx.currentTime;
+
+    for (let i = 0; i < pairsCount; i++) {
+      // Repite dos beeps seguidos (beep beep)
+      for (let j = 0; j < 2; j++) {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(750, startTime);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        // Inicio del beep
+        oscillator.start(startTime);
+        // Fin del beep
+        oscillator.stop(startTime + beepDuration);
+
+        // Subida y bajada de volumen en beepDuration
+        gainNode.gain.setValueAtTime(1, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.001,
+          startTime + beepDuration
+        );
+
+        // El siguiente beep comienza después del beepDuration + pausa
+        startTime += beepDuration + pauseBetweenBeeps;
+      }
+
+      // Después de los dos beeps (beep beep), un silencio un poco más largo
+      startTime += 0.4; // Ajusta si quieres mayor separación entre cada pareja
+    }
+  }
+
   return (
-    <div>
-      {renderMessage()}
-      <div className="row justify-content-center">
-        <div className="col-5 p-0">
-          <IconButton
-            className="p-1"
-            onClick={toggleTimer}
-            aria-label={isRunning ? "Pausar" : "Iniciar"}
-            disabled={timeLeft === 0 && hasFinished}
-          >
-            {isRunning ? <PauseIcon className="fontIcons" /> : <PlayArrowIcon className="fontIcons" />}
-          </IconButton>
+    <div className="circular">
+      <div>
+
+      <div className="d-flex flex-column justify-content-center text-center ">
+
+        <div className="col-12 text-center  mb-2">
+        {renderMessage()}
         </div>
-        <div className="col-5 p-0">
-          <IconButton className="p-1" onClick={resetTimer} aria-label="Reiniciar">
-            <ReplayIcon className="fontIcons" />
-          </IconButton>
+        <div className="col-12 text-center align-items-center ">
+      
+            <IconButton
+              className="border   mx-1 "
+              onClick={toggleTimer}
+              aria-label={isRunning ? "Pausar" : "Iniciar"}
+              disabled={timeLeft === 0 && hasFinished}
+            >
+              {isRunning ? <PauseIcon className="text-dark" /> : <PlayArrowIcon className="text-dark" />}
+            </IconButton>
+            
+            <IconButton className="border   mx-1 " onClick={resetTimer} aria-label="Reiniciar">
+              <ReplayIcon className="text-dark" />
+            </IconButton>
+                  
         </div>
+      </div>
+              
       </div>
     </div>
   );

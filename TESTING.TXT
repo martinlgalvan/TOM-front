@@ -1,42 +1,37 @@
 COSAS PARA CORREGIR 
 
- - CHEQUEAR EL CAMBIO DE PERMITIR TEXTO EN LAS REPS ( ARREGLAR, se queda en NaN )
-
- - ARREGLAR EL PERMITIR TEXTO TOOLTIP
-
- - CORREGIR EL TEMA DEL LOCALSTORAGE CON LOS COLORES, EL PRIMER APROACH ES RARO, CORREGIRLO, NO URGENTE.
-
- - ROUTINE ALL VISTA EN HORIZONTAL OBLIGATORIA, (( Ver semana completa ))
-
- - AGREGAR HORA A LA SEMANA ( QUE VEAN SOLO LOS ENTRENADORES )
-
  - TRAER DEL OBJETO USER TODO MENOS LA CONTRASEñA
-
- - ARREGLAR INPUT DEL COLOR, ANDA MAL
 
  - CONFIRMMACION EN ELIMINAR EN PAR
 
  - Mostrar observaciones en warmup
 
+ = All repss mobile
+
+ME QUEDE EN EL VIDEO POLEA ALTA AL PECHO -----------------
+
+NUEVAS 
+
+- AGREGAR QUE SE PUEDA VER LA SEMANA ANTERIOR
+
+- Ver si poner minutos en el timer
+
+- Color en anadir ejercicios circuit
+
+- Al eliminar dia 1, no permite cambiar entre dias
+
+A CHEQUEAR
+
+- logica del par
+- qr
+- temporizadores
+- all sets
 
 COSAS PARA HACER
 
  - Permitir cargar 2 bloques de movilidad (Permitir poner el nombre, para que ponga de activacion, entrada en calor, etc.) || mati villalba
 
  - Agregar cosas de excel para usuarios || jere olmedo
-
-
-
-
-       <Typography variant="" color="text.secondary">
-                                       {element.sets} series x {isNaN(element.reps) ? `${element.reps} - ${element.peso}` : `${element.reps} repeticiones - ${element.peso}`}
-                                    </Typography>
-                                    <Typography variant="" color="text.secondary" className="d-block mt-1">
-                                       
-                                    </Typography>
-                                    <Typography variant="" color="text.secondary" className="d-block mt-1">
-                                       {element.rest} de descanso
-                                    </Typography>
 
 
 
@@ -49,7 +44,7 @@ Flujo de navegación
 LISTA DE USUARIOS
   - Crear usuario - CHECK
   - Editar usuario - 
-  - Borrar usuario - CHECK
+  - Borrar usuario - 
   - Entrar a usuario - CHECK
 
 CREACION DE SEMANA 
@@ -60,25 +55,25 @@ CREACION DE SEMANA
   - 
 
 CREACION DÍAS
-  - Crear día - CHECK
-  - Editar día - CHECK
-  - Eliminar día - CHECK
+  - Crear día - 
+  - Editar día - 
+  - Eliminar día - 
 
 CREACIÓN DE ENTRADA EN CALOR
-  - Crear ejercicio - CHECK
-  - Editar ejercicios - CHECK
-  - Borrar ejercicios - CHECK
+  - Crear ejercicio - 
+  - Editar ejercicios - 
+  - Borrar ejercicios - 
 
 CREACIÓN DE EJERCICIOS
-  - Crear ejercicio - CHECK
-  - Editar ejercicios - CHECK
-  - Borrar ejercicios - CHECK
+  - Crear ejercicio - 
+  - Editar ejercicios - 
+  - Borrar ejercicios - 
 
 DATABASE
 
-  - Crear ejercicio - CHECK
-  - Editar ejercicio - CHECK
-  - Borrar ejercicio - CHECK
+  - Crear ejercicio - 
+  - Editar ejercicio - 
+  - Borrar ejercicio - 
 
 PERSONALIZATION
 
@@ -86,13 +81,216 @@ PERSONALIZATION
   - Crear text color
 
 COLUMNS
-  - Crear columnas - CHECK
-  - Eliminar columnas - CHECK
+  - Crear columnas - 
+  - Eliminar columnas - 
 
 EXERCISES IN COLUMNS
-  - Crear exercises - CHECK
-  - Editar exercises - CHECK
-  - Elimminar exercises -CHECK
+  - Crear exercises - 
+  - Editar exercises - 
+  - Elimminar exercises -
 
 PAR
-  - FORMATO ENTERO - CHECK
+  - FORMATO ENTERO - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  import Logo from '../../components/Logo.jsx'
+
+
+function Novedades() {
+
+    return (
+        <>
+        
+        <div className='container-fluid p-0 mb-4'>
+            <Logo />
+        </div>
+        
+        <section className='container-fluid'>
+
+            <article className='row justify-content-center'>
+                <div className='col-10 col-lg-6 text-center'>
+
+                <h2>Versión actual: 2.6.11</h2>
+
+                </div>
+
+                <div className='row justify-content-center text-center mt-4'>
+
+                <div className='col-11 '>
+
+                                        
+                    <p>logs. 26/11/2024</p>
+                    <ul className='list-group list-group-flush'>
+                        <li className='list-group-item'><b>QR para iniciar sesión.</b> Se añado la funcionalidad de inicio de sesion mediante QR, para que tus alumnos puedan ingresar escaneandolo.</li>
+                        <li className='list-group-item'><b>Incremento general de series y repeticiones</b> Se agregaron 2 botones que permiten aumentar una serie y rep en todos los ejercicios del día.</li>
+                        
+                    </ul>
+                </div>
+
+                    <div className='col-11 '>
+
+                    
+                        <p>logs. 01/11/2024</p>
+                        <ul className='list-group list-group-flush'>
+                            <li className='list-group-item'><b>Descarga disponible. **BETA</b> Se añado la funcionalidad de descarga.
+                                <ul className='list-group list-group-flush'>
+                                    <li className='list-group list-group-flush'>En PC y android está disponible. Aún se trabaja para el sistema operativo IOS</li>
+                                </ul>
+                            </li>
+                            <li className='list-group-item'><b>UX y reestructura del inicio.</b> Se optó por un diseño más amigable, los alumnos no deberán ver una descripción del software si asi lo desean.</li>
+                            <li className='list-group-item'><b>UX y reestructura del inicio de sesión.</b> Se realizó un cambio de diseño. Se añado la opción de ver la contraseña al iniciar sesión.</li>
+                            
+                        </ul>
+                    </div>
+                </div>
+                <div className='row justify-content-center text-start mt-4'>
+                    <div className='col-11 col-lg-6'>
+
+                    
+                    <p>logs. 29/10/2024</p>
+                    <ul className='list-group list-group-flush'>
+                        <li className='list-group-item'><b>Arreglo.</b> Ahora los alumnos no notarán más inconsistencias a la hora de editar su planificación</li>
+                        <li className='list-group-item'><b>Arreglo.</b> Ya no habrá inconsistencias en la creación de días - entrada en calor</li>
+                        <li className='list-group-item'><b>Arreglo.</b> Ahora se guarda correctamente el nombre de la semana al editarse.</li>
+                        
+                    </ul>
+                </div>
+                </div>
+
+                <div className='row justify-content-center text-start mt-4'>
+                    <div className='col-11 col-lg-6'>
+
+                    
+                    <p>logs. 24/10/2024</p>
+                    <ul className='list-group list-group-flush'>
+                        <li className='list-group-item'><b>Cambios visuales en las **listas de usuarios**</b></li>
+                        <li className='list-group-item'><b>Cambio visuales y estructurales en las **semanas**.</b>
+                            <ul className='list-group list-group-flush'>
+                                <li className='list-group-item'><b>UX. Se agregó **tiempo de edición**.</b> Ahora podrás ver la última vez que actualizaste la rutina! (No la última vez que se guardó, cuidado con esto). Con respecto a estó, se optó mostrar la última vez que se realizo un cambio, y no la última vez que se guardó, para que los entrenadores sepan si actualizarón esa planificación, sin importar si se guardó o no. Consideramos esto la mejor opción desde el punto de vista de la usabilidad.</li>
+                                <li className='list-group-item'><b>Creación, edición, y eliminación</b> de los días ahora se encuentran juntos.</li>
+                                <li className='list-group-item'><b>Edición del nombre de la semana.</b> Ahora se encuentra dentro de la semana.</li>
+                                <li className='list-group-item'><b>Gestión de días.</b> Ahora se encuentra en la misma pantalla. Ya no tendrás que salir para ingresar a los días de la semana, permitiendo mayor versatilidad a la hora de planificar.</li>
+                                <li className='list-group-item'><b>Edición única.</b> Se optimizó la edición, permitiendo editar todo lo que el usuario quiera, con una única confirmación al final, permitiendo mejorar el rendimiento y usabilidad.</li>
+                                <li className='list-group-item'><b>UX.</b> Se agregarón ventanas de confirmación, haciendo más dificil equivocarse al apretar un botón.</li>
+                                <li className='list-group-item'><b>Circuitos.</b> Mejorá en la creación de circuitos. Ahora se podrá realizar todo en la misma pantalla, sin necesidad de abrir ventanas adicionales.
+                                    <ul>
+                                        <li>Se solucionaron varios errores que afectaban el funcionamiento correcto a la hora de planificar.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li className='list-group-item'><b>Entrada en calor</b>
+                            <ul className='list-group list-group-flush'>
+                                <li className='list-group-item'><b>Cambio visual y estructural.</b> Se habilitó la edición unica, para seguir con la misma logica.</li>
+                            </ul>
+                        </li>
+                        <li  className='list-group-item'><b>Sección atletas/alumnos</b>
+                            <ul className='list-group list-group-flush'>
+                                <li className='list-group-item'><b>Animaciones</b></li>
+                                <li className='list-group-item'><b>Calculadora de porcentaje.</b> Se habilitó un widget para los alumnos, para tener a mano una calculadora de porcentaje, facilitandole una herramienta más. ( Aún quedan muchos widgets más por agregar! )</li>
+                            </ul>
+                        </li>
+                        <li className='list-group-item'><b>Modo edición</b>
+                            <ul className='list-group list-group-flush'>
+                                <li className='list-group-item'><b>UX-Logica.</b> Se habilito el modo edicion para celular! Ahora podrás editar de manera rápida las series,repeticiones y el peso. Pero en caso de que necesites actualizar cualquier otro campo, basta con apretar el widget en pantalla de edición y ver todos los campos en cada ejercicio!</li>
+                                <li className='list-group-item'><b>UX-Logica.</b> Se habilito el modo edición para el circuito. Estos, unicamente se podrán editar con el modo activo.</li>
+                            </ul>
+                        </li>
+                        <li className='list-group-item'><b>Nuevo widget para guardar</b>
+                            <ul className='list-group list-group-flush'>
+                                <li className='list-group-item'><b>UX.</b> Ahora tendrás el widget para habilitar los botones de guardar y cancelar. Sigue mantiendo la misma logica, únicamente que ahora, tendrás esa herramienta.</li>
+                            </ul>
+                        </li>
+                        <li className='list-group-item'><b>Nueva biblioteca de ejercicios</b>
+                            <ul className='list-group list-group-flush'>
+                                <li className='list-group-item'><b>UX.</b> Nueva biblioteca habilitada! Ahora tendrás los ejercicios divididos por los básicos, y grupos musculares, facilitando la busqueda de estos.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                </div>
+            </article>
+            
+        </section>
+    </>
+    )
+}
+
+export default Novedades

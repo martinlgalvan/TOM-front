@@ -4,7 +4,7 @@ const TOASTID = "LOADER_ID"
 const notifyA = (message) => {
 
   toast.loading(message, {
-      position:           "bottom-center",
+      position:           "top-right",
       toastId:            TOASTID, 
       autoClose:          false, 
       hideProgressBar:    true,
@@ -31,7 +31,7 @@ const updateToast = () =>
 
 const instantToast = (message) => 
   toast.success(message, {
-    position: "bottom-center",
+    position: "top-right",
     autoClose:          300, 
     hideProgressBar: true,
     closeOnClick: true,

@@ -64,7 +64,6 @@ function UsersListPage() {
 
     useEffect(() => {
         UsersService.findUserById(id).then((data) => {
-           console.log(data)
            setIsPlanPaid(data.isPlanPaid)
            const limit = PLAN_LIMITS[data.plan] || PLAN_LIMITS.Gratuito
            setPlanLimit(limit)

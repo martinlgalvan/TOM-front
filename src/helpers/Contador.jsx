@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import UpgradeIcon from '@mui/icons-material/Upgrade';
+import { IconButton } from '@mui/material';
 
 function Contador({max}) {
   const [count, setCount] = useState(0);
@@ -12,10 +14,12 @@ function Contador({max}) {
   };
 
   return (
+      <div className='row justify-content-center text-center p-2' onClick={() => handleClick()}>
+               <div className="col-12 ">
+                  {count}
 
-      <button className='bg-dark  p-3' onClick={handleClick}>
-      {count}
-      </button>
+              </div>
+      </div>
  
   );
 }

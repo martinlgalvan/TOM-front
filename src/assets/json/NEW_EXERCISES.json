@@ -7,29 +7,36 @@
     {"label":"Sentadilla con kettlebell","video":""},
     {"label":"Sentadilla con safety bar","video":""},
     {"label":"Sentadilla con cambered bar","video":""},
-    {"label":"Sentadilla frontal con barra","video":""},
+    {"label":"Sentadilla frontal con barra","video":"https://www.youtube.com/watch?v=PvGwVn2UCgo"},
     {"label":"Sentadilla frontal con mancuerna","video":""},
     {"label":"Sentadilla frontal con kettlebell","video":""},
     {"label":"Sentadilla sumo con barra","video":""},
     {"label":"Sentadilla sumo con mancuerna","video":""},
-    {"label":"Sentadilla sumo con kettlebell","video":""}
+    {"label":"Sentadilla sumo con kettlebell","video":""},
+    {"label":"Sentadilla con salto","video":"https://www.youtube.com/watch?v=-PptoQeT9SQ"},
+    {"label":"Sentadilla copa con rotación","video":"https://www.youtube.com/watch?v=EbflC80IS4A"},
+    {"label":"Sentadilla con salto y rotación","video":"https://www.youtube.com/watch?v=17M0HehTLfk"},
+    {"label":"Sentadilla frontal con mancuernas y rotación","video":"https://www.youtube.com/watch?v=lzpYI51XmQM"},
+    {"label":"Sentadilla frontal con mancuernas y rotación","video":"https://www.youtube.com/watch?v=lzpYI51XmQM"}
   ]
 },
 {
   "label": "Peso muerto",
   "items": [
-    {"label":"Peso muerto convencional con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
-    {"label":"Peso muerto sumo con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Peso muerto convencional con barra","video":""},
+    {"label":"Peso muerto sumo con barra","video":""},
     {"label":"Peso muerto sumo con kettlebell","video":""},
     {"label":"Peso muerto con pausa","video":""},
     {"label":"Peso muerto rumano con barra","video":""},
+    {"label":"Peso muerto con trap bar","video":""},
+    {"label":"Peso muerto con trap bar + salto","video":"https://www.youtube.com/watch?v=tNjyxqTskt4"},
     {"label":"Peso muerto rumano con mancuernas","video":""}
   ]
 },
 {
   "label": "Banco plano",
   "items": [
-    {"label":"Banco plano con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Banco plano con barra","video":""},
     {"label":"Banco plano con mancuernas","video":""},
     {"label":"Banco plano con pausa","video":""},
     {"label":"Banco plano larssen","video":""},
@@ -51,6 +58,7 @@
     {"label":"Banco declinado con barra","video":""},
     {"label":"Banco declinado con mancuernass","video":""},
     {"label":"Floor press con barra","video":""},
+    {"label":"Press de banco invertido con mancuernas","video":"https://www.youtube.com/watch?v=xbfBTlwWI48"},
     {"label":"Aperturas con mancuernas","video":""},
     {"label":"Fondos","video":""},
     {"label":"Pectoralela","video":""},
@@ -66,7 +74,7 @@
 {
   "label": "Biceps",
   "items": [
-    {"label":"Biceps martillo con mancuernas","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Biceps martillo con mancuernas","video":""},
     {"label":"Biceps con barra","video":""},
     {"label":"Biceps con barra Z","video":""},
     {"label":"Biceps con mancuernas","video":""},
@@ -78,9 +86,11 @@
 {
   "label": "Triceps",
   "items": [
-    {"label":"Triceps tras nuca con mancuerna ","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Triceps tras nuca con mancuerna ","video":""},
     {"label":"Triceps tras nuca con barra Z","video":""},
     {"label":"Triceps en polea","video":""},
+    {"label":"Fondo de triceps en banco con peso","video":"https://www.youtube.com/watch?v=lDoNq0qpo18"},
+    {"label":"Patada de triceps con mancuerna","video":"https://www.youtube.com/watch?v=X6FxSnyjPnI"},
     {"label":"Triceps en polea tras nuca","video":""},
     {"label":"Triceps acostado/a con barra Z","video":""},
     {"label":"Flexiones de brazos cerradas","video":""}
@@ -89,8 +99,9 @@
 {
   "label": "Hombros",
   "items": [
-    {"label":"Press militar con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Press militar con barra","video":""},
     {"label":"Press militar con mancuernas","video":""},
+    {"label":"Push press con mancuernas","video":"https://www.youtube.com/watch?v=99GaaVKMAZM"},
     {"label":"Press arnold con mancuernas","video":""},
     {"label":"Vuelos frontales con mancuernas","video":""},
     {"label":"Vuelos laterales con mancuernas","video":""},
@@ -106,12 +117,13 @@
 {
   "label": "Remo",
   "items": [
-    {"label":"Remo 90 con barra","video":"https://www.youtube.com/shorts/MFaLAxeuWUM"},
+    {"label":"Remo 90 con barra","video":""},
     {"label":"Remo 90 con mancuernas","video":""},
     {"label":"Remo pendlay con barra","video":""},
     {"label":"Remo con mancuerna unilateral","video":""},
     {"label":"Remo bajo con triangulo","video":""},
     {"label":"Remo bajo con barra","video":""},
+    {"label":"Remo bajo a un brazo en polea","video":"https://www.youtube.com/watch?v=2CYqdmvMU1g"},
     {"label":"Remo en barra T","video":""},
     {"label":"Remo seal con barra","video":""},
     {"label":"Remo seal con mancuernas","video":""}
@@ -126,13 +138,16 @@
     {"label":"Buenos dias con mancuerna","video":""},
     {"label":"Buenos dias con disco","video":""},
     {"label":"Jalon al pecho con barra","video":""},
+    {"label":"Polea alta al pecho","video":"https://www.youtube.com/watch?v=Izl9aBH2FfM"},
     {"label":"Jalon al pecho con triangulo","video":""},
     {"label":"Pull over con mancuerna","video":""}, 
     {"label":"Pull over con triangulo","video":""},
     {"label":"Pull over en polea","video":""},
     {"label":"Hiperextensiones con disco","video":""},
     {"label":"Reverse hyper","video":""},
-    {"label":"Dominadas","video":""},
+    {"label":"Dominadas","video":"https://www.youtube.com/watch?v=jP_XbRf89q8"},
+    {"label":"Dominadas con peso ","video":"https://www.youtube.com/watch?v=ECOjv2GPMN4"},
+    {"label":"Dominadas con asistencia ","video":"https://www.youtube.com/watch?v=pJp9IaLlZJM"},
     {"label":"Dominadas agarre abierto","video":""},
     {"label":"Dominadas agarre nuetro","video":""},
     {"label":"Facepulls en polea","video":""}
@@ -158,6 +173,9 @@
   "items": [
     {"label":"Plancha","video":""},
     {"label":"Plancha lateral","video":""},
+    {"label":"Plancha frontal en bosu","video":"https://www.youtube.com/watch?v=oLN63dArFcQ"},
+    {"label":"Plancha 3 apoyos","video":"https://www.youtube.com/watch?v=7kYVWhKhBgA"},
+    {"label":"Plancha con elevación alterna de piernas","video":"https://www.youtube.com/watch?v=N4pzBm-mjL4"},
     {"label":"Abdominales crunch","video":""},
     {"label":"Abdominales bicho muerto","video":""},
     {"label":"Abdominales V-Up","video":""},
@@ -165,6 +183,7 @@
     {"label":"Abdominales colgado/a en barra","video":""},
     {"label":"Abdominales crunch en polea","video":""},
     {"label":"Abdominales crunch","video":""}
+    
   ]
 },
 
