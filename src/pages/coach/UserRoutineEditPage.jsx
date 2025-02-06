@@ -57,6 +57,7 @@ function UserRoutineEditPage() {
     const [collapsed, setCollapsed] = useState(false); // Maneja si el sidebar está colapsado o no
     const [tourSteps, setTourSteps] = useState([]);
     const [tourVisible, setTourVisible] = useState(false);
+    const [firstWidth, setFirstWidth] = useState(); 
 
     let idRefresh = RefreshFunction.generateUUID();
 
@@ -116,6 +117,7 @@ function UserRoutineEditPage() {
 
     useEffect(() => {
         setLoading(true);
+        setFirstWidth(window.innerWidth);
         NotifyHelper.notifyA("Cargando semanas...");
 
         WeekService.findRoutineByUserId(id)
@@ -269,7 +271,7 @@ function UserRoutineEditPage() {
                     
                 <div className="row text-center justify-content-center marginTableRoutine align-middle align-center align-items-center ">
 
-                        <div  className="col-10 col-lg-3 mx-2 mb-4 boxData" >
+                        {firstWidth < 983 && <div  className="col-10 col-lg-3 mx-2 mb-4 boxData" >
                             <div className="bg-light rounded-2 text-center ">
                                 <div className="d-flex align-items-center justify-content-center  flex-column ">
                                     <p className='mt-1 mb-0'>
@@ -285,7 +287,7 @@ function UserRoutineEditPage() {
                                     </label>
                                 </div>
                             </div>      
-                        </div>  
+                        </div>  }
 
                         <div className="col-10 col-lg-3 mx-2 mb-4 boxData">
                             <button
