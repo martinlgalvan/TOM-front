@@ -444,14 +444,14 @@ function App(){
                         />
 
                                        
-                        <Route
+                        {/*<Route
                           path="/par/:id"
                           element={
                             <RoutePrivate isAutenticate={isAutenticated}>
                               <ParDetailsPage/>
                             </RoutePrivate>
                           }
-                        />
+                        />*/}
 
                         <Route path="*" element={<NotFound404 />}/>
                     </Routes>
