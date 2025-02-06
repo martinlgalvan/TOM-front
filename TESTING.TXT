@@ -6,7 +6,6 @@ COSAS PARA CORREGIR
 
  - Mostrar observaciones en warmup
 
- = All repss mobile
 
 ME QUEDE EN EL VIDEO POLEA ALTA AL PECHO -----------------
 
@@ -14,18 +13,11 @@ NUEVAS
 
 - AGREGAR QUE SE PUEDA VER LA SEMANA ANTERIOR
 
-- Ver si poner minutos en el timer
-
-- Color en anadir ejercicios circuit
 
 - Al eliminar dia 1, no permite cambiar entre dias
 
 A CHEQUEAR
 
-- logica del par
-- qr
-- temporizadores
-- all sets
 
 COSAS PARA HACER
 

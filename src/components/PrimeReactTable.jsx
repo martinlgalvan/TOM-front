@@ -4,49 +4,49 @@ import * as UsersService from './../services/users.services.js';
 import * as Notify from './../helpers/notify.js';
 import * as QRServices from './../services/loginWithQR.js';
 import DeleteUserDialog from './../components/DeleteActions/DeleteUserDialog.jsx';
+import UserRegister from "../components/Users/UserRegister.jsx";
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
-import { SelectButton } from 'primereact/selectbutton';
 import { InputText } from 'primereact/inputtext';
-import {  toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-
 
 import IconButton from '@mui/material/IconButton';
 import PersonIcon from '@mui/icons-material/Person';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
-import QrCode2Icon from '@mui/icons-material/QrCode2'; // Ícono de QR
+import QrCode2Icon from '@mui/icons-material/QrCode2';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
-export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
+export default function PrimeReactTable({  user_id, id, users, refresh }) {
 
     const [searchText, setSearchText] = useState('');
     const [showDialog, setShowDialog] = useState(false);
-    const [visible, setVisible] = useState(false);
 
-    const [qrDialogVisible, setQrDialogVisible] = useState(false); // Controla el modal
-    const [currentQrUser, setCurrentQrUser] = useState(null); // Usuario actual para el QR
+    const [qrDialogVisible, setQrDialogVisible] = useState(false);
+    const [currentQrUser, setCurrentQrUser] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [qrImage, setQrImage] = useState(false);
+    const [error, setError] = useState(null);
+    const [qrImage, setQrImage] = useState(null);
 
     const [filteredUsers, setFilteredUsers] = useState([]);
-
     const [nameUser, setNameUser] = useState([]);
     const [id_user, setId_user] = useState([]);
+
     const [profileData, setProfileData] = useState();
     const [days, setDays] = useState([]);
     const [selectedDay, setSelectedDay] = useState();
-
-    const [widthPage, setWidthPage] = useState();
+    const [widthPage, setWidthPage] = useState(window.innerWidth);
 
     const [inputValue, setInputValue] = useState('');
     const isInputValid = inputValue === 'ELIMINAR';
 
+    // Para abrir/cerrar el formulario de crear alumno
+    const [dialogg, setDialogg] = useState(false);
+
     useEffect(() => {
-        // Filtramos los usuarios cada vez que cambian
+        // Filtramos los usuarios cada vez que cambian o cambia el texto de búsqueda.
         setFilteredUsers(
             users.filter(user =>
                 user.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -54,46 +54,41 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
             )
         );
     }, [searchText, users]);
-    useEffect(() => {
-        setWidthPage(window.innerWidth)
 
-    }, [window.innerWidth]);
+    useEffect(() => {
+        function handleResize() {
+            setWidthPage(window.innerWidth);
+        }
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (profileData && profileData.details) {
-            const days = Object.keys(profileData.details);
-            if (days.length > 0) {
-                setSelectedDay(days[0]);
+            const keysDays = Object.keys(profileData.details);
+            if (keysDays.length > 0) {
+                setSelectedDay(keysDays[0]);
             }
         }
     }, [profileData]);
-
-
 
     const onSearchChange = (event) => {
         setSearchText(event.target.value);
     };
 
-    const openDialog = (id, name) => {
+    const openDialogProfile = (id, name) => {
         setNameUser(name);
-
-
         UsersService.getProfileById(id)
             .then((data) => {
-                const filteredDetails = filterInvalidDays(data.details);
-                setProfileData({ ...data, details: filteredDetails });
-                setDays(Object.keys(filteredDetails).map(day => ({ label: day, value: day })));
-                setVisible(true);
+                setProfileData(data);
+                setDays(Object.keys(data.details || {}));
                 Notify.instantToast('Perfil cargado con éxito!');
+                // Podrías setear algo para mostrar un Dialog con la info, 
+                // pero en el ejemplo no se hace.
             })
-            .catch((data) => {
+            .catch(() => {
                 setProfileData(null);
-                setVisible(true);
             });
-    };
-
-    const closeDialog = () => {
-        setVisible(false);
     };
 
     const showDialogDelete = (_id, name) => {
@@ -102,29 +97,30 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
         setShowDialog(true);
     };
 
-
-
-    const hideDialog = (load) => {
+    const hideDialog = () => {
         setShowDialog(false);
     };
 
     const actionsTemplate = (user) => {
         return (
             <div className="d-flex justify-content-center">
+                {/* Botón Editar/ir a rutina */}
                 <Link className="LinkDays iconButtons" to={`/user/routine/${user._id}/${user.name}`}>
                     <IconButton aria-label="edit" className="btn p-1 my-2">
                         <EditIcon className="text-dark" />
                     </IconButton>
                 </Link>
-    
+
+                {/* Perfil 
                 <IconButton
                     aria-label="profile"
-                    onClick={() => openDialog(user._id, user.name)}
+                    onClick={() => openDialogProfile(user._id, user.name)}
                     className="btn p-1 my-2"
                 >
                     <PersonIcon className="text-dark" />
-                </IconButton>
-    
+                </IconButton>/*/}
+
+                {/* Eliminar */}
                 <IconButton
                     aria-label="delete"
                     onClick={() => showDialogDelete(user._id, user.name)}
@@ -132,8 +128,8 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
                 >
                     <CancelIcon className="colorIconYoutube" />
                 </IconButton>
-    
-                {/* Nuevo ícono para QR */}
+
+                {/* Generar QR */}
                 <IconButton
                     aria-label="qr"
                     onClick={() => showQrDialog(user)}
@@ -144,205 +140,60 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
             </div>
         );
     };
-    const linksTemplate = (user,e) => {
-        if(e.field == 'email'){
-            return <Link className='LinkDays p-3 w-100 ClassBGHover text-start ' to={`/user/routine/${user._id}/${user.name}`}>{user.email}</Link>;
-        } else{
-            return <Link className='LinkDays p-3 w-100 ClassBGHover text-start ' to={`/user/routine/${user._id}/${user.name}`}>{user.name}</Link>;
 
-        }
-    };
-
-    const filterInvalidDays = (details) => {
-        return Object.entries(details).reduce((acc, [day, values]) => {
-            const validValues = Object.values(values).filter(value => value !== undefined && value !== null && value !== 0);
-            if (validValues.length > 0) {
-                acc[day] = values;
-            }
-            return acc;
-        }, {});
-    };
-
-    const calculateNumericAverage = (details, field) => {
-        const validValues = Object.values(details)
-            .map(day => day[field])
-            .filter(value => value !== undefined && value !== null && value !== 0);
-
-        if (validValues.length === 0) return 'N/A';
-
-        const total = validValues.reduce((sum, value) => sum + value, 0);
-        return (total / validValues.length).toFixed(2);
-    };
-
-    const calculateCategoricalAverage = (details, field) => {
-        const options = [
-            { label: 'Muy bajo', value: 1 },
-            { label: 'Bajo', value: 2 },
-            { label: 'Moderado', value: 3 },
-            { label: 'Alto', value: 4 },
-            { label: 'Muy alto', value: 5 }
-        ];
-        const validValues = Object.values(details)
-            .map(day => day[field])
-            .filter(value => value !== undefined && value !== null && value !== 0);
-
-        if (validValues.length === 0) return 'N/A';
-
-        const total = validValues.reduce((sum, value) => sum + value, 0);
-        const average = total / validValues.length;
-        const closestOption = options.reduce((prev, curr) => Math.abs(curr.value - average) < Math.abs(prev.value - average) ? curr : prev);
-        return closestOption.label;
-    };
-
-    const getLabel = (value) => {
-        const options = [
-            { label: 'Muy bajo', value: 1 },
-            { label: 'Bajo', value: 2 },
-            { label: 'Moderado', value: 3 },
-            { label: 'Alto', value: 4 },
-            { label: 'Muy alto', value: 5 }
-        ];
-        const option = options.find(option => option.value === value);
-        return option ? option.label : 'Desconocido';
-    };
-
-    const renderProfileData = () => {
-        if (!profileData) {
+    const linksTemplate = (user, e) => {
+        if (e.field === 'email') {
             return (
-                <div className='row justify-content-center'>
-                    <div className='col-10 col-lg-4'>
-                        <div className=' text-center'>
-                            <p>No hay datos disponibles.</p>
-                            <p>Estos datos pueden ayudarte a la hora de planificar, por lo tanto, podés pedirle a tus alumnos que lo completen al finalizar su semana de entrenamiento.</p>
-                        </div>
-                        <div className=' text-center m-3'>
-                            <p>Los datos que se analizan, son: <strong>fatiga, horas de sueño, DOMS, NEAT, estrés, nutrición</strong></p>
-                            <p>También, pueden añadir datos como su peso corporal, y un resumen semanal sobre como fue su semana.</p>
-                        </div>
-                    </div>
-                </div>
+                <Link 
+                  className='' 
+                  to={`/user/routine/${user._id}/${user.name}`}
+                >
+                  {user.email}
+                </Link>
+            );
+        } else {
+            return (
+                <Link 
+                  className='classNameStart' 
+                  to={`/user/routine/${user._id}/${user.name}`}
+                >
+                  {user.name}
+                </Link>
             );
         }
-
-        return (
-            <div className="row justify-content-center text-center">
-                <div className='my-4'>
-                    <p>{name} editó esto por última vez el</p>
-                    <p>{profileData.last_edit.fecha} - {profileData.last_edit.hora}</p>
-                </div>
-                <div className="col-10">
-                    <p className='text-center'><strong className='d-block'>Peso Corporal</strong> {profileData.bodyWeight} kg</p>
-                </div>
-                <div className="col-10 col-lg-6">
-                    <div className='row justify-content-center'>
-                        <div className='col-10 col-lg-6 text-center'>
-                            <h5 className='mb-4'>Promedio semanal</h5>
-                            <table className="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td><strong>Fatiga</strong></td>
-                                        <td>{calculateNumericAverage(profileData.details, 'fatigueLevel')}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Horas de Sueño</strong></td>
-                                        <td>{calculateNumericAverage(profileData.details, 'sleepHours')}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>DOMS</strong></td>
-                                        <td>{calculateNumericAverage(profileData.details, 'domsLevel')}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>NEAT</strong></td>
-                                        <td>{calculateCategoricalAverage(profileData.details, 'neatLevel')}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Estrés</strong></td>
-                                        <td>{calculateCategoricalAverage(profileData.details, 'stressLevel')}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Nutrición</strong></td>
-                                        <td>{calculateCategoricalAverage(profileData.details, 'nutrition')}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-                </div>
-                <div className="col-10 col-lg-6 ">
-                    <h5>Detalles por día</h5>
-                    <SelectButton value={selectedDay} options={days} onChange={(e) => setSelectedDay(e.value)} />
-                    {selectedDay && profileData.details[selectedDay] && (
-                        <table className="table table-bordered mt-4">
-                            <tbody>
-                                <tr>
-                                    <td><strong>Fatiga</strong></td>
-                                    <td>{profileData.details[selectedDay].fatigueLevel}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Horas de Sueño</strong></td>
-                                    <td>{profileData.details[selectedDay].sleepHours}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>DOMS</strong></td>
-                                    <td>{profileData.details[selectedDay].domsLevel}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>NEAT</strong></td>
-                                    <td>{getLabel(profileData.details[selectedDay].neatLevel)}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Estrés</strong></td>
-                                    <td>{getLabel(profileData.details[selectedDay].stressLevel)}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Nutrición</strong></td>
-                                    <td>{getLabel(profileData.details[selectedDay].nutrition)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-                <div className='col-10 col-lg-6'>
-                            <h5 className='mb-4'>Resumen Semanal</h5>
-                            <p>{profileData.weeklySummary}</p>
-                        </div>
-            </div>
-        );
     };
 
-
-
-// DELETE USERS //
-  
+    // Confirmación y proceso de DELETE
     const handleAccept = () => {
-      if (isInputValid) {
-        Notify.notifyA('Eliminando usuario...')
-        UsersService.deleteUser(id_user)
-              .then(() => {
-                refresh();
-                hideDialog();
-              })
-     
-      }
+        if (isInputValid) {
+            Notify.notifyA('Eliminando usuario...');
+            UsersService.deleteUser(id_user)
+                .then(() => {
+                    refresh(); 
+                    hideDialog();
+                })
+                .catch((err) => {
+                    console.error(err);
+                    Notify.instantToast('Ocurrió un error al eliminar el usuario.');
+                });
+        }
     };
 
     const handleCancel = () => {
         setInputValue('');
         hideDialog();
-      };
-    
+    };
 
-
-      const showQrDialog = async (user) => {
+    // QR
+    const showQrDialog = async (user) => {
         setLoading(true);
         setError(null);
-    
+
         try {
-            const response = await QRServices.generateQR(user._id); // Llama al servicio
-            setQrImage(response.qrImage); // Establece la imagen del QR
-            setCurrentQrUser(user); // Guarda al usuario actual
-            setQrDialogVisible(true); // Muestra el modal
+            const response = await QRServices.generateQR(user._id);
+            setQrImage(response.qrImage);
+            setCurrentQrUser(user);
+            setQrDialogVisible(true);
         } catch (err) {
             setError('Error al generar el QR. Por favor, intenta nuevamente.');
         } finally {
@@ -350,16 +201,10 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
         }
     };
 
-
-
-
-
-
-
     return (
-        <div className='row justify-content-center '>
-            <div className='col-12 col-lg-4 text-center m-0'>
-
+        <div className='row justify-content-around '>
+            {/* Campo de búsqueda */}
+            <div className='col-6 col-lg-4 text-center m-0 pt-2'>
                 <div className="p-inputgroup mb-4">
                     <InputText 
                         value={searchText}
@@ -368,77 +213,114 @@ export default function PrimeReactTable({ name, user_id, id, users, refresh }) {
                     />
                 </div>
             </div>
+
+            {/* Botón "Crear alumno" + componente de registro */}
+            <div className="col-6 col-lg-4 text-center m-0 pt-2">
+                <div 
+                  id={'crearAlumno'} 
+                  className="boxData marginBoxRegister" 
+                  onClick={() => setDialogg(true)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <AddCircleIcon className="me-1 "/>
+                  <span>Crear alumno</span>
+                </div>
+
+                {/* Aquí integras el formulario de alta */}
+                <UserRegister 
+                  dialogg={dialogg} 
+                  refresh={refresh} 
+                  parentId={id} 
+                  onClose={() => setDialogg(false)} 
+                />
+            </div>
+
+            {/* Tabla de usuarios */}
             <div className='col-12 col-sm-10 m-0 mb-5 fontUserList'>
-                
-                <DataTable emptyMessage="Cargando usuarios..." className='usersListTable alignDatatable  pt-0' paginator rows={10} value={filteredUsers} >
+                <DataTable 
+                  emptyMessage="Cargando usuarios..." 
+                  className='usersListTable alignDatatable pt-0' 
+                  paginator 
+                  rows={10} 
+                  value={filteredUsers}
+                >
                     <Column body={linksTemplate} field="name" header="Nombre" />
-                    {widthPage > 600 ? <Column body={linksTemplate} field="email" header="Email"/> : null}
+                    {widthPage > 600 && 
+                      <Column body={linksTemplate} field="email" header="Email"/>}
                     <Column body={actionsTemplate} header="Acciones" />
                 </DataTable>
 
-         
-
-                <Dialog header={`${nameUser}`} visible={visible} onHide={() => closeDialog()} className={`${widthPage > 900 ? 'col-8' : 'col-10'}`} >
-                    {renderProfileData()}
-                </Dialog>
-
-                <Dialog header={`${nameUser}`} visible={showDialog} onHide={() => hideDialog()} style={{ width: `${widthPage > 900 ? 'w-50' : 'w-100'}` }} >
-                <div className='row justify-content-center'>
-                    <div className='col-10 col-sm-6 mb-3'>
-                    <label htmlFor="inputDelete" className='text-center mb-4'>Por favor, escriba <b>"ELIMINAR"</b> si desea eliminar permanentemente el usuario <b>{nameUser}</b></label>
-                    <input
-                        id='inputDelete'
-                        type="text"
-                        className='form-control'
-                        value={inputValue}
-                        onChange={(event) => setInputValue(event.target.value)}
-                    />
-                    </div>
-                    <div className='col-12 text-center'>
-                    <button className="btn btn-sseccon m-3" onClick={handleCancel} >Cancelar</button>
-                    <button className={isInputValid ? 'btn btn-danger m-3' : 'btn btn-secondary m-3'} disabled={!isInputValid} onClick={handleAccept}>Eliminar</button>
-
-                    </div>
-                </div>
-                </Dialog>
-
-                <Dialog
-                    header={`Código QR - ${currentQrUser?.name}`}
-                    visible={qrDialogVisible}
-                    onHide={() => setQrDialogVisible(false)}
-                    style={{ width: `${widthPage > 900 ? '30%' : '90%'}` }}
+                {/* Diálogo de confirmación para ELIMINAR usuario */}
+                <Dialog 
+                  header={`${nameUser}`} 
+                  visible={showDialog} 
+                  onHide={() => hideDialog()} 
+                  style={{ width: widthPage > 900 ? '50%' : '90%' }}
                 >
-                    <div className="text-center">
-                        {loading && <p>Generando QR...</p>}
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-                        {qrImage && (
-                            <div>
-                                <p>Este es el codigo QR para que <b>{currentQrUser?.name}</b> inicie sesión.</p>
-                                <img
-                                    src={qrImage}
-                                    alt="Código QR"
-                                    style={{ width: '200px', height: '200px' }}
-                                />
-                                <div className="mt-3">
-                                    {/* Botón de descarga */}
-                                    <a
-                                        href={qrImage}
-                                        download={`QR-${currentQrUser?.name || 'usuario'}.png`}
-                                        style={{ textDecoration: 'none' }}
-                                    >
-                                        <button
-                                            aria-label="download"
-                                            className="btn btn-primary p-2"
-                                        >
-                                            Descargar QR
-                                        </button>
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                  <div className='row justify-content-center'>
+                      <div className='col-10 col-sm-6 mb-3'>
+                          <label htmlFor="inputDelete" className='text-center mb-4'>
+                              Por favor, escriba <b>"ELIMINAR"</b> si desea eliminar permanentemente el usuario <b>{nameUser}</b>
+                          </label>
+                          <input
+                              id='inputDelete'
+                              type="text"
+                              className='form-control'
+                              value={inputValue}
+                              onChange={(event) => setInputValue(event.target.value)}
+                          />
+                      </div>
+                      <div className='col-12 text-center'>
+                          <button className="btn btn-sseccon m-3" onClick={handleCancel}>
+                              Cancelar
+                          </button>
+                          <button 
+                              className={isInputValid ? 'btn btn-danger m-3' : 'btn btn-secondary m-3'} 
+                              disabled={!isInputValid} 
+                              onClick={handleAccept}
+                          >
+                              Eliminar
+                          </button>
+                      </div>
+                  </div>
                 </Dialog>
 
+                {/* Diálogo con el QR */}
+                <Dialog
+                  header={`Código QR - ${currentQrUser?.name}`}
+                  visible={qrDialogVisible}
+                  onHide={() => setQrDialogVisible(false)}
+                  style={{ width: widthPage > 900 ? '30%' : '90%' }}
+                >
+                  <div className="text-center">
+                      {loading && <p>Generando QR...</p>}
+                      {error && <p style={{ color: 'red' }}>{error}</p>}
+                      {qrImage && (
+                          <div>
+                              <p>Este es el código QR para que <b>{currentQrUser?.name}</b> inicie sesión.</p>
+                              <img
+                                  src={qrImage}
+                                  alt="Código QR"
+                                  style={{ width: '200px', height: '200px' }}
+                              />
+                              <div className="mt-3">
+                                  <a
+                                      href={qrImage}
+                                      download={`QR-${currentQrUser?.name || 'usuario'}.png`}
+                                      style={{ textDecoration: 'none' }}
+                                  >
+                                      <button
+                                          aria-label="download"
+                                          className="btn btn-primary p-2"
+                                      >
+                                          Descargar QR
+                                      </button>
+                                  </a>
+                              </div>
+                          </div>
+                      )}
+                  </div>
+                </Dialog>
             </div>
         </div>
     );

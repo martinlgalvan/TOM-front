@@ -85,7 +85,18 @@ p {
 }
 
   .Largo{
-    max-width: 400px;
+    
+    max-width: 300px;
+  }
+
+  .LargoLogoChico{
+    max-width: 140px;
+  }
+
+  .LargoLogo{
+    margin-top: 56px;
+    min-height: 300px;
+    max-height: 400px;
   }
 
   .ButtonResponsiveEditWeekName{
@@ -762,16 +773,24 @@ p {
 }
 
 .td-0{
-  width: 120px !important;
+  width: 50px !important;
 }
 
 .td-1{
-  width: 300px !important;
+  width: 10px !important;
 
 }
 
+.td-2{
+  width: 300px !important;
+}
+
+.td-3{
+  width: 10px !important;
+}
+
 .td-4{
-  width: 100px !important;
+  width: 10px !important;
 }
 
 .td-5{
@@ -779,18 +798,20 @@ p {
 }
 
 .td-6{
-  width: 40px !important;
+  width: 80px !important;
 }
 
 .td-7{
-  width: 200px !important;
+  width: 10px !important;
 }
 
 .td-8{
-  width: 60px  !important;
+  width: 200px  !important;
 }
 
-
+.td-9{
+  width: 60px  !important;
+}
 
 .colorPencil{
   color: #000000;
@@ -1192,7 +1213,6 @@ width: 50px;
 
 .textAreaResize {
   resize: none; /* Evita que el usuario pueda redimensionar el textarea */
-  margin-right: 20px !important;
   box-shadow: none !important; /* Elimina cualquier sombra que pueda estar presente */
 }
 
@@ -1300,6 +1320,20 @@ width: 50px;
   display: flex;
   width: 100%;
   background-color: #414141;
+  gap: 10px;
+  z-index: 52000;
+  justify-content: center;
+  animation: slideUp 0.5s ease forwards;
+}
+
+.floating-button-mobile {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  width: 100%;
+  background-color: #000000;
   gap: 10px;
   z-index: 52000;
   justify-content: center;
@@ -2103,11 +2137,6 @@ width: 50px;
   background-color: #1EBEA5; /* Color más oscuro al pasar el cursor */
 }
 
-.day-content-container {
-  min-height: 400px; /* Altura máxima del contenedor */
-  overflow-y: auto; /* Permite el scroll vertical */
-
-}
 
 .pointerClick{
   cursor: pointer;
@@ -2272,10 +2301,20 @@ width: 50px;
 }
 
 .colorNavBottom{
-  background-color: #1b1b1b;
-  border-radius: 10px 10px 0px 0px;
+  background-color:rgb(0, 0, 0);
 }
 
+.altoDiv{
+  height: 60px;
+}
+
+.fontIcon{
+  font-size: 1.5em !important;
+}
+
+.fontTextIcon{
+  font-size: 0.8em !important;
+}
 
 .buttonsNav{
   color: #ffffff !important;
@@ -2287,10 +2326,7 @@ width: 50px;
 }
 
 .active{
-  background-color: rgb(58, 58, 58) !important;
-  border: #000;
-  color: #000 !important;
-  border-radius: 10px;
+  text-decoration: double;
 }
 
 
@@ -2324,7 +2360,7 @@ width: 50px;
 }
 
 .activeButton{
-  background-color: #174fe9;
+  background-color: #174fe9 !important;
 }
 
 .activeSpan{
@@ -2380,22 +2416,227 @@ input:checked + .slider:before {
 }
 
 
+.glowing-icon {
+  animation: glowing 1.5s ease-in-out alternate;
+}
+
+@keyframes glowing {
+  0% { filter: brightness(1.2); transform: scale(1); }
+  100% { filter: brightness(1); transform: scale(1.5); }
+}
+
+
+.container {
+                    max-width: 800px;
+                    margin: auto;
+                }
+                .category-title {
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    margin-top: 20px;
+                    border-bottom: 2px solid #000;
+                    padding-bottom: 5px;
+                }
+                .exercise-list {
+                    margin-top: 10px;
+                }
+                .exercise-item {
+                    margin-bottom: 10px;
+                }
+                .exercise-button {
+                    width: 100%;
+                    text-align: left;
+                    padding: 10px;
+                    font-size: 1rem;
+                    border: none;
+                    background: #f8f9fa;
+                    cursor: pointer;
+                    transition: background 0.3s;
+                }
+                .exercise-button:hover {
+                    background: #e9ecef;
+                }
+                .video-container {
+                    margin-top: 10px;
+                }
+
+
+
+.colorTools{
+  background-color: #3183da00;
+}
+
+.fontDeleteCircuit{
+  font-size: 1em !important;
+}
 
 
 
 
+.sidebarPro {
+  position: fixed;
+  background: rgb(0,0,0);
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgb(32, 32, 32) 49%, rgba(0,0,0,1) 100%);
+  height: 100% !important;
+  z-index: 1;
+  top: 0px;
+  left: 0px;
+
+}
+
+.sidebarProExercises{
+  position: fixed;
+  background: rgb(0,0,0);
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgb(32, 32, 32) 49%, rgba(0,0,0,1) 100%);
+  height: 100%;
+  z-index: 1000;
+  top: 0px;
+  left: 0px;
+}
+
+
+.contentArea {
+  margin-left: 200px; /* ancho por defecto cuando está abierto */
+  transition: margin-left 0.3s ease;
+}
+.contentArea.collapsed {
+  margin-left: 85px; /* ancho cuando está colapsado */
+}
+
+
+.ps-menu-button:hover{
+  background-color: #dad9d92a !important;
+}
+
+.ant-segmented-item{
+  margin: 5px 0;
+} 
+
+.ant-segmented-item-icon{
+  margin: 0 0 20px -5px !important;
+}
+
+.marginCollapsed{
+  margin-left: 190px;
+}
+
+.marginNormalTable{
+  margin-left: 75px;
+}
 
 
 
+.rs-input-group-addon{
+  display: none;
+}
+
+.rs-picker-clean {
+  display: none;
+}
+
+.rs-btn-close{
+  display: none;
+}
+
+.montserrat-s {
+  font-family: "Montserrat", serif;
+  font-optical-sizing: auto;
+  font-weight: 900;
+  font-style: normal;
+  text-transform: uppercase;
+  font-size: 3em;
+
+}
 
 
 
+.stylesButtons {
+
+
+  margin: 0 5px;
+  border-radius: 180px;
+  padding: 10px 10px;
+}
+
+.styleEndSesion{
+  margin-left: 10px;
+  border:1px solid #000;
+}
+
+.boxData{
+  box-shadow:1px 1px 11px #00000050;
+}
+
+.boxDataWarmup{
+  height: 100px;
+  box-shadow:1px 1px 11px #00000050;
+}
+
+.totalHeight{
+  min-height: calc(100vh - 198px) !important;
+}
+
+.totalHeightTable{
+  min-height: 88px !important;
+}
 
 
 
+.colorFooter{
+  background-color: #000;
+}
+
+.fixed-top{
+  z-index: 90 !important;
+}
+
+
+.margenUserRoutine{
+  margin-top: 60px;
+  margin-bottom: 15px;
+}
+
+.marginBetween{
+  margin-top: 20px;
+}
+
+.marginBoxRegister{
+ padding: 9px 0;
+}
+
+.marginTableRoutine{
+  height: 173px;
+}
+
+.margenLogoDay{
+  margin-top: 100px;
+}
 
 
 
+.botonHelp{
+  margin-top: 168px !important;
+}
+
+.botonHelpEdit{
+  margin-top: 169px !important;
+}
+
+.marginHelpDays{
+  margin-top: 170px;
+}
+
+.margenLogoUserRoutine{
+  margin-top: 180px;
+}
+
+.margenLogoUserListPage{
+  margin-top: 114px;
+}
+
+.fontTextNavBar{
+  font-size: 0.8em;
+}
 
 
 
@@ -2408,6 +2649,8 @@ input:checked + .slider:before {
 
 
 @media screen and (min-width: 992px) {
+
+
   .msjPhone{
     display: none;
   }
@@ -2436,7 +2679,7 @@ width: 50px;
     border-top: none;
     border-bottom: none;
     border-left: none;
-    color: #fff;
+    color: #ffffff;
     background-color: black;
     border: none;
     cursor: pointer;
@@ -2457,15 +2700,71 @@ width: 50px;
   
 }
 
-.td-2{
-  width: 10px;
+.colorMain{
+  background-color: #ffffff;
 }
 
-.td-3{
-  width: 10px;
+.marginSidebarOpen{
+  margin-left: 200px !important;
 }
+
+.marginSidebarClosed{
+  margin-left: 85px !important;
+}
+
+.classNameStart{
+  text-align: start !important;
+}
+
+@media screen and (max-width: 1110px ) {
+  .td-6{
+    width: 220px !important;
+  }
+}
+
+@media screen and (max-width: 1366px ) {
+  .td-6{
+    width: 130px !important;
+  }
+}
+
+
+@media screen and (min-width: 1550px ) {
+  .td-6{
+    width: 80px !important;
+  }
+}
+
+@media screen and (min-width: 1700px ) {
+  .td-6{
+    width: 60px !important;
+  }
+}
+
 
 @media screen and (max-width: 992px) {
+
+  .marginTableRoutine{
+    padding-top: 10px;
+    height: 100%;
+  }
+
+    .sidebarPro {
+      display: none;
+    }
+    
+    .sidebarProExercises{
+      display: none;
+    }
+
+    .marginSidebarOpen{
+      margin-left: 0 !important;
+    }
+    
+    .marginSidebarClosed{
+      margin-left: 0 !important;
+    }
+    
 
   .blog-slider {
     position: relative;

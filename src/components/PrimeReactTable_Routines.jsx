@@ -1,32 +1,38 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
-import * as UsersService from "../services/users.services.js";
-import * as WeekService from "../services/week.services.js";
+//.............................. SERVICES ..............................//
+
+import * as ParService from "../services/par.services.js";
+
+
+//.............................. HELPERS ..............................//
+
 import * as NotifyHelper from "../helpers/notify.js";
 import * as RefreshFunction from "../helpers/generateUUID.js";
-import * as ParService from "../services/par.services.js";
-import DeleteUserDialog from "./DeleteActions/DeleteUserDialog.jsx";
+
+
+//.............................. COMPONENTES ..............................//
+
+import DeleteWeek from "./DeleteActions/DeleteWeek.jsx";
+
+
+//.............................. BIBLIOTECAS EXTERNAS ..............................//
 
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dialog } from "primereact/dialog";
-import { SelectButton } from "primereact/selectbutton";
-import { InputText } from "primereact/inputtext";
-import {  toast } from "react-toastify";
-import { Link } from "react-router-dom";
+
+
+//.............................. ICONOS MUI ..............................//
 
 import IconButton from "@mui/material/IconButton";
-import PersonIcon from "@mui/icons-material/Person";
 import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DeleteWeek from "./DeleteActions/DeleteWeek.jsx";
+
 
 export default function PrimeReactTable_Routines({ id, username, routine, setRoutine, copyRoutine }) {
 
-    const [loading, setLoading] = useState(false);
-    const [widthPage, setWidthPage] = useState();
-    let idRefresh = RefreshFunction.generateUUID();
     const [copyWeekStorage, setCopyWeekStorage] = useState();
 
     const [showDeleteWeekDialog, setShowDeleteWeekDialog] = useState(); //Dialog Delete
@@ -48,14 +54,14 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
                         routine.routine[0]._id
                     }/${username}`}
                 >
-                    <IconButton aria-label="delete" className="btn p-3">
+                    <IconButton aria-label="delete" className="btn p-2 my-1">
                         <EditIcon className="text-dark " />
                     </IconButton>
                 </Link>
                 <IconButton
                     aria-label="video"
                     onClick={() => saveToLocalStorage(routine)}
-                    className={`btn p-3`}
+                    className={`btn p-2 my-1`}
                 >
                     <ContentCopyIcon className="text-dark " />
                 </IconButton>
@@ -63,7 +69,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
                 <IconButton
                     aria-label="delete"
                     onClick={() => deleteWeek(routine._id, routine.name)}
-                    className={`btn p-3`}
+                    className={`btn p-2 my-1`}
                 >
                     <CancelIcon className="colorIconYoutube " />
                 </IconButton>
@@ -75,7 +81,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
         if (id && e.field == "name") {
             return (
                 <Link
-                    className="LinkDays p-3 w-100 "
+                    className="LinkDays p-2 my-1 w-100 "
                     to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}
                 >
                     {routine.name}
@@ -84,7 +90,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
         } else if (id && e.field == "date") {
             return (
                 <Link
-                    className="LinkDays p-3 w-100 "
+                    className="LinkDays p-2 my-1 w-100 "
                     to={`/routine/user/${id}/week/${routine._id}/day/${
                         routine.routine[0]._id
                     }/${username}`}
@@ -95,7 +101,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
         } else if (id && e.field == "days") {
             return (
                 <Link
-                    className="LinkDays p-3 w-100 "
+                    className="LinkDays p-2 my-1 w-100 "
                     to={`/routine/user/${id}/week/${routine._id}/day/${
                         routine.routine[0]._id
                     }/${username}`}
@@ -103,10 +109,12 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
                     {routine.routine.length}
                 </Link>
             );
+        } else if (id && e.field == "acciones") {
+            return (
+                <h2>ACCIONN</h2>
+            );
         }
     };
-
-    // COPY LOGIC --------------------------------------------- //
 
     const saveToLocalStorage = (data) => {
 
@@ -120,25 +128,6 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
         }
     };
 
-    const loadFromLocalStorage = () => {
-        try {
-            if (copyWeekStorage) {
-                const parsedData = JSON.parse(copyWeekStorage);
-                ParService.createPARroutine(parsedData, id).then((data) => {
-                    setLoading(idRefresh);
-                    setStatus(idRefresh);
-                    NotifyHelper.updateToast();
-                });
-            } else {
-                alert("No hay datos en localStorage!");
-            }
-        } catch (err) {
-            console.error("Error al cargar desde localStorage: ", err);
-        }
-    };
-
-    // DELETE ACTIONS ------------------------------------- //
-
     const deleteWeek = (week_id, name) => {
         setWeekName(name);
         setWeek_id(week_id);
@@ -149,15 +138,8 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
         setRoutine((prevRoutine) => prevRoutine.filter(week => week._id !== week_id));
     };
 
-    const hideDialog = (load) => {
-        
-        setShowDeleteWeekDialog(false);
-   
-    };
+    const hideDialog = (load) => { setShowDeleteWeekDialog(false);}
 
-
-
-    
 
     return (
         <div className="row justify-content-center">
@@ -166,16 +148,15 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
                     className="usersListTable m-auto pt-0"
                     emptyMessage={routine ? ' ' : ' '}
                     paginator
-                    rows={10}
+                    rows={8}
                     value={routine}
                 >
                     <Column body={linksTemplate} field="name" header="Nombre" />
                     {firstWidth > 568 && <Column body={linksTemplate} field="date" header="Fecha" />}
                     {firstWidth > 568 && <Column body={linksTemplate} field="days" header="Días" />}
-                    <Column body={actionsTemplate} header="Acciones" />
+                    <Column body={actionsTemplate} field="acciones" header="Acciones" />
                 </DataTable>
 
-             
             </div>
 
             <DeleteWeek

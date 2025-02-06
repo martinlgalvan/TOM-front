@@ -90,7 +90,7 @@ function HomePage() {
   return (
     <>
       <div className='container-fluid mb-4 p-0'>
-        <Logo />
+        <Logo  isHomePage={true} />
       </div>
 
       <div>

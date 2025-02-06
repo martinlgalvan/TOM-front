@@ -5,6 +5,8 @@ import IconButton from '@mui/material/IconButton';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 const CustomInputNumber = React.forwardRef(
   ({ initialValue, onChange, disabled, isRep }, ref) => {
@@ -61,7 +63,7 @@ const CustomInputNumber = React.forwardRef(
               className={`buttonRight ${isTextMode && 'd-none'}`}
               onClick={() => handleInputChange(value - 1)}
               disabled={disabled || isTextMode}>
-                  <ChevronLeftIcon  />
+                  <RemoveIcon  />
               </IconButton>
 
             <input
@@ -80,7 +82,7 @@ const CustomInputNumber = React.forwardRef(
               className={`buttonLeft ${isTextMode && 'd-none'}`}
               onClick={() => handleInputChange(value + 1)}
               disabled={disabled || isTextMode}>
-                  <ChevronRightIcon  />
+                  <AddIcon  />
               </IconButton>
 
           </div>

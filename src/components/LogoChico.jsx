@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import React, {useState, useEffect} from 'react'
 
 import BackgroundLogo from '/src/assets/img/backgroundLogo.png'
 
@@ -13,7 +13,7 @@ import JEREMIAS_OLMEDO from '/src/assets/img/jeremias-olmedo.jpeg';
 import MATIAS_VILLALBA from '/src/assets/img/matias-logo.jpeg';
 import TORETTO_GYM from '/src/assets/img/mauri-logo.png';
 
-function Logo({isHomePage}){
+function LogoChico({isHomePage}){
 
     const [urlPath, setUrlPath] = useState()
     let id = localStorage.getItem('_id')
@@ -45,28 +45,15 @@ function Logo({isHomePage}){
 
     return (
         <>
-        {urlPath == TOM && isHomePage == true ? 
-            <div className='row justify-content-center align-items-center position-relative divPrincipal marginNavBar' >
-                <h1 className="visually-hidden">TOM</h1>
-                
-                {/* Imagen de fondo */}
-                <img className="background-logo position-absolute w-100 h-100" src={BackgroundLogo} alt="TOM" />
-                
-                {/* Imagen centrada con fondo blanco y opacidad */}
-                <div className="image-container position-relative d-flex justify-content-center align-items-center">
-                    <img className="img-fluid centered-img" src={urlPath} alt="TOM" />
-                </div>
-            </div>
-        
-            :
-            <div className='row justify-content-center LargoLogo align-items-center y-2'>
+
+        <div className='row justify-content-center LargoLogo align-items-center '>
             <h1 className="visually-hidden">TOM</h1>
-            <img className="img-fluid Largo text-center my-5 pt-3 pb-3" src={urlPath} alt="TOM" />
+            <img className="img-fluid LargoLogoChico text-center my-5 pt-3 pb-3" src={urlPath} alt="TOM" />
         </div>
-        }
+     
 
 </>
     )
 }
 
-export default Logo
+export default LogoChico
