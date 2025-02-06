@@ -1328,7 +1328,7 @@ width: 50px;
 
 .floating-button-mobile {
   position: fixed;
-  bottom: 80px;
+  bottom: 0.5px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -2743,6 +2743,12 @@ width: 50px;
 
 
 @media screen and (max-width: 992px) {
+  
+  .floating-button-mobile {
+    bottom: 80px;
+
+  }
+  
 
   .marginTableRoutine{
     padding-top: 10px;
