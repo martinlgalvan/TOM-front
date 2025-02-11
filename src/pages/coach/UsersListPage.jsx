@@ -38,6 +38,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CardMembershipIcon from '@mui/icons-material/CardMembership';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import Logo from "../../components/Logo.jsx";
 
 
 
@@ -229,6 +230,7 @@ function UsersListPage() {
 
             <MenuItem disabled className="margenLogoUserListPage ">
               <LogoChico />
+
             </MenuItem>
 
 
