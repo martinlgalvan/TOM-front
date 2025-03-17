@@ -45,7 +45,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import NotFound404 from './pages/NotFound404.jsx';
-import ParDetailsPage from './pages/coach/ParDetailsPage.jsx';
+//import ParDetailsPage from './pages/coach/ParDetailsPage.jsx';
 
 function RoutePrivate({ isAutenticate, children }) {
     return (
