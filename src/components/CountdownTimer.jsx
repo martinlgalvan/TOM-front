@@ -10,14 +10,14 @@ const CountdownTimer = ({ initialTime }) => {
   // Detectar Safari e iOS
   const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  // Verificar si la app está instalada en iOS (modo standalone)
+  const isStandalone = isiOS && ("standalone" in window.navigator) && window.navigator.standalone;
 
   const normalizeTimeInput = (input) => {
     if (typeof input !== "string") input = input.toString().trim();
     if (input.includes(":")) {
       const [minutes, seconds] = input.split(":").map(Number);
-      return `${String(minutes || 0).padStart(2, "0")}:${String(
-        seconds || 0
-      ).padStart(2, "0")}`;
+      return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
     }
     const match = input.match(/\d+/g);
     if (!match) return "00:00";
@@ -94,41 +94,60 @@ const CountdownTimer = ({ initialTime }) => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  // No solicitar notificaciones en iOS (Safari en iOS no soporta la API)
+  // Mostrar diálogo para solicitar permiso de notificaciones si es posible:
+  // En iOS, solo se solicita si la app está instalada (standalone)
   useEffect(() => {
     if (
-      !isiOS &&
+      (( !isiOS ) || (isiOS && isStandalone)) &&
       "Notification" in window &&
       Notification.permission === "default" &&
       !localStorage.getItem("notificationRequested")
     ) {
       setShowDialog(true);
     }
-  }, [isiOS]);
+  }, [isiOS, isStandalone]);
 
   const requestNotificationPermission = () => {
     setShowDialog(false);
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         localStorage.setItem("notificationRequested", "true");
+        // Aquí podrías suscribirte al push si cuentas con un backend configurado
       }
     });
   };
 
-  const triggerAlarm = () => {
+  const triggerAlarm = async () => {
     playBeep();
 
     if ("vibrate" in navigator) {
       navigator.vibrate([200, 100, 200, 100, 200]);
     }
 
-    // En iOS se muestra un alert ya que no se soportan las notificaciones web
+    // Para dispositivos que NO sean iOS, usar la API de Notification normalmente
     if (!isiOS && "Notification" in window && Notification.permission === "granted") {
       new Notification("⏳ ¡Tiempo terminado!", {
         body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
         icon: "/icon.png"
       });
-    } else if (isiOS) {
+    } else if (isiOS && isStandalone) {
+      // En iOS instalados como PWA, usar el Service Worker para mostrar la notificación push
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          reg.showNotification("⏳ ¡Tiempo terminado!", {
+            body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
+            icon: "/icon.png"
+          });
+        } else {
+          // Si no se encuentra el registro, se puede usar un fallback
+          alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
+        }
+      } else {
+        alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
+      }
+    } else {
+      // Fallback para cualquier otro caso (por ejemplo, iOS no instalado)
       alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
     }
   };
@@ -157,10 +176,7 @@ const CountdownTimer = ({ initialTime }) => {
         oscillator.start(startTime);
         oscillator.stop(startTime + beepDuration);
         gainNode.gain.setValueAtTime(1, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(
-          0.001,
-          startTime + beepDuration
-        );
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + beepDuration);
         startTime += beepDuration + pauseBetweenBeeps;
       }
       startTime += 0.4;
