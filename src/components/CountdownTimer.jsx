@@ -6,13 +6,16 @@ import IconButton from "@mui/material/IconButton";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 
+// Importa la función de suscripción
+import { subscribeUserToPush } from "./../pushNotifications";
+
 const CountdownTimer = ({ initialTime }) => {
-  // Detectar Safari e iOS
+  // (Tu lógica existente para detectar iOS, Safari, etc.)
   const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  // Verificar si la app está instalada en iOS (modo standalone)
   const isStandalone = isiOS && ("standalone" in window.navigator) && window.navigator.standalone;
 
+  // Funciones para formatear y convertir tiempo...
   const normalizeTimeInput = (input) => {
     if (typeof input !== "string") input = input.toString().trim();
     if (input.includes(":")) {
@@ -31,7 +34,7 @@ const CountdownTimer = ({ initialTime }) => {
     return minutes * 60 + (seconds || 0);
   };
 
-  // Inicializa el tiempo en segundos y actualiza la ref remainingTimeRef
+  // Inicialización del tiempo y estados
   const initialSeconds =
     !initialTime || initialTime === 0
       ? null
@@ -44,12 +47,9 @@ const CountdownTimer = ({ initialTime }) => {
 
   const startTimestampRef = useRef(null);
   const remainingTimeRef = useRef(initialSeconds);
-  // Ref para almacenar el AudioContext en Safari
   const audioContextRef = useRef(null);
 
-  // Iniciar el temporizador
   const handleStart = () => {
-    // Para Safari, creamos y reanudamos el AudioContext en respuesta a una interacción del usuario
     if (isSafari && !audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       if (audioContextRef.current.state === "suspended") {
@@ -60,13 +60,11 @@ const CountdownTimer = ({ initialTime }) => {
     setIsRunning(true);
   };
 
-  // Pausar el temporizador y actualizar remainingTimeRef
   const handlePause = () => {
     setIsRunning(false);
     remainingTimeRef.current = timeLeft;
   };
 
-  // Reiniciar el temporizador
   const handleReset = () => {
     const newTime = timeStringToSeconds(normalizeTimeInput(initialTime));
     setTimeLeft(newTime);
@@ -82,7 +80,6 @@ const CountdownTimer = ({ initialTime }) => {
         const elapsed = Math.floor((now - startTimestampRef.current) / 1000);
         const updatedTime = Math.max(remainingTimeRef.current - elapsed, 0);
         setTimeLeft(updatedTime);
-
         if (updatedTime === 0) {
           clearInterval(interval);
           setIsRunning(false);
@@ -94,8 +91,11 @@ const CountdownTimer = ({ initialTime }) => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
+
+  
+
   // Mostrar diálogo para solicitar permiso de notificaciones si es posible:
-  // En iOS, solo se solicita si la app está instalada (standalone)
+  // En iOS, solo si la app está instalada (standalone)
   useEffect(() => {
     if (
       (( !isiOS ) || (isiOS && isStandalone)) &&
@@ -108,14 +108,29 @@ const CountdownTimer = ({ initialTime }) => {
   }, [isiOS, isStandalone]);
 
   const requestNotificationPermission = () => {
+
     setShowDialog(false);
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         localStorage.setItem("notificationRequested", "true");
-        // Aquí podrías suscribirte al push si cuentas con un backend configurado
+        subscribeUserToPush().then((subscription) => {
+          if (subscription) {
+            fetch('http://localhost:2022/api/save-subscription', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ subscription, userId: "TU_USER_ID_OPCIONAL" })
+            })
+            .then(response => {
+              return response.json();
+            })
+              .then(data => console.log("Suscripción guardada en el backend:", data))
+              .catch(err => console.error("Error enviando la suscripción al backend:", err));
+          }
+        });
       }
     });
   };
+  
 
   const triggerAlarm = async () => {
     playBeep();
@@ -124,14 +139,12 @@ const CountdownTimer = ({ initialTime }) => {
       navigator.vibrate([200, 100, 200, 100, 200]);
     }
 
-    // Para dispositivos que NO sean iOS, usar la API de Notification normalmente
     if (!isiOS && "Notification" in window && Notification.permission === "granted") {
       new Notification("⏳ ¡Tiempo terminado!", {
         body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
         icon: "/icon.png"
       });
     } else if (isiOS && isStandalone) {
-      // En iOS instalados como PWA, usar el Service Worker para mostrar la notificación push
       if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
         if (reg) {
@@ -140,21 +153,18 @@ const CountdownTimer = ({ initialTime }) => {
             icon: "/icon.png"
           });
         } else {
-          // Si no se encuentra el registro, se puede usar un fallback
           alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
         }
       } else {
         alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
       }
     } else {
-      // Fallback para cualquier otro caso (por ejemplo, iOS no instalado)
       alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
     }
   };
 
   const playBeep = () => {
     let audioCtx;
-    // Si es Safari usamos el AudioContext almacenado y ya reanudado
     if (isSafari && audioContextRef.current) {
       audioCtx = audioContextRef.current;
     } else {
@@ -198,15 +208,7 @@ const CountdownTimer = ({ initialTime }) => {
   return (
     <div>
       {timeLeft !== null ? formatTimeDisplay(timeLeft) : "--:--"}
-      <IconButton
-        onClick={() => {
-          if (isRunning) {
-            handlePause();
-          } else {
-            handleStart();
-          }
-        }}
-      >
+      <IconButton onClick={() => { isRunning ? handlePause() : handleStart(); }}>
         {isRunning ? <PauseIcon /> : <PlayArrowIcon />}
       </IconButton>
       <IconButton onClick={handleReset}>
@@ -220,8 +222,7 @@ const CountdownTimer = ({ initialTime }) => {
         onHide={() => setShowDialog(false)}
       >
         <p>
-          ¿Quieres activar las notificaciones para que la alarma funcione
-          incluso con el celular bloqueado?
+          ¿Quieres activar las notificaciones para que la alarma funcione incluso con el celular bloqueado?
         </p>
         <Button label="Activar" onClick={requestNotificationPermission} />
       </Dialog>
