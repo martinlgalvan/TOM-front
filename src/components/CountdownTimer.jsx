@@ -115,7 +115,7 @@ const CountdownTimer = ({ initialTime }) => {
         localStorage.setItem("notificationRequested", "true");
         subscribeUserToPush().then((subscription) => {
           if (subscription) {
-            fetch('http://localhost:2022/api/save-subscription', {
+            fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/save-subscription', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ subscription, userId: "TU_USER_ID_OPCIONAL" })
