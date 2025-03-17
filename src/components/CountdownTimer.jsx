@@ -96,7 +96,7 @@ const CountdownTimer = ({ initialTime }) => {
 
   // Mostrar diálogo para solicitar permiso de notificaciones si es posible:
   // En iOS, solo si la app está instalada (standalone)
-  useEffect(() => {
+ /* useEffect(() => {
     if (
       (( !isiOS ) || (isiOS && isStandalone)) &&
       "Notification" in window &&
@@ -129,7 +129,7 @@ const CountdownTimer = ({ initialTime }) => {
         });
       }
     });
-  };
+  };*/
   
 
   const triggerAlarm = async () => {
@@ -139,7 +139,7 @@ const CountdownTimer = ({ initialTime }) => {
       navigator.vibrate([200, 100, 200, 100, 200]);
     }
 
-    if (!isiOS && "Notification" in window && Notification.permission === "granted") {
+    /*if (!isiOS && "Notification" in window && Notification.permission === "granted") {
       new Notification("⏳ ¡Tiempo terminado!", {
         body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
         icon: "/icon.png"
@@ -160,7 +160,7 @@ const CountdownTimer = ({ initialTime }) => {
       }
     } else {
       alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
-    }
+    }*/
   };
 
   const playBeep = () => {
@@ -215,7 +215,7 @@ const CountdownTimer = ({ initialTime }) => {
         <ReplayIcon />
       </IconButton>
 
-      <Dialog
+      {/*<Dialog
         header="Activar Notificaciones"
         visible={showDialog}
         style={{ width: "50vw" }}
@@ -225,7 +225,7 @@ const CountdownTimer = ({ initialTime }) => {
           ¿Quieres activar las notificaciones para que la alarma funcione incluso con el celular bloqueado?
         </p>
         <Button label="Activar" onClick={requestNotificationPermission} />
-      </Dialog>
+      </Dialog>*/}
     </div>
   );
 };
