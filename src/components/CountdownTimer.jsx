@@ -27,7 +27,6 @@ const CountdownTimer = ({ initialTime }) => {
     return minutes * 60 + (seconds || 0);
   };
 
-  // Inicializa el tiempo en segundos y actualiza la ref remainingTimeRef
   const initialSeconds =
     !initialTime || initialTime === 0
       ? null
@@ -41,19 +40,17 @@ const CountdownTimer = ({ initialTime }) => {
   const startTimestampRef = useRef(null);
   const remainingTimeRef = useRef(initialSeconds);
 
-  // Iniciar el temporizador
+  // Funciones para iniciar, pausar y reiniciar
   const handleStart = () => {
     startTimestampRef.current = Date.now();
     setIsRunning(true);
   };
 
-  // Pausar el temporizador y actualizar remainingTimeRef
   const handlePause = () => {
     setIsRunning(false);
     remainingTimeRef.current = timeLeft;
   };
 
-  // Reiniciar el temporizador
   const handleReset = () => {
     const newTime = timeStringToSeconds(normalizeTimeInput(initialTime));
     setTimeLeft(newTime);
@@ -69,7 +66,6 @@ const CountdownTimer = ({ initialTime }) => {
         const elapsed = Math.floor((now - startTimestampRef.current) / 1000);
         const updatedTime = Math.max(remainingTimeRef.current - elapsed, 0);
         setTimeLeft(updatedTime);
-
         if (updatedTime === 0) {
           clearInterval(interval);
           setIsRunning(false);
@@ -81,22 +77,31 @@ const CountdownTimer = ({ initialTime }) => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  useEffect(() => {
-    if (
-      "Notification" in window &&
-      Notification.permission === "default" &&
-      !localStorage.getItem("notificationRequested")
-    ) {
-      setShowDialog(true);
-    }
-  }, []);
+  // Detecta Safari mediante una expresión regular
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+  /* 
+    Se muestra el diálogo de confirmación si:
+      - La API Notification existe, y
+      - El permiso es "default" o (en Safari) si no está "granted"
+    Esto lo hace compatible en Windows, Android y Safari.
+  */
+  useEffect(() => {
+    if ("Notification" in window) {
+      if (Notification.permission === "default" || (isSafari && Notification.permission !== "granted")) {
+        setShowDialog(true);
+      }
+    }
+  }, [isSafari]);
+
+  // Al hacer clic en "Activar", se solicita el permiso sin iniciar el temporizador.
   const requestNotificationPermission = () => {
     setShowDialog(false);
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         localStorage.setItem("notificationRequested", "true");
       }
+      // Nota: No se inicia el temporizador aquí.
     });
   };
 
@@ -121,7 +126,6 @@ const CountdownTimer = ({ initialTime }) => {
     const pauseBetweenBeeps = 0.1;
     const pairsCount = 3;
     let startTime = audioCtx.currentTime;
-
     for (let i = 0; i < pairsCount; i++) {
       for (let j = 0; j < 2; j++) {
         const oscillator = audioCtx.createOscillator();
@@ -133,10 +137,7 @@ const CountdownTimer = ({ initialTime }) => {
         oscillator.start(startTime);
         oscillator.stop(startTime + beepDuration);
         gainNode.gain.setValueAtTime(1, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(
-          0.001,
-          startTime + beepDuration
-        );
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + beepDuration);
         startTime += beepDuration + pauseBetweenBeeps;
       }
       startTime += 0.4;
