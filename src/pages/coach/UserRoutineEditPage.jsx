@@ -3,33 +3,23 @@ import { useParams } from 'react-router-dom';
 
 //.............................. SERVICES ..............................//
 
-
 import * as WeekService from '../../services/week.services.js';
 import * as ParService from '../../services/par.services.js';
 
-
 //.............................. HELPERS ..............................//
-
-
 
 import * as NotifyHelper from './../../helpers/notify.js';
 import * as RefreshFunction from './../../helpers/generateUUID.js';
-
-
 
 //.............................. BIBLIOTECAS EXTERNAS ..............................//
 
 import { Tour } from 'antd'; // Importamos el componente Tour
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
 
-
-
 //.............................. COMPONENTES ..............................//
 
 import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
 import LogoChico from '../../components/LogoChico.jsx';
-
-
 
 //.............................. ICONOS MUI ..............................//
 
@@ -41,9 +31,6 @@ import PersonIcon from '@mui/icons-material/Person';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
-
-
-
 
 function UserRoutineEditPage() {
 
@@ -59,13 +46,9 @@ function UserRoutineEditPage() {
     const [tourVisible, setTourVisible] = useState(false);
     const [firstWidth, setFirstWidth] = useState(); 
 
-    let idRefresh = RefreshFunction.generateUUID();
-
-
     const [weekDate, setWeekDate] = useState(() => {
         return localStorage.getItem("weekDate") || "";
     });
-
 
     const [useDate, setUseDate] = useState(() => {
         const saved = localStorage.getItem("useDate");
@@ -113,7 +96,7 @@ function UserRoutineEditPage() {
                 nextButtonProps: { children: '¡Finalizar!' }
             }
         ]);
-    }, []);
+    }, [username]);
 
     useEffect(() => {
         setLoading(true);
@@ -128,7 +111,6 @@ function UserRoutineEditPage() {
                 NotifyHelper.updateToast();
             });
     }, [status, id]);
-
 
     const copyRoutine = (data) => {
         setWeekClipboardLocalStorage(data);
@@ -160,7 +142,7 @@ function UserRoutineEditPage() {
         }
 
         WeekService.createWeek({ name }, id)
-            .then(() => setStatus(idRefresh));
+            .then(() => setStatus(RefreshFunction.generateUUID())); // Generamos un nuevo idRefresh
     }
 
     function createWeekCopyLastWeek() {
@@ -168,7 +150,7 @@ function UserRoutineEditPage() {
         // Si quieres pasarle algún dato adicional según se use fecha o número:
         WeekService.createClonWeek(id, { fecha: useDate ? 'isDate' : 'noDate' })
             .then(() => {
-                setStatus(idRefresh);
+                setStatus(RefreshFunction.generateUUID());
             });
     }
 
@@ -178,8 +160,8 @@ function UserRoutineEditPage() {
                 const parsedData = JSON.parse(weekClipboardLocalStorage);
                 ParService.createPARroutine(parsedData, id)
                     .then(() => {
-                        setLoading(idRefresh);
-                        setStatus(idRefresh);
+                        setLoading(false); // Indicamos que terminó la carga
+                        setStatus(RefreshFunction.generateUUID()); // Generamos un nuevo idRefresh para refrescar la tabla
                         NotifyHelper.updateToast();
                     });
             } else {
@@ -347,7 +329,6 @@ function UserRoutineEditPage() {
                     }}
                     scrollIntoViewOptions={true}
                   />
-                
                 )}
 
             </section>

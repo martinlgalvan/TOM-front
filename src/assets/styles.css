@@ -256,9 +256,7 @@ p {
     width: 140px !important;
   }
 
-  .marginReps{
-    margin-top: 29px;
-  }
+
 
   .custom-fieldset {
     border: 1px solid #ccc;
@@ -773,44 +771,45 @@ p {
 }
 
 .td-0{
-  width: 50px !important;
+  min-width: 50px !important;
 }
 
 .td-1{
-  width: 10px !important;
+  min-width: 10px !important;
 
 }
 
 .td-2{
-  width: 300px !important;
+  min-width: 200px !important;
 }
 
 .td-3{
-  width: 10px !important;
+  min-width: 10px !important;
 }
 
 .td-4{
-  width: 10px !important;
+  min-width: 10px !important;
 }
 
 .td-5{
-  width: 100px !important;
+  min-width: 75px !important;
+  max-width: 110px !important;
 }
 
 .td-6{
-  width: 80px !important;
+  min-width: 80px !important;
 }
 
 .td-7{
-  width: 10px !important;
+  min-width: 10px !important;
 }
 
 .td-8{
-  width: 200px  !important;
+  min-width: 150px  !important;
 }
 
 .td-9{
-  width: 60px  !important;
+  min-width: 60px  !important;
 }
 
 .colorPencil{
@@ -1435,7 +1434,7 @@ width: 50px;
 }
 
 .marginReps{
-  padding-top: 35px  !important;
+  padding-top: 27px  !important;
 }
 
 .titleWeek2 {
@@ -2722,16 +2721,22 @@ width: 50px;
   }
 }
 
+@media screen and (max-width: 1550px ) {
+  .td-6{
+    width: 80px !important;
+  }
+}
+
 @media screen and (max-width: 1366px ) {
   .td-6{
-    width: 130px !important;
+    width: 80px !important;
   }
 }
 
 
 @media screen and (min-width: 1550px ) {
   .td-6{
-    width: 80px !important;
+    width: 75px !important;
   }
 }
 

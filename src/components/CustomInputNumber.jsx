@@ -9,15 +9,15 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
 const CustomInputNumber = React.forwardRef(
-  ({ initialValue, onChange, disabled, isRep }, ref) => {
-    const hasNonNumber = !/^\d+$/.test(String(initialValue));
-    const [value, setValue] = useState(initialValue);
-    const [isTextMode, setIsTextMode] = useState(hasNonNumber);
-    const [firstWidth, setFirstWidth] = useState();
+  ({ initialValue, onChange, disabled, isRep, onActivate }, ref) => {
 
+    const [value, setValue] = useState(initialValue);
+    const [isTextMode, setIsTextMode] = useState(typeof initialValue === 'string');
+    const [firstWidth, setFirstWidth] = useState();
+    console.log(onActivate)
     useEffect(() => {
       setFirstWidth(window.innerWidth)
-
+      
       if (isTextMode && initialValue !== value) {
         setValue(initialValue);
       }
@@ -49,15 +49,18 @@ const CustomInputNumber = React.forwardRef(
       }
     };
 
+    
+
     const handleSelectChange = (e) => {
       setIsTextMode(e.value === 'text');
-      setValue('');  // Reset value when switching modes
+      onActivate(true)
+
     };
 
     return (
       <>
-      <div className={`row justify-content-center text-center aa ${isRep && firstWidth > 992 && ''} ${isRep && 'mb-2'}`}>
-          <div className="input-number-container">
+      <div className={`row justify-content-center text-center aa ${isRep && firstWidth > 992 && ''} ${isRep && 'mb-2 marginReps'}`}>
+          <div className="input-number-container ">
 
               <IconButton               
               className={`buttonRight ${isTextMode && 'd-none'}`}
@@ -89,7 +92,7 @@ const CustomInputNumber = React.forwardRef(
         </div>
 
               {isRep && (
-                <div className='styleSelectButton text-center'>
+                <div className='styleSelectButton text-center '>
                   <SelectButton
                     className='styleSelectButton '
                     value={isTextMode ? 'text' : 'number'}

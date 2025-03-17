@@ -34,7 +34,7 @@ import { Segmented } from "antd";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import esES from 'rsuite/locales/es_ES'; 
 import ObjectId from 'bson-objectid';
-
+import { SelectButton } from 'primereact/selectbutton';
 
 //.............................. COMPONENTES ..............................//
 
@@ -69,7 +69,7 @@ import Looks6Icon from '@mui/icons-material/Looks6';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-
+import RemoveIcon from '@mui/icons-material/Remove';
 
 
 
@@ -151,6 +151,9 @@ function DayEditDetailsPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [tourVisible, setTourVisible] = useState(false);
 
+  const [renderInputSets, setRenderInputSets] = useState(true);
+  const [renderInputReps, setRenderInputReps] = useState(true);
+
   const productRefsSimple = useRef([]);
   const productRefsCircuit = useRef([]);
 
@@ -159,7 +162,7 @@ function DayEditDetailsPage() {
     Notify.notifyA("Cargando");
 
     WeekService.findByWeekId(week_id).then((data) => {
-      console.log(data)
+      console.log(data[0].routine[0])
       setRoutine(data[0]);
       setWeekName(data[0].name);
       setModifiedDay(data[0].routine);
@@ -191,11 +194,7 @@ function DayEditDetailsPage() {
   }, []);
 
 
-  useEffect(() => {
-    if (day[indexDay]) {
-      setCurrentDay({ ...day[indexDay] });
-    }
-  }, [day, indexDay]);         
+     
 
 
   useEffect(() => {
@@ -292,6 +291,13 @@ function DayEditDetailsPage() {
 
 
 
+  useEffect(() => {
+    if (day[indexDay]) {
+      setCurrentDay({ ...day[indexDay] });
+      setRenderInputSets(true)
+      setRenderInputReps(true)
+    }
+  }, [day, indexDay]);      
 
 
 
@@ -383,18 +389,97 @@ function DayEditDetailsPage() {
     setModifiedDay(updatedDays);
   };
 
+  const onActivateTextMode = (data) => {
+    console.log("fff")
+    setIsEditing(true)
+  };
+
   const customInputEditDay = (data, index, field) => {
-    if (field === "sets" || field === "reps") {
+    if (field === "sets" ) {
       return (
+        <>
+        {renderInputSets ? 
         <CustomInputNumber
           ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
           initialValue={data}
           onChange={(e) => changeModifiedData(index, e, field)}
           isRep={field === "reps"}
           className={`mt-5`}
-        />
+
+        /> :
+        <>
+          <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 marginReps'}`}>
+            <div className="input-number-container">
+            <IconButton               
+                className={`buttonRight `}>
+                    <RemoveIcon  />
+                </IconButton>
+
+              <input
+                className={`form-control rounded-0 inp text-center inputFontSize `}
+              />
+
+                <IconButton               
+                className={`buttonLeft `}
+                >
+                    <AddIcon  />
+                </IconButton>
+            </div>
+          </div>
+
+          </>
+        }
+        </>
       );
-    } else if (field === "video") {
+    } else if (field === "reps" ) {
+      return (
+        <>
+        {renderInputReps ? 
+        <CustomInputNumber
+          ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
+          initialValue={data}
+          onChange={(e) => changeModifiedData(index, e, field)}
+          isRep={field === "reps"}
+          className={`mt-5`}
+          onActivate={() => onActivateTextMode()}
+        /> :
+        <>
+          <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 marginReps'}`}>
+            <div className="input-number-container">
+            <IconButton               
+                className={`buttonRight `}
+                >
+                    <RemoveIcon  />
+                </IconButton>
+
+              <input
+                
+                className={`form-control rounded-0 inp text-center inputFontSize `}
+              />
+
+                <IconButton               
+                className={`buttonLeft `}
+                >
+                    <AddIcon  />
+                </IconButton>
+            </div>
+          </div>
+
+            {field == 'reps' && (
+              <div className='styleSelectButton text-center '>
+                <SelectButton
+                  className='styleSelectButton '
+                  options={[
+                    { label: 'Modo texto', value: 'text' }
+                  ]}
+                />
+              </div>
+            )}
+          </>
+        }
+        </>
+      );}
+       else if (field === "video") {
       const shouldGlow = glowVideo[index];
       return (
         <>
@@ -775,7 +860,7 @@ function DayEditDetailsPage() {
           ref={(el) => inputRefs.current[`${circuitIndex}-${exerciseIndex}-${field}`] = el}
           initialValue={data}
           onChange={(e) => changeExerciseInCircuit(circuitIndex, exerciseIndex, field, e)}
-          isRep
+          isRep={field === 'reps'}
           className={`mt-5`}
         />
       );
@@ -854,7 +939,7 @@ function DayEditDetailsPage() {
     const updatedAllDays = [...allDays];
     updatedAllDays[indexDay] = updatedDays[indexDay];
     setAllDays(updatedAllDays);
-    setCurrentDay(null);
+    setRenderInputSets(null)
   };
 
   const incrementAllReps = () => {
@@ -883,7 +968,7 @@ function DayEditDetailsPage() {
     const updatedAllDays = [...allDays];
     updatedAllDays[indexDay] = updatedDays[indexDay];
     setAllDays(updatedAllDays);
-    setCurrentDay(null);
+    setRenderInputReps(null)
   };
 
   const openEditWeekNameDialog = () => {
@@ -1415,7 +1500,7 @@ function DayEditDetailsPage() {
                 <Droppable droppableId="exercises-desktop">
                   {(provided) => (
                     <div 
-                      className="table-responsive col-12 col-xl-11 altoTable"
+                      className="table-responsive col-12  altoTable"
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                     >
@@ -1493,7 +1578,7 @@ function DayEditDetailsPage() {
                                           "sets"
                                         )}
                                       </td>
-                                      <td className="td-4 marginReps">
+                                      <td className="td-4 ">
                                         {customInputEditDay(
                                           exercise.reps,
                                           i,
@@ -1648,13 +1733,13 @@ function DayEditDetailsPage() {
           {isEditing && (
             <div className="floating-button-mobile index-up">
               <button
-                className="px-5 btn colorRed py-2 my-4"
+                className="px-5 btn colorCancel py-2 my-5"
                 onClick={() => applyChanges()}
               >
                 Guardar
               </button>
               <button
-                className="px-5 btn colorCancel py-2 my-4"
+                className="px-5 btn colorRed  py-2 my-5"
                 onClick={() => confirmCancel()}
               >
                 Cancelar
@@ -1754,7 +1839,7 @@ function DayEditDetailsPage() {
           </Dialog>
 
           <Dialog
-            className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
             contentClassName={"colorDialog"}
             headerClassName={"colorDialog"}
             header="Entrada en calor"
