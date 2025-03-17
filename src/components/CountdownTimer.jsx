@@ -7,6 +7,10 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 
 const CountdownTimer = ({ initialTime }) => {
+  // Detectar Safari e iOS
+  const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
   const normalizeTimeInput = (input) => {
     if (typeof input !== "string") input = input.toString().trim();
     if (input.includes(":")) {
@@ -27,6 +31,7 @@ const CountdownTimer = ({ initialTime }) => {
     return minutes * 60 + (seconds || 0);
   };
 
+  // Inicializa el tiempo en segundos y actualiza la ref remainingTimeRef
   const initialSeconds =
     !initialTime || initialTime === 0
       ? null
@@ -39,18 +44,29 @@ const CountdownTimer = ({ initialTime }) => {
 
   const startTimestampRef = useRef(null);
   const remainingTimeRef = useRef(initialSeconds);
+  // Ref para almacenar el AudioContext en Safari
+  const audioContextRef = useRef(null);
 
-  // Funciones para iniciar, pausar y reiniciar
+  // Iniciar el temporizador
   const handleStart = () => {
+    // Para Safari, creamos y reanudamos el AudioContext en respuesta a una interacción del usuario
+    if (isSafari && !audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioContextRef.current.state === "suspended") {
+        audioContextRef.current.resume();
+      }
+    }
     startTimestampRef.current = Date.now();
     setIsRunning(true);
   };
 
+  // Pausar el temporizador y actualizar remainingTimeRef
   const handlePause = () => {
     setIsRunning(false);
     remainingTimeRef.current = timeLeft;
   };
 
+  // Reiniciar el temporizador
   const handleReset = () => {
     const newTime = timeStringToSeconds(normalizeTimeInput(initialTime));
     setTimeLeft(newTime);
@@ -66,6 +82,7 @@ const CountdownTimer = ({ initialTime }) => {
         const elapsed = Math.floor((now - startTimestampRef.current) / 1000);
         const updatedTime = Math.max(remainingTimeRef.current - elapsed, 0);
         setTimeLeft(updatedTime);
+
         if (updatedTime === 0) {
           clearInterval(interval);
           setIsRunning(false);
@@ -77,31 +94,24 @@ const CountdownTimer = ({ initialTime }) => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  // Detecta Safari mediante una expresión regular
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-  /* 
-    Se muestra el diálogo de confirmación si:
-      - La API Notification existe, y
-      - El permiso es "default" o (en Safari) si no está "granted"
-    Esto lo hace compatible en Windows, Android y Safari.
-  */
+  // No solicitar notificaciones en iOS (Safari en iOS no soporta la API)
   useEffect(() => {
-    if ("Notification" in window) {
-      if (Notification.permission === "default" || (isSafari && Notification.permission !== "granted")) {
-        setShowDialog(true);
-      }
+    if (
+      !isiOS &&
+      "Notification" in window &&
+      Notification.permission === "default" &&
+      !localStorage.getItem("notificationRequested")
+    ) {
+      setShowDialog(true);
     }
-  }, [isSafari]);
+  }, [isiOS]);
 
-  // Al hacer clic en "Activar", se solicita el permiso sin iniciar el temporizador.
   const requestNotificationPermission = () => {
     setShowDialog(false);
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         localStorage.setItem("notificationRequested", "true");
       }
-      // Nota: No se inicia el temporizador aquí.
     });
   };
 
@@ -112,20 +122,30 @@ const CountdownTimer = ({ initialTime }) => {
       navigator.vibrate([200, 100, 200, 100, 200]);
     }
 
-    if ("Notification" in window && Notification.permission === "granted") {
+    // En iOS se muestra un alert ya que no se soportan las notificaciones web
+    if (!isiOS && "Notification" in window && Notification.permission === "granted") {
       new Notification("⏳ ¡Tiempo terminado!", {
         body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
         icon: "/icon.png"
       });
+    } else if (isiOS) {
+      alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
     }
   };
 
   const playBeep = () => {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx;
+    // Si es Safari usamos el AudioContext almacenado y ya reanudado
+    if (isSafari && audioContextRef.current) {
+      audioCtx = audioContextRef.current;
+    } else {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
     const beepDuration = 0.2;
     const pauseBetweenBeeps = 0.1;
     const pairsCount = 3;
     let startTime = audioCtx.currentTime;
+
     for (let i = 0; i < pairsCount; i++) {
       for (let j = 0; j < 2; j++) {
         const oscillator = audioCtx.createOscillator();
@@ -137,7 +157,10 @@ const CountdownTimer = ({ initialTime }) => {
         oscillator.start(startTime);
         oscillator.stop(startTime + beepDuration);
         gainNode.gain.setValueAtTime(1, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + beepDuration);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.001,
+          startTime + beepDuration
+        );
         startTime += beepDuration + pauseBetweenBeeps;
       }
       startTime += 0.4;
