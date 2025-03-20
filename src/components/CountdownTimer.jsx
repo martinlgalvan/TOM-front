@@ -13,15 +13,20 @@ const CountdownTimer = ({ initialTime }) => {
   // Detectar navegador y dispositivo
   const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isStandalone = isiOS && ("standalone" in window.navigator) && window.navigator.standalone;
 
-  // Estado para depuración (siempre visible en debug)
-  const [notificationStatus, setNotificationStatus] = useState(Notification.permission);
-  const [debugInfo, setDebugInfo] = useState({
-    localStorageNotification: localStorage.getItem("notificationRequested") || "not set"
-  });
+  // Determinar si la app está en modo standalone (para iOS y otros navegadores)
+  const [isStandaloneState, setIsStandaloneState] = useState(false);
+  useEffect(() => {
+    let standalone = false;
+    if (isiOS) {
+      standalone = ("standalone" in window.navigator) && window.navigator.standalone;
+    } else if (window.matchMedia) {
+      standalone = window.matchMedia("(display-mode: standalone)").matches;
+    }
+    setIsStandaloneState(standalone);
+  }, [isiOS]);
 
-  // Funciones para formatear tiempo
+  // Funciones para formatear y convertir tiempo...
   const normalizeTimeInput = (input) => {
     if (typeof input !== "string") input = input.toString().trim();
     if (input.includes(":")) {
@@ -40,7 +45,7 @@ const CountdownTimer = ({ initialTime }) => {
     return minutes * 60 + (seconds || 0);
   };
 
-  // Inicialización del tiempo
+  // Inicialización del tiempo y estados
   const initialSeconds =
     !initialTime || initialTime === 0
       ? null
@@ -50,24 +55,17 @@ const CountdownTimer = ({ initialTime }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState(Notification.permission);
+  const [debugInfo, setDebugInfo] = useState({
+    localStorageNotification: localStorage.getItem("notificationRequested") || "not set"
+  });
+  const [dialogShown, setDialogShown] = useState(false);
 
   const startTimestampRef = useRef(null);
   const remainingTimeRef = useRef(initialSeconds);
   const audioContextRef = useRef(null);
 
-  // Condicional: Mostrar diálogo solo si aún no se ha solicitado
-  useEffect(() => {
-    if (
-      (( !isiOS ) || (isiOS && isStandalone)) &&
-      "Notification" in window &&
-      Notification.permission === "default" &&
-      !localStorage.getItem("notificationRequested")
-    ) {
-      setShowDialog(true);
-    }
-  }, [isiOS, isStandalone]);
-
-  // Actualiza estado de permiso y debugInfo periódicamente
+  // Actualiza periódicamente el estado de los permisos y localStorage
   useEffect(() => {
     const interval = setInterval(() => {
       setNotificationStatus(Notification.permission);
@@ -77,6 +75,20 @@ const CountdownTimer = ({ initialTime }) => {
     }, 2000);
     return () => clearInterval(interval);
   }, []);
+
+  // Condición para mostrar el diálogo (si el permiso es "default" y no se ha solicitado)
+  useEffect(() => {
+    if (
+      !dialogShown &&
+      (( !isiOS ) || (isiOS && isStandaloneState)) &&
+      "Notification" in window &&
+      Notification.permission === "default" &&
+      !localStorage.getItem("notificationRequested")
+    ) {
+      setShowDialog(true);
+      setDialogShown(true);
+    }
+  }, [isiOS, isStandaloneState, dialogShown]);
 
   const handleStart = () => {
     if (isSafari && !audioContextRef.current) {
@@ -120,10 +132,10 @@ const CountdownTimer = ({ initialTime }) => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  // Función para limpiar el localStorage (debug)
   const clearLocalStorage = () => {
     localStorage.removeItem("notificationRequested");
     setDebugInfo({ localStorageNotification: "not set" });
+    setDialogShown(false); // Permite volver a mostrar el diálogo
   };
 
   const requestNotificationPermission = () => {
@@ -161,7 +173,7 @@ const CountdownTimer = ({ initialTime }) => {
         body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
         icon: "/icon.png"
       });
-    } else if (isiOS && isStandalone) {
+    } else if (isiOS && isStandaloneState) {
       if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
         if (reg) {
@@ -259,8 +271,9 @@ const CountdownTimer = ({ initialTime }) => {
         }}
       >
         <div><strong>Debug Info</strong></div>
-        <div>Notification.permission: {notificationStatus}</div>
-        <div>localStorage.notificationRequested: {debugInfo.localStorageNotification}</div>
+        <div>Permisos: {notificationStatus}</div>
+        <div>localStorage esta?: {debugInfo.localStorageNotification}</div>
+        <div>Standalone: {isStandaloneState ? "Yes" : "No"}</div>
         <Button label="Clear localStorage" onClick={clearLocalStorage} />
         <Button label="Re-request Permission" onClick={requestNotificationPermission} />
       </div>
