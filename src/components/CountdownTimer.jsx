@@ -10,33 +10,12 @@ import { Dialog } from "primereact/dialog";
 import { subscribeUserToPush } from "./../pushNotifications";
 
 const CountdownTimer = ({ initialTime }) => {
-  // Detección de entorno
+  // (Tu lógica existente para detectar iOS, Safari, etc.)
   const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isStandalone = isiOS && window.navigator.standalone === true; // Se simplifica la detección
+  const isStandalone = isiOS && ("standalone" in window.navigator) && window.navigator.standalone;
 
-  // Estado para mostrar información de debug
-  const [serviceWorkerStatus, setServiceWorkerStatus] = useState("not registered");
-
-  // Registro del Service Worker
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => {
-          console.log("Service Worker registrado", reg);
-          setServiceWorkerStatus("registered");
-        })
-        .catch(err => {
-          console.error("Fallo en el registro del Service Worker", err);
-          setServiceWorkerStatus("failed");
-        });
-    } else {
-      console.warn("Service Worker no es soportado en este navegador");
-      setServiceWorkerStatus("not supported");
-    }
-  }, []);
-
-  // Funciones de normalización y conversión de tiempo
+  // Funciones para formatear y convertir tiempo...
   const normalizeTimeInput = (input) => {
     if (typeof input !== "string") input = input.toString().trim();
     if (input.includes(":")) {
@@ -55,6 +34,7 @@ const CountdownTimer = ({ initialTime }) => {
     return minutes * 60 + (seconds || 0);
   };
 
+  // Inicialización del tiempo y estados
   const initialSeconds =
     !initialTime || initialTime === 0
       ? null
@@ -111,10 +91,14 @@ const CountdownTimer = ({ initialTime }) => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  // Solicitar permiso de notificaciones y mostrar diálogo
-  useEffect(() => {
+
+  
+
+  // Mostrar diálogo para solicitar permiso de notificaciones si es posible:
+  // En iOS, solo si la app está instalada (standalone)
+ useEffect(() => {
     if (
-      ((!isiOS) || (isiOS && isStandalone)) &&
+      (( !isiOS ) || (isiOS && isStandalone)) &&
       "Notification" in window &&
       Notification.permission === "default" &&
       !localStorage.getItem("notificationRequested")
@@ -124,6 +108,7 @@ const CountdownTimer = ({ initialTime }) => {
   }, [isiOS, isStandalone]);
 
   const requestNotificationPermission = () => {
+
     setShowDialog(false);
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
@@ -135,7 +120,9 @@ const CountdownTimer = ({ initialTime }) => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ subscription, userId: "TU_USER_ID_OPCIONAL" })
             })
-              .then(response => response.json())
+            .then(response => {
+              return response.json();
+            })
               .then(data => console.log("Suscripción guardada en el backend:", data))
               .catch(err => console.error("Error enviando la suscripción al backend:", err));
           }
@@ -143,8 +130,8 @@ const CountdownTimer = ({ initialTime }) => {
       }
     });
   };
+  
 
-  // Se modificó triggerAlarm para intentar usar el Service Worker sin importar el modo standalone en iOS
   const triggerAlarm = async () => {
     playBeep();
 
@@ -152,8 +139,13 @@ const CountdownTimer = ({ initialTime }) => {
       navigator.vibrate([200, 100, 200, 100, 200]);
     }
 
-    if ("Notification" in window && Notification.permission === "granted") {
-      try {
+    if (!isiOS && "Notification" in window && Notification.permission === "granted") {
+      new Notification("⏳ ¡Tiempo terminado!", {
+        body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
+        icon: "/icon.png"
+      });
+    } else if (isiOS && isStandalone) {
+      if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
         if (reg) {
           reg.showNotification("⏳ ¡Tiempo terminado!", {
@@ -161,13 +153,9 @@ const CountdownTimer = ({ initialTime }) => {
             icon: "/icon.png"
           });
         } else {
-          new Notification("⏳ ¡Tiempo terminado!", {
-            body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
-            icon: "/icon.png"
-          });
+          alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
         }
-      } catch (error) {
-        console.error("Error mostrando notificación:", error);
+      } else {
         alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
       }
     } else {
@@ -238,26 +226,6 @@ const CountdownTimer = ({ initialTime }) => {
         </p>
         <Button label="Activar" onClick={requestNotificationPermission} />
       </Dialog>
-
-      {/* Pantalla de Debug */}
-      <div style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc" }}>
-        <h3>Debug</h3>
-        <pre>{JSON.stringify({
-          isSafari,
-          isiOS,
-          isStandalone,
-          serviceWorkerStatus,
-          timeLeft,
-          isRunning,
-          hasFinished,
-          notificationPermission: "Notification" in window ? Notification.permission : "not supported"
-        }, null, 2)}</pre>
-        {isiOS && !isStandalone && (
-          <p style={{ color: "red" }}>
-            Nota: En iOS, las notificaciones push solo están disponibles en modo PWA (instalado).
-          </p>
-        )}
-      </div>
     </div>
   );
 };
