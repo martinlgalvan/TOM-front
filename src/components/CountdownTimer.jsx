@@ -10,12 +10,18 @@ import { Dialog } from "primereact/dialog";
 import { subscribeUserToPush } from "./../pushNotifications";
 
 const CountdownTimer = ({ initialTime }) => {
-  // (Tu lógica existente para detectar iOS, Safari, etc.)
+  // Detectar navegador y dispositivo
   const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isStandalone = isiOS && ("standalone" in window.navigator) && window.navigator.standalone;
 
-  // Funciones para formatear y convertir tiempo...
+  // Estado para depuración (siempre visible en debug)
+  const [notificationStatus, setNotificationStatus] = useState(Notification.permission);
+  const [debugInfo, setDebugInfo] = useState({
+    localStorageNotification: localStorage.getItem("notificationRequested") || "not set"
+  });
+
+  // Funciones para formatear tiempo
   const normalizeTimeInput = (input) => {
     if (typeof input !== "string") input = input.toString().trim();
     if (input.includes(":")) {
@@ -34,7 +40,7 @@ const CountdownTimer = ({ initialTime }) => {
     return minutes * 60 + (seconds || 0);
   };
 
-  // Inicialización del tiempo y estados
+  // Inicialización del tiempo
   const initialSeconds =
     !initialTime || initialTime === 0
       ? null
@@ -48,6 +54,29 @@ const CountdownTimer = ({ initialTime }) => {
   const startTimestampRef = useRef(null);
   const remainingTimeRef = useRef(initialSeconds);
   const audioContextRef = useRef(null);
+
+  // Condicional: Mostrar diálogo solo si aún no se ha solicitado
+  useEffect(() => {
+    if (
+      (( !isiOS ) || (isiOS && isStandalone)) &&
+      "Notification" in window &&
+      Notification.permission === "default" &&
+      !localStorage.getItem("notificationRequested")
+    ) {
+      setShowDialog(true);
+    }
+  }, [isiOS, isStandalone]);
+
+  // Actualiza estado de permiso y debugInfo periódicamente
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNotificationStatus(Notification.permission);
+      setDebugInfo({
+        localStorageNotification: localStorage.getItem("notificationRequested") || "not set"
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleStart = () => {
     if (isSafari && !audioContextRef.current) {
@@ -91,55 +120,43 @@ const CountdownTimer = ({ initialTime }) => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-
-  
-
-  // Mostrar diálogo para solicitar permiso de notificaciones si es posible:
-  // En iOS, solo si la app está instalada (standalone)
- /* useEffect(() => {
-    if (
-      (( !isiOS ) || (isiOS && isStandalone)) &&
-      "Notification" in window &&
-      Notification.permission === "default" &&
-      !localStorage.getItem("notificationRequested")
-    ) {
-      setShowDialog(true);
-    }
-  }, [isiOS, isStandalone]);
+  // Función para limpiar el localStorage (debug)
+  const clearLocalStorage = () => {
+    localStorage.removeItem("notificationRequested");
+    setDebugInfo({ localStorageNotification: "not set" });
+  };
 
   const requestNotificationPermission = () => {
-
     setShowDialog(false);
+    console.log("Solicitando permisos de notificación...");
     Notification.requestPermission().then((permission) => {
+      setNotificationStatus(permission);
+      console.log("Permiso:", permission);
       if (permission === "granted") {
         localStorage.setItem("notificationRequested", "true");
         subscribeUserToPush().then((subscription) => {
           if (subscription) {
+            console.log("Enviando suscripción al backend...", subscription);
             fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/save-subscription', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ subscription, userId: "TU_USER_ID_OPCIONAL" })
             })
-            .then(response => {
-              return response.json();
-            })
+              .then(response => response.json())
               .then(data => console.log("Suscripción guardada en el backend:", data))
               .catch(err => console.error("Error enviando la suscripción al backend:", err));
           }
         });
       }
     });
-  };*/
-  
+  };
 
   const triggerAlarm = async () => {
     playBeep();
-
     if ("vibrate" in navigator) {
       navigator.vibrate([200, 100, 200, 100, 200]);
     }
-
-    /*if (!isiOS && "Notification" in window && Notification.permission === "granted") {
+    if (!isiOS && "Notification" in window && Notification.permission === "granted") {
       new Notification("⏳ ¡Tiempo terminado!", {
         body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
         icon: "/icon.png"
@@ -153,14 +170,14 @@ const CountdownTimer = ({ initialTime }) => {
             icon: "/icon.png"
           });
         } else {
-          alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
+          console.log("No se encontró Service Worker registrado.");
         }
       } else {
-        alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
+        console.log("Service Worker no soportado.");
       }
     } else {
-      alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
-    }*/
+      console.log("Notificaciones no disponibles o permisos denegados.");
+    }
   };
 
   const playBeep = () => {
@@ -174,7 +191,6 @@ const CountdownTimer = ({ initialTime }) => {
     const pauseBetweenBeeps = 0.1;
     const pairsCount = 3;
     let startTime = audioCtx.currentTime;
-
     for (let i = 0; i < pairsCount; i++) {
       for (let j = 0; j < 2; j++) {
         const oscillator = audioCtx.createOscillator();
@@ -215,7 +231,7 @@ const CountdownTimer = ({ initialTime }) => {
         <ReplayIcon />
       </IconButton>
 
-      {/*<Dialog
+      <Dialog
         header="Activar Notificaciones"
         visible={showDialog}
         style={{ width: "50vw" }}
@@ -225,7 +241,29 @@ const CountdownTimer = ({ initialTime }) => {
           ¿Quieres activar las notificaciones para que la alarma funcione incluso con el celular bloqueado?
         </p>
         <Button label="Activar" onClick={requestNotificationPermission} />
-      </Dialog>*/}
+      </Dialog>
+
+      {/* Panel de Debug Permanente */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          background: "rgba(255,255,0,0.9)",
+          color: "#000",
+          zIndex: 9999,
+          padding: "8px",
+          fontSize: "12px",
+          maxWidth: "100%",
+          overflowX: "auto"
+        }}
+      >
+        <div><strong>Debug Info</strong></div>
+        <div>Notification.permission: {notificationStatus}</div>
+        <div>localStorage.notificationRequested: {debugInfo.localStorageNotification}</div>
+        <Button label="Clear localStorage" onClick={clearLocalStorage} />
+        <Button label="Re-request Permission" onClick={requestNotificationPermission} />
+      </div>
     </div>
   );
 };

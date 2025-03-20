@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Fragment } from 'react';
 import { Link, useParams } from "react-router-dom";
-import { Tour } from 'antd'; // Importamos el componente Tour
+import { Tour } from 'antd';
 
 import * as WeekService from "../../services/week.services.js";
 import * as UserService from "../../services/users.services.js";
@@ -9,14 +9,17 @@ import * as ExercisesService from "../../services/exercises.services.js";
 import * as Notify from './../../helpers/notify.js'
 
 import Logo from "../../components/Logo.jsx";
-import EditExercise from '../../components/EditExercise.jsx'; // (Si fuera necesario, según tu estructura)
+import EditExercise from '../../components/EditExercise.jsx';
 import Contador from "../../helpers/Contador.jsx";
 import Floating from "../../helpers/Floating.jsx";
 
 import ReactPlayer from 'react-player';
 import * as _ from "lodash";
 
-import { Carousel } from 'primereact/carousel';
+// Eliminamos la importación del Carousel de PrimeReact y usamos react-slick
+import Slider from "react-slick";
+
+
 import { Sidebar } from 'primereact/sidebar';
 import { Segmented } from 'antd';
 import { Dialog } from 'primereact/dialog';
@@ -38,50 +41,30 @@ import PercentageCalculator from "../../components/PercentageCalculator.jsx";
 import CountdownTimer from "../../components/CountdownTimer.jsx";
 import ImageIcon from '@mui/icons-material/Image';
 
-
-//QUE PUEDA SER PERSONALIZABLE PARA CADA ENTRENADOR
-//Crear botón que permita actualizar y luego de confirmar??? (thomas)
-//Confirmación al escribir de eliminación de usuario
-
 function DayDetailsPage() {
     const { id, week_id, index } = useParams();
     const op = useRef(null);
 
-    const [day_id, setDay_id] = useState();             // Carga del array principal de ejercicios
+    const [day_id, setDay_id] = useState();
     const [allDays, setAllDays] = useState([]); 
-    const [modifiedDay, setModifiedDay] = useState([]); // Array donde se copia la nueva rutina
+    const [modifiedDay, setModifiedDay] = useState([]);
     const [nameWeek, setNameWeek] = useState();
     const [firstValue, setFirstValue] = useState();
-    const [status, setStatus] = useState(false); // <--- Inicializamos en false (siempre)
-
+    const [status, setStatus] = useState(false);
     const [currentDay, setCurrentDay] = useState(null);
-
-    // Modal para edición de ejercicio en versión mobile/desktop
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);
-
-    // Este estado guardará los datos del ejercicio que se está editando
     const [completeExercise, setCompleteExercise] = useState();
-    
-    // Estados para calculadora y dialog de videos
     const [showCalculator, setShowCalculator] = useState(false);
     const [showUploadVideos, SetShowUploadVideos] = useState(false);
-
     const [expanded, setExpanded] = useState(false);
     const [isRendered, setIsRendered] = useState();
     const [tourSteps, setTourSteps] = useState([]);
     const [tourVisible, setTourVisible] = useState(false);
-
     const contadorRef = useRef(null);
-    // Refs para las Cards (si necesitas hacer scroll u otras interacciones)
     const cardRefs = useRef([]);
-
-    // Dialog de edición de ejercicio
     const [indexOfExercise, setIndexOfExercise] = useState();
-
-    // Visibilidad del Sidebar de videos
     const [visible, setVisible] = useState(false);
     const [selectedObject, setSelectedObject] = useState(null);
-
     const [drive, setDrive] = useState(localStorage.getItem('drive'));
 
     const handleExpandClick = () => {
@@ -92,26 +75,20 @@ function DayDetailsPage() {
         SetShowUploadVideos(false);
     };
 
-    // Función para alternar la visibilidad de la calculadora
     const toggleCalculator = () => {
         setShowCalculator(!showCalculator);
     };
 
-    // CHANGES: 1er useEffect para obtener la rutina, pero sin forzar 'currentDay' a 0
     useEffect(() => {
-      if (!week_id) return; // Pequeña verificación
+      if (!week_id) return;
       WeekService.findByWeekId(week_id).then((data) => {
         if (!data?.length) return;
         setAllDays(data[0].routine);
         setNameWeek(data[0].name);
-
-        // Si 'currentDay' nunca se definió (null), arrancamos en 0
-        // Si ya tenía valor, lo dejamos.
         setCurrentDay(prev => (prev === null ? 0 : prev));
       });
     }, [week_id, status]); 
 
-    // CHANGES: 2do useEffect para setear day_id, modifiedDay, etc. en base al currentDay
     useEffect(() => {
       if (allDays.length && currentDay !== null) {
         setDay_id(allDays[currentDay]._id);
@@ -120,7 +97,6 @@ function DayDetailsPage() {
       }
     }, [allDays, currentDay]);
 
-    // Cargar URL del drive si no está en localStorage
     useEffect(() => {
         if (!localStorage.getItem('drive')) {
             UserService.findUserById(localStorage.getItem('entrenador_id')).then((data) => {
@@ -131,7 +107,6 @@ function DayDetailsPage() {
         }
     }, [drive]);
 
-    // Configurar pasos para el Tour
     useEffect(() => {
         setTourSteps([
             {
@@ -218,41 +193,34 @@ function DayDetailsPage() {
         }
     };
 
-    // Función de refresco (la usas cuando editas, etc.)
     const refreshEdit = (refresh) => {
-        setStatus(prev => !prev); // <--- CAMBIO: dispara el useEffect que recarga la data
+        setStatus(prev => !prev);
     };
 
-    // Cierra el Dialog de edición
     const hideDialogEditExercises = () => {
         setEditExerciseMobile(false);
     };
 
-    // Maneja la apertura del Sidebar con video/imagen
     const handleButtonClick = (object) => {
         setSelectedObject(object);
         setVisible(true);
     };
 
-    // Abre el Dialog con los datos del ejercicio a editar
     function handleEditMobileExercise(elementsExercise, index){
         setIndexOfExercise(index);
         setCompleteExercise(elementsExercise);
         setEditExerciseMobile(true);
     }
 
-    // Al dar clic en "Guardar" dentro del Dialog, se hace la petición para editar
     const handleUpdateExercise = () => {
         const newExercises = [...modifiedDay];
-        newExercises[indexOfExercise] = completeExercise; // Actualiza en memoria local
+        newExercises[indexOfExercise] = completeExercise;
         setModifiedDay(newExercises);
 
-        // Ahora llama a tu servicio para persistir el cambio en BD
         ExercisesService.editExercise(week_id, day_id, newExercises)
           .then((data) => {
-            refreshEdit(newExercises); // <--- conserva la lógica de refresco
-            setEditExerciseMobile(false); // cierra el Dialog
-
+            refreshEdit(newExercises);
+            setEditExerciseMobile(false);
             Notify.instantToast('Rutina actualizada con éxito!')
           })
           .catch((err) => {
@@ -261,23 +229,35 @@ function DayDetailsPage() {
           });
     };
 
-    // Template para carrousel de "warmup"
     const productTemplate = useCallback((exercise) => {
+        const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 450;
+        const cardMaxWidth = isSmallScreen ? '380px' : '400px';
+        
         return (
-            <div className="border-1 surface-border border-round m-2  mb-0 text-center py-3 ">
-                <div>
+            <div 
+                style={{ 
+                    width: '100%', 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    padding: '0 5px' 
+                }}
+            >
+                <div 
+                    className="border-1 surface-border border-round text-center py-3" 
+                    style={{ width: '90%', maxWidth: cardMaxWidth, boxSizing: 'border-box' }}
+                >
                     <span>{exercise.numberWarmup}</span>
-                    <h4 className="">{exercise.name}</h4>
-                    <p className="">{exercise.sets} series x {exercise.reps} repeticiones</p>
+                    <h4>{exercise.name}</h4>
+                    <p>{exercise.sets} series x {exercise.reps} repeticiones</p>
                     <p>{exercise.peso}</p>
                     <p>{exercise.rest}</p>
                     {exercise.notas && (
-                      <div>
-                        <p className="titleObservaciones">Observaciones</p>
-                        <p className="paraphObservaciones">{exercise.notas}</p>
-                      </div>
+                        <div>
+                            <p className="titleObservaciones">Observaciones</p>
+                            <p className="paraphObservaciones">{exercise.notas}</p>
+                        </div>
                     )}
-                    <div className="">
+                    <div>
                         <IconButton
                             aria-label="video"
                             className="p-0"
@@ -290,9 +270,47 @@ function DayDetailsPage() {
                 </div>
             </div>
         );
-    }, []); 
+    }, []);
 
-    // CHANGES: El handleDayChange solo setea 'currentDay' según el valor que eligieron
+    // Configuración de react-slick para el carrusel de entrada en calor
+    const sliderSettings = {
+        dots: true,
+        infinite: false,
+        speed: 500,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        responsive: [
+            {
+              breakpoint: 1400,
+              settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1
+              }
+            },
+            {
+              breakpoint: 1199,
+              settings: {
+                slidesToShow: 3,
+                slidesToScroll: 1
+              }
+            },
+            {
+              breakpoint: 767,
+              settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1
+              }
+            },
+            {
+              breakpoint: 575,
+              settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1
+              }
+            }
+        ]
+    };
+
     const handleDayChange = (value) => {
         const actualDay = allDays.find(item => item._id === value);
         const idx = allDays.findIndex(item => item._id === actualDay._id);
@@ -315,8 +333,6 @@ function DayDetailsPage() {
                             value: day._id
                         }))}
                         className="stylesSegmented"
-                        // value = day_id? 
-                        // Ojo: podemos usar day_id directamente
                         value={day_id}
                         onChange={handleDayChange}
                     />
@@ -329,219 +345,187 @@ function DayDetailsPage() {
                     </h2>
 
                     {allDays[currentDay]?.warmup != null ? (
-                        <div className="card">
+                        <div className="card mb-4">
                             <h3 className="mt-3">Entrada en calor</h3>
-                            <Carousel
-                                className="mx-0"
-                                value={allDays[currentDay].warmup}
-                                numVisible={1}
-                                numScroll={1}
-                                responsiveOptions={[
-                                  { breakpoint: '1400px', numVisible: 2, numScroll: 1 },
-                                  { breakpoint: '1199px', numVisible: 3, numScroll: 1 },
-                                  { breakpoint: '767px', numVisible: 2, numScroll: 1 },
-                                  { breakpoint: '575px', numVisible: 1, numScroll: 1 }
-                                ]}
-                                itemTemplate={productTemplate}
-                            />
+                            <Slider {...sliderSettings} className="mx-0">
+                                {allDays[currentDay].warmup.map((exercise, idx) => (
+                                    <div key={idx}>
+                                        {productTemplate(exercise)}
+                                    </div>
+                                ))}
+                            </Slider>
                         </div>
                     ) : (
                         <p>No hay entrada en calor para este día.</p>
                     )}
 
-                    {/* Encabezado Rutina del día + botón del Tour */}
-                    <div className="row justify-content-center text-center p-0">
-                        <div className="row justify-content-center">
-                            <div className="col-12 col-md-8 position-relative text-center">
-                                <h2 className="mt-4">Rutina del día</h2>
-                                {/* 
-                                  // Si quisieras un botón para iniciar el tour:
-                                  // <button
-                                  //   className="btn btn-warning"
-                                  //   style={{ position: 'absolute', top: '20px', right: 0 }}
-                                  //   onClick={() => setTourVisible(true)}
-                                  // >
-                                  //   Info
-                                  // </button>
-                                */}
-                            </div>
-                        </div>
+                    {allDays[currentDay]?.exercises.map((element, idx) => {
+                        return (
+                          <Fragment key={`${element.exercise_id}-${idx}`}>
+                            {element.type === 'exercise' ? (
+                              <Card
+                                key={element.exercise_id}
+                                ref={(el) => (cardRefs.current[idx] = el)}
+                                className={`my-3 p-0 cardShadow titleCard`}
+                              >
+                                <CardHeader
+                                  avatar={
+                                    <Avatar
+                                      id={idx === 0 ? 'numeroSerie' : null}
+                                      aria-label="recipe"
+                                      className="avatarSize avatarColor"
+                                    >
+                                      {element.numberExercise}
+                                    </Avatar>
+                                  }
+                                  action={
+                                    <Avatar
+                                      id={idx === 0 ? 'contador' : null}
+                                      aria-label="recipe"
+                                      className=" avatarSize bg-dark "
+                                    >
+                                      <Contador className={'p-2'} max={element.sets} />
+                                    </Avatar>
+                                  }
+                                  title={
+                                    <span id={idx === 0 ? 'nombre' : null}>{element.name}</span>
+                                  }
+                                />
 
-                        {/* Mapeo de ejercicios */}
-                        {allDays[currentDay]?.exercises.map((element, idx) => {
-                            return (
-                              <Fragment key={`${element.exercise_id}-${idx}`}>
-                                {element.type === 'exercise' ? (
-                                  <Card
-                                    key={element.exercise_id}
-                                    ref={(el) => (cardRefs.current[idx] = el)}
-                                    className={`my-3 p-0 cardShadow titleCard`}
+                                <CardContent className="p-0">
+                                  <div className="card border-0">
+                                    <table className="table border-0 p-0">
+                                      <thead>
+                                        <tr className="border-0">
+                                          <th id={idx === 0 ? 'series' : null} className="border-0">
+                                            Sets
+                                          </th>
+                                          <th id={idx === 0 ? 'reps' : null} className="border-0">
+                                            Reps
+                                          </th>
+                                          <th id={idx === 0 ? 'peso' : null} className="border-0">
+                                            Peso
+                                          </th>
+                                          <th id={idx === 0 ? 'descanso' : null} className="border-0">
+                                            Descanso x serie
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="border-0">
+                                        <tr className="border-0">
+                                          <td className="border-0">{element.sets}</td>
+                                          <td className="border-0">{element.reps}</td>
+                                          <td className="border-0">{element.peso}</td>
+                                          <td className="border-0">
+                                            <CountdownTimer initialTime={element.rest} />
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  {element.notas && (
+                                    <div>
+                                      <p className="titleObservaciones">Observaciones</p>
+                                      <p className="paraphObservaciones">{element.notas}</p>
+                                    </div>
+                                  )}
+                                </CardContent>
+
+                                <CardActions className="p-0 row justify-content-between">
+                                  <IconButton
+                                    id={idx === 0 ? 'video' : null}
+                                    aria-label="video"
+                                    className="p-0 col-3 mb-2"
+                                    disabled={!element.video}
+                                    onClick={() => handleButtonClick(element)}
                                   >
-                                    <CardHeader
-                                      avatar={
-                                        <Avatar
-                                          id={idx === 0 ? 'numeroSerie' : null}
-                                          aria-label="recipe"
-                                          className="avatarSize avatarColor"
-                                        >
-                                          {element.numberExercise}
-                                        </Avatar>
-                                      }
-                                      action={
-                                        <Avatar
-                                          id={idx === 0 ? 'contador' : null}
-                                          aria-label="recipe"
-                                          className=" avatarSize bg-dark "
-                                        >
-                                          <Contador className={'p-2'} max={element.sets} />
-                                        </Avatar>
-                                      }
-                                      title={
-                                        <span id={idx === 0 ? 'nombre' : null}>{element.name}</span>
-                                      }
-                                    />
+                                    {element.isImage ? (
+                                      <ImageIcon className={` ${!element.video ? 'imageIconDisabled' : 'imageIcon'}`} />
+                                    ) : (
+                                      <YouTubeIcon
+                                        className={element.video ? 'ytColor' : 'ytColor-disabled'}
+                                      />
+                                    )}
+                                  </IconButton>
 
-                                    <CardContent className="p-0">
-                                      <div className="card border-0">
-                                        <table className="table border-0 p-0">
-                                          <thead>
-                                            <tr className="border-0">
-                                              <th id={idx === 0 ? 'series' : null} className="border-0">
-                                                Sets
-                                              </th>
-                                              <th id={idx === 0 ? 'reps' : null} className="border-0">
-                                                Reps
-                                              </th>
-                                              <th id={idx === 0 ? 'peso' : null} className="border-0">
-                                                Peso
-                                              </th>
-                                              <th id={idx === 0 ? 'descanso' : null} className="border-0">
-                                                Descanso x serie
-                                              </th>
-                                            </tr>
-                                          </thead>
-                                          <tbody className="border-0">
-                                            <tr className="border-0">
-                                              <td className="border-0">{element.sets}</td>
-                                              <td className="border-0">{element.reps}</td>
-                                              <td className="border-0">{element.peso}</td>
-                                              <td className="border-0">
-                                                <CountdownTimer initialTime={element.rest} />
-                                              </td>
-                                            </tr>
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                      {element.notas && (
-                                        <div>
-                                          <p className="titleObservaciones">Observaciones</p>
-                                          <p className="paraphObservaciones">{element.notas}</p>
-                                        </div>
-                                      )}
-                                    </CardContent>
-
-                                    <CardActions className="p-0 row justify-content-between">
-                                      <IconButton
-                                        id={idx === 0 ? 'video' : null}
-                                        aria-label="video"
-                                        className="p-0 col-3 mb-2"
-                                        disabled={!element.video}
-                                        onClick={() => handleButtonClick(element)}
-                                      >
-                                        {element.isImage ? (
-                                          <ImageIcon className={` ${!element.video ? 'imageIconDisabled' : 'imageIcon'}`} />
-                                        ) : (
-                                          <YouTubeIcon
-                                            className={
-                                              element.video ? 'ytColor' : 'ytColor-disabled'
-                                            }
-                                          />
-                                        )}
-                                      </IconButton>
-
-                                      <IconButton
-                                        id={idx === 0 ? 'edicion' : null}
-                                        aria-label="video"
-                                        className="p-0 col-3 mb-2"
-                                        onClick={() => handleEditMobileExercise(element, idx)}
-                                      >
-                                        <EditNoteIcon className="editStyle p-0" />
-                                      </IconButton>
-                                    </CardActions>
-                                  </Card>
-                                ) : (
-                                  // Caso "circuit"
-                                  <Card
-                                    key={`circuit-${element.exercise_id}-${idx}`}
-                                    ref={(el) => (cardRefs.current[idx] = el)}
-                                    className={`my-3 cardShadow titleCard`}
+                                  <IconButton
+                                    id={idx === 0 ? 'edicion' : null}
+                                    aria-label="video"
+                                    className="p-0 col-3 mb-2"
+                                    onClick={() => handleEditMobileExercise(element, idx)}
                                   >
-                                    <CardHeader
-                                      className="me-4 ps-1"
-                                      avatar={
-                                        <Avatar aria-label="recipe" className="avatarSize avatarColor">
-                                          {element.numberExercise}
-                                        </Avatar>
-                                      }
-                                      title={element.type}
+                                    <EditNoteIcon className="editStyle p-0" />
+                                  </IconButton>
+                                </CardActions>
+                              </Card>
+                            ) : (
+                              <Card
+                                key={`circuit-${element.exercise_id}-${idx}`}
+                                ref={(el) => (cardRefs.current[idx] = el)}
+                                className={`my-3 cardShadow titleCard`}
+                              >
+                                <CardHeader
+                                  className="me-4 ps-1"
+                                  avatar={
+                                    <Avatar aria-label="recipe" className="avatarSize avatarColor">
+                                      {element.numberExercise}
+                                    </Avatar>
+                                  }
+                                  title={element.type}
+                                />
+
+                                <CardContent className="p-0">
+                                  <div className="card border-0">
+                                    <p className="border-0"><b>{element.typeOfSets} series</b></p>
+
+                                    <table className="table border-0">
+                                      <thead>
+                                        <tr className="border-0">
+                                          <th className="border-0">Nombre</th>
+                                          <th className="border-0">Reps</th>
+                                          <th className="border-0">Peso</th>
+                                        </tr>
+                                      </thead>
+                                      {element.circuit.map((circuit) => (
+                                        <tbody key={circuit.idRefresh} className="border-0">
+                                          <tr className="border-0">
+                                            <td className="border-0">{circuit.name}</td>
+                                            <td className="border-0">{circuit.reps}</td>
+                                            <td className="border-0">{circuit.peso}</td>
+                                          </tr>
+                                        </tbody>
+                                      ))}
+                                    </table>
+                                  </div>
+
+                                  {element.notas && (
+                                    <div>
+                                      <p className="titleObservaciones">Observaciones</p>
+                                      <p className="paraphObservaciones">{element.notas}</p>
+                                    </div>
+                                  )}
+                                </CardContent>
+
+                                <CardActions className="p-0 row justify-content-center">
+                                  <IconButton
+                                    aria-label="video"
+                                    className="p-0 col-3 mb-2"
+                                    disabled={!element.video}
+                                    onClick={() => handleButtonClick(element)}
+                                  >
+                                    <YouTubeIcon
+                                      className={element.video ? 'ytColor' : 'ytColor-disabled'}
                                     />
-
-                                    <CardContent className="p-0">
-                                      <div className="card border-0">
-                                        <p className="border-0"><b>{element.typeOfSets} series</b></p>
-
-                                        <table className="table border-0">
-                                          <thead>
-                                            <tr className="border-0">
-                                              <th className="border-0">Nombre</th>
-                                              <th className="border-0">Reps</th>
-                                              <th className="border-0">Peso</th>
-                                            </tr>
-                                          </thead>
-                                          {element.circuit.map((circuit) => (
-                                            <tbody key={circuit.idRefresh} className="border-0">
-                                              <tr className="border-0">
-                                                <td className="border-0">{circuit.name}</td>
-                                                <td className="border-0">{circuit.reps}</td>
-                                                <td className="border-0">{circuit.peso}</td>
-                                              </tr>
-                                            </tbody>
-                                          ))}
-                                        </table>
-                                      </div>
-
-                                      {element.notas && (
-                                        <div>
-                                          <p className="titleObservaciones">Observaciones</p>
-                                          <p className="paraphObservaciones">{element.notas}</p>
-                                        </div>
-                                      )}
-                                    </CardContent>
-
-                                    <CardActions className="p-0 row justify-content-center">
-                                      <IconButton
-                                        aria-label="video"
-                                        className="p-0 col-3 mb-2"
-                                        disabled={!element.video}
-                                        onClick={() => handleButtonClick(element)}
-                                      >
-                                        <YouTubeIcon
-                                          className={
-                                            element.video ? 'ytColor' : 'ytColor-disabled'
-                                          }
-                                        />
-                                      </IconButton>
-                                    </CardActions>
-                                  </Card>
-                                )}
-                              </Fragment>
-                            );
-                        })}
-                    </div>
+                                  </IconButton>
+                                </CardActions>
+                              </Card>
+                            )}
+                          </Fragment>
+                        );
+                    })}
                 </div>
                 )}
 
-                {/* SIDEBAR para reproducir video/imagen */}
                 <div className="row justify-content-center">
                     <Sidebar
                         visible={visible}
@@ -578,7 +562,6 @@ function DayDetailsPage() {
                     </Sidebar>
                 </div>
 
-                {/* TOUR */}
                 {tourVisible && (
                   <Tour
                     open={tourVisible}
@@ -593,7 +576,6 @@ function DayDetailsPage() {
                   />
                 )}
 
-                {/* DIALOG para la calculadora de porcentaje */}
                 <Dialog
                   header="Calculadora de Porcentaje"
                   visible={showCalculator}
@@ -604,7 +586,6 @@ function DayDetailsPage() {
                   <PercentageCalculator />
                 </Dialog>
 
-                {/* DIALOG para subir videos */}
                 <Dialog
                   header="Subir videos al drive"
                   visible={showUploadVideos}
@@ -631,7 +612,6 @@ function DayDetailsPage() {
                   </div>
                 </Dialog>
 
-                {/* DIALOG de edición de ejercicio */}
                 <Dialog
                   header="Editar Ejercicio"
                   visible={editExerciseMobile}
@@ -642,7 +622,6 @@ function DayDetailsPage() {
                   {completeExercise && (
                     <div className="container-fluid">
                       <div className="row">
-                        {/* Form de ejemplo: ajusta los campos a tus necesidades */}
                         <div className="col-12 mb-3">
                           <label>Nombre</label>
                           <input
@@ -722,36 +701,41 @@ function DayDetailsPage() {
                   )}
                 </Dialog>
 
-                {/* Barra inferior fija */}
-                <nav className="fixed-bottom colorNavBottom d-flex justify-content-around py-2 stylesNavBarBottom">
-                  <div className="row justify-content-center text-center">
-                    <Link to={`/routine/${id}`} className="positionIconsNavBar">
-                      <IconButton className="buttonsNav fs-1">
-                        <ArrowBackIcon />
-                      </IconButton>
-                    </Link>
-                    <span className="col-12 text-light pt-4">Ir atrás</span>
-                  </div>
+                <nav
+                  className="fixed-bottom d-flex justify-content-around align-items-center py-2"
+                  style={{ backgroundColor: '#000' }}
+                >
+                  <Link
+                    to={`/routine/${id}`}
+                    className="nav-item d-flex flex-column align-items-center text-decoration-none"
+                  >
+                    <IconButton className="fs-1">
+                      <ArrowBackIcon className="text-light small" />
+                    </IconButton>
+                    <span className="text-light small">Ir atrás</span>
+                  </Link>
 
-                  {localStorage.getItem('drive') != undefined && 
-                    <div className="row justify-content-center text-center">
-                      <div className="positionIconsNavBar">
-                        <IconButton className="buttonsNav fs-1" onClick={() => SetShowUploadVideos(true)}>
-                          <AddToDriveIcon />
-                        </IconButton>
-                      </div>
-                      <span className="col-12 text-light pt-4">Drive</span>
-                    </div>
-                  }
-
-                  <div className="row justify-content-center text-center">
-                    <div className="positionIconsNavBar">
-                      <IconButton className="buttonsNav fs-1" onClick={() => setShowCalculator(true)}>
-                        <PercentIcon />
+                  {localStorage.getItem('drive') !== null && (
+                    <button
+                      className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
+                      onClick={() => SetShowUploadVideos(true)}
+                    >
+                      <IconButton className="fs-1">
+                        <AddToDriveIcon />
                       </IconButton>
-                    </div>
-                    <span className="col-12 text-light pt-4">Cálculo</span>
-                  </div>
+                      <span className="text-light small">Drive</span>
+                    </button>
+                  )}
+
+                  <button
+                    className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
+                    onClick={() => setShowCalculator(true)}
+                  >
+                    <IconButton className="fs-1">
+                      <PercentIcon />
+                    </IconButton>
+                    <span className="text-light small">Cálculo</span>
+                  </button>
                 </nav>
             </section>
         </>

@@ -1,5 +1,5 @@
-import { Routes, Route, Link, useNavigate, Navigate, useLocation} from 'react-router-dom'
-import React, {useState, useEffect} from 'react'
+import { Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
 
 import * as UserService from './services/users.services.js'
 import * as RefreshUUID from './helpers/generateUUID.js'
@@ -47,8 +47,7 @@ import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import NotFound404 from './pages/NotFound404.jsx'
 import ParDetailsPage from './pages/coach/ParDetailsPage.jsx'
 
-
-function RoutePrivate( {isAutenticate, children}){
+function RoutePrivate({ isAutenticate, children }) {
     return (
         <>
             {isAutenticate ? children : <Navigate to="/login" />}
@@ -56,7 +55,7 @@ function RoutePrivate( {isAutenticate, children}){
     )
 }
 
-function App(){
+function App() {
     const navigate = useNavigate()
     const id = localStorage.getItem('_id')
     const [user, setUser] = useState()
@@ -70,11 +69,12 @@ function App(){
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showInstallButton, setShowInstallButton] = useState(false);
     const [showInstallPopup, setShowInstallPopup] = useState(false);
-    
+
     const [openDialogLogout, setOpenDialogLogout] = useState(false);
 
     const location = useLocation(); // Obtén la ubicación actual
-    
+    const [isLoading, setIsLoading] = useState(true);
+
     useEffect(() => {
         registerServiceWorker();
     }, []);
@@ -85,17 +85,17 @@ function App(){
 
     useEffect(() => {
         if (isAutenticated) {
-          const isCheckboxChecked = localStorage.getItem('noShowPopup');
-          window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
-            if(isCheckboxChecked === 'false'){
-                setShowInstallPopup(true); // Muestra el popup de instalación
-            }
-            setShowInstallButton(true); // Muestra el botón
-          });
+            const isCheckboxChecked = localStorage.getItem('noShowPopup');
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                setDeferredPrompt(e);
+                if (isCheckboxChecked === 'false') {
+                    setShowInstallPopup(true); // Muestra el popup de instalación
+                }
+                setShowInstallButton(true); // Muestra el botón
+            });
         }
-        return () => window.removeEventListener('beforeinstallprompt', () => {});
+        return () => window.removeEventListener('beforeinstallprompt', () => { });
     }, [isAutenticated]);
 
     const handleInstallClick = async () => {
@@ -114,31 +114,31 @@ function App(){
 
     const showInstallToast = () => {
         toast.info(
-          <div className='row justify-content-center text-center '>
-            <div className='col-10'>
-                <button className='row justify-content-center bg-primary rounded-3 ' onClick={handleInstallClick}>
-                    <div className='col-3 text-light'>
-                        <IconButton aria-label="download" >
-                            <DownloadIcon className='text-light'/>
-                        </IconButton>
-                    </div>
-                    <div className='col-9 m-auto'>
-                        <p className='m-0 text-light '>Descargar TOM</p>
-                    </div>
-                </button>
-            </div>
-            <div>
-                <FormControlLabel
-                  className='text-center'
-                  control={<Checkbox onChange={handleCheckboxChange} />}
-                  label="No volver a mostrar"
-                />
-            </div>
-          </div>,
-          {
-            autoClose: false, // Evita que se cierre automáticamente
-            position: "bottom-center"
-          }
+            <div className='row justify-content-center text-center '>
+                <div className='col-10'>
+                    <button className='row justify-content-center bg-primary rounded-3 ' onClick={handleInstallClick}>
+                        <div className='col-3 text-light'>
+                            <IconButton aria-label="download" >
+                                <DownloadIcon className='text-light' />
+                            </IconButton>
+                        </div>
+                        <div className='col-9 m-auto'>
+                            <p className='m-0 text-light '>Descargar TOM</p>
+                        </div>
+                    </button>
+                </div>
+                <div>
+                    <FormControlLabel
+                        className='text-center'
+                        control={<Checkbox onChange={handleCheckboxChange} />}
+                        label="No volver a mostrar"
+                    />
+                </div>
+            </div>,
+            {
+                autoClose: false, // Evita que se cierre automáticamente
+                position: "bottom-center"
+            }
         );
     };
 
@@ -151,15 +151,17 @@ function App(){
     // Al arrancar, verificamos si hay token
     useEffect(() => {
         const token = localStorage.getItem('token')
-        if(token){
+        if (token) {
             setIsAutenticated(true)
             registerServiceWorker()
-        } else{
+        } else {
             setIsAutenticated(false)
         }
+
+        setIsLoading(false);
     }, [user, status]);
 
-    function onLogin(user, token){
+    function onLogin(user, token) {
         setUser(user)
         setIsAutenticated(true)
         localStorage.setItem('token', token)
@@ -172,13 +174,13 @@ function App(){
         localStorage.setItem('entrenador_id', user.entrenador_id)
         localStorage.setItem('logo', user.logo)
 
-        if(user.color === undefined){
+        if (user.color === undefined) {
             localStorage.setItem('color', '#1a1a1a')
         } else {
             localStorage.setItem('color', user.color)
         }
 
-        if(user.color === undefined){
+        if (user.color === undefined) {
             localStorage.setItem('textColor', false)
         } else {
             localStorage.setItem('textColor', user.textColor)
@@ -186,7 +188,7 @@ function App(){
         navigate(`/`)
     }
 
-    function onLogout(){
+    function onLogout() {
         setOpenDialogLogout(false)
         setIsAutenticated(false)
         localStorage.clear();
@@ -195,20 +197,10 @@ function App(){
         navigate('/')
     }
 
-    function isAdmin(){
+    function isAdmin() {
         const admin = localStorage.getItem('role')
         return admin === 'admin'
     }
-              {isAdmin() && (
-                <li className="nav-item">
-                  <Link
-                    className={`nav-link ${location.pathname === `/planificator/${id}` && 'active'}`}
-                    to={`/planificator/${id}`}
-                  >
-                    Planificador
-                  </Link>
-                </li>
-              )}
 
     const handleMenuSidebarOpen = () => {
         setMenuSidebar(true);
@@ -218,19 +210,79 @@ function App(){
         setMenuSidebar(false);
     };
 
-    // CAMBIO IMPORTANTE:
-    // 1) Dejamos el <nav> y <footer> fijos.
-    // 2) Creamos un <main> que ocupe como mínimo toda la pantalla menos el alto del nav y del footer,
-    //    para que el footer se quede siempre al final, aunque estemos mostrando el Spinner.
-    // Ajusta los valores de "70px" y "150px" a la altura real del nav y el footer que uses.
+    // Si la autenticación aún no se ha determinado, mostramos un layout de carga con navbar y footer vacíos.
+    if (isLoading) {
+        return (
+            <>
+                <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+                    {/* Navbar vacío */}
+                    <nav className={`navbar navbar-expand-lg navbar-dark fixed-top ${textColor === 'false' || !textColor ? "bbb" : "blackColor"}`}
+                style={{ backgroundColor: color }}>
+                <div className="container-fluid">
+                    <a className="navbar-brand" href="/">TOM</a>
+                    <button className="navbar-toggler" type="button" onClick={handleMenuSidebarOpen}>
+                        <span className="navbar-toggler-icon"></span>
+                    </button>
+                    <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+                        
+                    </div>
+                </div>
+            </nav>
+                    {/* Contenedor central que ocupa el espacio restante */}
+                    <main style={{
+                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}>
+                        <Spinner animation="grow" variant="dark" role="status" >
+                            <span className="visually-hidden">Cargando...</span>
+                        </Spinner>
+                    </main>
+                    {/* Footer vacío */}
+                    <footer className="footer empty-footer" style={{ height: "150px", backgroundColor: "#fff" }}>
+                    </footer>
+                </div>
+                <ToastContainer
+                    position="bottom-center"
+                    autoClose={200}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="light"
+                />
+                <Dialog
+                    header="Sesión"
+                    visible={openDialogLogout}
+                    onHide={() => setOpenDialogLogout(false)}
+                >
+                    <div className="row justify-content-center">
+                        <div className="p-field">
+                            <p>¿Estás seguro que deseas cerrar sesión?</p>
+                        </div>
+                        <div className="p-field text-end">
+                            <button className="btn btn-danger mx-2 mt-2" onClick={onLogout}>
+                                Cerrar sesión
+                            </button>
+                            <button className="btn btn-secondary mx-2 mt-2" onClick={() => setOpenDialogLogout(false)}>
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </Dialog>
+            </>
+        )
+    }
 
     return (
         <>
             {/* NAVBAR FIJA */}
-            <nav 
-              className={`navbar navbar-expand-lg navbar-dark fixed-top ${textColor === 'false' || !textColor ? "bbb" : "blackColor"}`} 
-              style={{ backgroundColor: color }}
-            >
+            <nav className={`navbar navbar-expand-lg navbar-dark fixed-top ${textColor === 'false' || !textColor ? "bbb" : "blackColor"}`}
+                style={{ backgroundColor: color }}>
                 <div className="container-fluid">
                     <a className="navbar-brand" href="/">TOM</a>
                     <button className="navbar-toggler" type="button" onClick={handleMenuSidebarOpen}>
@@ -239,241 +291,191 @@ function App(){
                     <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
                         <ul className="navbar-nav text-center">
                             <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/` && 'active'}`} 
-                                  to="/"
-                                >
-                                  Inicio
-                                </Link>
+                                <Link className={`nav-link ${location.pathname === `/` && 'active'}`} to="/">Inicio</Link>
                             </li>
                             {isAdmin() && (
-                              <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/users/${id}` && 'active'}`} 
-                                  to={`/users/${id}`}
-                                >
-                                  Lista de alumnos
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/users/${id}` && 'active'}`} to={`/users/${id}`}>
+                                        Lista de alumnos
+                                    </Link>
+                                </li>
                             )}
                             {isAdmin() && (
-                              <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/novedades/` && 'active'}`} 
-                                  to={`/novedades/`}
-                                >
-                                  Novedades
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/planificator/${id}` && 'active'}`} to={`/planificator/${id}`}>
+                                        Planificador
+                                    </Link>
+                                </li>
                             )}
                             {isAdmin() && (
-                              <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/personalize/` && 'active'}`} 
-                                  to={`/personalize/`}
-                                >
-                                  Perfil
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/novedades/` && 'active'}`} to={`/novedades/`}>
+                                        Novedades
+                                    </Link>
+                                </li>
                             )}
                             {isAdmin() && (
-                              <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/exercises/` && 'active'}`} 
-                                  to={`/exercises/`}
-                                >
-                                  Biblioteca
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/personalize/` && 'active'}`} to={`/personalize/`}>
+                                        Perfil
+                                    </Link>
+                                </li>
+                            )}
+                            {isAdmin() && (
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/exercises/` && 'active'}`} to={`/exercises/`}>
+                                        Biblioteca
+                                    </Link>
+                                </li>
                             )}
                             {isAutenticated && !isAdmin() && (
-                              <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/perfil/${id}` && 'active'}`} 
-                                  to={`/perfil/${id}`}
-                                >
-                                  Perfil
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/perfil/${id}` && 'active'}`} to={`/perfil/${id}`}>
+                                        Perfil
+                                    </Link>
+                                </li>
                             )}
                             {isAutenticated && !isAdmin() && (
-                              <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/routine/${id}` && 'active'}`} 
-                                  to={`/routine/${id}`}
-                                >
-                                  Ver rutina
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/routine/${id}` && 'active'}`} to={`/routine/${id}`}>
+                                        Ver rutina
+                                    </Link>
+                                </li>
                             )}
                             {!isAutenticated && (
-                              <li className="nav-item">
-                                <Link 
-                                  className={`nav-link ${location.pathname === `/login` && 'active'}`} 
-                                  to={"/login"}
-                                >
-                                  Iniciar sesión
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className={`nav-link ${location.pathname === `/login` && 'active'}`} to={"/login"}>
+                                        Iniciar sesión
+                                    </Link>
+                                </li>
                             )}
                             {isAutenticated && (
-                              <li className="nav-item">
-                                <Link 
-                                  className="nav-link" 
-                                  onClick={onLogout}
-                                >
-                                  Cerrar sesión
-                                </Link>
-                              </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" onClick={onLogout}>
+                                        Cerrar sesión
+                                    </Link>
+                                </li>
                             )}
                             {isAutenticated && showInstallButton && (
-                              <li className="nav-item ms-5 aaa" onClick={handleInstallClick}>
-                                <Link className='nav-link'>
-                                    <IconButton
-                                      aria-label="download"
-                                      className="p-0"
-                                      onClick={handleInstallClick}
-                                    >
-                                        <DownloadIcon className="me-1" />
-                                    </IconButton>
-                                    Descargar TOM
-                                </Link>
-                              </li>
+                                <li className="nav-item ms-5 aaa" onClick={handleInstallClick}>
+                                    <Link className='nav-link'>
+                                        <IconButton aria-label="download" className="p-0" onClick={handleInstallClick}>
+                                            <DownloadIcon className="me-1" />
+                                        </IconButton>
+                                        Descargar TOM
+                                    </Link>
+                                </li>
                             )}
                         </ul>
                     </div>
                 </div>
             </nav>
 
-            <main
-              style={
-                location.pathname != `/` && 'stylesMain' ? {
+            <main style={location.pathname !== `/` && 'stylesMain' ? {
                 marginTop: "70px",
                 minHeight: "calc(100vh - 70px - 150px)",
-
                 padding: "1rem"
-              } : {
-                padding: "0"
-              }}
-            >
-                {isAutenticated === null ? (
-
-                    <div 
-                      className="d-flex flex-column align-items-center justify-content-center"
-                      style={{ minHeight: "100%" }}
-                    >
-                        <img src={Logo} alt="TOM" className="TOM" />
-                        <Spinner animation="border" role="status" className="spinner mt-3">
-                            <span className="visually-hidden">Cargando...</span>
-                        </Spinner>
-                    </div>
-                ) : (
-                    // Si ya sabemos si está logueado o no, pintamos las Rutas
-                    <Routes>
-                        <Route path="/" element={<HomePage/>}/>
-                        <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
-                        <Route path="/qr-login" element={<QrLogin onLogin={onLogin} />} />
-                        <Route 
-                          path="/users/:id/" 
-                          element={
+            } : { padding: "0" }}>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
+                    <Route path="/qr-login" element={<QrLogin onLogin={onLogin} />} />
+                    <Route
+                        path="/users/:id/"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <UsersListPage/>
+                                <UsersListPage />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/exercises/" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/exercises/"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <BibliotecExercises/>
+                                <BibliotecExercises />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/user/routine/:id/:username" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/user/routine/:id/:username"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <UserRoutineEditPage/>
+                                <UserRoutineEditPage />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/routine/user/:id/week/:week_id/day/:day_id/:username" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/routine/user/:id/week/:week_id/day/:day_id/:username"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <DayEditDetailsPage/>
+                                <DayEditDetailsPage />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/personalize" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/personalize"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <UserPersonalize/>
+                                <UserPersonalize />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/novedades" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/novedades"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <Novedades/>
+                                <Novedades />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/perfil/:id" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/perfil/:id"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <Profile/>
+                                <Profile />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/routine/:id" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/routine/:id"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <UserRoutinePage/>
+                                <UserRoutinePage />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/routine/:id/day/:day_id/:week_id/:index" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/routine/:id/day/:day_id/:week_id/:index"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <DayDetailsPage/>
+                                <DayDetailsPage />
                             </RoutePrivate>
-                          }
-                        />
-                        <Route 
-                          path="/planificator/:id" 
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/planificator/:id"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                                <RandomizerPage/>
+                                <RandomizerPage />
                             </RoutePrivate>
-                          }
-                        />
-
-                                       
-                        <Route
-                          path="/par/:id"
-                          element={
+                        }
+                    />
+                    <Route
+                        path="/par/:id"
+                        element={
                             <RoutePrivate isAutenticate={isAutenticated}>
-                              <ParDetailsPage/>
+                                <ParDetailsPage />
                             </RoutePrivate>
-                          }
-                        />
-
-                        <Route path="*" element={<NotFound404 />}/>
-                    </Routes>
-                )}
+                        }
+                    />
+                    <Route path="*" element={<NotFound404 />} />
+                </Routes>
             </main>
 
-            {/* SIDEBAR */}
-            <Sidebar 
-                visible={menuSidebar} 
-                onHide={handleMenuSidebarHide} 
-                blockScroll={true} 
+            <Sidebar
+                visible={menuSidebar}
+                onHide={handleMenuSidebarHide}
+                blockScroll={true}
                 position="right"
             >
                 <ul className="list-group list-group-flush ulDecoration">
@@ -483,94 +485,92 @@ function App(){
                         </Link>
                     </li>
                     {isAdmin() && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' to={`/users/${id}`} onClick={() => setMenuSidebar(false)}>
-                            Lista de alumnos
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/users/${id}`} onClick={() => setMenuSidebar(false)}>
+                                Lista de alumnos
+                            </Link>
+                        </li>
                     )}
                     {isAdmin() && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' to={`/novedades/`} onClick={() => setMenuSidebar(false)}>
-                            Novedades
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/novedades/`} onClick={() => setMenuSidebar(false)}>
+                                Novedades
+                            </Link>
+                        </li>
                     )}
                     {isAdmin() && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' to={`/personalize/`} onClick={() => setMenuSidebar(false)}>
-                            Perfil
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/planificator/${id}`} onClick={() => setMenuSidebar(false)}>
+                                Planificador
+                            </Link>
+                        </li>
                     )}
                     {isAdmin() && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' to={`/exercises/`} onClick={() => setMenuSidebar(false)}>
-                            Biblioteca
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/personalize/`} onClick={() => setMenuSidebar(false)}>
+                                Perfil
+                            </Link>
+                        </li>
+                    )}
+                    {isAdmin() && (
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/exercises/`} onClick={() => setMenuSidebar(false)}>
+                                Biblioteca
+                            </Link>
+                        </li>
                     )}
                     {isAutenticated && !isAdmin() && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' to={`/perfil/${id}`} onClick={() => setMenuSidebar(false)}>
-                            Perfil
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/perfil/${id}`} onClick={() => setMenuSidebar(false)}>
+                                Perfil
+                            </Link>
+                        </li>
                     )}
                     {isAutenticated && !isAdmin() && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' to={`/routine/${id}`} onClick={() => setMenuSidebar(false)}>
-                            Ver rutina
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/routine/${id}`} onClick={() => setMenuSidebar(false)}>
+                                Ver rutina
+                            </Link>
+                        </li>
                     )}
                     {!isAutenticated && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' to={"/login"} onClick={() => setMenuSidebar(false)}>
-                            Iniciar sesión
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={"/login"} onClick={() => setMenuSidebar(false)}>
+                                Iniciar sesión
+                            </Link>
+                        </li>
                     )}
                     {isAutenticated && (
-                      <li className="list-group-item">
-                        <Link className='nav-link' onClick={onLogout}>
-                            Cerrar sesión
-                        </Link>
-                      </li>
+                        <li className="list-group-item">
+                            <Link className='nav-link' onClick={onLogout}>
+                                Cerrar sesión
+                            </Link>
+                        </li>
                     )}
                     {isAutenticated && showInstallButton && (
-                      <li className="nav-item aaa mt-3" onClick={handleInstallClick}>
-                        <Link className='nav-link'>
-                            <IconButton
-                                aria-label="descargar"
-                                className="text-light"
-                                onClick={handleInstallClick}
-                            >
-                                <DownloadIcon className="me-1" />
-                            </IconButton>
-                            Descargar TOM
-                        </Link>
-                      </li>
+                        <li className="nav-item aaa mt-3" onClick={handleInstallClick}>
+                            <Link className='nav-link'>
+                                <IconButton aria-label="descargar" className="text-light" onClick={handleInstallClick}>
+                                    <DownloadIcon className="me-1" />
+                                </IconButton>
+                                Descargar TOM
+                            </Link>
+                        </li>
                     )}
                 </ul>
             </Sidebar>
 
-            {/* FOOTER */}
-            <footer 
-              
-              className={`container-fluid colorFooter`}
-            >
-                <div  className={`row marginSidebarClosed`}>
+            <footer className={`container-fluid colorFooter`}>
+                <div className={`row marginSidebarClosed`}>
                     <ul className="text-center">
                         <li className="text-light py-2">TOM</li>
                     </ul>
                     <p className='m-0 text-light text-center py-2'>
-                        &copy; 2022 | TOM 
+                        &copy; 2022 | TOM
                     </p>
                 </div>
             </footer>
 
-            {/* DIALOGO DE LOGOUT */}
             <Dialog
                 header="Sesión"
                 visible={openDialogLogout}
@@ -581,16 +581,10 @@ function App(){
                         <p>¿Estás seguro que deseas cerrar sesión?</p>
                     </div>
                     <div className="p-field text-end">
-                        <button 
-                          className="btn btn-danger mx-2 mt-2" 
-                          onClick={onLogout}
-                        >
+                        <button className="btn btn-danger mx-2 mt-2" onClick={onLogout}>
                             Cerrar sesión
                         </button>
-                        <button
-                          className="btn btn-secondary mx-2 mt-2"
-                          onClick={() => setOpenDialogLogout(false)}
-                        >
+                        <button className="btn btn-secondary mx-2 mt-2" onClick={() => setOpenDialogLogout(false)}>
                             Cancelar
                         </button>
                     </div>
@@ -610,7 +604,7 @@ function App(){
                 theme="light"
             />
         </>
-    )
+    );
 }
 
-export default App
+export default App;

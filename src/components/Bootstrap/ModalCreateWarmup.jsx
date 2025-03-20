@@ -76,6 +76,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   }, [week, day_id, statusCancel]);
 
   useEffect(() => {
+
     setFirstWidth(window.innerWidth);
   }, []);
 
@@ -91,7 +92,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   };
 
   const applyChanges = () => {
-    if (!isPAR) {
+    console.log(week_id, modifiedWarmup)
       WeekService.editWeek(week_id, modifiedWarmup)
         .then(() => {
           setWarmup(modifiedWarmup);
@@ -102,7 +103,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
         .catch((error) => {
           console.error("Error al guardar cambios:", error);
         });
-    }
+   
     /* else {
          // Lógica para PAR en caso de ser necesario
        } */
@@ -406,7 +407,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
         tableMobile()
       )}
 
-      {isEditing && !isPAR && (
+      {/*isEditing && !isPAR && (
                     <div className="floating-button-mobile index-up">
                       <button
                         className="px-5 btn colorCancel py-2 my-5"
@@ -422,11 +423,11 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
                       </button>
                   </div>
 
-      )}
+      )*/}
 
-      {isEditing && isPAR && (
-        <div className="text-center my-3 floating-button ">
-          <button className="btn colorRed p-4 my-3 fs-5" onClick={() => editAndClose()}>
+      {isEditing  && (
+        <div className="floating-button-mobile index-up">
+          <button className="btn colorCancel p-4 my-3" onClick={() => editAndClose()}>
             Continuar editando
           </button>
         </div>

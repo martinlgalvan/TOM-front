@@ -1,45 +1,42 @@
 // public/service-worker.js
 
+// Instalar y precachear recursos básicos (opcional)
 self.addEventListener('install', (event) => {
-    
-  });
-  
-  self.addEventListener('activate', (event) => {
-    
-  });
-  
-  self.addEventListener('fetch', (event) => {
-    
-  });
-  
+  // Puedes abrir un cache, precargar recursos, etc.
+  console.log("Service Worker instalado");
+});
 
-  // Escuchar el evento "push" para mostrar la notificación
+// Activar y limpiar caches antiguos (opcional)
+self.addEventListener('activate', (event) => {
+  console.log("Service Worker activado");
+});
+
+// Estrategia de fetch (ejemplo simple, puede mejorarse según tus necesidades)
+self.addEventListener('fetch', (event) => {
+  // Aquí podrías implementar cache-first o network-first según el recurso
+});
+
+// Manejo de notificaciones push
 self.addEventListener('push', (event) => {
-  // Si el push trae datos, los extraemos como JSON; si no, usamos valores por defecto.
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'Notificación';
   const options = {
     body: data.body || 'Tienes una nueva notificación.',
-    icon: data.icon || '/icon.png', // Asegúrate de que la ruta sea correcta
+    icon: data.icon || '/icon.png',
     data: {
-      // URL a la que se dirigirá el usuario al hacer clic en la notificación.
       url: data.url || '/'
     }
-    // Puedes agregar más opciones como vibración, acciones, etc.
   };
-
   event.waitUntil(
     self.registration.showNotification(title, options)
   );
 });
 
-// Escuchar el evento "notificationclick" para gestionar el clic sobre la notificación
+// Manejo del clic en la notificación
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close(); // Cierra la notificación
-
+  event.notification.close();
   event.waitUntil(
-    // Busca ventanas abiertas y enfoca la que corresponda o abre una nueva.
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       for (const client of clientList) {
         if (client.url === event.notification.data.url && 'focus' in client) {
           return client.focus();

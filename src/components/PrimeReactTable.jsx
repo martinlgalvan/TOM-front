@@ -41,6 +41,7 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
 
     const [inputValue, setInputValue] = useState('');
     const isInputValid = inputValue === 'ELIMINAR';
+    const [first, setFirst] = useState(localStorage.getItem('userCurrentPage'));
 
     // Para abrir/cerrar el formulario de crear alumno
     const [dialogg, setDialogg] = useState(false);
@@ -201,6 +202,16 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
         }
     };
 
+      // Callback que se ejecuta al cambiar de página en la DataTable
+    const onPageChange = (event) => {
+        setFirst(event.first);
+        try {
+        localStorage.setItem('userCurrentPage', event.first.toString());
+        } catch (err) {
+        console.error('Error al guardar en localStorage:', err);
+        }
+    };
+
     return (
         <div className='row justify-content-around '>
             {/* Campo de búsqueda */}
@@ -241,13 +252,15 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
                   emptyMessage="Cargando usuarios..." 
                   className='usersListTable alignDatatable pt-0' 
                   paginator 
-                  rows={10} 
+                  rows={4} 
+                  first={first}               // Valor de paginación inicial
                   value={filteredUsers}
+                  onPage={onPageChange}         // Actualización de la página
                 >
-                    <Column body={linksTemplate} field="name" header="Nombre" />
+                    <Column body={linksTemplate} field="name" header="Nombre" className='columnName'/>
                     {widthPage > 600 && 
-                      <Column body={linksTemplate} field="email" header="Email"/>}
-                    <Column body={actionsTemplate} header="Acciones" />
+                      <Column body={linksTemplate} field="email" header="Email" className='columnEmail'/>}
+                    <Column body={actionsTemplate} header="Acciones" className='columnActions' />
                 </DataTable>
 
                 {/* Diálogo de confirmación para ELIMINAR usuario */}

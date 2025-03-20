@@ -248,7 +248,7 @@ function UsersListPage() {
         
         <section   className="container-fluid totalHeight">
 
-            <article id={'tabla'} className={`row justify-content-center text-center ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}>
+            <article id={'tabla'} className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>
 
                 <PrimeReactTable id={id} users={users}  refresh={refresh} />
                 

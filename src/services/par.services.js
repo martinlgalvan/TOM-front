@@ -67,8 +67,10 @@ async function deletePAR(id) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo eliminar el dia')
+            const errorMessage = response.text();
+            throw new Error(errorMessage || 'No se pudo obtener el usuario');
         }
+    
     })
 }
 

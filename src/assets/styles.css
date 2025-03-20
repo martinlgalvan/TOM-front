@@ -2405,6 +2405,24 @@ width: 50px;
   border-radius: 50%;
 }
 
+.disabledButton:disabled{
+  border: none !important;
+  outline: none !important;
+
+}
+
+.columnName{
+  width: 200px;
+}
+
+.columnEmail{
+  width: 450px;
+}
+
+.columnActions{
+  width: 100px;
+}
+
 /* Cuando está activo (checked) */
 input:checked + .slider {
   background-color: #2196F3; /* color principal del switch */

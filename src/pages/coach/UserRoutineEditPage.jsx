@@ -283,7 +283,7 @@ function UserRoutineEditPage() {
                         </div>
 
                         <div id='continueWeek' className="col-10 col-lg-3 mx-2 mb-4 boxData" onClick={createWeekCopyLastWeek}>
-                            <button disabled={routine.length > 0 ? false : true} className="btn p-3" >
+                            <button disabled={routine.length > 0 ? false : true} className="btn p-3 disabledButton" >
                                 <LibraryAddIcon className="me-2" />
                                 Seguir semana
                             </button>

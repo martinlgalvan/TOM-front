@@ -103,6 +103,8 @@ function ParDetailsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [exerciseToDelete, setExerciseToDelete] = useState(null);
 
+  const [showDeleteParDialog, setShowDeleteParDialog] = useState(false);
+
   // Others
   const [glowVideo, setGlowVideo] = useState({});
   const [collapsed, setCollapsed] = useState(false);
@@ -291,7 +293,7 @@ function ParDetailsPage() {
     updatedDays[indexDay].lastEdited = new Date().toISOString();
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    setStatus(prev => prev + 1);
+
   };
 
 
@@ -462,7 +464,7 @@ function ParDetailsPage() {
 
     const newCircuit = {
       exercise_id: new ObjectId().toString(),
-      type: "circuit",
+      type: "",
       name: "",
       typeOfSets: "",
       notas: "",
@@ -1133,16 +1135,20 @@ function ParDetailsPage() {
     );
   };
 
-  /* ------------------------------------------------------------------
-   * Render
-   * ------------------------------------------------------------------*/
-  if (loading) {
-    return (
-      <div className="container mt-5 text-center">
-        <p>Cargando PAR...</p>
-      </div>
-    );
-  }
+  const deletePAR = (idToDelete) => {
+    return PARService.deletePAR(idToDelete).then(() => {
+      Notify.instantToast("PAR eliminado con éxito");
+      setTimeout(() => {
+        window.location.href = `/planificator/${parent_id}`;
+      }, 1000);
+    });
+  };
+
+  const confirmDeletePAR = () => {
+    setShowDeleteParDialog(true);
+  };
+
+
 
   return (
     <>
@@ -1240,8 +1246,8 @@ function ParDetailsPage() {
       </div>
 
       {/* Contenido principal, respetando el espacio del sidebar */}
-      <div className={`contentArea ${collapsed ? "collapsed" : ""}`}>
-        <section className="container-fluid totalHeight">
+      <div className={` totalHeight ${collapsed ? "marginSidebarClosed" : " marginSidebarOpen"}`}>
+        <section className="container-fluid ">
 
           <div className="row text-center mb-5 justify-content-center pb-3 align-items-center">
                   <div className="col-10">
@@ -1273,65 +1279,128 @@ function ParDetailsPage() {
                     disabled={!actualUser}
                     onClick={() => designWeekToUser(routine, actualUser?._id)}
                   >
-                    Asignar rutina al usuario {actualUser && actualUser.name}
+                    {!actualUser ? "Elige un usuario a asignar" : `Asignar rutina al usuario ${actualUser && actualUser.name}`}
+                    
+                  </button>
+
+                  <button className="btn btn-danger ms-3" onClick={confirmDeletePAR}>
+                    <DeleteIcon className="text-light" />
+                    Eliminar {weekName}
                   </button>
                   </div>
           </div>
 
-          {/* Cabecera de botones */}
-          <div className="row text-center mb-5 justify-content-center pb-3 align-items-center">
-            <div className="col-12 mb-3">
-              <div className="row justify-content-center align-items-center py-2">
-                <div className="col-6 pt-4 btn boxDataWarmup" onClick={handleShowWarmup}>
-                  <EditIcon className="me-2" />
-                  <span className="me-1">
-                    Administrar bloque de entrada en calor{" "}
-                    <strong className="d-block">{currentDay && currentDay.name}</strong>
-                  </span>
+          <div  className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
+              <div className="col-12 mb-3">
+                <div className="row justify-content-center align-items-center py-2">
+                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
+                    <EditIcon  className="me-2" />
+                    <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="col-3 btn mx-2 mb-4 boxData" onClick={AddNewExercise}>
-              <button className="btn p-2">
-                <AddIcon className="me-2" />
-                <span className="me-1">Añadir ejercicio</span>
-              </button>
-            </div>
+              {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
+                <button
+                  className="btn p-2"
+                >
+                  <AddIcon  className="me-2" />
+                  <span className=" me-1">Añadir ejercicio</span>
+                </button>
+              </div>}
 
-            <div className="col-3 btn mx-2 mb-4 boxData" onClick={() => setIsEditingWeekName(true)}>
-              <button className="btn p-2">
-                <EditIcon className="me-2" />
-                <strong>{weekName}</strong>
-              </button>
-            </div>
+              <div id="nameWeek" className="col-10 col-lg-3 btn mx-2 mb-4 boxData" onClick={() => setIsEditingWeekName(true)}>
+                <button className="btn p-2" >
+                 <EditIcon className="me-2" />
+                  <strong>{weekName}</strong>
+                </button>
+              </div>
 
-            <div className="col-3 btn mx-2 mb-4 boxData" onClick={AddNewCircuit}>
-              <button className="btn p-2">
-                <AddIcon className="me-2" />
-                <span className="me-1">Añadir circuito</span>
-              </button>
-            </div>
+              {firstWidth > 992 &&
+               <div id="addCircuit" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewCircuit()}>
+                <button className="btn p-2 ">
+                  <AddIcon  className="me-2" />
+                  <span className=" me-1">Añadir circuito</span>
+                </button>
+              </div>}
 
-            <div className="col-3 btn mx-2 boxData" onClick={incrementAllSeries}>
-              <button className="btn p-2">
-                <AddIcon className="me-2" />
-                <span className="me-1">Sumar 1 serie</span>
-              </button>
-            </div>
+              {firstWidth > 992 && <div id="addSets" className="col-3 btn mx-2 boxData" onClick={() => incrementAllSeries()}>
+                <button
+                  className="btn p-2"
+                >
+                  <AddIcon  className="me-2" />
+                  <span className=" me-1">Sumar 1 serie</span>
+                </button>
+              </div>}
 
-            <div className="col-3 mx-2 ">
-              <h4 className="m-0 p-2">
-                <strong>{currentDay && currentDay.name}</strong>
-              </h4>
-            </div>
+              <div id="diaActual" className="col-10 col-lg-3 mx-2 ">
+                <h4  className=" m-0 p-2" >
+                  <strong>{currentDay && currentDay.name}</strong>
+                </h4>
+              </div>
 
-            <div className="col-3 btn mx-2 boxData" onClick={incrementAllReps}>
-              <button className="btn p-2">
-                <AddIcon className="me-2" />
-                <span className="me-1">Sumar 1 rep</span>
-              </button>
-            </div>
+              {firstWidth > 992 && <div id="addReps" className="col-3 btn mx-2 boxData" onClick={() => incrementAllReps()}>
+                <button
+                  className="btn p-2 "
+                >
+                  <AddIcon  className="me-2" />
+                  <span className=" me-1">Sumar 1 rep</span>
+                </button>
+              </div> 
+              }
+
+              {firstWidth < 992 && 
+              <>
+              <div className={`col-10 col-sm-6 text-center mb-4`}>
+                    
+                    <Segmented
+                        options={allDays.map((day) => ({
+                            label: day.name,
+                            value: day._id,
+                        }))}
+                        className="stylesSegmented"
+                        value={currentDay ? currentDay._id : ''}
+                        onChange={(value) => {
+                            const selectedDay = allDays.find((day) => day._id === value);
+
+                            if (selectedDay) {
+                                const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
+                                setIndexDay(selectedIndex);
+                                setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
+                            }
+                        }}
+                    />
+
+                </div>
+                <div className={`col-9 col-sm-6 ${firstWidth > 550 ? 'text-start mb-4' : 'text-center mb-4'}`}>
+                    <IconButton
+                            aria-label="video"
+                            className="bg-primary rounded-2 text-light me-2"
+                            onClick={addNewDay}
+                        >
+                            <AddIcon className="" />
+                            <span className="font-icons me-1">Crear día</span>
+                        </IconButton>
+
+                        <IconButton
+                            aria-label="video"
+                            className="bg-secondary rounded-2 text-light me-2"
+                            onClick={() => openEditNameDialog(currentDay)}
+                            
+                        >
+                            <EditIcon className="" />
+                        </IconButton>
+                        <IconButton
+                            aria-label="video"
+                            className="bg-danger rounded-2 text-light "
+                            onClick={handleDeleteDayClick}
+                        >
+                            <DeleteIcon className="" />
+                        </IconButton>
+
+              </div>
+              </>
+                }
           </div>
 
           {/* Tabla principal */}
@@ -1404,7 +1473,7 @@ function ParDetailsPage() {
                                         <td className="td-3">
                                           {customInputEditDay(exercise.sets, i, "sets")}
                                         </td>
-                                        <td className="td-4 marginReps">
+                                        <td className="td-4 ">
                                           {customInputEditDay(exercise.reps, i, "reps")}
                                         </td>
                                         <td className="td-5">
@@ -1595,7 +1664,7 @@ function ParDetailsPage() {
               setShowDeleteDayDialog(false);
             }}
             reject={() => setShowDeleteDayDialog(false)}
-            style={{ marginLeft: collapsed ? "85px" : "200px" }}
+            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
           />
 
           <ConfirmDialog
@@ -1608,17 +1677,13 @@ function ParDetailsPage() {
             rejectLabel="No"
             accept={handleCancel}
             reject={() => setShowCancelDialog(false)}
-            style={{ marginLeft: collapsed ? "85px" : "200px" }}
+            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
           />
 
           <Dialog
             header={`${exerciseToDelete?.name || ""}`}
-            className="dialogDeleteExercise"
+            className={`dialogDeleteExercise ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={showDeleteDialog}
-            style={{
-              width: firstWidth > 991 ? "50vw" : "80vw",
-              marginLeft: collapsed ? "85px" : "200px",
-            }}
             footer={
               <div className="row justify-content-center">
                 <div className="col-lg-12 me-3">
@@ -1640,14 +1705,13 @@ function ParDetailsPage() {
 
           {/* Warmup */}
           <Dialog
-            className="col-12 col-md-10 col-xxl-5"
+            className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
             contentClassName="colorDialog"
             headerClassName="colorDialog"
             header="Entrada en calor"
             visible={warmup}
             modal={false}
             onHide={hideDialogWarmup}
-            style={{ marginLeft: collapsed ? "85px" : "200px" }}
           >
             <ModalCreateWarmup
               week={modifiedDay}
@@ -1660,10 +1724,10 @@ function ParDetailsPage() {
           {/* Editar nombre del día */}
           <Dialog
             header="Editar Nombre del Día"
+            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={isEditingName}
             style={{
-              ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" }),
-              marginLeft: collapsed ? "85px" : "200px",
+              ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" })
             }}
             onHide={() => setIsEditingName(false)}
           >
@@ -1691,10 +1755,10 @@ function ParDetailsPage() {
           {/* Editar nombre de la Semana (PAR) */}
           <Dialog
             header="Editar Nombre de la Semana"
+            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={isEditingWeekName}
             style={{
-              ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" }),
-              marginLeft: collapsed ? "85px" : "200px",
+              ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" })
             }}
             onHide={() => setIsEditingWeekName(false)}
           >
@@ -1729,6 +1793,22 @@ function ParDetailsPage() {
               </div>
             </div>
           </Dialog>
+
+          <ConfirmDialog
+              visible={showDeleteParDialog}
+              className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+              onHide={() => setShowDeleteParDialog(false)}
+              message="¿Estás seguro de que deseas eliminar este PAR? Esta acción no se puede deshacer."
+              header="Eliminar PAR"
+              icon="pi pi-exclamation-triangle"
+              acceptLabel="Sí, eliminar"
+              rejectLabel="Cancelar"
+              accept={() => {
+                deletePAR(id);
+                setShowDeleteParDialog(false);
+              }}
+              reject={() => setShowDeleteParDialog(false)}
+            />
 
           {firstWidth < 992 && (
             <nav className="fixed-bottom colorNavBottom d-flex justify-content-around pb-4 " >
