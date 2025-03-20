@@ -23,10 +23,8 @@ import esES from 'rsuite/locales/es_ES';
 import Logo from "../../components/Logo.jsx";
 import ModalCreateWarmup from "../../components/Bootstrap/ModalCreateWarmup.jsx";
 import CustomInputNumber from "../../components/CustomInputNumber.jsx";
-import EditExercise from "../../components/EditExercise.jsx";
 import AutoComplete from "../../components/Autocomplete.jsx";
-import Floating from "../../helpers/Floating.jsx";
-import RenderPARs from "../../components/renderPARs.jsx";
+
 
 // MUI Icons
 import IconButton from "@mui/material/IconButton";
