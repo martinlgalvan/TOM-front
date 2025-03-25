@@ -12,7 +12,6 @@ import * as DatabaseUtils from "../../helpers/variables.js";
 import * as Notify from "../../helpers/notify.js";
 import * as RefreshFunction from "../../helpers/generateUUID.js";
 
-
 import Options from "../../assets/json/options.json";
 import Exercises from "../../assets/json/NEW_EXERCISES.json";
 
@@ -23,8 +22,8 @@ import esES from 'rsuite/locales/es_ES';
 import Logo from "../../components/Logo.jsx";
 import ModalCreateWarmup from "../../components/Bootstrap/ModalCreateWarmup.jsx";
 import CustomInputNumber from "../../components/CustomInputNumber.jsx";
+import EditExercise from "../../components/EditExercise.jsx";
 import AutoComplete from "../../components/Autocomplete.jsx";
-
 
 // MUI Icons
 import IconButton from "@mui/material/IconButton";
@@ -84,7 +83,7 @@ function Randomizer() {
   // Base de datos de ejercicios
   const [databaseUser, setDatabaseUser] = useState();
   const [exercisesDatabase, setExercisesDatabase] = useState([]); 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   // Lógica de la rutina / days
   const [routine, setRoutine] = useState();
   const [allDays, setAllDays] = useState([
@@ -128,6 +127,8 @@ function Randomizer() {
   // Manejo de confirmaciones
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showDeleteDayDialog, setShowDeleteDayDialog] = useState(false);
+  // CHANGES: Estado para controlar el dialog de rutinas guardadas en mobile
+  const [showSavedRoutinesDialog, setShowSavedRoutinesDialog] = useState(false);
 
   // Editar nombre del día
   const [isEditingName, setIsEditingName] = useState(false);
@@ -145,8 +146,8 @@ function Randomizer() {
   // Manejo de colapso de Sidebar
   const [collapsed, setCollapsed] = useState(false);
 
-    const [renderInputSets, setRenderInputSets] = useState(true);
-    const [renderInputReps, setRenderInputReps] = useState(true);
+  const [renderInputSets, setRenderInputSets] = useState(true);
+  const [renderInputReps, setRenderInputReps] = useState(true);
 
   // CHANGES: Referencia para los menús (uno por cada "week")
   const menuRefs = useRef({});
@@ -165,8 +166,6 @@ function Randomizer() {
       return acc;
     }, []);
     setOptions(groupedOptions);
-
-    
 
     // Cargamos la BD local
     const local = localStorage.getItem("DATABASE_USER");
@@ -212,8 +211,8 @@ function Randomizer() {
   useEffect(() => {
     if (day[indexDay]) {
       setCurrentDay({ ...day[indexDay] });
-      setRenderInputSets(true)
-      setRenderInputReps(true)
+      setRenderInputSets(true);
+      setRenderInputReps(true);
     }
   }, [day, indexDay]);      
 
@@ -234,7 +233,6 @@ function Randomizer() {
         });
       });
   }, [id]);
-
 
   const savePARChanges = (data) => {
     // Actualiza un PAR existente
@@ -458,29 +456,22 @@ function Randomizer() {
           onChange={(val) => changeModifiedData(index, val, field)}
           isRep={field === "reps"}
           className={`mt-5`}
-
         /> :
         <>
           <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 '}`}>
             <div className="input-number-container">
-            <IconButton               
-                className={`buttonRight `}>
-                    <RemoveIcon  />
-                </IconButton>
-
+              <IconButton className={`buttonRight `}>
+                <RemoveIcon  />
+              </IconButton>
               <input
                 className={`form-control rounded-0 inp text-center inputFontSize `}
               />
-
-                <IconButton               
-                className={`buttonLeft `}
-                >
-                    <AddIcon  />
-                </IconButton>
+              <IconButton className={`buttonLeft `}>
+                <AddIcon  />
+              </IconButton>
             </div>
           </div>
-
-          </>
+        </>
         }
         </>
       );
@@ -499,40 +490,28 @@ function Randomizer() {
         <>
           <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 marginReps'}`}>
             <div className="input-number-container">
-            <IconButton               
-                className={`buttonRight `}
-                >
-                    <RemoveIcon  />
-                </IconButton>
-
-              <input
-                
-                className={`form-control rounded-0 inp text-center inputFontSize `}
-              />
-
-                <IconButton               
-                className={`buttonLeft `}
-                >
-                    <AddIcon  />
-                </IconButton>
+              <IconButton className={`buttonRight `}>
+                <RemoveIcon  />
+              </IconButton>
+              <input className={`form-control rounded-0 inp text-center inputFontSize `} />
+              <IconButton className={`buttonLeft `}>
+                <AddIcon  />
+              </IconButton>
             </div>
           </div>
-
-            {field == 'reps' && (
-              <div className='styleSelectButton text-center '>
-                <SelectButton
-                  className='styleSelectButton '
-                  options={[
-                    { label: 'Modo texto', value: 'text' }
-                  ]}
-                />
-              </div>
-            )}
-          </>
+          {field == 'reps' && (
+            <div className='styleSelectButton text-center '>
+              <SelectButton
+                className='styleSelectButton '
+                options={[{ label: 'Modo texto', value: 'text' }]}
+              />
+            </div>
+          )}
+        </>
         }
         </>
-      );}
-   else if (field === "video") {
+      );
+    } else if (field === "video") {
       const shouldGlow = glowVideo[index];
       return (
         <>
@@ -652,9 +631,7 @@ function Randomizer() {
           >
             <YouTubeIcon className="colorIconYoutube" />
           </IconButton>
-          <OverlayPanel
-            ref={(el) => (productRefs.current[`${circuitIndex}-${exerciseIndex}`] = el)}
-          >
+          <OverlayPanel ref={(el) => (productRefs.current[`${circuitIndex}-${exerciseIndex}`] = el)}>
             <input
               className="form-control ellipsis-input text-center"
               type="text"
@@ -745,7 +722,7 @@ function Randomizer() {
     const updatedAllDays = [...allDays];
     updatedAllDays[indexDay] = updatedDays[indexDay];
     setAllDays(updatedAllDays);
-    setRenderInputSets(null)
+    setRenderInputSets(null);
   };
 
   const incrementAllReps = () => {
@@ -774,7 +751,7 @@ function Randomizer() {
     const updatedAllDays = [...allDays];
     updatedAllDays[indexDay] = updatedDays[indexDay];
     setAllDays(updatedAllDays);
-    setRenderInputReps(null)
+    setRenderInputReps(null);
   };
 
   /* --------------------------------------
@@ -926,6 +903,8 @@ function Randomizer() {
   const tableMobile = () => {
     return (
       <div className="table-responsiveCss">
+
+        
         <div className="row justify-content-center text-center mb-3">
           <div className="col-6 mb-3">
             <button className="btn btn-outline-dark me-2" onClick={() => incrementAllSeries()}>
@@ -1281,14 +1260,9 @@ function Randomizer() {
     // Aquí podrías abrir un modal o lo que necesites para editar
   };
 
-
-
-
-
   return (
     <>
       {/* Render de PARs: card con las semanas y usuarios */}
-
       {/* Sidebar con react-pro-sidebar al estilo del primer código */}
       <div className="sidebarProExercises">
         <Sidebar 
@@ -1347,102 +1321,99 @@ function Randomizer() {
         <section className="container-fluid totalHeight">
 
           <div className="row justify-content-center">
-
             <div className="col-10 col-lg-6 text-center">
-
               <h2>Bienvenido a tu planificador.</h2>
               <h3 className="fs-4 my-3">Acá podrás armar - ver - editar tus rutinas pre-armadas.</h3>
-
               <p className="m-0 pb-3 pt-1">
                 Esta herramienta, sirve para que cargues las bases de tus entrenamientos, ya sea estructuras para distintos tipos de atletas, o niveles. Por ejemplo:
                 Rutina para principiantes hombres, rutina para para principiantes mujeres, etc.
               </p>
-
             </div>
-
           </div>
 
-          <div  className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
-              <div className="col-12 mb-3">
-                <div className="row justify-content-center align-items-center py-2">
-                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
-                    <EditIcon  className="me-2" />
-                    <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
-                  </div>
+                    {/* CHANGES: Botón para ver rutinas guardadas en mobile */}
+                    {firstWidth < 992 && (
+                      <div className="row justify-content-center mb-4">
+                        <div className="col-10">
+                          <button className="btn btn-outline-dark w-100" onClick={() => setShowSavedRoutinesDialog(true)}>
+                            Ver rutinas guardadas 
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+          <div className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
+            <div className="col-12 mb-3">
+              <div className="row justify-content-center align-items-center py-2">
+                <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
+                  <EditIcon  className="me-2" />
+                  <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
                 </div>
               </div>
+            </div>
 
-              {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
-                <button
-                  className="btn p-2"
-                >
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Añadir ejercicio</span>
-                </button>
-              </div>}
+            {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
+              <button className="btn p-2">
+                <AddIcon  className="me-2" />
+                <span className=" me-1">Añadir ejercicio</span>
+              </button>
+            </div>}
 
-              <div id="nameWeek" className="col-10 col-lg-3 btn mx-2 mb-4 boxData" onClick={() => setIsEditingWeekName(true)}>
-                <button className="btn p-2" >
-                 <EditIcon className="me-2" />
-                  <strong>{weekName}</strong>
-                </button>
-              </div>
+            <div id="nameWeek" className="col-10 col-lg-3 btn mx-2 mb-4 boxData" onClick={() => setIsEditingWeekName(true)}>
+              <button className="btn p-2" >
+               <EditIcon className="me-2" />
+                <strong>{weekName}</strong>
+              </button>
+            </div>
 
-              {firstWidth > 992 &&
-               <div id="addCircuit" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewCircuit()}>
-                <button className="btn p-2 ">
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Añadir circuito</span>
-                </button>
-              </div>}
+            {firstWidth > 992 &&
+             <div id="addCircuit" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewCircuit()}>
+              <button className="btn p-2 ">
+                <AddIcon  className="me-2" />
+                <span className=" me-1">Añadir circuito</span>
+              </button>
+            </div>}
 
-              {firstWidth > 992 && <div id="addSets" className="col-3 btn mx-2 boxData" onClick={() => incrementAllSeries()}>
-                <button
-                  className="btn p-2"
-                >
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Sumar 1 serie</span>
-                </button>
-              </div>}
+            {firstWidth > 992 && <div id="addSets" className="col-3 btn mx-2 boxData" onClick={() => incrementAllSeries()}>
+              <button className="btn p-2">
+                <AddIcon  className="me-2" />
+                <span className=" me-1">Sumar 1 serie</span>
+              </button>
+            </div>}
 
-              <div id="diaActual" className="col-10 col-lg-3 mx-2 ">
-                <h4  className=" m-0 p-2" >
-                  <strong>{currentDay && currentDay.name}</strong>
-                </h4>
-              </div>
+            <div id="diaActual" className="col-10 col-lg-3 mx-2 ">
+              <h4  className=" m-0 p-2" >
+                <strong>{currentDay && currentDay.name}</strong>
+              </h4>
+            </div>
 
-              {firstWidth > 992 && <div id="addReps" className="col-3 btn mx-2 boxData" onClick={() => incrementAllReps()}>
-                <button
-                  className="btn p-2 "
-                >
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Sumar 1 rep</span>
-                </button>
-              </div> 
-              }
+            {firstWidth > 992 && <div id="addReps" className="col-3 btn mx-2 boxData" onClick={() => incrementAllReps()}>
+              <button className="btn p-2 ">
+                <AddIcon  className="me-2" />
+                <span className=" me-1">Sumar 1 rep</span>
+              </button>
+            </div> 
+            }
 
-              {firstWidth < 992 ?
+            {firstWidth < 992 ? (
               <>
-              <div className={`col-10 col-sm-6 text-center mb-4`}>
-                    
-                    <Segmented
-                        options={allDays.map((day) => ({
-                            label: day.name,
-                            value: day._id,
-                        }))}
-                        className="stylesSegmented"
-                        value={currentDay ? currentDay._id : ''}
-                        onChange={(value) => {
-                            const selectedDay = allDays.find((day) => day._id === value);
-
-                            if (selectedDay) {
-                                const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
-                                setIndexDay(selectedIndex);
-                                setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
-                            }
-                        }}
-                    />
-
+                <div className={`col-10 col-sm-6 text-center mb-4`}>
+                  <Segmented
+                      options={allDays.map((day) => ({
+                          label: day.name,
+                          value: day._id,
+                      }))}
+                      className="stylesSegmented"
+                      value={currentDay ? currentDay._id : ''}
+                      onChange={(value) => {
+                          const selectedDay = allDays.find((day) => day._id === value);
+                          if (selectedDay) {
+                              const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
+                              setIndexDay(selectedIndex);
+                              setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
+                          }
+                      }}
+                  />
                 </div>
                 <div className={`col-9 col-sm-6 ${firstWidth > 550 ? 'text-start mb-4' : 'text-center mb-4'}`}>
                     <IconButton
@@ -1458,7 +1429,6 @@ function Randomizer() {
                             aria-label="video"
                             className="bg-secondary rounded-2 text-light me-2"
                             onClick={() => openEditNameDialog(currentDay)}
-                            
                         >
                             <EditIcon className="" />
                         </IconButton>
@@ -1469,31 +1439,27 @@ function Randomizer() {
                         >
                             <DeleteIcon className="" />
                         </IconButton>
-
-              </div>
+                </div>
               </>
-                :
-                <>
-              <div className={`col-10 col-sm-6 text-end mt-5`}>
-                    
-                    <Segmented
-                        options={allDays.map((day) => ({
-                            label: day.name,
-                            value: day._id,
-                        }))}
-                        className="stylesSegmented text-end"
-                        value={currentDay ? currentDay._id : ''}
-                        onChange={(value) => {
-                            const selectedDay = allDays.find((day) => day._id === value);
-
-                            if (selectedDay) {
-                                const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
-                                setIndexDay(selectedIndex);
-                                setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
-                            }
-                        }}
-                    />
-
+            ) : (
+              <>
+                <div className={`col-10 col-sm-6 text-end mt-5`}>
+                  <Segmented
+                      options={allDays.map((day) => ({
+                          label: day.name,
+                          value: day._id,
+                      }))}
+                      className="stylesSegmented text-end"
+                      value={currentDay ? currentDay._id : ''}
+                      onChange={(value) => {
+                          const selectedDay = allDays.find((day) => day._id === value);
+                          if (selectedDay) {
+                              const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
+                              setIndexDay(selectedIndex);
+                              setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
+                          }
+                      }}
+                  />
                 </div>
                 <div className={`col-9 col-sm-6 text-start mt-5`}>
                     <IconButton
@@ -1509,7 +1475,6 @@ function Randomizer() {
                             aria-label="video"
                             className="bg-secondary rounded-2 text-light me-2"
                             onClick={() => openEditNameDialog(currentDay)}
-                            
                         >
                             <EditIcon className="" />
                         </IconButton>
@@ -1520,10 +1485,9 @@ function Randomizer() {
                         >
                             <DeleteIcon className="" />
                         </IconButton>
-
-              </div>
+                </div>
               </>
-              }
+            )}
           </div>
 
           {/* Tabla principal */}
@@ -1539,9 +1503,7 @@ function Randomizer() {
                       {...provided.droppableProps}
                     >
                       <table
-                        className={`table table-hover totalHeightTable align-middle fontTable text-center ${
-                          isEditing && "table-light"
-                        }`}
+                        className={`table table-hover totalHeightTable align-middle fontTable text-center ${isEditing && "table-light"}`}
                       >
                         <thead>
                           <tr>
@@ -1804,9 +1766,7 @@ function Randomizer() {
             header="Editar Nombre del Día"
             className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={isEditingName}
-            style={{
-              ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" })
-            }}
+            style={firstWidth > 968 ? { width: "35vw" } : { width: "75vw" }}
             onHide={() => setIsEditingName(false)}
           >
             <div className="p-fluid">
@@ -1838,9 +1798,7 @@ function Randomizer() {
             header="Editar Nombre de la Semana"
             className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={isEditingWeekName}
-            style={{
-              ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" })
-            }}
+            style={firstWidth > 968 ? { width: "35vw" } : { width: "75vw" }}
             onHide={closeEditWeekNameDialog}
           >
             <div className="p-fluid">
@@ -1871,6 +1829,41 @@ function Randomizer() {
           </Dialog>
 
 
+
+          {/* CHANGES: Dialog para mostrar las rutinas guardadas en mobile */}
+          <Dialog
+            header="Rutinas guardadas"
+            visible={showSavedRoutinesDialog}
+            style={firstWidth > 968 ? { width: "35vw" } : { width: "75vw" }}
+            onHide={() => setShowSavedRoutinesDialog(false)}
+          >
+            <div className="list-group">
+              {allWeeks && allWeeks.length > 0 ? (
+                allWeeks.map((week) => (
+                  <div className="row justify-content-between mt-1">
+                    <div className="col-9">
+                      <button
+                      key={week._id}
+                      className="btn"
+                      onClick={() => {
+                        setShowSavedRoutinesDialog(false);
+                        navigate(`/par/${week._id}`);
+                      }}
+                    >
+                      {week.name}
+                        
+                    </button>
+                    </div>
+                    <div className="col-3">
+                      <EditIcon />
+                      </div>
+                  </div>
+                ))
+              ) : (
+                <p>No hay rutinas guardadas</p>
+              )}
+            </div>
+          </Dialog>
 
           {/* Footer móvil */}
           {firstWidth < 992 && (

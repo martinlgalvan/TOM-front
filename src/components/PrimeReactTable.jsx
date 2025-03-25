@@ -18,42 +18,45 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 
-export default function PrimeReactTable({  user_id, id, users, refresh }) {
+export default function PrimeReactTable({ user_id, id, users, refresh }) {
 
     const [searchText, setSearchText] = useState('');
     const [showDialog, setShowDialog] = useState(false);
-
     const [qrDialogVisible, setQrDialogVisible] = useState(false);
     const [currentQrUser, setCurrentQrUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [qrImage, setQrImage] = useState(null);
-
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [nameUser, setNameUser] = useState([]);
     const [id_user, setId_user] = useState([]);
-
     const [profileData, setProfileData] = useState();
     const [days, setDays] = useState([]);
     const [selectedDay, setSelectedDay] = useState();
     const [widthPage, setWidthPage] = useState(window.innerWidth);
-
     const [inputValue, setInputValue] = useState('');
     const isInputValid = inputValue === 'ELIMINAR';
     const [first, setFirst] = useState(localStorage.getItem('userCurrentPage'));
-
-    // Para abrir/cerrar el formulario de crear alumno
     const [dialogg, setDialogg] = useState(false);
 
+    // Ordenamiento
+    const [sortNameAsc, setSortNameAsc] = useState(true);
+    const [sortEmailAsc, setSortEmailAsc] = useState(true);
+
     useEffect(() => {
-        // Filtramos los usuarios cada vez que cambian o cambia el texto de búsqueda.
-        setFilteredUsers(
-            users.filter(user =>
+        const filtered = users
+            .filter(user =>
                 user.name.toLowerCase().includes(searchText.toLowerCase()) ||
                 user.email.toLowerCase().includes(searchText.toLowerCase())
             )
-        );
+            .sort((a, b) => {
+                // Ordenar por _id descendente → último creado primero
+                return b._id.localeCompare(a._id);
+            });
+    
+        setFilteredUsers(filtered);
     }, [searchText, users]);
 
     useEffect(() => {
@@ -84,8 +87,6 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
                 setProfileData(data);
                 setDays(Object.keys(data.details || {}));
                 Notify.instantToast('Perfil cargado con éxito!');
-                // Podrías setear algo para mostrar un Dialog con la info, 
-                // pero en el ejemplo no se hace.
             })
             .catch(() => {
                 setProfileData(null);
@@ -102,69 +103,46 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
         setShowDialog(false);
     };
 
-    const actionsTemplate = (user) => {
-        return (
-            <div className="d-flex justify-content-center">
-                {/* Botón Editar/ir a rutina */}
-                <Link className="LinkDays iconButtons" to={`/user/routine/${user._id}/${user.name}`}>
-                    <IconButton aria-label="edit" className="btn p-1 my-2">
-                        <EditIcon className="text-dark" />
-                    </IconButton>
-                </Link>
-
-                {/* Perfil 
-                <IconButton
-                    aria-label="profile"
-                    onClick={() => openDialogProfile(user._id, user.name)}
-                    className="btn p-1 my-2"
-                >
-                    <PersonIcon className="text-dark" />
-                </IconButton>/*/}
-
-                {/* Eliminar */}
-                <IconButton
-                    aria-label="delete"
-                    onClick={() => showDialogDelete(user._id, user.name)}
-                    className="btn p-1 my-2"
-                >
-                    <CancelIcon className="colorIconYoutube" />
+    const actionsTemplate = (user) => (
+        <div className="d-flex justify-content-center">
+            <Link className="LinkDays iconButtons" to={`/user/routine/${user._id}/${user.name}`}>
+                <IconButton aria-label="edit" className="btn p-1 my-2">
+                    <EditIcon className="text-dark" />
                 </IconButton>
-
-                {/* Generar QR */}
-                <IconButton
-                    aria-label="qr"
-                    onClick={() => showQrDialog(user)}
-                    className="btn p-1 my-2"
-                >
-                    <QrCode2Icon className="text-dark" />
-                </IconButton>
-            </div>
-        );
-    };
+            </Link>
+            <IconButton
+                aria-label="delete"
+                onClick={() => showDialogDelete(user._id, user.name)}
+                className="btn p-1 my-2"
+            >
+                <CancelIcon className="colorIconYoutube" />
+            </IconButton>
+            <IconButton
+                aria-label="qr"
+                onClick={() => showQrDialog(user)}
+                className="btn p-1 my-2"
+            >
+                <QrCode2Icon className="text-dark" />
+            </IconButton>
+        </div>
+    );
 
     const linksTemplate = (user, e) => {
         if (e.field === 'email') {
             return (
-                <Link 
-                  className='' 
-                  to={`/user/routine/${user._id}/${user.name}`}
-                >
-                  {user.email}
+                <Link to={`/user/routine/${user._id}/${user.name}`}>
+                    {user.email}
                 </Link>
             );
         } else {
             return (
-                <Link 
-                  className='classNameStart' 
-                  to={`/user/routine/${user._id}/${user.name}`}
-                >
-                  {user.name}
+                <Link className='classNameStart' to={`/user/routine/${user._id}/${user.name}`}>
+                    {user.name}
                 </Link>
             );
         }
     };
 
-    // Confirmación y proceso de DELETE
     const handleAccept = () => {
         if (isInputValid) {
             Notify.notifyA('Eliminando usuario...');
@@ -185,11 +163,9 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
         hideDialog();
     };
 
-    // QR
     const showQrDialog = async (user) => {
         setLoading(true);
         setError(null);
-
         try {
             const response = await QRServices.generateQR(user._id);
             setQrImage(response.qrImage);
@@ -202,19 +178,33 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
         }
     };
 
-      // Callback que se ejecuta al cambiar de página en la DataTable
     const onPageChange = (event) => {
         setFirst(event.first);
         try {
-        localStorage.setItem('userCurrentPage', event.first.toString());
+            localStorage.setItem('userCurrentPage', event.first.toString());
         } catch (err) {
-        console.error('Error al guardar en localStorage:', err);
+            console.error('Error al guardar en localStorage:', err);
         }
+    };
+
+    const sortByName = () => {
+        const sorted = [...filteredUsers].sort((a, b) =>
+            sortNameAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+        );
+        setFilteredUsers(sorted);
+        setSortNameAsc(!sortNameAsc);
+    };
+
+    const sortByEmail = () => {
+        const sorted = [...filteredUsers].sort((a, b) =>
+            sortEmailAsc ? a.email.localeCompare(b.email) : b.email.localeCompare(a.email)
+        );
+        setFilteredUsers(sorted);
+        setSortEmailAsc(!sortEmailAsc);
     };
 
     return (
         <div className='row justify-content-around '>
-            {/* Campo de búsqueda */}
             <div className='col-6 col-lg-4 text-center m-0 pt-2'>
                 <div className="p-inputgroup mb-4">
                     <InputText 
@@ -225,114 +215,142 @@ export default function PrimeReactTable({  user_id, id, users, refresh }) {
                 </div>
             </div>
 
-            {/* Botón "Crear alumno" + componente de registro */}
             <div className="col-6 col-lg-4 text-center m-0 pt-2">
                 <div 
-                  id={'crearAlumno'} 
-                  className="boxData marginBoxRegister" 
-                  onClick={() => setDialogg(true)}
-                  style={{ cursor: 'pointer' }}
+                    id={'crearAlumno'} 
+                    className="boxData marginBoxRegister" 
+                    onClick={() => setDialogg(true)}
+                    style={{ cursor: 'pointer' }}
                 >
-                  <AddCircleIcon className="me-1 "/>
-                  <span>Crear alumno</span>
+                    <AddCircleIcon className="me-1 "/>
+                    <span>Crear alumno</span>
                 </div>
-
-                {/* Aquí integras el formulario de alta */}
                 <UserRegister 
-                  dialogg={dialogg} 
-                  refresh={refresh} 
-                  parentId={id} 
-                  onClose={() => setDialogg(false)} 
+                    dialogg={dialogg} 
+                    refresh={refresh} 
+                    parentId={id} 
+                    onClose={() => setDialogg(false)} 
                 />
             </div>
 
-            {/* Tabla de usuarios */}
             <div className='col-12 col-sm-10 m-0 mb-5 fontUserList'>
                 <DataTable 
-                  emptyMessage="Cargando usuarios..." 
-                  className='usersListTable alignDatatable pt-0' 
-                  paginator 
-                  rows={4} 
-                  first={first}               // Valor de paginación inicial
-                  value={filteredUsers}
-                  onPage={onPageChange}         // Actualización de la página
+                    emptyMessage="Cargando usuarios..." 
+                    className='usersListTable alignDatatable pt-0' 
+                    paginator 
+                    rows={10} 
+                    first={first}
+                    value={filteredUsers}
+                    onPage={onPageChange}
                 >
-                    <Column body={linksTemplate} field="name" header="Nombre" className='columnName'/>
+                    <Column 
+                        body={linksTemplate}
+                        field="name"
+                        header={
+                            <div className="d-flex align-items-center justify-content-center">
+                                <span className='me-2'>Nombre</span>
+                                <button
+                                    className={`btn pi pi-sort-alpha-${sortEmailAsc ? 'down' : 'up'} clickable`} 
+                                    onClick={sortByName}
+                                    style={{ cursor: 'pointer' }}
+                                    title="Ordenar por nombre"
+                                ><SwapVertIcon /></button>
+                            </div>
+                       
+                        }
+                        className='columnName'
+                    />
+
                     {widthPage > 600 && 
-                      <Column body={linksTemplate} field="email" header="Email" className='columnEmail'/>}
+                        <Column 
+                            body={linksTemplate}
+                            field="email"
+                            header={
+                                <div className="d-flex align-items-center justify-content-center">
+                                    <span className='me-2'>Email</span>
+                                    <button
+                                        className={`btn pi pi-sort-alpha-${sortEmailAsc ? 'down' : 'up'} clickable`} 
+                                        onClick={sortByEmail}
+                                        style={{ cursor: 'pointer' }}
+                                        title="Ordenar por email"
+                                    ><SwapVertIcon /></button>
+                                </div>
+                            }
+                            className='columnEmail'
+                        />
+                    }
+
                     <Column body={actionsTemplate} header="Acciones" className='columnActions' />
                 </DataTable>
 
-                {/* Diálogo de confirmación para ELIMINAR usuario */}
                 <Dialog 
-                  header={`${nameUser}`} 
-                  visible={showDialog} 
-                  onHide={() => hideDialog()} 
-                  style={{ width: widthPage > 900 ? '50%' : '90%' }}
+                    header={`${nameUser}`} 
+                    visible={showDialog} 
+                    onHide={() => hideDialog()} 
+                    style={{ width: widthPage > 900 ? '50%' : '90%' }}
                 >
-                  <div className='row justify-content-center'>
-                      <div className='col-10 col-sm-6 mb-3'>
-                          <label htmlFor="inputDelete" className='text-center mb-4'>
-                              Por favor, escriba <b>"ELIMINAR"</b> si desea eliminar permanentemente el usuario <b>{nameUser}</b>
-                          </label>
-                          <input
-                              id='inputDelete'
-                              type="text"
-                              className='form-control'
-                              value={inputValue}
-                              onChange={(event) => setInputValue(event.target.value)}
-                          />
-                      </div>
-                      <div className='col-12 text-center'>
-                          <button className="btn btn-sseccon m-3" onClick={handleCancel}>
-                              Cancelar
-                          </button>
-                          <button 
-                              className={isInputValid ? 'btn btn-danger m-3' : 'btn btn-secondary m-3'} 
-                              disabled={!isInputValid} 
-                              onClick={handleAccept}
-                          >
-                              Eliminar
-                          </button>
-                      </div>
-                  </div>
+                    <div className='row justify-content-center'>
+                        <div className='col-10 col-sm-6 mb-3'>
+                            <label htmlFor="inputDelete" className='text-center mb-4'>
+                                Por favor, escriba <b>"ELIMINAR"</b> si desea eliminar permanentemente el usuario <b>{nameUser}</b>
+                            </label>
+                            <input
+                                id='inputDelete'
+                                type="text"
+                                className='form-control'
+                                value={inputValue}
+                                onChange={(event) => setInputValue(event.target.value)}
+                            />
+                        </div>
+                        <div className='col-12 text-center'>
+                            <button className="btn btn-sseccon m-3" onClick={handleCancel}>
+                                Cancelar
+                            </button>
+                            <button 
+                                className={isInputValid ? 'btn btn-danger m-3' : 'btn btn-secondary m-3'} 
+                                disabled={!isInputValid} 
+                                onClick={handleAccept}
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
                 </Dialog>
 
-                {/* Diálogo con el QR */}
                 <Dialog
-                  header={`Código QR - ${currentQrUser?.name}`}
-                  visible={qrDialogVisible}
-                  onHide={() => setQrDialogVisible(false)}
-                  style={{ width: widthPage > 900 ? '30%' : '90%' }}
+                    header={`Código QR - ${currentQrUser?.name}`}
+                    visible={qrDialogVisible}
+                    onHide={() => setQrDialogVisible(false)}
+                    style={{ width: widthPage > 900 ? '30%' : '90%' }}
                 >
-                  <div className="text-center">
-                      {loading && <p>Generando QR...</p>}
-                      {error && <p style={{ color: 'red' }}>{error}</p>}
-                      {qrImage && (
-                          <div>
-                              <p>Este es el código QR para que <b>{currentQrUser?.name}</b> inicie sesión.</p>
-                              <img
-                                  src={qrImage}
-                                  alt="Código QR"
-                                  style={{ width: '200px', height: '200px' }}
-                              />
-                              <div className="mt-3">
-                                  <a
-                                      href={qrImage}
-                                      download={`QR-${currentQrUser?.name || 'usuario'}.png`}
-                                      style={{ textDecoration: 'none' }}
-                                  >
-                                      <button
-                                          aria-label="download"
-                                          className="btn btn-primary p-2"
-                                      >
-                                          Descargar QR
-                                      </button>
-                                  </a>
-                              </div>
-                          </div>
-                      )}
-                  </div>
+                    <div className="text-center">
+                        {loading && <p>Generando QR...</p>}
+                        {error && <p style={{ color: 'red' }}>{error}</p>}
+                        {qrImage && (
+                            <div>
+                                <p>Este es el código QR para que <b>{currentQrUser?.name}</b> inicie sesión.</p>
+                                <img
+                                    src={qrImage}
+                                    alt="Código QR"
+                                    style={{ width: '200px', height: '200px' }}
+                                />
+                                <div className="mt-3">
+                                    <a
+                                        href={qrImage}
+                                        download={`QR-${currentQrUser?.name || 'usuario'}.png`}
+                                        style={{ textDecoration: 'none' }}
+                                    >
+                                        <button
+                                            aria-label="download"
+                                            className="btn btn-primary p-2"
+                                        >
+                                            Descargar QR
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </Dialog>
             </div>
         </div>

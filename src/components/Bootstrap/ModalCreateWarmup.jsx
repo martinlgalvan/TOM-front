@@ -426,7 +426,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       )*/}
 
       {isEditing  && (
-        <div className="floating-button-mobile index-up">
+        <div className="floating-button-mobile-warmup index-up">
           <button className="btn colorCancel p-4 my-3" onClick={() => editAndClose()}>
             Continuar editando
           </button>

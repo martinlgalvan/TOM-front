@@ -45,11 +45,15 @@ function LogoChico({isHomePage}){
 
     return (
         <>
-
+        {urlPath === TOM ?
+        <div className='row justify-content-center LargoLogo align-items-center '>
+            <h1 className="visually-hidden">TOM</h1>
+            <img className="img-fluid LargoLogoChico text-center my-5 pt-3 pb-3 bg-white rounded-3" src={urlPath} alt="TOM" />
+        </div> :
         <div className='row justify-content-center LargoLogo align-items-center '>
             <h1 className="visually-hidden">TOM</h1>
             <img className="img-fluid LargoLogoChico text-center my-5 pt-3 pb-3" src={urlPath} alt="TOM" />
-        </div>
+        </div>}
      
 
 </>

@@ -333,6 +333,7 @@ function DayEditDetailsPage() {
 
   const editAndClose = () => {
     setWarmup(false);
+    setIsEditing(true)
   };
 
   const confirmDelete = () => {
@@ -861,7 +862,7 @@ function DayEditDetailsPage() {
           initialValue={data}
           onChange={(e) => changeExerciseInCircuit(circuitIndex, exerciseIndex, field, e)}
           isRep={field === 'reps'}
-          className={`mt-5`}
+          className={`mt-0`}
         />
       );
     } else if(field === 'name'){
@@ -1634,7 +1635,7 @@ function DayEditDetailsPage() {
                                   ) : (
                                     <>
                                       <td colSpan="8">
-                                        <table className="table text-center">
+                                        <table className="table text-center align-middle">
                                           <thead>
                                             <tr>
                                               <th colSpan={2}>Nombre</th>
@@ -1668,16 +1669,16 @@ function DayEditDetailsPage() {
                                           <tbody>
                                             {exercise.circuit.map((circuitExercise, j) => (
                                               <tr key={circuitExercise.idRefresh}>
-                                                <td>
+                                                <td className="td-2">
                                                   {customInputEditExerciseInCircuit(circuitExercise.name, i, j, 'name')}
                                                 </td>
-                                                <td>
+                                                <td className="td-3">
                                                   {customInputEditExerciseInCircuit(circuitExercise.reps, i, j, 'reps')}
                                                 </td>
-                                                <td>
+                                                <td className="td-4">
                                                   {customInputEditExerciseInCircuit(circuitExercise.peso, i, j, 'peso')}
                                                 </td>
-                                                <td>
+                                                <td className="td-3">
                                                   {customInputEditExerciseInCircuit(circuitExercise.video, i, j, 'video')}
                                                 </td>
                                                 <td>
@@ -1733,13 +1734,13 @@ function DayEditDetailsPage() {
           {isEditing && (
             <div className="floating-button-mobile index-up">
               <button
-                className="px-5 btn colorCancel py-2 my-5"
+                className="px-5 btn colorCancel  my-4"
                 onClick={() => applyChanges()}
               >
                 Guardar
               </button>
               <button
-                className="px-5 btn colorRed  py-2 my-5"
+                className="px-5 btn colorRed   my-4"
                 onClick={() => confirmCancel()}
               >
                 Cancelar
@@ -1924,7 +1925,7 @@ function DayEditDetailsPage() {
           </Dialog>
 
           {firstWidth < 992 && (
-            <nav className="fixed-bottom colorNavBottom d-flex justify-content-around pb-4 " >
+            <nav className="fixed-bottom colorNavBottom d-flex justify-content-around pb-4 pt-1" >
               
               <div className="row justify-content-center text-center ">
                 <div className="">
