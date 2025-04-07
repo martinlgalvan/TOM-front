@@ -1207,7 +1207,7 @@ width: 50px;
 }
 
 .largoInput{
-  width: 121px !important;
+  width: 120px !important;
 
 }
 
@@ -1224,12 +1224,10 @@ width: 50px;
   margin-left: 3px;
 }
 
-.paddingCustom{
-  padding-left: 6px;
-}
+
 
 .largoo{
-  width: 330px;
+ 
   margin-left: 12px;
 }
 
@@ -2828,6 +2826,13 @@ width: 50px;
     bottom: 80px;
 
   }
+
+  
+.positionModeText{
+  position: absolute;
+  right: 6%;
+  width: 50px;
+}
   
 
   .marginTableRoutine{

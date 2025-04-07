@@ -450,17 +450,14 @@ function DayEditDetailsPage() {
         /> :
         <>
           <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 '}`}>
-            <div className="input-number-container">
+            <div className={`input-number-container`}>
             <IconButton               
                 className={`buttonRight `}
                 >
-                    <RemoveIcon  />
+                    <RemoveIcon />
                 </IconButton>
 
-              <input
-                
-                className={`form-control rounded-0 inp text-center inputFontSize `}
-              />
+              <input className={`form-control rounded-0 inp text-center inputFontSize `}/>
 
                 <IconButton               
                 className={`buttonLeft `}
@@ -990,8 +987,8 @@ function DayEditDetailsPage() {
 
   const tableMobile = () => {
     return (
-      <div className="table-responsiveCss">
-        {currentDay && <div className="row justify-content-center text-center mb-3">
+      <div className="p-1">
+        {currentDay && <div className="row justify-content-center text-center mb-3 p-0">
           <div className="col-6 mb-3 px-0">
             <button
               aria-label="video"
@@ -1017,11 +1014,11 @@ function DayEditDetailsPage() {
         <DragDropContext onDragEnd={handleOnDragEnd}>
           <Droppable droppableId="exercises-mobile">
             {(provided) => (
-              <div className="div div-bordered "
+              <div className="div div-bordered p-0"
                      ref={provided.innerRef}
                      {...provided.droppableProps}
               >
-                <tbody>
+                <div>
                   {currentDay && currentDay.exercises.map((exercise, i) => (
                     <Draggable 
                       key={exercise.exercise_id}
@@ -1037,9 +1034,9 @@ function DayEditDetailsPage() {
                         >
                           {exercise.type === 'exercise' ? (
                             <>
-                              <div className="row justify-content-center me-1 paddingCustom">
-                                <div className="col-10 text-start pe-0 me-4 paddingCustom">
-                                  <span className="styleInputsSpan ms-2 ps-1">Nombre</span>
+                              <div className="row justify-content-center ">
+                                <div className="col-10 text-start ">
+                                  <span className="styleInputsSpan ms-3">Nombre</span>
                                   <div className="largoo">
                                     <AutoComplete
                                       defaultValue={exercise.name}
@@ -1050,22 +1047,22 @@ function DayEditDetailsPage() {
                                     />
                                   </div>
                                 </div>
-                              <div className="col-1 text-start mt-3 ">
+                              <div className="col-1 text-start mt-3 me-3">
                                   {customInputEditDay(exercise.video, i, 'video')}
                                 </div>
                                 
                               </div>
 
-                              <div className="row justify-content-center mt-2 mx-1">
+                              <div className="row justify-content-center mt-2 ms-2 me-4">
 
                                 <div className="col-6 text-start ">
-                                  <span className="styleInputsSpan ms-">Peso</span>
-                                  <div className="largoInput MarginInputs">{customInputEditDay(exercise.peso, i, 'peso')}</div>
+                                  <span className="styleInputsSpan ms-1 ">Peso</span>
+                                  <div className="largoInput ">{customInputEditDay(exercise.peso, i, 'peso')}</div>
                                 </div>
 
-                                <div className="col-6 text-start ms-">
-                                  <span className="styleInputsSpan ">Rest</span>
-                                  <div className="largoInput MarginInputs">{customInputEditDay(exercise.rest, i, 'rest')}</div>
+                                <div className="col-6 text-start ">
+                                  <span className="styleInputsSpan ms-1">Rest</span>
+                                  <div className="largoInput ">{customInputEditDay(exercise.rest, i, 'rest')}</div>
                                 
                                 </div>
 
@@ -1073,7 +1070,7 @@ function DayEditDetailsPage() {
 
                               </div>
                  
-                                <div className="row justify-content-center mt-2 ms-2">
+                                <div className="row justify-content-center mt-2 ms-2 me-4">
 
                                   <div className="col-6 text-start">
                                   <span className="styleInputsSpan text-start">Series</span>
@@ -1254,7 +1251,7 @@ function DayEditDetailsPage() {
                     </Draggable>
                   ))}
                   {provided.placeholder}
-                </tbody>
+                </div>
               </div>
             )}
           </Droppable>
@@ -1909,16 +1906,6 @@ function DayEditDetailsPage() {
                   </IconButton>
                 </div>
                 <span className='col-12 text-light fontTextNavBar'>Añadir circuito</span>
-              </div>
-              
-
-              <div className="row justify-content-center text-center ">
-                <div className="">
-                  <IconButton className={`text-light align-self-bottom `} onClick={() => setEditMode(!editMode)}>
-                    <EditIcon />
-                  </IconButton>
-                </div>
-                <span className={`col-12 text-light fontTextNavBar ${editMode && "activeButton"}`} >Modo edición</span>
               </div>
 
               <div className="row justify-content-center text-center ">
