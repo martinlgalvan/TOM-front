@@ -9,14 +9,14 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
 const CustomInputNumber = React.forwardRef(
-  ({ initialValue, onChange, disabled, isRep, onActivate, isNotNeedProp }, ref) => {
+  ({ initialValue, onChange, disabled, isRep, onActivate, currentDay, isNotNeedProp }, ref) => {
 
     const [value, setValue] = useState(initialValue);
     const [isTextMode, setIsTextMode] = useState(typeof initialValue === 'string');
     const [firstWidth, setFirstWidth] = useState();
     useEffect(() => {
       setFirstWidth(window.innerWidth)
-      
+      console.log(currentDay)
       if (isTextMode && initialValue !== value) {
         setValue(initialValue);
       }
@@ -89,7 +89,7 @@ const CustomInputNumber = React.forwardRef(
 
           </div>
 
-              {isRep && <div className={`  ${firstWidth < 992 ? 'text-start  col-4 positionModeText mt-1' : 'mt-2 text-center '}`}>
+              {isRep  && <div className={`  ${firstWidth < 992 ? 'text-start  col-4 positionModeText mt-1' : 'mt-2 text-center '}`}>
                   <SelectButton
                     className={`${firstWidth > 992 && 'styleSelectButton'}`}
                     value={isTextMode ? 'text' : 'number'}

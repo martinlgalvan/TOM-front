@@ -410,7 +410,7 @@ function DayEditDetailsPage() {
         /> :
         <>
           <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 marginReps'}`}>
-            <div className="input-number-container">
+            <div className={`input-number-container ${firstWidth < 992 && 'col-8' }`}>
             <IconButton               
                 className={`buttonRight `}>
                     <RemoveIcon  />
@@ -428,6 +428,8 @@ function DayEditDetailsPage() {
             </div>
           </div>
 
+
+
           </>
         }
         </>
@@ -442,11 +444,12 @@ function DayEditDetailsPage() {
           onChange={(e) => changeModifiedData(index, e, field)}
           isRep={field === "reps"}
           isNotNeedProp={true}
+
           className={`mt-5`}
           onActivate={() => onActivateTextMode()}
         /> :
         <>
-          <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 marginReps'}`}>
+          <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 '}`}>
             <div className="input-number-container">
             <IconButton               
                 className={`buttonRight `}
@@ -467,16 +470,8 @@ function DayEditDetailsPage() {
             </div>
           </div>
 
-            {field == 'reps' && (
-              <div className='styleSelectButton text-center '>
-                <SelectButton
-                  className='styleSelectButton '
-                  options={[
-                    { label: 'Modo texto', value: 'text' }
-                  ]}
-                />
-              </div>
-            )}
+
+
           </>
         }
         </>
@@ -1043,9 +1038,9 @@ function DayEditDetailsPage() {
                           {exercise.type === 'exercise' ? (
                             <>
                               <div className="row justify-content-center me-1 paddingCustom">
-                                <div className="col-10 text-start pe-0 paddingCustom">
-                                  <span className="styleInputsSpan">Nombre</span>
-                                  <div className="">
+                                <div className="col-10 text-start pe-0 me-4 paddingCustom">
+                                  <span className="styleInputsSpan ms-2 ps-1">Nombre</span>
+                                  <div className="largoo">
                                     <AutoComplete
                                       defaultValue={exercise.name}
                                       onChange={(name, video) => {
@@ -1064,13 +1059,13 @@ function DayEditDetailsPage() {
                               <div className="row justify-content-center mt-2 mx-1">
 
                                 <div className="col-6 text-start ">
-                                  <span className="styleInputsSpan ">Peso</span>
-                                  <div className="largoInput">{customInputEditDay(exercise.peso, i, 'peso')}</div>
+                                  <span className="styleInputsSpan ms-">Peso</span>
+                                  <div className="largoInput MarginInputs">{customInputEditDay(exercise.peso, i, 'peso')}</div>
                                 </div>
 
-                                <div className="col-6 text-start ">
+                                <div className="col-6 text-start ms-">
                                   <span className="styleInputsSpan ">Rest</span>
-                                  <div className="largoInput">{customInputEditDay(exercise.rest, i, 'rest')}</div>
+                                  <div className="largoInput MarginInputs">{customInputEditDay(exercise.rest, i, 'rest')}</div>
                                 
                                 </div>
 
@@ -1078,7 +1073,7 @@ function DayEditDetailsPage() {
 
                               </div>
                  
-                                <div className="row justify-content-center mt-2 mx-1">
+                                <div className="row justify-content-center mt-2 ms-2">
 
                                   <div className="col-6 text-start">
                                   <span className="styleInputsSpan text-start">Series</span>

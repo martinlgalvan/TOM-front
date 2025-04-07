@@ -291,39 +291,6 @@ function UserRoutineEditPage() {
                             </div>
                         </div>
                     }
-                
-                    {firstWidth < 983 && <div>
-
-                    {profile && (
-                        <div className="col-12">
-                            <div className=" p-3 ">
-                                <h5 className="text-center mb-3">{username}</h5>
-                                <div className="row justify-content-center">
-                                    <div className="row justify-content-center">
-
-                                        <div className='col-6 my-2'>
-                                            <b className='bg-dark text-light p-2'>Peso</b> 
-                                            <b className='text-dark colorItems p-2'>{profile.peso || '-'} kg</b>
-                                        </div>
-
-                                        <div className='col-6 my-2'>
-                                            <b className='bg-dark text-light p-2'>Altura</b> 
-                                            <b className='text-dark colorItems p-2'>{profile.altura || '-'} cm</b>
-                                        </div>
-                                        
-                                        <div className='col-6 my-2'>
-                                            <b className='bg-dark text-light p-2'>Modalidad</b> 
-                                            <b className='text-dark colorItems p-2'>{profile.modalidad || '-'}</b>
-                                        </div>
-
-                                    </div>
-                                    <div className="col-12 mt-3"><strong>Resumen semanal:</strong><p className="mt-2">{profile.resumen_semanal || 'Sin información.'}</p></div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    </div>}
 
                     <div className="row text-center justify-content-center marginTableRoutine align-middle align-center align-items-center ">
 

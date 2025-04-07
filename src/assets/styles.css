@@ -1176,7 +1176,7 @@ input[type="number"] {
 }
 
 .input-number-container input {
-width: 40px;
+width: 50px;
 }
 
 
@@ -1207,7 +1207,13 @@ width: 40px;
 }
 
 .largoInput{
-  width: 111px !important;
+  width: 121px !important;
+
+}
+
+.MarginInputs{
+  width: 122px !important;
+  margin-left: 5px;
 }
 
 .largoIconYt{
@@ -1220,7 +1226,11 @@ width: 40px;
 
 .paddingCustom{
   padding-left: 6px;
-  
+}
+
+.largoo{
+  width: 330px;
+  margin-left: 12px;
 }
 
 .positionModeText{
