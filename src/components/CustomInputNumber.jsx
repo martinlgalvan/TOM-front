@@ -9,12 +9,11 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
 const CustomInputNumber = React.forwardRef(
-  ({ initialValue, onChange, disabled, isRep, onActivate }, ref) => {
+  ({ initialValue, onChange, disabled, isRep, onActivate, isNotNeedProp }, ref) => {
 
     const [value, setValue] = useState(initialValue);
     const [isTextMode, setIsTextMode] = useState(typeof initialValue === 'string');
     const [firstWidth, setFirstWidth] = useState();
-    console.log(onActivate)
     useEffect(() => {
       setFirstWidth(window.innerWidth)
       
@@ -59,8 +58,8 @@ const CustomInputNumber = React.forwardRef(
 
     return (
       <>
-      <div className={`row justify-content-center text-center aa ${isRep && firstWidth > 992 && ''} ${isRep && 'mb-2 marginReps'}`}>
-          <div className="input-number-container ">
+      <div className={`row justify-content-center text-center aa  ${isRep && !isNotNeedProp && firstWidth < 992 && 'mb-2 '} ${isRep && 'mb-2 '}`}>
+          <div className={`input-number-container ${firstWidth < 992 && 'col-8' }`}>
 
               <IconButton               
               className={`buttonRight ${isTextMode && 'd-none'}`}
@@ -89,20 +88,22 @@ const CustomInputNumber = React.forwardRef(
               </IconButton>
 
           </div>
-        </div>
 
-              {isRep && (
-                <div className='styleSelectButton text-center '>
+              {isRep && <div className={`  ${firstWidth < 992 ? 'text-start  col-4 positionModeText mt-1' : 'mt-2 text-center '}`}>
                   <SelectButton
-                    className='styleSelectButton '
+                    className={`${firstWidth > 992 && 'styleSelectButton'}`}
                     value={isTextMode ? 'text' : 'number'}
                     onChange={handleSelectChange}
                     options={[
-                      { label: 'Modo texto', value: 'text' }
+                      { label: firstWidth > 992 ? 'Modo Texto' : 'T', value: 'text' }
                     ]}
                   />
-                </div>
-              )}
+                </div> }
+        </div>
+
+              
+ 
+              
               </>
     );
   }

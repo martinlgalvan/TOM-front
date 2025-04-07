@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import * as UsersService from './../services/users.services.js';
+import * as UserServices from './../services/users.services.js';
 import * as Notify from './../helpers/notify.js';
 import * as QRServices from './../services/loginWithQR.js';
 import DeleteUserDialog from './../components/DeleteActions/DeleteUserDialog.jsx';
@@ -10,6 +10,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
 import { Link } from 'react-router-dom';
 
 import IconButton from '@mui/material/IconButton';
@@ -32,7 +33,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [nameUser, setNameUser] = useState([]);
     const [id_user, setId_user] = useState([]);
-    const [profileData, setProfileData] = useState();
+    const [profileData, setProfileData] = useState(undefined);
     const [days, setDays] = useState([]);
     const [selectedDay, setSelectedDay] = useState();
     const [widthPage, setWidthPage] = useState(window.innerWidth);
@@ -40,6 +41,25 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
     const isInputValid = inputValue === 'ELIMINAR';
     const [first, setFirst] = useState(localStorage.getItem('userCurrentPage'));
     const [dialogg, setDialogg] = useState(false);
+
+    // Estados para el perfil
+    const [profileDialogVisible, setProfileDialogVisible] = useState(false);
+    const [selectedProfileId, setSelectedProfileId] = useState(null);
+    const [selectedProfileName, setSelectedProfileName] = useState('');
+    const [profileLoading, setProfileLoading] = useState(false);
+    const [profileError, setProfileError] = useState(null);
+    const [editedProfile, setEditedProfile] = useState({});
+
+    // Opciones para Dropdown de modalidad y editable
+    const modalidadOptions = [
+        { label: 'Presencial', value: 'presencial' },
+        { label: 'Online', value: 'online' },
+        { label: 'Semi-presencial', value: 'semi-presencial' }
+    ];
+    const isEditableOptions = [
+        { label: 'Si', value: 'true' },
+        { label: 'No', value: 'false' }
+    ];
 
     // Ordenamiento
     const [sortNameAsc, setSortNameAsc] = useState(true);
@@ -76,21 +96,45 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
         }
     }, [profileData]);
 
+    // Inicializa el formulario de edición con los datos del perfil, incluyendo altura, edad y modalidad.
+    // Si profileData es un objeto vacío (perfil no existente), se setean valores por defecto.
+    useEffect(() => {
+        if (profileData !== undefined) {
+            setEditedProfile({
+                name: profileData.name || '',
+                email: profileData.email || '',
+                altura: profileData.altura || '',
+                edad: profileData.edad || '',
+                modalidad: profileData.modalidad || '', // Se espera que sea 'presencial', 'online' o 'semi-presencial'
+                isEditable: profileData.isEditable ? 'true' : 'false'
+            });
+        }
+    }, [profileData]);
+
+    // useEffect para obtener el perfil cuando se abre el diálogo
+    useEffect(() => {
+        if (profileDialogVisible && selectedProfileId) {
+            setProfileLoading(true);
+            setProfileError(null); // Limpiar error previo
+            UserServices.getProfileById(selectedProfileId)
+                .then((data) => {
+                    setProfileData(data);
+                    setProfileError(null); // Limpiar error si carga correctamente
+                    Notify.instantToast('Perfil cargado con éxito!');
+                })
+                .catch(() => {
+                    // Si ocurre un error, asumimos que el perfil no existe y asignamos un objeto vacío
+                    setProfileData({});
+                    setProfileError('No se pudo cargar el perfil');
+                })
+                .finally(() => {
+                    setProfileLoading(false);
+                });
+        }
+    }, [profileDialogVisible, selectedProfileId]);
+
     const onSearchChange = (event) => {
         setSearchText(event.target.value);
-    };
-
-    const openDialogProfile = (id, name) => {
-        setNameUser(name);
-        UsersService.getProfileById(id)
-            .then((data) => {
-                setProfileData(data);
-                setDays(Object.keys(data.details || {}));
-                Notify.instantToast('Perfil cargado con éxito!');
-            })
-            .catch(() => {
-                setProfileData(null);
-            });
     };
 
     const showDialogDelete = (_id, name) => {
@@ -103,8 +147,39 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
         setShowDialog(false);
     };
 
+    // Función para abrir el diálogo del perfil
+    const openProfileDialog = (user) => {
+        setSelectedProfileId(user._id);
+        setSelectedProfileName(user.name);
+        setProfileDialogVisible(true);
+    };
+
+    const handleProfileSave = () => {
+        // Convertir el valor de isEditable a booleano
+        const updatedProfile = {
+            ...editedProfile,
+            isEditable: editedProfile.isEditable === 'true'
+        };
+        UserServices.editProfile(selectedProfileId, updatedProfile)
+            .then(() => {
+                Notify.instantToast('Perfil actualizado con éxito!');
+                setProfileDialogVisible(false);
+                refresh();
+            })
+            .catch(() => {
+                Notify.instantToast('Error al actualizar el perfil.');
+            });
+    };
+
     const actionsTemplate = (user) => (
         <div className="d-flex justify-content-center">
+            <IconButton
+                aria-label="profile"
+                onClick={() => openProfileDialog(user)}
+                className="btn p-1 my-2"
+            >
+                <PersonIcon className="text-dark" />
+            </IconButton>
             <Link className="LinkDays iconButtons" to={`/user/routine/${user._id}/${user.name}`}>
                 <IconButton aria-label="edit" className="btn p-1 my-2">
                     <EditIcon className="text-dark" />
@@ -146,7 +221,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
     const handleAccept = () => {
         if (isInputValid) {
             Notify.notifyA('Eliminando usuario...');
-            UsersService.deleteUser(id_user)
+            UserServices.deleteUser(id_user)
                 .then(() => {
                     refresh(); 
                     hideDialog();
@@ -256,7 +331,6 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
                                     title="Ordenar por nombre"
                                 ><SwapVertIcon /></button>
                             </div>
-                       
                         }
                         className='columnName'
                     />
@@ -347,6 +421,72 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
                                             Descargar QR
                                         </button>
                                     </a>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </Dialog>
+
+                {/* Dialog para el perfil del alumno con funcionalidad de edición */}
+                <Dialog
+                    header={`Perfil: ${selectedProfileName}`}
+                    visible={profileDialogVisible}
+                    onHide={() => setProfileDialogVisible(false)}
+                    style={{ width: widthPage > 900 ? '40%' : '90%' }}
+                >
+                    <div className="text-center">
+                        {profileLoading && <p>Cargando perfil...</p>}
+                        {!profileLoading && profileData !== undefined && (
+                            <div className='row justify-content-center'>
+                                {Object.keys(profileData).length === 0 && (
+                                    <p>Por favor, pedile a tu alumno que llene los campos.</p>
+                                )}
+
+                                <div className="mb-3 col-6 mx-3">
+                                    <label>Altura</label>
+                                    <input 
+                                        type="text"
+                                        className="form-control"
+                                        value={editedProfile.altura}
+                                        onChange={(e) => setEditedProfile({ ...editedProfile, altura: e.target.value })}
+                                    />
+                                </div>
+                                <div className="mb-3 col-6 mx-3">
+                                    <label>Edad</label>
+                                    <input 
+                                        type="number"
+                                        className="form-control"
+                                        value={editedProfile.edad}
+                                        onChange={(e) => setEditedProfile({ ...editedProfile, edad: e.target.value })}
+                                    />
+                                </div>
+                                <div className="mb-3 col-6 mx-3">
+                                    <label className='d-block'>Modalidad</label>
+                                    <Dropdown 
+                                    className='w-100'
+                                        value={editedProfile.modalidad}
+                                        options={modalidadOptions}
+                                        onChange={(e) => setEditedProfile({ ...editedProfile, modalidad: e.value })}
+                                        placeholder="Seleccione modalidad"
+                                    />
+                                </div>
+                                <div className="mb-3 col-6 mx-3">
+                                    <label className='d-block'>Bloquear edición de alumno</label>
+                                    <Dropdown 
+                                    className='w-100'
+                                        value={editedProfile.isEditable}
+                                        options={isEditableOptions}
+                                        onChange={(e) => setEditedProfile({ ...editedProfile, isEditable: e.value })}
+                                        placeholder="Seleccione opción"
+                                    />
+                                </div>
+                                <div className="d-flex justify-content-around">
+                                    <button className="btn btn-secondary" onClick={() => setProfileDialogVisible(false)}>
+                                        Cancelar
+                                    </button>
+                                    <button className="btn btn-primary" onClick={handleProfileSave}>
+                                        Guardar
+                                    </button>
                                 </div>
                             </div>
                         )}

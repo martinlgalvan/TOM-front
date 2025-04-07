@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Fragment } from 'react';
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom"; // Se agregó useNavigate
 import { Tour } from 'antd';
 
 import * as WeekService from "../../services/week.services.js";
@@ -16,9 +16,7 @@ import Floating from "../../helpers/Floating.jsx";
 import ReactPlayer from 'react-player';
 import * as _ from "lodash";
 
-// Eliminamos la importación del Carousel de PrimeReact y usamos react-slick
 import Slider from "react-slick";
-
 
 import { Sidebar } from 'primereact/sidebar';
 import { Segmented } from 'antd';
@@ -43,6 +41,9 @@ import ImageIcon from '@mui/icons-material/Image';
 
 function DayDetailsPage() {
     const { id, week_id, index } = useParams();
+    const navigate = useNavigate(); // Se inicializa useNavigate
+    const username = localStorage.getItem('name'); // Se obtiene el nombre del usuario
+
     const op = useRef(null);
 
     const [day_id, setDay_id] = useState();
@@ -65,7 +66,10 @@ function DayDetailsPage() {
     const [indexOfExercise, setIndexOfExercise] = useState();
     const [visible, setVisible] = useState(false);
     const [selectedObject, setSelectedObject] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
     const [drive, setDrive] = useState(localStorage.getItem('drive'));
+    // Nuevo estado para controlar el modal cuando no existe el perfil
+    const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
 
     const handleExpandClick = () => {
         setExpanded(!expanded);
@@ -317,6 +321,24 @@ function DayDetailsPage() {
         setCurrentDay(idx);
     };
 
+    // Nuevo useEffect para verificar si existe el perfil del usuario
+    useEffect(() => {
+      console.log(id)
+        UserService.getProfileById(id)
+            .then(data => {
+              setUserProfile(data)
+                  console.log(data)
+            })
+            .catch((error) => {
+                setShowProfileMissingModal(true);
+            });
+    }, [id]);
+
+    const redirectToPerfil = () => {
+        setShowProfileMissingModal(false);
+        navigate(`/perfil/${id}`);
+    };
+
     return (
         <>
             <div className="container-fluid p-0 ">
@@ -448,7 +470,8 @@ function DayDetailsPage() {
                                     )}
                                   </IconButton>
 
-                                  <IconButton
+                                  
+                                   <IconButton
                                     id={idx === 0 ? 'edicion' : null}
                                     aria-label="video"
                                     className="p-0 col-3 mb-2"
@@ -657,6 +680,7 @@ function DayDetailsPage() {
                           <input
                             type="text"
                             className="form-control"
+                            disabled={userProfile && userProfile.isEditable}
                             value={completeExercise.peso || ''}
                             onChange={(e) =>
                               setCompleteExercise({
@@ -672,6 +696,7 @@ function DayDetailsPage() {
                           <textarea
                             className="form-control"
                             rows="3"
+                            disabled={userProfile && userProfile.isEditable}
                             value={completeExercise.notas || ''}
                             onChange={(e) =>
                               setCompleteExercise({
@@ -692,6 +717,7 @@ function DayDetailsPage() {
                           <button
                             className="btn BlackBGtextWhite"
                             onClick={handleUpdateExercise}
+                            disabled={userProfile && userProfile.isEditable}
                           >
                             Guardar
                           </button>
@@ -737,6 +763,28 @@ function DayDetailsPage() {
                     <span className="text-light small">Cálculo</span>
                   </button>
                 </nav>
+
+                {/* Nuevo Dialog para mostrar el mensaje cuando no existe el perfil */}
+                <Dialog
+                    header="Completa tu perfil"
+                    visible={showProfileMissingModal}
+                    style={{ width: '90vw' }}
+                    modal
+                    onHide={() => setShowProfileMissingModal(false)}
+                    footer={
+                      <div className="row justify-content-center">
+                       <div  className="col-6 text-center">
+                            <Button label="Más tarde" onClick={() => setShowProfileMissingModal(false)} className="p-button-primary text-light " />
+                        </div>
+                        <div className="col-6 text-center">
+                            <Button label="Ir al perfil " onClick={redirectToPerfil} className="p-button-primary text-light " />
+                        </div>
+                      </div>
+                    }
+                >
+                    <p>Hola! {username}, por favor completa tu perfil asi tu entrenador tiene más datos sobre vos.</p>
+                </Dialog>
+
             </section>
         </>
     );

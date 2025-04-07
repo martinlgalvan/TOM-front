@@ -46,7 +46,7 @@ function Logo({isHomePage}){
     return (
         <>
         {urlPath == TOM && isHomePage == true ? 
-            <div className='row justify-content-center align-items-center position-relative divPrincipal marginNavBar' >
+            <div className={`row justify-content-center align-items-center position-relative divPrincipal marginNavBar`} >
                 <h1 className="visually-hidden">TOM</h1>
                 
                 {/* Imagen de fondo */}
@@ -59,7 +59,7 @@ function Logo({isHomePage}){
             </div>
         
             :
-            <div className='row justify-content-center LargoLogo align-items-center y-2'>
+            <div className={`row justify-content-center  align-items-center y-2`}>
             <h1 className="visually-hidden">TOM</h1>
             <img className="img-fluid Largo text-center my-5 pt-3 pb-3" src={urlPath} alt="TOM" />
         </div>

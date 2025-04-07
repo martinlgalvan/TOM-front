@@ -519,7 +519,6 @@ p {
   height: 100% ;
   border-left: 0 ;
   border-right: 0 ;
-  width: 70px ;
   align-items: center ;
   text-align: center ;
   line-height: normal ;
@@ -1166,10 +1165,7 @@ input[type="number"] {
   padding: 0px 0px 10px;
 }
 
-.input-number-container {
-  font-size: 0.4em;
-  width: 140px;
-}
+
 
 .input-number-container {
   display: flex !important;
@@ -1180,14 +1176,14 @@ input[type="number"] {
 }
 
 .input-number-container input {
-width: 50px;
+width: 40px;
 }
 
 
 .input-number-container .buttonRight {
   height: 100%;
-  width: 40px;
-  border-radius: 15px 0px 0px 15px;
+  width: 35px;
+  border-radius: 5px 0px 0px 5px;
   border-top: none;
   border-bottom: none;
   border-left: none;
@@ -1199,8 +1195,8 @@ width: 50px;
 
 .input-number-container .buttonLeft {
   height: 100%;
-  width: 40px;
-  border-radius: 0px 15px 15px 0px;
+  width: 35px;
+  border-radius: 0px 5px 5px 0px;
   border-top: none;
   border-bottom: none;
   border-left: none;
@@ -1208,6 +1204,29 @@ width: 50px;
   background-color: black;
   border: none;
   cursor: pointer;
+}
+
+.largoInput{
+  width: 111px !important;
+}
+
+.largoIconYt{
+  font-size: 32px !important;
+}
+
+.marginDropDown{
+  margin-left: 3px;
+}
+
+.paddingCustom{
+  padding-left: 6px;
+  
+}
+
+.positionModeText{
+  position: absolute;
+  right: 6%;
+  width: 50px;
 }
 
 .textAreaResize {
@@ -1378,8 +1397,16 @@ width: 50px;
   color: red;
 }
 
+.colorItems{
+  background-color: #f5f5f5;
+}
 
-
+.styleInputsSpan{
+  color: #353535;
+  font-size: 0.8em;
+  text-align: start;
+  width: 110px !important;
+}
 
 /*Efectos de eliminar y agregar*/
 
@@ -1616,6 +1643,9 @@ width: 50px;
   }
 }
 
+.marginRepsNew{
+  margin-top: 37px;
+}
 
 
 @media (max-width: 768px) {
@@ -1626,6 +1656,9 @@ width: 50px;
     padding: 10px; /* Agrega algo de padding extra si es necesario */
   }
 
+  .marginRepsNew{
+    padding-top: 0;
+  }
   .suggestions-list ul {
     padding: 0;
   }

@@ -162,7 +162,7 @@ function DayEditDetailsPage() {
     Notify.notifyA("Cargando");
 
     WeekService.findByWeekId(week_id).then((data) => {
-      console.log(data[0].routine[0])
+
       setRoutine(data[0]);
       setWeekName(data[0].name);
       setModifiedDay(data[0].routine);
@@ -391,7 +391,7 @@ function DayEditDetailsPage() {
   };
 
   const onActivateTextMode = (data) => {
-    console.log("fff")
+
     setIsEditing(true)
   };
 
@@ -441,6 +441,7 @@ function DayEditDetailsPage() {
           initialValue={data}
           onChange={(e) => changeModifiedData(index, e, field)}
           isRep={field === "reps"}
+          isNotNeedProp={true}
           className={`mt-5`}
           onActivate={() => onActivateTextMode()}
         /> :
@@ -486,12 +487,12 @@ function DayEditDetailsPage() {
         <>
           <IconButton
             aria-label="video"
-            className={`w-100 ${shouldGlow ? 'glowing-icon' : ''}`}
+            className={`w-100  ${shouldGlow ? 'glowing-icon' : ''}`}
             onClick={(e) => {
               productRefsSimple.current[index].toggle(e);
             }}
           >
-            <YouTubeIcon className="colorIconYoutube" />
+            <YouTubeIcon className="colorIconYoutube largoIconYt" />
           </IconButton>
           <div>
             <OverlayPanel 
@@ -788,7 +789,7 @@ function DayEditDetailsPage() {
       );
     } else if(field === "notas") {
       return(
-        <div className="row">
+        <div className="row justify-content-center">
           <InputTextarea
             ref={(el) => inputRefs.current[`${circuitIndex}-${field}`] = el}
             className={`textAreaResize ${firstWidth < 600 && 'col-11'}`}
@@ -862,6 +863,7 @@ function DayEditDetailsPage() {
           initialValue={data}
           onChange={(e) => changeExerciseInCircuit(circuitIndex, exerciseIndex, field, e)}
           isRep={field === 'reps'}
+          isNotNeedProp={true}
           className={`mt-0`}
         />
       );
@@ -994,21 +996,21 @@ function DayEditDetailsPage() {
   const tableMobile = () => {
     return (
       <div className="table-responsiveCss">
-        {currentDay && currentDay.length > 0 && <div className="row justify-content-center text-center mb-3">
-          <div className="col-6 mb-3">
+        {currentDay && <div className="row justify-content-center text-center mb-3">
+          <div className="col-6 mb-3 px-0">
             <button
               aria-label="video"
-              className="btn btn-outline-dark me-2"
+              className="btn btn-outline-dark me-2 p-2"
               onClick={() => incrementAllSeries()}
             >
               <UpgradeIcon className="" /> Sumar 1 serie
             </button>
           </div>
 
-          <div className="col-6 mb-3">
+          <div className="col-6 mb-3 px-0">
             <button
               aria-label="video"
-              className="btn btn-outline-dark me-2"
+              className="btn btn-outline-dark me-2 p-2"
               onClick={() => incrementAllReps()}
             >
               <UpgradeIcon className="" /> Sumar 1 rep
@@ -1020,22 +1022,10 @@ function DayEditDetailsPage() {
         <DragDropContext onDragEnd={handleOnDragEnd}>
           <Droppable droppableId="exercises-mobile">
             {(provided) => (
-              <table className="table table-bordered"
+              <div className="div div-bordered "
                      ref={provided.innerRef}
                      {...provided.droppableProps}
               >
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Peso</th>
-                    <th>Sets</th>
-                    <th>Reps</th>
-                    {editMode && <th>Rest</th>}
-                    <th>Notas</th>
-                    {editMode && <th>Video</th>}
-                    <th>Reordenar / Acciones</th>
-                  </tr>
-                </thead>
                 <tbody>
                   {currentDay && currentDay.exercises.map((exercise, i) => (
                     <Draggable 
@@ -1044,63 +1034,80 @@ function DayEditDetailsPage() {
                       index={i}
                     >
                       {(providedDrag) => (
-                        <tr 
+                        <div 
                           ref={providedDrag.innerRef}
                           {...providedDrag.draggableProps}
                           {...providedDrag.dragHandleProps}
-                          className="shadowCards"
+                          className="mb-4 shadowCards p-2"
                         >
                           {exercise.type === 'exercise' ? (
                             <>
-                              <td data-th="Nombre" className="text-center">
-                                {editMode ? 
-                                  <AutoComplete
-                                    defaultValue={exercise.name}
-                                    onChange={(name, video) => {
-                                      changeModifiedData(i, name, 'name');
-                                      changeModifiedData(i, video, 'video');
-                                    }}
-                                  />
-                                  : 
-                                  <span className="">
-                                    {exercise.name === '' ? 'Nombre': exercise.name}
-                                  </span>
-                                }
-                              </td>
-                              <td data-th="Peso" className="text-center">
-                                {customInputEditDay(exercise.peso, i, 'peso')}
-                              </td>
-                              <td data-th="Sets" className="text-center">
-                                {customInputEditDay(exercise.sets, i, 'sets')}
-                              </td>
-                              <td data-th="Reps" className="text-center">
-                                {customInputEditDay(exercise.reps, i, 'reps')}
-                              </td>
-                              {editMode && 
-                                <td data-th="Rest" className="text-center">
-                                  {customInputEditDay(exercise.rest, i, 'rest')}
-                                </td>
-                              }
-                              {editMode 
-                                ? (
-                                  <td data-th="Notas" className="text-center">
-                                    {customInputEditDay(exercise.notas, i, 'notas')}
-                                  </td>
-                                )
-                                : (
-                                  <td className="text-center">
-                                    {exercise.notas ? exercise.notas : ''}
-                                  </td>
-                                )
-                              }
-                              {editMode && 
-                                <td data-th="Video" className="text-center">
+                              <div className="row justify-content-center me-1 paddingCustom">
+                                <div className="col-10 text-start pe-0 paddingCustom">
+                                  <span className="styleInputsSpan">Nombre</span>
+                                  <div className="">
+                                    <AutoComplete
+                                      defaultValue={exercise.name}
+                                      onChange={(name, video) => {
+                                        changeModifiedData(i, name, 'name');
+                                        changeModifiedData(i, video, 'video');
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              <div className="col-1 text-start mt-3 ">
                                   {customInputEditDay(exercise.video, i, 'video')}
-                                </td>
-                              }
-                              <td className="notStyle">
-                                <div className="row justify-content-center ">
-                                  <div className="col-6">
+                                </div>
+                                
+                              </div>
+
+                              <div className="row justify-content-center mt-2 mx-1">
+
+                                <div className="col-6 text-start ">
+                                  <span className="styleInputsSpan ">Peso</span>
+                                  <div className="largoInput">{customInputEditDay(exercise.peso, i, 'peso')}</div>
+                                </div>
+
+                                <div className="col-6 text-start ">
+                                  <span className="styleInputsSpan ">Rest</span>
+                                  <div className="largoInput">{customInputEditDay(exercise.rest, i, 'rest')}</div>
+                                
+                                </div>
+
+                              
+
+                              </div>
+                 
+                                <div className="row justify-content-center mt-2 mx-1">
+
+                                  <div className="col-6 text-start">
+                                  <span className="styleInputsSpan text-start">Series</span>
+                                  <div className="largoInput">{customInputEditDay(exercise.sets, i, 'sets')}</div>
+                                  </div>
+
+                                  <div className="col-6 text-start ">
+                                  <span className="styleInputsSpan ">Reps</span>
+                                  <div className="largoInput">{customInputEditDay(exercise.reps, i, 'reps')}</div>
+                                </div>
+
+                              </div>
+
+                              <div className="row justify-content-center my-2">
+
+                                <div className="col-11 text-start">
+                                  <span className="styleInputsSpan">Notas</span>
+                                  {customInputEditDay(exercise.notas, i, 'notas')}
+                                </div>
+
+                            
+                               
+
+                              </div>
+
+                             
+                              <div className="">
+                                <div className="row justify-content-center marginDropDown ">
+                                  <div className="col-6 ">
                                     <Dropdown
                                       value={exercise.numberExercise}
                                       options={options}
@@ -1113,13 +1120,13 @@ function DayEditDetailsPage() {
 
                                   <div className="col-6">
                                     <div className="row justify-content-around">
-                                      <div className="col-5">
+                                      <div className="col-6">
                                         <IconButton>
                                           <DragIndicatorIcon />
                                         </IconButton>
                                       </div>
 
-                                      <div className="col-5">
+                                      <div className="col-6">
                                         <IconButton
                                           aria-label="delete"
                                           onClick={() => {
@@ -1136,67 +1143,88 @@ function DayEditDetailsPage() {
                                     </div>
                                   </div>
                                 </div>
-                              </td>
+                              </div>
                             </>
                           ) : (
                             <>
-                              {editMode ? 
-                                <>
-                                  <td className="text-center" data-th={"Nombre"}>
+                                <div className="row justify-content-center">
+                                  <div className="col-8 text-start" >
+                                  <span className="styleInputsSpan">Nombre</span>
                                     {customInputEditCircuit(exercise.type, i, 'type')}
-                                  </td>
-                                  <td className="text-center" data-th={"Series"}>
+                                  </div>
+                                  <div className="col-4 text-start" >
+                                    <span className="styleInputsSpan">Min / vueltas</span>
                                     {customInputEditCircuit(exercise.typeOfSets, i, 'typeOfSets')}
-                                  </td>
-                                  <td className="notStyle">
+                                  </div>
+                                  <div className="notStyle">
                                     {exercise.circuit.map((item, j) => (
                                       <div key={item.idRefresh} className="row justify-content-center text-center">
-                                        <div className="mt-4 ">
-                                          <b className="mt-4 mb-2">Ejercicio {j + 1}</b>                                                  
-                                          <span className="text-end ps-5 ">
-                                            <IconButton
-                                              aria-label="video"
-                                              className=" text-light "
-                                              onClick={() => {
-                                                setIsEditing(true);
-                                                const updatedDays = [...day];
-                                                updatedDays[indexDay].exercises[i].circuit.splice(j, 1);
-                                                setDay(updatedDays);
-                                                setModifiedDay(updatedDays);
-                                              }}
-                                            >
-                                              <CancelIcon className="colorIconDeleteExercise" />
-                                            </IconButton>
-                                          </span>
+                                        <div className="mt-4 col-12">
+                                          <div className="row justify-content-center">
+                                            <div className="col-4 m-auto"><b>Ejercicio {j + 1}</b></div>
+                                            <div className="col-4">{customInputEditExerciseInCircuit(item.video, i, j, 'video')}   </div>
+                                            <div className="col-4">
+                                              <span className="text-end ">
+                                                <IconButton
+                                                  aria-label="video"
+                                                  className=" text-light "
+                                                  onClick={() => {
+                                                    setIsEditing(true);
+                                                    const updatedDays = [...day];
+                                                    updatedDays[indexDay].exercises[i].circuit.splice(j, 1);
+                                                    setDay(updatedDays);
+                                                    setModifiedDay(updatedDays);
+                                                  }}
+                                                >
+                                                  <CancelIcon className="colorIconDeleteExercise" />
+                                                </IconButton>
+                                              </span>
+                                            </div>
+                                          
+
+                                                                                        
+                                      
                                         </div>
-                                        <span className="col-11 my-1 mb-2">
+                                        </div>
+                                        <div className="col-11  mb-2">
                                           {customInputEditExerciseInCircuit(item.name, i, j, 'name')}
-                                        </span>
-                                        <span className="col-6 my-1">
-                                          {customInputEditExerciseInCircuit(item.reps, i, j, 'reps')}
-                                        </span>
-                                        <span className="col-5 my-1">
+                                        </div>
+                                        <div className="col-5 text-start ">
+                                        <span className="styleInputsSpan">Peso</span>
+                                          <div className="largoInput">
                                           {customInputEditExerciseInCircuit(item.peso, i, j, 'peso')}
-                                        </span>
+                                          </div>
+                                        </div>
+                                        <div className="col-5 text-start">
+                                          <span className="styleInputsSpan">Reps</span>
+                                          <div className="largoInput">
+                                            {customInputEditExerciseInCircuit(item.reps, i, j, 'reps')}
+                                          </div>
+                                        </div>
                                       </div>
                                     ))}
-                                  </td>
-                                  <td className="notStyle">
-                                    <IconButton
-                                      aria-label="video"
-                                      className="bgColor rounded-2 text-light text-center my-4"
-                                      onClick={() => AddExerciseToCircuit(i)}
-                                    >
-                                      <AddIcon className="" />
-                                      <span className="font-icons me-1">Añadir Ejercicio al Circuito</span>
-                                    </IconButton>
-                                  </td>
-                                  <td className="text-center my-4" data-th={"Notas"}>
-                                    {customInputEditCircuit(exercise.notas, i, 'notas')}
-                                  </td>
-                                  <td className="notStyle">
-                                    <div className="row justify-content-between">
-                                      <div className="col-5">
+                                  </div>
+                                  <div className="row justify-content-center my-4">
+                                    <div className="col-8 my-3">
+                                      <IconButton
+                                        aria-label="video"
+                                        className="bgColor rounded-2 text-light text-center "
+                                        onClick={() => AddExerciseToCircuit(i)}
+                                      >
+                                        <AddIcon className="" />
+                                        <span className="font-icons ">Añadir ejercicio</span>
+                                      </IconButton>
+                                    </div>
+                                    <div className="col-11 me-4 text-center">
+                                      <span className="styleInputsSpan text-start">Notas</span>
+                                      <div className="text-center">{customInputEditCircuit(exercise.notas, i, 'notas')}</div>
+                                    </div>
+                                    
+                                  </div>
+                                  
+                                  <div className="notStyle">
+                                    <div className="row justify-content-center">
+                                      <div className="col-4 ms-4 ">
                                         <Dropdown
                                           value={exercise.numberExercise}
                                           options={options}
@@ -1214,76 +1242,25 @@ function DayEditDetailsPage() {
                                             onClick={() => deleteCircuit(exercise.name, i)}
                                           >
                                             <DeleteIcon />
-                                            Eliminar circuito
+                                            Eliminar 
                                           </IconButton>
-                                          <IconButton className="col-2 ms-3">
+                                          <IconButton className="col-2 ">
                                             <DragIndicatorIcon />
                                           </IconButton>
                                         </div>
                                       </div>
                                     </div>
-                                  </td>
-                                </> :
-                                <>
-                                  <td className="text-center" data-th={"Nombre"}>
-                                    {exercise.type === ' ' ? 'Nombre' : exercise.type}
-                                  </td>
-                                  <td className="text-center" data-th={"Series"}>
-                                    {exercise.typeOfSets === '' ? 'Sets' : exercise.typeOfSets}
-                                  </td>
-                                  <td className="notStyle">
-                                    <div className="row justify-content-center" >
-                                      <b className="col-5 my-3">Ejercicio</b>
-                                      <b className="col-3 my-3">Reps</b>
-                                      <b className="col-3 my-3">Peso</b>
-                                      {exercise.circuit.map((item) => (
-                                        <div key={item.idRefresh} className="row justify-content-center">
-                                          <span className="col-5 my-1">{item.name === '' ? 'Ejercicio' : item.name}</span>
-                                          <span className="col-3 my-1">{item.reps === '' ? 'Reps' : item.reps}</span>
-                                          <span className="col-3 my-1">{item.peso === '' ? 'Peso' : item.peso}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </td>
-                                  <td className="text-center my-4 me-3" data-th={"Notas"}>
-                                    {exercise.notas === '' ? 'Nombre' : exercise.notas}
-                                  </td>
-                                  <td>
-                                    <div className="row justify-content-center">
-
-                                      <div className="col-8">
-                                      <IconButton
-                                            aria-label="video"
-                                            className="bg-danger fontDeleteCircuit rounded-2 text-light me-1"
-                                            onClick={() => deleteCircuit(exercise.name, i)}
-                                          >
-                                            <DeleteIcon />
-                                            Eliminar 
-                                          </IconButton>
-                                    
-
-                                      </div>
-                                      <div className="col-4">
-                                        <IconButton>
-                                          <DragIndicatorIcon />
-                                        </IconButton>
-                                      </div>
-
-                                    </div>
-                                   
-                                      
-                                  </td>
-                                </>
-                              }
+                                  </div>
+                                </div> 
                             </>
                           )}
-                        </tr>
+                        </div>
                       )}
                     </Draggable>
                   ))}
                   {provided.placeholder}
                 </tbody>
-              </table>
+              </div>
             )}
           </Droppable>
         </DragDropContext>
@@ -1580,11 +1557,12 @@ function DayEditDetailsPage() {
                                         )}
                                       </td>
                                       <td className="td-4 ">
+                                        <div className="marginRepsNew">
                                         {customInputEditDay(
                                           exercise.reps,
                                           i,
                                           "reps"
-                                        )}
+                                        )}</div>
                                       </td>
                                       <td className="td-5">
                                         {customInputEditDay(
@@ -1673,7 +1651,9 @@ function DayEditDetailsPage() {
                                                   {customInputEditExerciseInCircuit(circuitExercise.name, i, j, 'name')}
                                                 </td>
                                                 <td className="td-3">
+                                                  <div className="marginRepsNew">
                                                   {customInputEditExerciseInCircuit(circuitExercise.reps, i, j, 'reps')}
+                                                  </div>
                                                 </td>
                                                 <td className="td-4">
                                                   {customInputEditExerciseInCircuit(circuitExercise.peso, i, j, 'peso')}
