@@ -27,7 +27,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
-import ExerciseComparisonChart from '../../components/ExerciseComparisonChart.jsx';
+
 
 function UserRoutineEditPage() {
 
