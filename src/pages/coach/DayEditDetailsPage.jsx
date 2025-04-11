@@ -41,6 +41,7 @@ import { SelectButton } from 'primereact/selectbutton';
 
 import LogoChico from "../../components/LogoChico.jsx";
 import ModalCreateWarmup from "../../components/Bootstrap/ModalCreateWarmup.jsx";
+import ModalCreateMovility from "../../components/Bootstrap/ModalCreateMovility.jsx";
 import CustomInputNumber from "../../components/CustomInputNumber.jsx";
 import AutoComplete from "../../components/Autocomplete.jsx";
 
@@ -150,6 +151,7 @@ function DayEditDetailsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [tourVisible, setTourVisible] = useState(false);
+  const [movilityVisible, setMovilityVisible] = useState(false);
 
   const [renderInputSets, setRenderInputSets] = useState(true);
   const [renderInputReps, setRenderInputReps] = useState(true);
@@ -301,7 +303,10 @@ function DayEditDetailsPage() {
 
 
 
-
+  const handleShowMovility = () => {
+    setMovilityVisible(true);
+    setIsEditing(false);
+  };
 
   /**  re-enumerar los ejercicios después de arrastrar y soltar. **/
   const reorderExercises = (exercisesArray) => {
@@ -333,6 +338,7 @@ function DayEditDetailsPage() {
 
   const editAndClose = () => {
     setWarmup(false);
+    setMovilityVisible(false)
     setIsEditing(true)
   };
 
@@ -443,7 +449,7 @@ function DayEditDetailsPage() {
           initialValue={data}
           onChange={(e) => changeModifiedData(index, e, field)}
           isRep={field === "reps"}
-          isNotNeedProp={true}
+          
 
           className={`mt-5`}
           onActivate={() => onActivateTextMode()}
@@ -1351,14 +1357,24 @@ function DayEditDetailsPage() {
         <section className="container-fluid totalHeight">
           
           <div  className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
+            <div className="col-12 mb-3">
+                <div className="row justify-content-center align-items-center py-2">
+                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowMovility}>
+                    <EditIcon  className="me-2" />
+                    <span className=" me-1">Bloque de activación/movilidad <strong className="d-block">{currentDay && currentDay.name}</strong></span>
+                  </div>
+                </div>
+              </div>
+
               <div className="col-12 mb-3">
                 <div className="row justify-content-center align-items-center py-2">
                   <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
                     <EditIcon  className="me-2" />
-                    <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
+                    <span className=" me-1">Bloque de entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
                   </div>
                 </div>
               </div>
+
 
               {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
                 <button
@@ -1934,6 +1950,21 @@ function DayEditDetailsPage() {
                               }}
                               scrollIntoViewOptions={true}
                             />)}
+
+        <Dialog
+          className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
+          blockScroll={window.innerWidth > 600 ? false : true}
+          header="Bloque de Activación"
+          visible={movilityVisible}
+          onHide={() => setMovilityVisible(false)}
+        >
+          <ModalCreateMovility
+            week={modifiedDay}
+            week_id={week_id}
+            day_id={currentDay && currentDay._id}
+            editAndClose={editAndClose}
+          />
+        </Dialog>
         </section>
       </div>
     </>

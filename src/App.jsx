@@ -169,6 +169,9 @@ function App() {
         localStorage.setItem('_id', user._id)
         localStorage.setItem('name', user.name)
         localStorage.setItem('noShowPopup', 'false')
+        if(user.drive != undefined){
+            localStorage.setItem('drive', user.drive)
+        }
 
         localStorage.setItem('email', user.email)
         localStorage.setItem('entrenador_id', user.entrenador_id)
@@ -216,7 +219,7 @@ function App() {
             <>
                 <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
                     {/* Navbar vacío */}
-                    <nav className={`navbar navbar-expand-lg navbar-dark fixed-top ${textColor === 'false' || !textColor ? "bbb" : "blackColor"}`}
+                    <nav className={`navbar navbar-expand-lg navbar-dark fixed-top `}
                 style={{ backgroundColor: color }}>
                 <div className="container-fluid">
                     <a className="navbar-brand" href="/">TOM</a>
@@ -281,7 +284,7 @@ function App() {
     return (
         <>
             {/* NAVBAR FIJA */}
-            <nav className={`navbar navbar-expand-lg navbar-dark fixed-top ${textColor === 'false' || !textColor ? "bbb" : "blackColor"}`}
+            <nav className={`navbar navbar-expand-lg navbar-dark fixed-top colorFooter`}
                 style={{ backgroundColor: color }}>
                 <div className="container-fluid">
                     <a className="navbar-brand" href="/">TOM</a>
@@ -291,74 +294,74 @@ function App() {
                     <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
                         <ul className="navbar-nav text-center">
                             <li className="nav-item">
-                                <Link className={`nav-link ${location.pathname === `/` && 'active'}`} to="/">Inicio</Link>
+                                <Link className={`nav-link text-light ${location.pathname === `/` && 'active'}`} to="/">Inicio</Link>
                             </li>
                             {isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/users/${id}` && 'active'}`} to={`/users/${id}`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/users/${id}` && 'active'}`} to={`/users/${id}`}>
                                         Lista de alumnos
                                     </Link>
                                 </li>
                             )}
                             {isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/planificator/${id}` && 'active'}`} to={`/planificator/${id}`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/planificator/${id}` && 'active'}`} to={`/planificator/${id}`}>
                                         Planificador
                                     </Link>
                                 </li>
                             )}
                             {isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/novedades/` && 'active'}`} to={`/novedades/`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/novedades/` && 'active'}`} to={`/novedades/`}>
                                         Novedades
                                     </Link>
                                 </li>
                             )}
                             {isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/personalize/` && 'active'}`} to={`/personalize/`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/personalize/` && 'active'}`} to={`/personalize/`}>
                                         Perfil
                                     </Link>
                                 </li>
                             )}
                             {isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/exercises/` && 'active'}`} to={`/exercises/`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/exercises/` && 'active'}`} to={`/exercises/`}>
                                         Biblioteca
                                     </Link>
                                 </li>
                             )}
                             {isAutenticated && !isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/perfil/${id}` && 'active'}`} to={`/perfil/${id}`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/perfil/${id}` && 'active'}`} to={`/perfil/${id}`}>
                                         Perfil
                                     </Link>
                                 </li>
                             )}
                             {isAutenticated && !isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/routine/${id}` && 'active'}`} to={`/routine/${id}`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/routine/${id}` && 'active'}`} to={`/routine/${id}`}>
                                         Ver rutina
                                     </Link>
                                 </li>
                             )}
                             {!isAutenticated && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link ${location.pathname === `/login` && 'active'}`} to={"/login"}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/login` && 'active'}`} to={"/login"}>
                                         Iniciar sesión
                                     </Link>
                                 </li>
                             )}
                             {isAutenticated && (
                                 <li className="nav-item">
-                                    <Link className="nav-link" onClick={onLogout}>
+                                    <Link className="nav-link text-light" onClick={onLogout}>
                                         Cerrar sesión
                                     </Link>
                                 </li>
                             )}
                             {isAutenticated && showInstallButton && (
                                 <li className="nav-item ms-5 aaa" onClick={handleInstallClick}>
-                                    <Link className='nav-link'>
+                                    <Link className='nav-link text-light'>
                                         <IconButton aria-label="download" className="p-0" onClick={handleInstallClick}>
                                             <DownloadIcon className="me-1" />
                                         </IconButton>

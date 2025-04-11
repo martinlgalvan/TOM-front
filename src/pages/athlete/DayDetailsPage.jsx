@@ -38,6 +38,13 @@ import PercentIcon from '@mui/icons-material/Percent';
 import PercentageCalculator from "../../components/PercentageCalculator.jsx";
 import CountdownTimer from "../../components/CountdownTimer.jsx";
 import ImageIcon from '@mui/icons-material/Image';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import { NavigateBefore } from "@mui/icons-material";
+import Tooltip from '@mui/material/Tooltip';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { InputTextarea } from "primereact/inputtextarea";
+
 
 function DayDetailsPage() {
     const { id, week_id, index } = useParams();
@@ -67,9 +74,38 @@ function DayDetailsPage() {
     const [visible, setVisible] = useState(false);
     const [selectedObject, setSelectedObject] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
-    const [drive, setDrive] = useState(localStorage.getItem('drive'));
+    const [drive, setDrive] = useState(null);
     // Nuevo estado para controlar el modal cuando no existe el perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
+
+    let sliderRef = useRef(null);
+    let sliderRef2 = useRef(null);
+
+    // Estado para controlar la visibilidad del modal de resumen semanal
+    const [showWeeklySummaryModal, setShowWeeklySummaryModal] = useState(false);
+
+    // Estado para almacenar las 5 selecciones del resumen semanal
+    const [weeklySummary, setWeeklySummary] = useState({
+      selection1: "",
+      selection2: "",
+      selection3: "",
+      selection4: "",
+      selection5: ""
+});
+
+    const next = () => {
+      sliderRef.slickNext();
+    };
+    const previous = () => {
+      sliderRef.slickPrev();
+    };
+
+    const next2 = () => {
+      sliderRef2.slickNext();
+    };
+    const previous2 = () => {
+      sliderRef2.slickPrev();
+    };
 
     const handleExpandClick = () => {
         setExpanded(!expanded);
@@ -102,14 +138,22 @@ function DayDetailsPage() {
     }, [allDays, currentDay]);
 
     useEffect(() => {
-        if (!localStorage.getItem('drive')) {
-            UserService.findUserById(localStorage.getItem('entrenador_id')).then((data) => {
-              if(data.drive){
-                localStorage.setItem('drive', data.drive);
-              }
-            });
-        }
-    }, [drive]);
+      const driveLocal = localStorage.getItem('drive');
+      if (!driveLocal) {
+        UserService.findUserById(id)
+          .then((data) => {
+            if (data.drive) {
+              localStorage.setItem('drive', data.drive);
+              setDrive(data.drive);
+            }
+          })
+          .catch((err) => {
+            console.error("Error al obtener el drive:", err);
+          });
+      } else {
+        setDrive(driveLocal);
+      }
+    }, []);
 
     useEffect(() => {
         setTourSteps([
@@ -233,9 +277,10 @@ function DayDetailsPage() {
           });
     };
 
-    const productTemplate = useCallback((exercise) => {
+    const productTemplate = useCallback((exercise, idx, isWarmup) => {
         const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 450;
         const cardMaxWidth = isSmallScreen ? '380px' : '400px';
+      
         
         return (
             <div 
@@ -243,25 +288,25 @@ function DayDetailsPage() {
                     width: '100%', 
                     display: 'flex', 
                     justifyContent: 'center', 
-                    padding: '0 5px' 
+                    padding: '0 5px'
                 }}
             >
                 <div 
-                    className="border-1 surface-border border-round text-center py-3" 
+                    className="border-1 surface-border border-round text-center pt-3" 
                     style={{ width: '90%', maxWidth: cardMaxWidth, boxSizing: 'border-box' }}
                 >
-                    <span>{exercise.numberWarmup}</span>
-                    <h4>{exercise.name}</h4>
-                    <p>{exercise.sets} series x {exercise.reps} repeticiones</p>
-                    <p>{exercise.peso}</p>
-                    <p>{exercise.rest}</p>
-                    {exercise.notas && (
-                        <div>
-                            <p className="titleObservaciones">Observaciones</p>
-                            <p className="paraphObservaciones">{exercise.notas}</p>
-                        </div>
-                    )}
-                    <div>
+                  <div className="row justify-content-center">
+                      <div className="col-2">    
+                        <Avatar
+                          id={idx === 0 ? 'numeroSerie' : null}
+                          aria-label="recipe"
+                          className="avatarSize avatarColor"
+                        >
+                          {exercise.numberWarmup ? exercise.numberWarmup : exercise.numberMovility}
+                        </Avatar>
+                      </div>
+                    <div className="col-8 m-auto">{exercise.name}</div>
+                    <div className="col-2">
                         <IconButton
                             aria-label="video"
                             className="p-0"
@@ -271,6 +316,56 @@ function DayDetailsPage() {
                             <YouTubeIcon className={exercise.video ? 'ytColor' : 'ytColor-disabled'} />
                         </IconButton>
                     </div>
+                  </div>
+                    <table className="table  border-0 p-0 mt-3 ">
+                      <thead className="">
+                        <tr className="border-0 ">
+                          <th id={idx === 0 ? 'series' : null} className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'} `}>
+                            Sets
+                          </th>
+                          <th id={idx === 0 ? 'reps' : null} className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>
+                            Reps
+                          </th>
+                          <th id={idx === 0 ? 'peso' : null} className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>
+                            Peso
+                          </th>
+                         
+                        </tr>
+                      </thead>
+                      <tbody className="border-0 ">
+                        <tr className="border-0">
+                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>{exercise.sets}</td>
+                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>{exercise.reps}</td>
+                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>{exercise.peso}</td>
+                        
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div>
+
+                    {exercise.notas && exercise.notas.trim().length > 0 ? (
+                    <table className="table border-0 p-0 mt-3">
+                      <thead>
+                        <tr className="border-0">
+                          <th
+                            id={idx === 0 ? 'notas' : null}
+                            className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}
+                          >
+                            Notas
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="border-0">
+                        <tr className="border-0">
+                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>
+                            {exercise.notas}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  ) : null}
+
+                    </div>
                 </div>
             </div>
         );
@@ -279,10 +374,13 @@ function DayDetailsPage() {
     // Configuración de react-slick para el carrusel de entrada en calor
     const sliderSettings = {
         dots: true,
-        infinite: false,
-        speed: 500,
+        infinite: true,
+        speed: 400,
+        arrows: false,
         slidesToShow: 1,
         slidesToScroll: 1,
+        adaptiveHeight: true, // Agregado para que la altura se adapte
+        waitForAnimate: false,
         responsive: [
             {
               breakpoint: 1400,
@@ -321,17 +419,17 @@ function DayDetailsPage() {
         setCurrentDay(idx);
     };
 
-    // Nuevo useEffect para verificar si existe el perfil del usuario
     useEffect(() => {
-      console.log(id)
-        UserService.getProfileById(id)
-            .then(data => {
-              setUserProfile(data)
-                  console.log(data)
-            })
-            .catch((error) => {
-                setShowProfileMissingModal(true);
-            });
+      UserService.getProfileById(id)
+        .then((data) => {
+          setUserProfile(data);
+          if (data.resumen_semanal) {
+            setWeeklySummary(data.resumen_semanal);
+          }
+        })
+        .catch((error) => {
+          setShowProfileMissingModal(true);
+        });
     }, [id]);
 
     const redirectToPerfil = () => {
@@ -345,8 +443,8 @@ function DayDetailsPage() {
                 <Logo />
             </div>
 
-            <section className="container-fluid ">
-                <h2 className="my-5 text-center">{nameWeek}</h2>
+            <section className="container-fluid p-0">
+                <h2 className="mt-1 mb-4 text-center">{nameWeek}</h2>
 
                 <div className="text-center">
                     <Segmented
@@ -361,126 +459,207 @@ function DayDetailsPage() {
                 </div>
 
                 {currentDay !== null && (
-                <div className="row justify-content-center align-items-center text-center m-0 px-0 my-5">
+                <div className="row align-items-center text-center m-0 px-1 my-5">
                     <h2 className="text-center mb-4">
                         {allDays[currentDay]?.name}
                     </h2>
 
-                    {allDays[currentDay]?.warmup != null ? (
-                        <div className="card mb-4">
-                            <h3 className="mt-3">Entrada en calor</h3>
-                            <Slider {...sliderSettings} className="mx-0">
+                    {allDays[currentDay]?.movility != null &&
+                      <>
+                        <div className="text-start m-0 p-0">
+                          <span className="mt-3 styleInputsSpan ">Activación / movilidad</span>
+                        </div>
+                        <div className="card mb-4 colorCardsActivation">
+                          <Slider
+                          ref={slider => {
+                            sliderRef = slider;
+                          }}
+                           {...sliderSettings} 
+                           className="mx-0">
+                            {allDays[currentDay].movility.map((exercise, idx) => (
+                              <div key={idx}>
+                                {productTemplate(exercise, 'warmup')}
+                              </div>
+                            ))}
+                          </Slider>
+                          
+                        </div>
+                        <div className="row justify-content-between">
+
+                            <div className="col-6 text-start classSilders3"> 
+                                
+                                <IconButton onClick={previous}
+                                    >
+                                      <NavigateBeforeIcon className="editStyle p-0" />
+                                    </IconButton>
+                                    
+                            
+                            </div>
+
+                            <div className="col-6 text-end classSilders4">
+                                
+                                <IconButton onClick={next}
+                                    >
+                                      <NavigateNextIcon className="editStyle p-0" />
+                                    </IconButton>
+                            </div>
+
+                            </div>
+                      </>
+                    }
+
+                    {allDays[currentDay]?.warmup != null &&
+                      <>
+                      <div className="text-start m-0 p-0">
+                        <span className="mt-3 styleInputsSpan ">Entrada en calor</span>
+                      </div>
+                        <div className={`card mb-4 colorCards`}>
+                            
+                            <Slider
+                            ref={slider => {
+                              sliderRef2 = slider;
+                            }}
+                            {...sliderSettings} 
+                            className="mx-0">
                                 {allDays[currentDay].warmup.map((exercise, idx) => (
                                     <div key={idx}>
-                                        {productTemplate(exercise)}
+                                        {productTemplate(exercise, 'activation')}
                                     </div>
                                 ))}
                             </Slider>
-                        </div>
-                    ) : (
-                        <p>No hay entrada en calor para este día.</p>
-                    )}
+                            <div className="row justify-content-between">
 
+                            <div className="col-6 text-start classSilders"> 
+                                
+                                <IconButton onClick={previous2}
+                                    >
+                                      <NavigateBeforeIcon className="editStyle p-0" />
+                                    </IconButton>
+                                    
+                            
+                            </div>
+
+                            <div className="col-6 text-end classSilders2">
+                                
+                                <IconButton onClick={next2}
+                                    >
+                                      <NavigateNextIcon className="editStyle p-0" />
+                                    </IconButton>
+                            </div>
+
+                            </div>
+                            
+                        </div>
+                        </>
+                    }
+                    
+                      <div className="text-start m-0 mt-4 p-0">
+                        <span className="mt-3 styleInputsSpan ">Rutina del día</span>
+                      </div>
+                      
                     {allDays[currentDay]?.exercises.map((element, idx) => {
                         return (
                           <Fragment key={`${element.exercise_id}-${idx}`}>
                             {element.type === 'exercise' ? (
-                              <Card
-                                key={element.exercise_id}
-                                ref={(el) => (cardRefs.current[idx] = el)}
-                                className={`my-3 p-0 cardShadow titleCard`}
-                              >
-                                <CardHeader
-                                  avatar={
-                                    <Avatar
-                                      id={idx === 0 ? 'numeroSerie' : null}
-                                      aria-label="recipe"
-                                      className="avatarSize avatarColor"
-                                    >
-                                      {element.numberExercise}
-                                    </Avatar>
-                                  }
-                                  action={
-                                    <Avatar
-                                      id={idx === 0 ? 'contador' : null}
-                                      aria-label="recipe"
-                                      className=" avatarSize bg-dark "
-                                    >
-                                      <Contador className={'p-2'} max={element.sets} />
-                                    </Avatar>
-                                  }
-                                  title={
-                                    <span id={idx === 0 ? 'nombre' : null}>{element.name}</span>
-                                  }
-                                />
+                              <>
+                                
+                                <Card
+                                  key={element.exercise_id}
+                                  ref={(el) => (cardRefs.current[idx] = el)}
+                                  className={`mb-4 p-0 cardShadow titleCard`}
+                                >
+                                  <CardHeader
+                                    avatar={
+                                      <Avatar
+                                        id={idx === 0 ? 'numeroSerie' : null}
+                                        aria-label="recipe"
+                                        className="avatarSize avatarColor"
+                                      >
+                                        {element.numberExercise}
+                                      </Avatar>
+                                    }
+                                    action={
+                                      <Avatar
+                                        id={idx === 0 ? 'contador' : null}
+                                        aria-label="recipe"
+                                        className=" avatarSize bg-dark "
+                                      >
+                                        <Contador className={'p-2'} max={element.sets} />
+                                      </Avatar>
+                                    }
+                                    title={
+                                      <span id={idx === 0 ? 'nombre' : null}>{element.name}</span>
+                                    }
+                                  />
 
-                                <CardContent className="p-0">
-                                  <div className="card border-0">
-                                    <table className="table border-0 p-0">
-                                      <thead>
-                                        <tr className="border-0">
-                                          <th id={idx === 0 ? 'series' : null} className="border-0">
-                                            Sets
-                                          </th>
-                                          <th id={idx === 0 ? 'reps' : null} className="border-0">
-                                            Reps
-                                          </th>
-                                          <th id={idx === 0 ? 'peso' : null} className="border-0">
-                                            Peso
-                                          </th>
-                                          <th id={idx === 0 ? 'descanso' : null} className="border-0">
-                                            Descanso x serie
-                                          </th>
-                                        </tr>
-                                      </thead>
-                                      <tbody className="border-0">
-                                        <tr className="border-0">
-                                          <td className="border-0">{element.sets}</td>
-                                          <td className="border-0">{element.reps}</td>
-                                          <td className="border-0">{element.peso}</td>
-                                          <td className="border-0">
-                                            <CountdownTimer initialTime={element.rest} />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                  {element.notas && (
-                                    <div>
-                                      <p className="titleObservaciones">Observaciones</p>
-                                      <p className="paraphObservaciones">{element.notas}</p>
+                                  <CardContent className="p-0">
+                                    <div className="card border-0">
+                                      <table className="table border-0 p-0">
+                                        <thead>
+                                          <tr className="border-0">
+                                            <th id={idx === 0 ? 'series' : null} className="border-0">
+                                              Sets
+                                            </th>
+                                            <th id={idx === 0 ? 'reps' : null} className="border-0">
+                                              Reps
+                                            </th>
+                                            <th id={idx === 0 ? 'peso' : null} className="border-0">
+                                              Peso
+                                            </th>
+                                            <th id={idx === 0 ? 'descanso' : null} className="border-0">
+                                              Descanso x serie
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody className="border-0">
+                                          <tr className="border-0">
+                                            <td className="border-0">{element.sets}</td>
+                                            <td className="border-0">{element.reps}</td>
+                                            <td className="border-0">{element.peso}</td>
+                                            <td className="border-0">
+                                              <CountdownTimer initialTime={element.rest} />
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
                                     </div>
-                                  )}
-                                </CardContent>
-
-                                <CardActions className="p-0 row justify-content-between">
-                                  <IconButton
-                                    id={idx === 0 ? 'video' : null}
-                                    aria-label="video"
-                                    className="p-0 col-3 mb-2"
-                                    disabled={!element.video}
-                                    onClick={() => handleButtonClick(element)}
-                                  >
-                                    {element.isImage ? (
-                                      <ImageIcon className={` ${!element.video ? 'imageIconDisabled' : 'imageIcon'}`} />
-                                    ) : (
-                                      <YouTubeIcon
-                                        className={element.video ? 'ytColor' : 'ytColor-disabled'}
-                                      />
+                                    {element.notas && (
+                                      <div>
+                                        <p className="titleObservaciones">Observaciones</p>
+                                        <p className="paraphObservaciones">{element.notas}</p>
+                                      </div>
                                     )}
-                                  </IconButton>
+                                  </CardContent>
 
-                                  
-                                   <IconButton
-                                    id={idx === 0 ? 'edicion' : null}
-                                    aria-label="video"
-                                    className="p-0 col-3 mb-2"
-                                    onClick={() => handleEditMobileExercise(element, idx)}
-                                  >
-                                    <EditNoteIcon className="editStyle p-0" />
-                                  </IconButton>
-                                </CardActions>
-                              </Card>
+                                  <CardActions className="p-0 row justify-content-between">
+                                    <IconButton
+                                      id={idx === 0 ? 'video' : null}
+                                      aria-label="video"
+                                      className="p-0 col-3 mb-2"
+                                      disabled={!element.video}
+                                      onClick={() => handleButtonClick(element)}
+                                    >
+                                      {element.isImage ? (
+                                        <ImageIcon className={` ${!element.video ? 'imageIconDisabled' : 'imageIcon'}`} />
+                                      ) : (
+                                        <YouTubeIcon
+                                          className={element.video ? 'ytColor' : 'ytColor-disabled'}
+                                        />
+                                      )}
+                                    </IconButton>
+
+                                    
+                                    <IconButton
+                                      id={idx === 0 ? 'edicion' : null}
+                                      aria-label="video"
+                                      className="p-0 col-3 mb-2"
+                                      onClick={() => handleEditMobileExercise(element, idx)}
+                                    >
+                                      <EditNoteIcon className="editStyle p-0" />
+                                    </IconButton>
+                                  </CardActions>
+                                </Card>
+                              </>
                             ) : (
                               <Card
                                 key={`circuit-${element.exercise_id}-${idx}`}
@@ -617,12 +796,15 @@ function DayDetailsPage() {
                   draggable={true}
                 >
                   <div className="container-fluid">
-                    <div className="row justify-content-center text-center">
+                    <div className="row justify-content-center ">
                       <div className="col-10">
                         <p>
-                          Acá podes subir los videos al drive de tu entrenador. Buscá la carpeta
-                          con tu nombre y subílos! En caso de no encontrar la carpeta, comunicate con tu entrenador.
+                          Este es tu drive para subir los videos, una vez que los subas, marcá la casilla para avisarle a tu entrenador que ya están cargados.
                         </p>
+                        <div>
+                          <input type="checkbox" className="d-block text-center form-check mb-3"/>
+                        </div>
+                        
                         <Link
                           to={localStorage.getItem('drive')}
                           target="blank"
@@ -731,37 +913,26 @@ function DayDetailsPage() {
                   className="fixed-bottom d-flex justify-content-around align-items-center py-2"
                   style={{ backgroundColor: '#000' }}
                 >
-                  <Link
-                    to={`/routine/${id}`}
-                    className="nav-item d-flex flex-column align-items-center text-decoration-none"
-                  >
-                    <IconButton className="fs-1">
-                      <ArrowBackIcon className="text-light small" />
-                    </IconButton>
-                    <span className="text-light small">Ir atrás</span>
-                  </Link>
-
-                  {localStorage.getItem('drive') !== null && (
                     <button
+                      className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
+                      onClick={() => setShowWeeklySummaryModal(true)}
+                    >
+                      <IconButton className="fs-1">
+                        <CommitIcon className="text-light small" /> 
+                      </IconButton>
+                      <span className="text-light small">Resumen</span>
+                    </button>
+
+                  
+                    {drive && <button
                       className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
                       onClick={() => SetShowUploadVideos(true)}
                     >
                       <IconButton className="fs-1">
-                        <AddToDriveIcon />
+                        <AddToDriveIcon className="text-light small" />
                       </IconButton>
                       <span className="text-light small">Drive</span>
-                    </button>
-                  )}
-
-                  <button
-                    className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
-                    onClick={() => setShowCalculator(true)}
-                  >
-                    <IconButton className="fs-1">
-                      <PercentIcon />
-                    </IconButton>
-                    <span className="text-light small">Cálculo</span>
-                  </button>
+                    </button>}
                 </nav>
 
                 {/* Nuevo Dialog para mostrar el mensaje cuando no existe el perfil */}
@@ -784,6 +955,168 @@ function DayDetailsPage() {
                 >
                     <p>Hola! {username}, por favor completa tu perfil asi tu entrenador tiene más datos sobre vos.</p>
                 </Dialog>
+
+
+                <Dialog
+  header={`Resumen Semanal`}
+  className="paddingDialog"
+  visible={showWeeklySummaryModal}
+  style={{ width: '85vw' }}
+  onHide={() => setShowWeeklySummaryModal(false)}
+  draggable={true}
+>
+  <div className="">
+    <div className="text-start mb-3">
+    <span className="styleInputsSpan"><b className="me-2">Última actualización:</b>
+          {weeklySummary.lastSaved
+            ? new Date(weeklySummary.lastSaved).toLocaleString()
+            : '-'}
+    </span>
+
+    </div>
+    <div className="mb-3">
+      <span className="styleInputsSpan">Alimentación</span>
+      <select
+        value={weeklySummary.selection1}
+        onChange={(e) =>
+          setWeeklySummary(prev => ({ ...prev, selection1: e.target.value }))
+        }
+        className="form-control"
+      >
+        <option value="">Seleccionar...</option>
+        <option value="Muy mala">Muy mala</option>
+        <option value="Mala">Mala</option>
+        <option value="Regular">Regular</option>
+        <option value="Buena">Buena</option>
+        <option value="Muy buena">Muy buena</option>
+      </select>
+    </div>
+    <div className="mb-3">
+      <span className="styleInputsSpan">
+        NEAT
+        <Tooltip 
+          title="NEAT se refiere a la energía que gastas en tus actividades cotidianas. Por ejemplo, si tu trabajo es ser mesero 12hs, tu NEAT es alto. Si trabajas de uber u oficina, tu NEAT es bajo."
+          arrow
+          enterTouchDelay={0}
+          leaveTouchDelay={8000}
+        >
+          <IconButton size="small" style={{ marginLeft: '5px' }}>
+            <HelpOutlineIcon fontSize="inherit" />
+          </IconButton>
+        </Tooltip>
+      </span>
+      <select
+        value={weeklySummary.selection2}
+        onChange={(e) =>
+          setWeeklySummary(prev => ({ ...prev, selection2: e.target.value }))
+        }
+        className="form-control"
+      >
+        <option value="">Seleccionar...</option>
+        <option value="Muy malo">Muy malo</option>
+        <option value="Malo">Malo</option>
+        <option value="Regular">Regular</option>
+        <option value="Bueno">Bueno</option>
+        <option value="Muy bueno">Muy bueno</option>
+      </select>
+    </div>
+    <div className="mb-3">
+      <span className="styleInputsSpan w-100">Sensaciones del entrenamiento</span>
+      <select
+        value={weeklySummary.selection3}
+        onChange={(e) =>
+          setWeeklySummary(prev => ({ ...prev, selection3: e.target.value }))
+        }
+        className="form-control"
+      >
+        <option value="">Seleccionar...</option>
+        <option value="Muy mal">Muy mal</option>
+        <option value="Mal">Mal</option>
+        <option value="Regular">Regular</option>
+        <option value="Bien">Bien</option>
+        <option value="Muy bien">Muy bien</option>
+      </select>
+    </div>
+    <div className="mb-3">
+      <span className="styleInputsSpan">Descanso / sueño</span>
+      <select
+        value={weeklySummary.selection4}
+        onChange={(e) =>
+          setWeeklySummary(prev => ({ ...prev, selection4: e.target.value }))
+        }
+        className="form-control"
+      >
+        <option value="">Seleccionar...</option>
+        <option value="Muy mal">Muy mal</option>
+        <option value="Mal">Mal</option>
+        <option value="Regular">Regular</option>
+        <option value="Bien">Bien</option>
+        <option value="Muy bien">Muy bien</option>
+      </select>
+    </div>
+    <div className="mb-3">
+      <span className="styleInputsSpan">Niveles de estrés</span>
+      <select
+        value={weeklySummary.selection5}
+        onChange={(e) =>
+          setWeeklySummary(prev => ({ ...prev, selection5: e.target.value }))
+        }
+        className="form-control"
+      >
+        <option value="">Seleccionar...</option>
+        <option value="Muy mal">Muy mal</option>
+        <option value="Mal">Mal</option>
+        <option value="Regular">Regular</option>
+        <option value="Bien">Bien</option>
+        <option value="Muy bien">Muy bien</option>
+      </select>
+    </div>
+    <div className="mb-3">
+      <span>Comentarios sobre la semana</span>
+      <InputTextarea
+        type="text"
+        value={weeklySummary.comments || ""}
+        onChange={(e) =>
+          setWeeklySummary(prev => ({ ...prev, comments: e.target.value }))
+        }
+        className="form-control"
+        placeholder="Escribí acá tus comentarios..."
+      />
+    </div>
+    <div className="row justify-content-end">
+      <div className="col-4">
+        <Button
+          label="Cancelar"
+          className="btn btn-outline-dark"
+          onClick={() => setShowWeeklySummaryModal(false)}
+        />
+      </div>
+      <div className="col-4">
+        <Button
+          label="Guardar"
+          className="btn BlackBGtextWhite me-2"
+          onClick={() => {
+            const updatedSummary = { 
+              ...weeklySummary, 
+              lastSaved: new Date().toISOString()
+            };
+            UserService.editProfile(id, { resumen_semanal: updatedSummary })
+              .then(() => {
+                setWeeklySummary(updatedSummary);
+                setShowWeeklySummaryModal(false);
+                Notify.instantToast("Resumen semanal guardado");
+              })
+              .catch((err) => {
+                console.error("Error al guardar el resumen semanal", err);
+                Notify.instantToast("Error al guardar el resumen semanal");
+              });
+          }}
+        />
+      </div>
+    </div>
+  </div>
+</Dialog>
+
 
             </section>
         </>

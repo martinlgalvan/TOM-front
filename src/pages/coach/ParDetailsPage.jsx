@@ -25,6 +25,7 @@ import LogoChico from "../../components/LogoChico.jsx";
 import ModalCreateWarmup from "../../components/Bootstrap/ModalCreateWarmup.jsx";
 import CustomInputNumber from "../../components/CustomInputNumber.jsx";
 import AutoComplete from "../../components/Autocomplete.jsx";
+import ModalCreateMovility from "../../components/Bootstrap/ModalCreateMovility.jsx";
 
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
@@ -129,6 +130,9 @@ function ParDetailsPage() {
   // Options (Dropdown)
   const [options, setOptions] = useState([]);
   const [actualUser, setActualUser] = useState(null);
+
+  const [movilityVisible, setMovilityVisible] = useState(false);
+
 
   
       useEffect(() => {
@@ -244,8 +248,16 @@ function ParDetailsPage() {
     setIsEditing(false);
   };
   const hideDialogWarmup = () => setWarmup(false);
+
   const editAndClose = () => {
     setWarmup(false);
+    setMovilityVisible(false)
+    setIsEditing(true)
+  };
+
+  const handleShowMovility = () => {
+    setMovilityVisible(true);
+    setIsEditing(false);
   };
 
   /* ------------------------------------------------------------------
@@ -1250,7 +1262,7 @@ function ParDetailsPage() {
         <section className="container-fluid ">
 
           <div className="row text-center mb-5 justify-content-center pb-3 align-items-center">
-                  <div className="col-10">
+                  <div className="col-12">
 
                     <p className="fs-5">Rutina <strong>{weekName}</strong></p>
 
@@ -1258,39 +1270,61 @@ function ParDetailsPage() {
 
                   </div>
 
-                  <div>
+                  <div className='col-12 col-lg-6'>
+                    <div className='row justify-content-center'>
 
-                      {users && <Dropdown
-                          value={actualUser}
-                          options={users}
-                          optionLabel="name"
-                          placeholder="Seleccioná un alumno"
-                          onChange={(e) => handleDropdownChange(e.value)}
-                          className=""
-                          filter
-                          scrollHeight={"360px"}
-                          filterPlaceholder={"Buscar alumno"}
-                          emptyFilterMessage={"No se encontró ningún alumno"}
-                          emptyMessage={"No se encontró ningún alumno"}
-                      />}
+                      <div className={`col-10 col-lg-4 ${firstWidth > 992 && 'text-end'}`}>
+                        {users && <Dropdown
+                            value={actualUser}
+                            options={users}
+                            optionLabel="name"
+                            placeholder="Seleccioná un alumno"
+                            onChange={(e) => handleDropdownChange(e.value)}
+                            className=""
+                            filter
+                            scrollHeight={"360px"}
+                            filterPlaceholder={"Buscar alumno"}
+                            emptyFilterMessage={"No se encontró ningún alumno"}
+                            emptyMessage={"No se encontró ningún alumno"}
+                        />}
+                      </div>
 
-                    <button
-                    className="btn btn-primary ms-3"
-                    disabled={!actualUser}
-                    onClick={() => designWeekToUser(routine, actualUser?._id)}
-                  >
-                    {!actualUser ? "Elige un usuario a asignar" : `Asignar rutina al usuario ${actualUser && actualUser.name}`}
-                    
-                  </button>
+                      <div className={`col-6 col-lg-4 ${firstWidth > 992 ? 'text-center' : 'mt-4 text-end'}`}>
+                        <button
+                          className="btn btn-primary"
+                          disabled={!actualUser}
+                          onClick={() => designWeekToUser(routine, actualUser?._id)}
+                        >
+                          {!actualUser ? "Elige un alumno" : `Asignar rutina a ${actualUser && actualUser.name}`}
+                          
+                        </button>
+                      </div>
 
-                  <button className="btn btn-danger ms-3" onClick={confirmDeletePAR}>
-                    <DeleteIcon className="text-light" />
-                    Eliminar {weekName}
-                  </button>
+                      <div className={`col-6 col-lg-4 ${firstWidth > 992 ? 'text-start' : 'mt-4 text-start'}`}>
+                        <button className="btn btn-danger" onClick={confirmDeletePAR}>
+                          <DeleteIcon className="text-light" /> Eliminar
+                        </button>
+                      </div>
+
+                    </div>
+
                   </div>
+                    
+
           </div>
 
           <div  className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
+
+
+          <div className="col-12 mb-3">
+                <div className="row justify-content-center align-items-center py-2">
+                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowMovility}>
+                    <EditIcon  className="me-2" />
+                    Administrar bloque de activación <strong className="d-block">{currentDay && currentDay.name}</strong>
+                  </div>
+                </div>
+              </div>
+
               <div className="col-12 mb-3">
                 <div className="row justify-content-center align-items-center py-2">
                   <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
@@ -1299,6 +1333,7 @@ function ParDetailsPage() {
                   </div>
                 </div>
               </div>
+
 
               {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
                 <button
@@ -1474,7 +1509,7 @@ function ParDetailsPage() {
                                           {customInputEditDay(exercise.sets, i, "sets")}
                                         </td>
                                         <td className="td-4 ">
-                                          {customInputEditDay(exercise.reps, i, "reps")}
+                                         <div className='marginRepsNew'>{customInputEditDay(exercise.reps, i, "reps")}</div> 
                                         </td>
                                         <td className="td-5">
                                           {customInputEditDay(exercise.peso, i, "peso")}
@@ -1809,6 +1844,24 @@ function ParDetailsPage() {
               }}
               reject={() => setShowDeleteParDialog(false)}
             />
+
+            <Dialog
+              className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
+              contentClassName="colorDialog"
+              headerClassName="colorDialog"
+              header="Bloque de Activación"
+              visible={movilityVisible}
+              modal={false}
+              onHide={() => setMovilityVisible(false)}
+              blockScroll={window.innerWidth > 600 ? false : true}
+            >
+              <ModalCreateMovility
+                week={modifiedDay}
+                week_id={week_id}
+                day_id={currentDay && currentDay._id}
+                editAndClose={editAndClose}
+              />
+            </Dialog>
 
           {firstWidth < 992 && (
             <nav className="fixed-bottom colorNavBottom d-flex justify-content-around pb-4 " >

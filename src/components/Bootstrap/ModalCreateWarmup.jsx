@@ -118,7 +118,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
           value={data || ""}
           options={groupedOptions}
           onChange={(e) => handleInputChange(index, e.target.value, field)}
-          placeholder="Select an item"
+          placeholder="Seleccionar"
           optionLabel="label"
           className="p-dropdown-group w-100"
         />
@@ -135,22 +135,25 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       );
     } else if (field === "sets" || field === "reps") {
       return (
-        <CustomInputNumber
-          initialValue={data}
-          ref={(el) =>
-            (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })
-          }
-          onChange={(value) => handleInputChange(index, value, field)}
-          isRep={field === "reps"}
-          className={`margin-custom`}
-        />
+        <div style={{ position: 'relative' }}>
+          <CustomInputNumber
+            initialValue={data}
+            ref={(el) =>
+              (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })
+            }
+            isNotNeedProp={true}
+            onChange={(value) => handleInputChange(index, value, field)}
+            isRep={field === "reps"}
+            className={`margin-custom`}
+          /> 
+        </div>
       );
     } else if (field === "notas") {
       return (
         <div className="row">
           <InputTextarea
             ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-            className={`textAreaResize ${firstWidth < 600 && "col-11"}`}
+            className={`w-100`}
             autoResize
             defaultValue={data}
             onChange={(e) => handleInputChange(index, e.target.value, field)}
@@ -267,78 +270,101 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
 
   const tableMobile = () => {
     return (
-      <div className="table-responsiveCss">
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Peso</th>
-              <th>Sets</th>
-              <th>Reps</th>
-              <th>Rest</th>
-              <th>Video</th>
-              <th>Notas</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="p-0">
+
+          <div>
             {modifiedWarmup[indexWarmupA] &&
               modifiedWarmup[indexWarmupA].warmup &&
               modifiedWarmup[indexWarmupA].warmup.map((exercise, i) => (
-                <tr className="shadowCards" key={exercise.warmup_id}>
-                  <td data-th="Nombre" className="text-center">
-                    <AutoComplete
-                      defaultValue={exercise.name}
-                      onChange={(e) => handleInputChange(i, e, "name")}
-                    />
-                  </td>
-                  <td data-th="Peso" className="text-center">
-                    {customInputEditWarmup(exercise.peso, i, "peso")}
-                  </td>
-                  <td data-th="Sets" className="text-center">
-                    {customInputEditWarmup(exercise.sets, i, "sets")}
-                  </td>
-                  <td data-th="Reps" className="text-center">
-                    {customInputEditWarmup(exercise.reps, i, "reps")}
-                  </td>
-                  <td data-th="Rest" className="text-center">
-                    {customInputEditWarmup(exercise.rest, i, "rest")}
-                  </td>
-                  <td data-th="Video" className="text-center">
-                    {customInputEditWarmup(exercise.video, i, "video")}
-                  </td>
-                  <td data-th="Notas" className="text-center">
-                    {customInputEditWarmup(exercise.notas, i, "notas")}
-                  </td>
-                  <td className="notStyle">
-                    <div className="row justify-content-center">
-                      <div className="col-6">
-                        <Dropdown
-                          value={exercise.numberWarmup}
-                          options={groupedOptions}
-                          onChange={(e) =>
-                            handleInputChange(i, e.target.value, "numberWarmup")
-                          }
-                          placeholder="Select an item"
-                          optionLabel="label"
-                          className="p-dropdown-group w-100"
-                        />
-                      </div>
-                      <div className="col-6">
-                        <IconButton
-                          aria-label="video"
-                          className="styleButtonsEdit rounded-0"
-                          onClick={() => deleteWarmup(i, exercise.name)}
-                        >
-                          <CancelIcon className="bbbbb" />
-                        </IconButton>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
+                                <div className="shadowCards py-2 mt-5" key={exercise.movility_id}>
+                                  <div className="row justify-content-center p-0">
+                                    <div className="col-10 text-start ">
+                                      <span className="styleInputsSpan ms-3">Nombre</span>
+                                      
+                                      <AutoComplete
+                                        defaultValue={exercise.name}
+                                        onChange={(e) => handleInputChange(i, e, "name")}
+                                      />
+                                      
+                                    </div>
+                                    <div className="col-1 text-start mt-3 me-3">
+                                      {customInputEditWarmup(exercise.video, i, "video")}
+                                    </div>
+                                                
+                                    </div>
+                
+                                    <div className="row justify-content-center mt-2 ms-2 me-4">
+                
+                                      <div className="col-6 text-start ">
+                                        <span className="styleInputsSpan ms-1 ">Peso</span>
+                                        <div className="largoInput ">{customInputEditWarmup(exercise.peso, i, "peso")}</div>
+                                      </div>
+                
+                                      <div className="col-6 text-start ">
+                                        <span className="styleInputsSpan ms-1">Rest</span>
+                                        <div className="largoInput ">{customInputEditWarmup(exercise.rest, i, "rest")}</div>
+                
+                                      </div>
+                                    </div>
+                
+                
+                                    <div className="row justify-content-center mt-2 ms-2 pe-3 me-2">
+                
+                                      <div className="col-6 text-start">
+                                      <span className="styleInputsSpan text-start">Series</span>
+                                      <div className="largoInput">{customInputEditWarmup(exercise.sets, i, "sets")}</div>
+                                      </div>
+                
+                                      <div className="col-6 text-start  ">
+                                      <span className="styleInputsSpan ">Reps</span>
+                                      <div className="largoInput">{customInputEditWarmup(exercise.reps, i, "reps")}</div>
+                                      </div>
+                
+                                    </div>
+                
+                                    <div className="row justify-content-center my-2">
+                
+                                        <div className="col-11 text-start">
+                                          <span className="styleInputsSpan">Notas</span>
+                                          <div>{customInputEditWarmup(exercise.notas, i, "notas")}</div>
+                                        </div>
+                                    </div>
+                                      <div className="">
+                                        <div className="row justify-content-center marginDropDown ">
+                                          <div className="col-6 ">
+                                          <Dropdown
+                                              value={exercise.numberMovility}
+                                              options={groupedOptions}
+                                              onChange={(e) =>
+                                                handleInputChange(i, e.target.value, "numberWarmup")
+                                              }
+                                              placeholder="Seleccionar"
+                                              optionLabel="label"
+                                              className="p-dropdown-group w-100"
+                                            />
+                                          </div>
+                                      
+                                          <div className="col-6">
+                                            <div className="row justify-content-around">
+                                              <div className="col-6">
+                                              <IconButton
+                                                aria-label="video"
+                                                className="styleButtonsEdit rounded-0"
+                                                onClick={() => deleteWarmup(i, exercise.name)}
+                                              >
+                                                <CancelIcon className="bbbbb" />
+                                              </IconButton>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                
+                                </div>
+                
               ))}
-          </tbody>
-        </table>
+          </div>
+
       </div>
     );
   };
@@ -360,6 +386,8 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
           </div>
         </article>
       </section>
+
+      
 
       {firstWidth > 993 && modifiedWarmup && modifiedWarmup.length > 0 ? (
         <article className="table-responsive-xxl border-bottom text-center altoTable ">
@@ -384,7 +412,9 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
                     <td>{customInputEditWarmup(item.name, index, "name")}</td>
                     <td>{customInputEditWarmup(item.sets, index, "sets")}</td>
                     <td >
-                      {customInputEditWarmup(item.reps, index, "reps")}
+                      <div className="marginRepsNew">
+                        {customInputEditWarmup(item.reps, index, "reps")}
+                      </div>
                     </td>
                     <td>{customInputEditWarmup(item.peso, index, "peso")}</td>
                     <td>{customInputEditWarmup(item.video, index, "video")}</td>
@@ -407,23 +437,6 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
         tableMobile()
       )}
 
-      {/*isEditing && !isPAR && (
-                    <div className="floating-button-mobile index-up">
-                      <button
-                        className="px-5 btn colorCancel py-2 my-5"
-                        onClick={() => applyChanges()}
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        className="px-5 btn colorRed  py-2 my-5"
-                        onClick={() => confirmCancel()}
-                      >
-                        Cancelar
-                      </button>
-                  </div>
-
-      )*/}
 
       {isEditing  && (
         <div className="floating-button-mobile-warmup index-up">

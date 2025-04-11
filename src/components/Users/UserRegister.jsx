@@ -142,11 +142,8 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
                         </li>
                         <li className="list-group-item">
                             <button
-                                className="btn my-1 w-100"
-                                style={{
-                                    backgroundColor: color || '#000',
-                                    color: textColor === 'true' ? '#000' : '#fff'
-                                }}
+                                className="btn BlackBGtextWhite my-1 w-100"
+                                
                             >
                                 Crear usuario
                             </button>

@@ -24,6 +24,7 @@ import ModalCreateWarmup from "../../components/Bootstrap/ModalCreateWarmup.jsx"
 import CustomInputNumber from "../../components/CustomInputNumber.jsx";
 import EditExercise from "../../components/EditExercise.jsx";
 import AutoComplete from "../../components/Autocomplete.jsx";
+import ModalCreateMovility from "../../components/Bootstrap/ModalCreateMovility.jsx";
 
 // MUI Icons
 import IconButton from "@mui/material/IconButton";
@@ -148,6 +149,8 @@ function Randomizer() {
 
   const [renderInputSets, setRenderInputSets] = useState(true);
   const [renderInputReps, setRenderInputReps] = useState(true);
+
+  const [movilityVisible, setMovilityVisible] = useState(false);
 
   // CHANGES: Referencia para los menús (uno por cada "week")
   const menuRefs = useRef({});
@@ -304,8 +307,29 @@ function Randomizer() {
 
   const editAndClose = () => {
     setWarmup(false);
-    setIsEditing(true);
+    setMovilityVisible(false)
+    setIsEditing(true)
   };
+
+
+  const handleShowMovility = () => {
+    if (!currentDay) {
+      // Si no hay un día actual, crea un día por defecto
+      const defaultDay = {
+        _id: new ObjectId().toString(),
+        name: "Día 1",
+        lastEdited: new Date().toISOString(),
+        exercises: [],
+      };
+      setAllDays([defaultDay]);
+      setDay([defaultDay]);
+      setModifiedDay([defaultDay]);
+      setCurrentDay(defaultDay);
+    }
+    setMovilityVisible(true);
+    setIsEditing(false);
+  };
+
 
   /* --------------------------------------
    * Manejo de datos en la tabla (ejercicios)
@@ -484,6 +508,7 @@ function Randomizer() {
           initialValue={data}
           onChange={(val) => changeModifiedData(index, val, field)}
           isRep={field === "reps"}
+          isNotNeedProp={true}
           className={`mt-5`}
           onActivate={() => onActivateTextMode()}
         /> :
@@ -1343,6 +1368,15 @@ function Randomizer() {
                     )}
 
           <div className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
+
+          <div className="col-12 mb-3">
+              <div className="row justify-content-center align-items-center py-2">
+                <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowMovility}>
+                  <EditIcon  className="me-2" />
+                  Administrar bloque de activación <strong className="d-block">{currentDay && currentDay.name}</strong>
+                </div>
+              </div>
+            </div>
             <div className="col-12 mb-3">
               <div className="row justify-content-center align-items-center py-2">
                 <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
@@ -1560,7 +1594,7 @@ function Randomizer() {
                                         {customInputEditDay(exercise.sets, i, "sets")}
                                       </td>
                                       <td className="td-4 ">
-                                        {customInputEditDay(exercise.reps, i, "reps")}
+                                        <div className={'marginRepsNew'}>{customInputEditDay(exercise.reps, i, "reps")}</div>
                                       </td>
                                       <td className="td-5">
                                         {customInputEditDay(exercise.peso, i, "peso")}
@@ -1863,6 +1897,26 @@ function Randomizer() {
                 <p>No hay rutinas guardadas</p>
               )}
             </div>
+          </Dialog>
+
+
+          <Dialog
+            className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
+            contentClassName={"colorDialog"}
+            headerClassName={"colorDialog"}
+            header="Bloque de Activación"
+            visible={movilityVisible}
+            scrollable={"true"}
+            modal={false}
+            onHide={() => setMovilityVisible(false)}
+            blockScroll={window.innerWidth > 600 ? false : true}
+          >
+            <ModalCreateMovility
+              week={modifiedDay}
+              editAndClose={editAndClose}
+              week_id={week_id}
+              day_id={currentDay && currentDay._id}
+            />
           </Dialog>
 
           {/* Footer móvil */}

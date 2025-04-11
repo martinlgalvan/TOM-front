@@ -353,6 +353,8 @@ p {
     font-size: 0.7em;
   }
 
+  
+
   .BlackBGtextWhite:hover{
     background-color: black;
     color: white;
@@ -1237,6 +1239,11 @@ width: 50px;
   width: 50px;
 }
 
+.positionMoreImportant{
+  left: 130px !important;
+  width: 50px;
+}
+
 .textAreaResize {
   resize: none; /* Evita que el usuario pueda redimensionar el textarea */
   box-shadow: none !important; /* Elimina cualquier sombra que pueda estar presente */
@@ -1410,10 +1417,65 @@ width: 50px;
 }
 
 .styleInputsSpan{
-  color: #353535;
-  font-size: 0.8em;
+  color: #6e6e6e;
+  font-size: 0.9em;
   text-align: start;
   width: 110px !important;
+}
+
+.paddingDialog{
+  border: 0;
+}
+
+.fontDialogResumenSemanal select{
+  font-size: 0.9em;
+}
+
+.fontDialogResumenSemanal  input{
+  font-size: 0.9em;
+}
+
+.colorCards{
+  background-color: #e6f3ff !important;
+}
+
+.colorCardsActivation{
+  background-color: #fad4d4 !important;
+}
+
+.slick-arrow{
+  color: #000 !important;
+  margin: 0 20px !important;
+  padding: 10px;
+}
+
+.classSilders{
+  position: absolute;
+  top: 35%;
+  left: -3%;
+}
+
+.classSilders2{
+  position: absolute;
+  top: 35%;
+  right: -3%;
+}
+
+.classSilders3{
+  position: absolute;
+  top: 72%;
+  right: 50%;
+}
+
+.classSilders4{
+  position: absolute;
+  top: 72%;
+  left: 50%;
+}
+
+.slick-arrow:before{
+  color: #000 !important;
+
 }
 
 /*Efectos de eliminar y agregar*/
@@ -2825,6 +2887,10 @@ width: 50px;
   .floating-button-mobile {
     bottom: 80px;
 
+  }
+  
+  .p-dialog-content{
+    padding: 10px !important;
   }
 
   

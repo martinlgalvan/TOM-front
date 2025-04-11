@@ -13,6 +13,8 @@ import * as RefreshFunction from './../../helpers/generateUUID.js';
 //.............................. BIBLIOTECAS EXTERNAS ..............................//
 import { Tour } from 'antd';
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
 
 //.............................. COMPONENTES ..............................//
 import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
@@ -43,7 +45,17 @@ function UserRoutineEditPage() {
     const [tourSteps, setTourSteps] = useState([]);
     const [tourVisible, setTourVisible] = useState(false);
     const [firstWidth, setFirstWidth] = useState();
-
+    const [weeklySummary, setWeeklySummary] = useState({
+        selection1: "",
+        selection2: "",
+        selection3: "",
+        selection4: "",
+        selection5: "",
+        comments: "",
+        lastSaved: ""
+      });
+    
+    const [showWeeklySummaryModal, setShowWeeklySummaryModal] = useState();
     const [profile, setProfile] = useState(true); // NUEVO ESTADO
 
     const [weekDate, setWeekDate] = useState(() => {
@@ -121,13 +133,24 @@ function UserRoutineEditPage() {
 
     useEffect(() => {
         UserServices.getProfileById(id)
-            .then((data) => {
-                setProfile(data);
-            })
-            .catch((error) => {
-                console.error("Error al obtener el perfil del usuario:", error);
+          .then((data) => {
+            setProfile(data);
+            console.log(data);
+            // Si data.resumen_semanal existe, úsalo; si no, usamos el objeto por defecto.
+            setWeeklySummary(data.resumen_semanal || {
+              selection1: "",
+              selection2: "",
+              selection3: "",
+              selection4: "",
+              selection5: "",
+              comments: "",
+              lastSaved: ""
             });
-    }, [id]);
+          })
+          .catch((error) => {
+            console.error("Error al obtener el perfil del usuario:", error);
+          });
+      }, [id]);
 
     const copyRoutine = (data) => {
         setWeekClipboardLocalStorage(data);
@@ -189,6 +212,23 @@ function UserRoutineEditPage() {
         }
     };
 
+    const getBgForSelection = (value) => {
+        if (!value) return {};
+        const val = value.toLowerCase().trim();
+        if (val === 'muy mal' || val === 'muy mala' || val === 'muy malo') {
+          return { backgroundColor: '#fd0000', color: 'white' }; // Rojo fuerte
+        } else if (val === 'mal' || val === 'mala' || val === 'malo') {
+          return { backgroundColor: '#9c0200', color: 'white' }; // Rojo claro
+        } else if (val === 'normal') {
+          return { backgroundColor: '#ffe700' }; // Azul claro
+        } else if (val === 'bien' || val === 'buena' || val === 'bueno') {
+          return { backgroundColor: '#94ff01' }; // Verde claro
+        } else if (val === 'muy bien' || val === 'muy buena' || val === 'muy bueno') {
+          return { backgroundColor: '#02c101' }; // Verde fuerte
+        }
+        return {};
+      };
+
     return (
         <>
             <div className="sidebarPro">
@@ -200,16 +240,8 @@ function UserRoutineEditPage() {
                     rootStyles={{ color: 'white', border: 'none' }}
                 >
                     <Menu>
-                        <MenuItem
-                            onClick={() => setCollapsed(!collapsed)}
-                            className="mt-3"
-                            icon={<ViewHeadlineIcon />}
-                            style={{ height: 'auto', whiteSpace: 'normal' }}
-                        >
-                            <span>Ocultar barra</span>
-                        </MenuItem>
 
-                        <MenuItem id={'alumno'} icon={collapsed ? <PersonIcon /> : ''} disabled={!collapsed} className="mt-3 ">
+                        <MenuItem id={'alumno'} icon={collapsed ? <PersonIcon /> : ''} disabled={!collapsed} className="mt-5 pt-3">
                             <div className="bg-light rounded-2 text-center">
                                 <p className="m-0">Alumno <strong className="d-block">{username}</strong></p>
                             </div>
@@ -332,6 +364,68 @@ function UserRoutineEditPage() {
                             </button>
                         </div>
                     </div>
+                    
+                    {firstWidth > 991 && weeklySummary ? (
+                    <div className='col-10 mx-2'>
+                        <table
+                        className='caption-top'
+                        style={{
+                        width: '100%',
+                        border: '1px solid #ddd',
+                        borderCollapse: 'collapse',
+                        backgroundColor: '#fafafa',
+                        marginBottom: '20px'
+                        }}
+                    >
+                        <caption>
+                            <strong>Última actualización:</strong>{" "}
+                            {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '- '}
+                            {!weeklySummary.selection1 && ' Este es el resumen semanal. Una vez que tu alumno lo cargue, verás las sensaciones de su última semana.'}
+                        </caption>
+                             
+                        <thead>
+                        <tr>
+                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Alimentación</th>
+                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>NEAT</th>
+                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Sensaciones</th>
+                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Descanso / Sueño</th>
+                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Estrés</th>
+                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Comentarios</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection1) }}>
+                                {weeklySummary.selection1 || '-'}
+                                </td>
+                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection2) }}>
+                                {weeklySummary.selection2 || '-'}
+                                </td>
+                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection3) }}>
+                                {weeklySummary.selection3 || '-'}
+                                </td>
+                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection4) }}>
+                                {weeklySummary.selection4 || '-'}
+                                </td>
+                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection5) }}>
+                                {weeklySummary.selection5 || '-'}
+                                </td>
+                                <td style={{ padding: '3px 10px', border: '1px solid #ddd' }}>
+                                {weeklySummary.comments || '-'}
+                                </td>
+                            </tr>
+                            </tbody>
+
+                    </table>
+                  </div> ) :
+                        (
+                            // Versión mobile: Muestra un botón que abre un diálogo vertical con el resumen
+                            <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                              <button className="btn btn-outline-primary" onClick={() => setShowWeeklySummaryModal(true)}>
+                                Ver resumen semanal
+                              </button>
+                            </div>
+                          )}
 
                     <div className='col-12'>
                         <div className='row justify-content-center'>
@@ -355,6 +449,45 @@ function UserRoutineEditPage() {
                         scrollIntoViewOptions={true}
                     />
                 )}
+
+                    <Dialog
+                    header="Resumen Semanal"
+                    visible={showWeeklySummaryModal}
+                    style={{ width: '80vw' }}
+                    onHide={() => setShowWeeklySummaryModal(false)}
+                    draggable={true}
+                    >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <span className='styleInputsSpan'>Última actualización:</span>{" "}
+                        {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}
+                        <div>
+                        <strong>Alimentación:</strong> {weeklySummary.selection1 || '-'}
+                        </div>
+                        <div>
+                        <strong>NEAT:</strong> {weeklySummary.selection2 || '-'}
+                        </div>
+                        <div>
+                        <strong>Sensaciones:</strong> {weeklySummary.selection3 || '-'}
+                        </div>
+                        <div>
+                        <strong>Descanso / Sueño:</strong> {weeklySummary.selection4 || '-'}
+                        </div>
+                        <div>
+                        <strong>Estrés:</strong> {weeklySummary.selection5 || '-'}
+                        </div>
+                        <div>
+                        <strong>Comentarios:</strong> {weeklySummary.comments || '-'}
+                        </div>
+                        <div>
+                        
+                        </div>
+                    </div>
+                    <div className="row justify-content-center mt-3">
+                        <Button label="Cerrar" className="btn BlackBGtextWhite col-4" onClick={() => setShowWeeklySummaryModal(false)} />
+                    </div>
+                    </Dialog>
+
+
             </section>
         </>
     );

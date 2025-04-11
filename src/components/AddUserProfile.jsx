@@ -240,6 +240,31 @@ const AddUserProfile = ({ user_id }) => {
 
 
         </div>
+
+                    {/*<Dialog header={`Preguntas Frecuentes`} visible={visible} style={{ width: '90vw' }} modal onHide={closeDialog}>
+                    <div>
+                        <div>
+                            <h3>¿Qué es la fatiga?</h3>
+                            <p>Es la sensación de cansancio, determinada por la disminución del rendimiento deportivo.</p>
+                        </div>
+                        <div>
+                            <h3>¿Qué es el NEAT?</h3>
+                            <p>El NEAT, por sus siglas en inglés, significa non-exercise activity thermogenesis (termogénesis producida por actividad fuera del ejercicio) y se refiere al gasto energético que resulta de todas las acciones, más o menos rutinarias, que no se consideran deportivas, pero que requieren un esfuerzo físico.</p>
+                        </div>
+                        <div>
+                            <h3>¿Qué son los DOMS?</h3>
+                            <p>Los DOMS, o "Agujetas", es la aparición de un tipo de molestia muscular que empieza aproximadamente a las 24 horas después de la realización de un ejercicio.</p>
+                        </div>
+                        <div>
+                            <h3>¿Qué es el estrés?</h3>
+                            <p>El estrés es un sentimiento de tensión física o emocional. Puede provenir de cualquier situación o pensamiento que lo haga sentir a uno frustrado, furioso o nervioso. El estrés es la reacción de su cuerpo a un desafío o demanda. Cada persona tiene un umbral distinto de estrés, por ello, dependiendo la situación por la que se atraviese, lo considerará algo más grave o leve.</p>
+                        </div>
+                        <div>
+                            <h3>¿Qué es la "alimentación"?</h3>
+                            <p>Por alimentación, se refiere a la calidad de alimento que se ingiere, brindando la energía necesaria para entrenar, y ayudar a cumplir los objetivos tanto estéticos como competitivos.</p>
+                        </div>
+                    </div>
+                    </Dialog>*/}
     );
 };
 

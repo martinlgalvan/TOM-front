@@ -204,9 +204,9 @@ function UserRoutinePage() {
                     modal
                     onHide={() => setShowProfileMissingModal(false)}
                     footer={
-                                <div className="row justify-content-center">
+                                <div className="row justify-content-center mt-2">
                                                <div  className="col-6 text-center">
-                                                    <Button label="Más tarde" onClick={() => setShowProfileMissingModal(false)} className="p-button-primary text-light " />
+                                                    <Button label="Más tarde" onClick={() => setShowProfileMissingModal(false)} className="p-button-secondary text-light " />
                                                 </div>
                                                 <div className="col-6 text-center">
                                                     <Button label="Ir al perfil " onClick={redirectToPerfil} className="p-button-primary text-light " />
@@ -214,7 +214,7 @@ function UserRoutinePage() {
                                               </div>
                     }
                 >
-                    <p>Hola! {username}, por favor completa tu perfil asi tu entrenador tiene más datos sobre vos.</p>
+                    <p>Hola {username}!, por favor completá tu perfil, así tu entrenador tiene tu información.</p>
                 </Dialog>
             </section>
         </>

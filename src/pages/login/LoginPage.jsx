@@ -39,7 +39,7 @@ function LoginPage({ onLogin }) {
             <Logo />
         </div>
         <main className='container-fluid'>
-            <div className="my-5 d-flex flex-column justify-content-center align-items-center">
+            <div className="my-5 d-flex flex-column justify-content-center align-items-center py-3">
                 <div className="card p-4 shadow-lg" style={{ width: '100%', maxWidth: '400px', border: 'none' }}>
                     <h2 className="text-center mb-4" style={{ fontWeight: 600 }}>Iniciar Sesión</h2>
                     

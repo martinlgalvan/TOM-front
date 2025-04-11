@@ -89,7 +89,7 @@ const CustomInputNumber = React.forwardRef(
 
           </div>
 
-              {isRep  && <div className={`  ${firstWidth < 992 ? 'text-start  col-4 positionModeText mt-1' : 'mt-2 text-center '}`}>
+              {isRep  && <div className={`  ${firstWidth < 992 ? `text-start  col-4 me-1 ${isNotNeedProp && 'positionMoreImportant'} positionModeText mt-1` : 'mt-2 text-center '}`}>
                   <SelectButton
                     className={`${firstWidth > 992 && 'styleSelectButton'}`}
                     value={isTextMode ? 'text' : 'number'}
