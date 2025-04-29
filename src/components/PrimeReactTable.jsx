@@ -151,31 +151,13 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
         altura: profileData.altura || '',
         edad: profileData.edad || '',
         modalidad: profileData.modalidad || '',
-        category: profileData.category || '',
+        category: profileData.category || null,
         isEditable: profileData.isEditable ? 'true' : 'false'
       });
     }
   }, [profileData]);
 
-  useEffect(() => {
-    if (profileDialogVisible && selectedProfileId) {
-      setProfileLoading(true);
-      setProfileError(null);
-      UserServices.getProfileById(selectedProfileId)
-        .then((data) => {
-          setProfileData(data);
-          setProfileError(null);
-          Notify.instantToast('Perfil cargado con éxito!');
-        })
-        .catch(() => {
-          setProfileData({});
-          setProfileError('No se pudo cargar el perfil');
-        })
-        .finally(() => {
-          setProfileLoading(false);
-        });
-    }
-  }, [profileDialogVisible, selectedProfileId]);
+
 
   const onSearchChange = (event) => {
     setSearchText(event.target.value);
@@ -192,18 +174,50 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
   };
 
   const openProfileDialog = (user) => {
-    setSelectedProfileId(user._id);
-    setSelectedProfileName(user.name);
-    setProfileDialogVisible(true);
+    console.log(user)
+    UserServices.getProfileById(user._id)
+        .then((data) => {
+          setProfileData(data);
+          /*if(editedProfile.category == null ){
+            UserServices.find(user._id)
+            .then(data =>{
+              console.log(data)
+              setEditedProfile({ category: data.category })
+      
+            })
+          }*/
+          Notify.instantToast('Perfil cargado con éxito!');
+        })
+        .catch((data) => {
+          setProfileData({})
+          console.log(data)
+          UserServices.find(user._id)
+          .then(data =>{
+            console.log(data)
+            setEditedProfile({ ...editedProfile, category: data.category })
+    
+          })
+        })
+    
+
+
+
+      setSelectedProfileId(user._id);
+      setSelectedProfileName(user.name);
+      setProfileDialogVisible(true);
+
   };
 
   const handleProfileSave = () => {
+   
     const updatedProfile = {
       ...editedProfile,
       isEditable: editedProfile.isEditable === 'true'
     };
+    console.log(selectedProfileId, updatedProfile)
     UserServices.editProfile(selectedProfileId, updatedProfile)
-      .then(() => {
+      .then((data) => {
+        console.log(data, selectedProfileId)
         return ChangePropertyService.changeProperty(selectedProfileId, updatedProfile.category);
       })
       .then(() => {

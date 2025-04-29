@@ -94,18 +94,6 @@ function DayDetailsPage() {
 });
 
 
-useEffect(() => {
-  UserService.getProfileById(id)
-    .then((data) => {
-      setUserProfile(data);
-      if (data.resumen_semanal) {
-        setWeeklySummary(data.resumen_semanal);
-      }
-    })
-    .catch((error) => {
-      setShowProfileMissingModal(true);
-    });
-}, [id]);
 
 const redirectToPerfil = () => {
     setShowProfileMissingModal(false);
@@ -173,6 +161,20 @@ const redirectToPerfil = () => {
         setDrive(driveLocal);
       }
     }, []);
+
+    useEffect(() => {
+      UserService.getProfileById(id)
+        .then((data) => {
+          setUserProfile(data);
+          if (data.resumen_semanal) {
+            setWeeklySummary(data.resumen_semanal);
+          }
+        })
+        .catch((error) => {
+          setShowProfileMissingModal(true);
+        });
+    }, [id]);
+    
 
     useEffect(() => {
         setTourSteps([
@@ -972,6 +974,7 @@ const redirectToPerfil = () => {
                     visible={showProfileMissingModal}
                     style={{ width: '90vw' }}
                     modal
+                    dismissableMask={true}
                     onHide={() => setShowProfileMissingModal(false)}
                     footer={
                       <div className="row justify-content-center">

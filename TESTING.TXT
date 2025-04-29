@@ -1,22 +1,39 @@
-COSAS PARA CORREGIR 
 
- - TRAER DEL OBJETO USER TODO MENOS LA CONTRASEñA
+COSAS ALEX 
 
- - CONFIRMMACION EN ELIMINAR EN PAR
+CAMPO REST - 
 
- - Mostrar observaciones en warmup
+CAMPO RESUMEN
+
+CAMPO BACK OFF 
 
 
-ME QUEDE EN EL VIDEO POLEA ALTA AL PECHO -----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+OSAS PARA CORREGIR 
+
+ - 
 
 NUEVAS 
 
 - AGREGAR QUE SE PUEDA VER LA SEMANA ANTERIOR
 
-
 - Al eliminar dia 1, no permite cambiar entre dias
 
-A CHEQUEAR
+- Esta rota la logica de pegar
+
 
 
 COSAS PARA HACER
