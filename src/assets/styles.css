@@ -1517,28 +1517,36 @@ font-size: 0.9em;
   padding: 10px;
 }
 
-.classSilders{
+.classSilders {
   position: absolute;
-  top: 35%;
-  left: -3%;
+  bottom: 50px;       /* 8px por encima del fondo del card */
+  left: -4%;         /* ajusta a tu gusto */
 }
 
-.classSilders2{
+.classSilders2 {
   position: absolute;
-  top: 35%;
-  right: -3%;
+  bottom: 50px;
+  right: -4%;
 }
 
-.classSilders3{
+.classSilders3 {
   position: absolute;
-  top: 72%;
-  right: 50%;
+  bottom: 8px;
+  left: 1%;
+  
 }
 
-.classSilders4{
+.classSilders4 {
   position: absolute;
-  top: 72%;
-  left: 50%;
+  bottom: 8px;
+  right: 1%;
+
+}
+
+.colorCardsActivation,
+.colorCards {
+  position: relative;    /* ahora los hijos absolute se miden respecto a este contenedor */
+  overflow: hidden;      /* opcional, para que nada sobresalga */
 }
 
 .slick-arrow:before{

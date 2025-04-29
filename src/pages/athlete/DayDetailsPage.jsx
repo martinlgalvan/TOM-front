@@ -492,7 +492,10 @@ const redirectToPerfil = () => {
                     </h2>
 
                     {allDays[currentDay]?.movility != null &&
-                      <>
+                      <div 
+                      className="card mb-4 colorCardsActivation" 
+                      style={{ position: 'relative', overflow: 'hidden' }}
+                    >
                         <div className="text-start m-0 p-0">
                           <span className="mt-3 styleInputsSpan ">Activación / movilidad</span>
                         </div>
@@ -511,32 +514,26 @@ const redirectToPerfil = () => {
                           </Slider>
                           
                         </div>
-                        <div className="row justify-content-between">
-
-                            <div className="col-6 text-start classSilders3"> 
-                                
-                                <IconButton onClick={previous}
-                                    >
-                                      <NavigateBeforeIcon className="editStyle p-0" />
-                                    </IconButton>
-                                    
-                            
-                            </div>
-
-                            <div className="col-6 text-end classSilders4">
-                                
-                                <IconButton onClick={next}
-                                    >
-                                      <NavigateNextIcon className="editStyle p-0" />
-                                    </IconButton>
-                            </div>
-
-                            </div>
-                      </>
+                        <div className="row justify-content-between border-0" style={{ position: 'absolute', bottom: 80, left: 0, right: 0 }}>
+                          <div className="col-6 text-start">
+                            <IconButton onClick={previous}>
+                              <NavigateBeforeIcon className="editStyle p-0" />
+                            </IconButton>
+                          </div>
+                          <div className="col-6 text-end">
+                            <IconButton onClick={next}>
+                              <NavigateNextIcon className="editStyle p-0" />
+                            </IconButton>
+                          </div>
+                        </div>
+                      </div>
                     }
 
                     {allDays[currentDay]?.warmup != null &&
-                      <>
+                     <div 
+                     className="card mb-4 colorCards" 
+                     style={{ position: 'relative', overflow: 'hidden' }}
+                   >
                       <div className="text-start m-0 p-0">
                         <span className="mt-3 styleInputsSpan ">Entrada en calor</span>
                       </div>
@@ -554,30 +551,22 @@ const redirectToPerfil = () => {
                                     </div>
                                 ))}
                             </Slider>
-                            <div className="row justify-content-between">
-
-                            <div className="col-6 text-start classSilders"> 
-                                
-                                <IconButton onClick={previous2}
-                                    >
-                                      <NavigateBeforeIcon className="editStyle p-0" />
-                                    </IconButton>
-                                    
-                            
+                          
                             </div>
-
-                            <div className="col-6 text-end classSilders2">
-                                
-                                <IconButton onClick={next2}
-                                    >
-                                      <NavigateNextIcon className="editStyle p-0" />
-                                    </IconButton>
+                            <div className="row justify-content-between border-0" style={{ position: 'absolute', bottom: 80, left: 0, right: 0 }}>
+                              <div className="col-6 text-start">
+                                <IconButton onClick={previous2}>
+                                  <NavigateBeforeIcon className="editStyle p-0" />
+                                </IconButton>
+                              </div>
+                              <div className="col-6 text-end">
+                                <IconButton onClick={next2}>
+                                  <NavigateNextIcon className="editStyle p-0" />
+                                </IconButton>
+                              </div>
                             </div>
-
-                            </div>
-                            
-                        </div>
-                        </>
+                          </div>
+                      
                     }
                     
                       <div className="text-start m-0 mt-4 p-0">
