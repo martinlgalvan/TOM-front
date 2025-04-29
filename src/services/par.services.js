@@ -101,6 +101,8 @@ async function createProgressionsPARToUsers(template, userIds) {
             'Content-Type': 'application/json',
             'auth-token': localStorage.getItem('token')
         },
+        body: JSON.stringify({
+            template,
             user_ids: userIds
         })
     })
@@ -108,6 +110,8 @@ async function createProgressionsPARToUsers(template, userIds) {
         if (response.ok) {
             return response.json()
         }
+        else {
+            const errorMessage = response.text();
             throw new Error(errorMessage || 'No se pudo obtener el usuario');
         }
     })
@@ -115,6 +119,8 @@ async function createProgressionsPARToUsers(template, userIds) {
 
 async function createProgressionFromPAR(par_id) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/par/${par_id}/progression`, {
+        method: 'POST',
+        headers: {
             'Content-Type': 'application/json',
             'auth-token': localStorage.getItem('token')
         }
@@ -122,6 +128,8 @@ async function createProgressionFromPAR(par_id) {
     .then(response => {
         if (response.ok) {
             return response.json()
+        }
+        else {
             const errorMessage = response.text();
             throw new Error(errorMessage || 'No se pudo obtener el usuario');
         }
