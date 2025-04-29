@@ -21,6 +21,7 @@ function UserRoutinePage() {
     const [visibleEdit, setVisibleEdit] = useState(false);
     // Nuevo estado para controlar el modal cuando no existe perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
+    const [userProfile, setUserProfile] = useState(null);
 
     // Crear un array vacío para referencias múltiples
     const weekRefs = useRef([]);
@@ -70,17 +71,14 @@ function UserRoutinePage() {
         };
     }, [routine]);
 
-    // Nuevo useEffect para verificar si existe el perfil del usuario
     useEffect(() => {
         UserServices.getProfileById(id)
-            .then(data => {
-                console.log(data)
-
-            })
-            .catch((error) => {
-                setShowProfileMissingModal(true);
-                
-            });
+        .then((data) => {
+            setUserProfile(data);
+        })
+        .catch((error) => {
+            console.error("Error al obtener el perfil del alumno:", error);
+        });
     }, [id]);
 
     const seeRoutine = (i) => {
@@ -107,6 +105,21 @@ function UserRoutinePage() {
                         Acá vas a encontrar todas las semanas de tu planificación. Desplega la semana y accedé al día de entrenamiento que te corresponde!
                     </p>
                 </div>
+
+                {userProfile && (
+                    <div className="card p-3 my-3">
+                        <h5 className="card-title">Correcciones / Devolución</h5>
+                        {userProfile.devolucionFecha && (
+                        <p className="text-muted">
+                            Fecha: {new Date(userProfile.devolucionFecha).toLocaleString()}
+                        </p>
+                        )}
+                        <p className="card-text" style={{ whiteSpace: 'pre-wrap' }}>
+                        {userProfile.devolucion ? userProfile.devolucion : "No se han cargado correcciones."}
+                        </p>
+                    </div>
+                )}
+
 
                 <article className='row justify-content-center mb-4'>
                     {routine != null && (

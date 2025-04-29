@@ -253,7 +253,6 @@ p {
     font-size: 0.9em;
     margin: auto !important;
     padding: 0 !important;
-    width: 140px !important;
   }
 
 
@@ -781,7 +780,8 @@ p {
 }
 
 .td-2{
-  min-width: 200px !important;
+  min-width: 170px !important;
+  max-width: 190px !important;
 }
 
 .td-3{
@@ -789,7 +789,8 @@ p {
 }
 
 .td-4{
-  min-width: 10px !important;
+  min-width: 120px !important;
+  max-width: 150px !important;
 }
 
 .td-5{
@@ -1421,6 +1422,73 @@ width: 50px;
   font-size: 0.9em;
   text-align: start;
   width: 110px !important;
+}
+
+.stylesImportantResuemn{
+  padding: 0 !important;
+}
+
+.category-box {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .2s, color .2s;
+}
+.category-box.selected {
+  background-color: #0d6efd; /* azul Bootstrap */
+  color: #fff;
+  border-color: #0d6efd;
+}
+/* .visually-hidden es de Bootstrap 5; si no lo tienes, añade: */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.colorDropdownBlocks span{
+  color: white !important;
+}
+
+.colorDropdownBlocks{
+  color: white !important;
+}
+
+.colorDropdownBlocks2{
+  color: black !important;
+}
+
+.sss{
+  padding: 7.7px;
+  border-right: 0 !important;
+}
+
+.buttonAsingRight{
+  padding: 7.7px;
+  border-left: 0 !important;
+}
+
+.colorDropdownBlocks2 span{
+  color: black !important;
+}
+
+.marginn{
+  margin-left: 170px;
+}
+
+.fontBackOff{
+font-size: 0.9em;
+}
+
+.styleSelectButton .p-button{
+  width: 100%;
 }
 
 .paddingDialog{
@@ -2754,6 +2822,10 @@ input:checked + .slider:before {
 
 .botonHelpEdit{
   margin-top: 169px !important;
+}
+
+.botonHelpEditUserRoutine{
+  margin-top: 110px !important;
 }
 
 .marginHelpDays{

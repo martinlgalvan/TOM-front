@@ -6,7 +6,7 @@ import Exercises from './../assets/json/NEW_EXERCISES.json';
 // Si tienes un "databaseUser" en localStorage, ajusta la lógica
 // a tu conveniencia
 
-const AutoComplete = ({ defaultValue = '', onChange }) => {
+const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
   const [exercisesDatabase, setExercisesDatabase] = useState([]);
 
   // Estado para el texto del input y la lógica de sugerencias
@@ -58,6 +58,7 @@ const AutoComplete = ({ defaultValue = '', onChange }) => {
   // Sincronizamos defaultValue en caso de que cambie externamente
   useEffect(() => {
     setInputValue(defaultValue);
+
   }, [defaultValue]);
 
   // Filtra sugerencias al cambiar inputValue
@@ -143,43 +144,19 @@ const AutoComplete = ({ defaultValue = '', onChange }) => {
           inputRef.current = el; 
           setReferenceElement(el); // Lo asociamos a Popper
         }}
-        value={inputValue}
+        value={isProgression ? 'No se cambiará el nombre ' : inputValue}
         onChange={handleChange}
         onFocus={handleFocusOrClick}
         onClick={handleFocusOrClick}
+        disabled={isProgression}
         onBlur={handleBlur}
         className="form-control"
-        placeholder="Sentadilla..."
+        placeholder={`${isProgression ? 'Progresion' : 'Seleccioná un ejercicio...'}`}
         style={{ zIndex: 1 }}
       />
 
       {showSuggestions && filteredSuggestions.length > 0 && (
-        // Opción A: Sin Portal (usa popper pero puede quedar dentro del contenedor)
-        // <ul
-        //   ref={setPopperElement}
-        //   className="suggestions-list text-start"
-        //   style={styles.popper}
-        //   {...attributes.popper}
-        // >
-        //   {filteredSuggestions.map((group, index) => (
-        //     <li key={index}>
-        //       <span className='ms-1 p-1'>{group.label}</span>
-        //       <ul>
-        //         {group.items.map((item, itemIndex) => (
-        //           <li
-        //             key={itemIndex}
-        //             onClick={() => handleClickSuggestion(item)}
-        //             className='ms-3 p-1'
-        //           >
-        //             {item.label}
-        //           </li>
-        //         ))}
-        //       </ul>
-        //     </li>
-        //   ))}
-        // </ul>
 
-        // Opción B: Con Portal (se renderiza fuera, para no ser recortado por contenedores con overflow)
         createPortal(
           <ul
             ref={setPopperElement}

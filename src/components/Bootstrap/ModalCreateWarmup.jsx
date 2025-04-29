@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
 import * as WeekService from "../../services/week.services.js";
-import * as WarmupServices from "../../services/warmup.services.js";
 import * as Notify from "./../../helpers/notify.js";
 import * as RefreshFunction from "./../../helpers/generateUUID.js";
 import * as PARService from "../../services/par.services.js";
@@ -92,7 +91,6 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   };
 
   const applyChanges = () => {
-    console.log(week_id, modifiedWarmup)
       WeekService.editWeek(week_id, modifiedWarmup)
         .then(() => {
           setWarmup(modifiedWarmup);

@@ -18,6 +18,8 @@ import Exercises from "../../assets/json/NEW_EXERCISES.json";
 import { TimePicker, CustomProvider } from 'rsuite';
 import esES from 'rsuite/locales/es_ES'; 
 
+import Tooltip from '@mui/material/Tooltip';
+
 // Components
 import Logo from "../../components/Logo.jsx";
 import ModalCreateWarmup from "../../components/Bootstrap/ModalCreateWarmup.jsx";
@@ -41,6 +43,9 @@ import SaveIcon from '@mui/icons-material/Save';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import RemoveIcon from '@mui/icons-material/Remove';
+import CircleIcon from '@mui/icons-material/Circle';
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+
 
 // PrimeReact
 import { ConfirmDialog } from "primereact/confirmdialog";
@@ -51,6 +56,7 @@ import { Dropdown } from "primereact/dropdown";
 import { Menu } from "primereact/menu";
 import { Button } from 'primereact/button';
 import { SelectButton } from 'primereact/selectbutton';
+
 
 // antd
 import { Segmented } from "antd";
@@ -69,6 +75,10 @@ function Randomizer() {
   const { week_id } = useParams();
   const { id } = useParams();
   const { username } = useParams();
+
+  const backoffOverlayRef = useRef(null);
+  const [editingBackoffIndex, setEditingBackoffIndex] = useState(null);
+  const [backoffData, setBackoffData] = useState([{ sets: "", reps: "", peso: "" }]);
 
   // Estados generales
   const [options, setOptions] = useState([]); 
@@ -467,9 +477,41 @@ function Randomizer() {
     Notify.instantToast(`${name} Eliminado con éxito`);
   };
 
+  const handleOpenBackoffOverlay = (e, index) => {
+    setEditingBackoffIndex(index);
+    const current = day[indexDay].exercises[index];
+    let currentBackoff = [{ sets: "", reps: "", peso: "" }];
+    if (current && typeof current.name === 'object') {
+      currentBackoff = Array.isArray(current.name.backoff) ? current.name.backoff : currentBackoff;
+    }
+    setBackoffData(currentBackoff);
+    backoffOverlayRef.current.toggle(e);
+  };
+
+  const handleSaveBackoff = () => {
+    if (editingBackoffIndex === null) return;
+    const updated = [...day];
+    const ex = updated[indexDay].exercises[editingBackoffIndex];
+    const rawName = ex.name;
+    ex.name = typeof rawName === 'object'
+      ? { ...rawName, backoff: backoffData }
+      : { name: rawName, backoff: backoffData };
+    updated[indexDay].exercises[editingBackoffIndex] = ex;
+    setDay(updated);
+    setModifiedDay(updated);
+    backoffOverlayRef.current.hide();
+    setEditingBackoffIndex(null);
+    setIsEditing(true);
+    setBackoffData([{ sets: "", reps: "", peso: "" }]);
+  };
+
+  const hasBackoff = (exercise) => (
+    exercise && typeof exercise.name === 'object' && Array.isArray(exercise.name.backoff) && exercise.name.backoff.length > 0
+  );
+
+
   // Funciones de input para exercise normal
   const customInputEditDay = (data, index, field) => {
-    console.log(data, index, field)
     if (field === "sets" ) {
       return (
         <>
@@ -1314,21 +1356,23 @@ function Randomizer() {
               Lista de rutinas
             </MenuItem>
 
-            {allWeeks &&
-              allWeeks.map((week) => (
-                <MenuItem key={week._id} icon={collapsed ? <EditIcon /> : ''}>
-                  <div
-                    onClick={() => navigate(`/par/${week._id}`)}
-                    className=" "
-                  >
-                    <div className="">
+            {allWeeks && 
+              allWeeks
+                .filter(week => !week.parent_par_id)  // Solo si NO tiene parent_par_id
+                .map((week) => (
+                  <MenuItem key={week._id} icon={collapsed ? <EditIcon /> : ''}>
+                    <div
+                      onClick={() => navigate(`/par/${week._id}`)}
+                      className=" "
+                    >
                       <div className="">
-                        <p className="m-0 text-light">{week.name}</p>
+                        <div className="">
+                          <p className="m-0 text-light">{week.name}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </MenuItem>
-              ))
+                  </MenuItem>
+                ))
             }
 
             <MenuItem className="text-center marginHelpDays">
@@ -1369,22 +1413,25 @@ function Randomizer() {
 
           <div className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
 
-          <div className="col-12 mb-3">
-              <div className="row justify-content-center align-items-center py-2">
-                <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowMovility}>
-                  <EditIcon  className="me-2" />
-                  Administrar bloque de activación <strong className="d-block">{currentDay && currentDay.name}</strong>
-                </div>
-              </div>
-            </div>
-            <div className="col-12 mb-3">
-              <div className="row justify-content-center align-items-center py-2">
-                <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
-                  <EditIcon  className="me-2" />
-                  <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
-                </div>
-              </div>
-            </div>
+          <div className="col-11 mb-3">
+              
+                                <div className="row justify-content-around align-items-center py-2">
+              
+                                  <div id="warmup" className={`col-10 col-lg-4 ${ firstWidth > 992 ? 'me-3 ' : 'mb-4'} pt-4  btn boxDataWarmup`} onClick={handleShowMovility}>
+                                    <EditIcon  className="me-2" />
+                                    Administrar bloque de activación <strong className="d-block">{currentDay && currentDay.name}</strong>
+                                  </div>
+                              
+                  
+                                  <div id="warmup" className={`col-10 col-lg-4 ${ firstWidth > 992 && 'ms-3'} pt-4  btn boxDataWarmup`} onClick={handleShowWarmup}>
+                                    <EditIcon  className="me-2" />
+                                    <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
+                                  </div>
+              
+                              </div>
+                              </div>
+              
+                          
 
             {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
               <button className="btn p-2">
@@ -1583,12 +1630,21 @@ function Randomizer() {
                                     <>
                                       <td className="td-2">
                                         <AutoComplete
-                                          defaultValue={exercise.name}
-                                          onChange={(name, video) => {
-                                            changeModifiedData(i, name, 'name');
-                                            changeModifiedData(i, video, 'video');
+                                          defaultValue={typeof exercise.name==='object'?exercise.name.name:exercise.name}
+                                          onChange={(name,video)=>{
+                                            changeModifiedData(i,name,'name');
+                                            changeModifiedData(i,video,'video');
                                           }}
                                         />
+                                        {/* Backoff */}
+                                        <div className="d-flex align-items-center mt-1">
+                                          <button className="btn btn-outline-dark btn-sm" onClick={(e)=>handleOpenBackoffOverlay(e,i)}>
+                                            <AddIcon fontSize="small" /> Back off
+                                          </button>
+                                          <Tooltip title={hasBackoff(exercise)?"Tiene back off":"No tiene back off"}>                                      
+                                            {hasBackoff(exercise)?<CircleIcon color="success"/>:<PanoramaFishEyeIcon/>}
+                                          </Tooltip>
+                                        </div>
                                       </td>
                                       <td className="td-3">
                                         {customInputEditDay(exercise.sets, i, "sets")}
@@ -1774,6 +1830,11 @@ function Randomizer() {
             className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
           />
 
+                    <ConfirmDialog 
+                    className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+                    />
+          
+
           {/* Warmup */}
           <Dialog
             className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
@@ -1788,10 +1849,9 @@ function Randomizer() {
           >
             <ModalCreateWarmup
               week={modifiedDay}
-              isPAR={true}
-              editAndClose={editAndClose}
-              user_id={id}
+              week_id={week_id}
               day_id={currentDay && currentDay._id}
+              editAndClose={editAndClose}
             />
           </Dialog>
 
@@ -1874,7 +1934,7 @@ function Randomizer() {
             <div className="list-group">
               {allWeeks && allWeeks.length > 0 ? (
                 allWeeks.map((week) => (
-                  <div className="row justify-content-between mt-1">
+                  <div key={week._id} className="row justify-content-between mt-1">
                     <div className="col-9">
                       <button
                       key={week._id}
@@ -1918,6 +1978,43 @@ function Randomizer() {
               day_id={currentDay && currentDay._id}
             />
           </Dialog>
+
+          <OverlayPanel ref={backoffOverlayRef} className={`${firstWidth>992?'w-25':'w-75'}`}>            
+            <div className="p-3">
+              {backoffData.map((line,idx)=>(
+                <div key={idx} className="row mb-2">
+                  <div className="col-4">
+                    <label>Sets</label>
+                    <input type="number" className="form-control" value={line.sets} onChange={e=>{
+                      const arr=[...backoffData]; arr[idx].sets=e.target.value; setBackoffData(arr);
+                    }} />
+                  </div>
+                  <div className="col-4">
+                    <label>Reps</label>
+                    <input type="number" className="form-control" value={line.reps} onChange={e=>{
+                      const arr=[...backoffData]; arr[idx].reps=e.target.value; setBackoffData(arr);
+                    }} />
+                  </div>
+                  <div className="col-4">
+                    <label>Peso</label>
+                    <input type="text" className="form-control" value={line.peso} onChange={e=>{
+                      const arr=[...backoffData]; arr[idx].peso=e.target.value; setBackoffData(arr);
+                    }} />
+                  </div>
+                </div>
+              ))}
+              <div className="text-center mb-3">
+                <button className="btn btn-outline-dark" onClick={()=>setBackoffData([...backoffData,{sets:'',reps:'',peso:''}])}>
+                  Añadir línea
+                </button>
+              </div>
+              <div className="text-center">
+                <button className="btn btn-secondary me-2" onClick={()=>backoffOverlayRef.current.hide()}>Cancelar</button>
+                <button className="btn btn-dark" onClick={handleSaveBackoff}>Guardar</button>
+              </div>
+            </div>
+          </OverlayPanel>
+
 
           {/* Footer móvil */}
           {firstWidth < 992 && (

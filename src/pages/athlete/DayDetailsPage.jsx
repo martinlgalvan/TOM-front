@@ -93,6 +93,25 @@ function DayDetailsPage() {
       selection5: ""
 });
 
+
+useEffect(() => {
+  UserService.getProfileById(id)
+    .then((data) => {
+      setUserProfile(data);
+      if (data.resumen_semanal) {
+        setWeeklySummary(data.resumen_semanal);
+      }
+    })
+    .catch((error) => {
+      setShowProfileMissingModal(true);
+    });
+}, [id]);
+
+const redirectToPerfil = () => {
+    setShowProfileMissingModal(false);
+    navigate(`/perfil/${id}`);
+};
+
     const next = () => {
       sliderRef.slickNext();
     };
@@ -260,6 +279,29 @@ function DayDetailsPage() {
         setEditExerciseMobile(true);
     }
 
+    const renderExerciseName = (nameData) => {
+      if (typeof nameData === 'object' && nameData !== null) {
+        return (
+          <div>
+            <span>{nameData.name}</span>
+            {nameData.backoff && (
+              <small
+                style={{
+                  whiteSpace: 'pre-wrap',
+                  display: 'block',
+                  fontSize: '0.85rem',
+                  color: 'gray'
+                }}
+              >
+                {nameData.backoff}
+              </small>
+            )}
+          </div>
+        );
+      }
+      return <span>{nameData}</span>;
+    };
+
     const handleUpdateExercise = () => {
         const newExercises = [...modifiedDay];
         newExercises[indexOfExercise] = completeExercise;
@@ -419,23 +461,6 @@ function DayDetailsPage() {
         setCurrentDay(idx);
     };
 
-    useEffect(() => {
-      UserService.getProfileById(id)
-        .then((data) => {
-          setUserProfile(data);
-          if (data.resumen_semanal) {
-            setWeeklySummary(data.resumen_semanal);
-          }
-        })
-        .catch((error) => {
-          setShowProfileMissingModal(true);
-        });
-    }, [id]);
-
-    const redirectToPerfil = () => {
-        setShowProfileMissingModal(false);
-        navigate(`/perfil/${id}`);
-    };
 
     return (
         <>
@@ -588,48 +613,54 @@ function DayDetailsPage() {
                                       </Avatar>
                                     }
                                     title={
-                                      <span id={idx === 0 ? 'nombre' : null}>{element.name}</span>
+                                      <span id={idx === 0 ? 'nombre' : null}>{element.name.name}</span>
                                     }
                                   />
 
-                                  <CardContent className="p-0">
-                                    <div className="card border-0">
-                                      <table className="table border-0 p-0">
-                                        <thead>
-                                          <tr className="border-0">
-                                            <th id={idx === 0 ? 'series' : null} className="border-0">
-                                              Sets
-                                            </th>
-                                            <th id={idx === 0 ? 'reps' : null} className="border-0">
-                                              Reps
-                                            </th>
-                                            <th id={idx === 0 ? 'peso' : null} className="border-0">
-                                              Peso
-                                            </th>
-                                            <th id={idx === 0 ? 'descanso' : null} className="border-0">
-                                              Descanso x serie
-                                            </th>
-                                          </tr>
-                                        </thead>
-                                        <tbody className="border-0">
-                                          <tr className="border-0">
-                                            <td className="border-0">{element.sets}</td>
-                                            <td className="border-0">{element.reps}</td>
-                                            <td className="border-0">{element.peso}</td>
-                                            <td className="border-0">
-                                              <CountdownTimer initialTime={element.rest} />
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
+                                <CardContent className="p-0">
+                                  <div className="card border-0">
+                                    <table className="table border-0 p-0">
+                                      <thead>
+                                        <tr className="border-0">
+                                          <th id={idx === 0 ? 'series' : null} className="border-0">Sets</th>
+                                          <th id={idx === 0 ? 'reps' : null} className="border-0">Reps</th>
+                                          <th id={idx === 0 ? 'peso' : null} className="border-0">Peso</th>
+                                          <th id={idx === 0 ? 'descanso' : null} className="border-0">Descanso x serie</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="border-0">
+                                        <tr className="border-0">
+                                          <td className="border-0">{element.sets}</td>
+                                          <td className="border-0">{element.reps}</td>
+                                          <td className="border-0">{element.peso}</td>
+                                          <td className="border-0">
+                                            <CountdownTimer initialTime={element.rest} />
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  
+                                  {/* Nuevo bloque Back off: se muestra solo si element.name es un objeto con propiedad backoff */}
+                                  {element.name && typeof element.name === 'object' && 
+                                  Array.isArray(element.name.backoff) && element.name.backoff.length > 0 && (
+                                    <div>
+                                      <p className="titleObservaciones">Back off</p>
+                                      {element.name.backoff.map((line, idx) => (
+                                        <p key={idx} className="paraphObservaciones">
+                                          {line.sets} Series x {line.reps} Reps / {line.peso}
+                                        </p>
+                                      ))}
                                     </div>
-                                    {element.notas && (
-                                      <div>
-                                        <p className="titleObservaciones">Observaciones</p>
-                                        <p className="paraphObservaciones">{element.notas}</p>
-                                      </div>
-                                    )}
-                                  </CardContent>
+                                  )}
+
+                                  {element.notas && (
+                                    <div style={{ whiteSpace: 'pre-wrap' }}>
+                                      <p className="titleObservaciones">Notas / otros</p>
+                                      <p className="paraphObservaciones">{element.notas}</p>
+                                    </div>
+                                  )}
+                                </CardContent>
 
                                   <CardActions className="p-0 row justify-content-between">
                                     <IconButton
@@ -832,7 +863,7 @@ function DayDetailsPage() {
                           <input
                             type="text"
                             className="form-control"
-                            value={completeExercise.name || ''}
+                            value={completeExercise.name.name || ''}
                             disabled={true}
                           />
                         </div>
@@ -1075,6 +1106,7 @@ function DayDetailsPage() {
       <span>Comentarios sobre la semana</span>
       <InputTextarea
         type="text"
+        autoResize
         value={weeklySummary.comments || ""}
         onChange={(e) =>
           setWeeklySummary(prev => ({ ...prev, comments: e.target.value }))

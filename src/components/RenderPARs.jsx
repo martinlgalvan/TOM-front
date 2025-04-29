@@ -83,7 +83,6 @@ useEffect(() => {
         PARService.createPARroutine(weekData, userId)
             .then((data) => {
                 Notify.instantToast('PAR creado con éxito');
-                console.log(data)
             })
     }, [id]);
 

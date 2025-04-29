@@ -12,6 +12,7 @@ import GERONIMO_BISANZIO from '/src/assets/img/geronimo-logo.jpeg';
 import JEREMIAS_OLMEDO from '/src/assets/img/jeremias-olmedo.jpeg';
 import MATIAS_VILLALBA from '/src/assets/img/matias-logo.jpeg';
 import TORETTO_GYM from '/src/assets/img/mauri-logo.png';
+import PITBULL from '/src/assets/img/pitbull-logo.png';
 
 function LogoChico({isHomePage}){
 
@@ -32,6 +33,8 @@ function LogoChico({isHomePage}){
         setUrlPath(JEREMIAS_OLMEDO)
     } else if(localStorage.getItem('email') == "matuch_27@hotmail.com" || localStorage.getItem('entrenador_id') == "66156628e97c68ef705f451f"){
         setUrlPath(MATIAS_VILLALBA)}
+        else if(localStorage.getItem('email') == "alexisdalessandrod@gmail.com" || localStorage.getItem('entrenador_id') == "67f84082c3514ac86837bddf"){
+            setUrlPath(PITBULL)}
     else if(localStorage.getItem('email') == "mauricioarraztoa@gmail.com" || localStorage.getItem('entrenador_id') == "672d05cd7fa16a4779fe6135"){
         setUrlPath(TORETTO_GYM)
     

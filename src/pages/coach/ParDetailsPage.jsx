@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
 // Servicios PAR
 import * as PARService from "../../services/par.services.js";
+import * as BlockService from "../../services/blocks.services.js";
 
 // DB local, si la usas
 import * as UserServices from "../../services/users.services.js";
@@ -33,6 +34,7 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { Segmented } from "antd";
+import { MultiSelect } from 'primereact/multiselect';
 
 import IconButton from "@mui/material/IconButton";
 import YouTubeIcon from "@mui/icons-material/YouTube";
@@ -53,10 +55,15 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 
+import Tooltip from '@mui/material/Tooltip';
+import CircleIcon from '@mui/icons-material/Circle';
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+
 import ObjectId from "bson-objectid";
 
 // Importamos DragDropContext
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import BlocksListPage from "../../components/BlocksListPage.jsx";
 
 function ParDetailsPage() {
   // useParams: id = user_id, week_id = par_id
@@ -67,7 +74,7 @@ function ParDetailsPage() {
   const [users, setUsers] = useState([]);
   const [parent_id, setParent_id] = useState(localStorage.getItem('_id'));
   const [user_id, setUser_id] = useState(localStorage.getItem('_id'));  // El PAR completo
-
+  const navigate = useNavigate();
   // Estado principal
   const [routine, setRoutine] = useState(null);  // El PAR completo
   const [weekName, setWeekName] = useState("");
@@ -133,6 +140,136 @@ function ParDetailsPage() {
 
   const [movilityVisible, setMovilityVisible] = useState(false);
 
+  // Backoff refs y estados
+  const backoffOverlayRef = useRef(null);
+  const [editingBackoffIndex, setEditingBackoffIndex] = useState(null);
+  const [backoffData, setBackoffData] = useState([{ sets: "", reps: "", peso: "" }]);
+
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [showManageProgressionsDialog, setShowManageProgressionsDialog] = useState(false);
+
+  const [blocks, setBlocks] = useState([]);
+  const [selectedBlock, setSelectedBlock] = useState(null); // Bloque actual
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [trainer_id, setTrainer_id] = useState(localStorage.getItem("_id"));
+  
+
+  const allCategories = [
+    "Alumno casual",
+    "Alumno dedicado",
+    "Atleta iniciante",
+    "Atleta avanzado"
+  ];
+
+  /*onClick={() => {
+                        setShowSavedRoutinesDialog(false);
+                        navigate(`/par/${week._id}`);
+                      }}*/ 
+
+    // Agrupar usuarios por categoría, en el orden deseado
+  const [groupedOptions, setGroupedOptions] = useState([]);
+
+  useEffect(() => {
+    const groups = allCategories.map((category) => ({
+      label: category,
+      items: users.filter((u) => u.category === category)
+    }));
+    setGroupedOptions(groups);
+  }, [users]);
+
+  const [currentPAR, setCurrentPAR] = useState(null);
+  const [progressions, setProgressions] = useState([]);
+  const [isProgression, setIsProgression] = useState(null);
+
+  useEffect(() => {
+    BlockService.getBlocks(trainer_id).then(setBlocks);
+  }, [trainer_id]);
+
+
+   // Crear nueva progresión
+   function handleCreateProgression() {
+    PARService.createProgressionFromPAR(id)
+      .then(newProg => {
+        setProgressions([...progressions, newProg]);
+      });
+  }
+
+
+  // Eliminar progresión
+  function handleDeleteProgression(progId) {
+    PARService.deletePAR(progId).then(() => {
+      setProgressions(progressions.filter(p => p._id !== progId));
+    });
+  }
+  
+  const handleCategoryCheckbox = (e, category) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+    let newSelected;
+    if (e.target.checked) {
+      newSelected = [...selectedCategories, category];
+    } else {
+      newSelected = selectedCategories.filter((cat) => cat !== category);
+    }
+    setSelectedCategories(newSelected);
+    
+    // Actualizamos la lista de alumnos a seleccionar:
+    // Si hay alguna categoría marcada, filtramos; si no, volvemos a la lista completa (users)
+    if (newSelected.length > 0) {
+      const filtered = users.filter(u => newSelected.includes(u.category));
+      setSelectedStudents(filtered);
+    } else {
+      setSelectedStudents([]);
+    }
+  };
+
+  const optionGroupTemplate = (group) => {
+    // Comprueba si todos los items del grupo están ya seleccionados
+    const allSelected =
+      group.items.length > 0 &&
+      group.items.every((item) =>
+        selectedStudents.some((selected) => String(selected._id) === String(item._id))
+      );
+  
+    // Función que al togglear el checkbox del grupo, agrega o quita todos los items del grupo a la selección
+    const toggleGroupSelection = () => {
+      if (allSelected) {
+        // Quitar todos los items del grupo de la selección
+        const newSelection = selectedStudents.filter(
+          (selected) =>
+            !group.items.some(
+              (item) => String(item._id) === String(selected._id)
+            )
+        );
+        setSelectedStudents(newSelection);
+      } else {
+        // Agregar todos los items del grupo a la selección (evitando duplicados)
+        const newSelection = [
+          ...selectedStudents,
+          ...group.items.filter(
+            (item) =>
+              !selectedStudents.some(
+                (selected) => String(selected._id) === String(item._id)
+              )
+          )
+        ];
+        setSelectedStudents(newSelection);
+      }
+    };
+  
+    return (
+      <div className="p-multiselect-option-group" style={{ display: 'flex', alignItems: 'center' }}>
+        <label style={{ cursor: 'pointer', marginRight: '0.5rem' }}>
+          <input type="checkbox" checked={allSelected} onChange={toggleGroupSelection} /> 
+        </label>
+        <strong>{group.label}</strong>
+      </div>
+    );
+  };
 
   
       useEffect(() => {
@@ -144,10 +281,7 @@ function ParDetailsPage() {
   useEffect(() => {
     setLoading(true);
     Notify.notifyA("Cargando");
-
-    // 1) Obtenemos todos los PAR de este user "id"
     PARService.getPAR(user_id).then((allPars) => {
-      console.log(allPars, id)
       // 2) Buscamos el que tenga _id = week_id
       const found = allPars.find((p) => p._id === id);
       if (!found) {
@@ -155,13 +289,15 @@ function ParDetailsPage() {
         setLoading(false);
         return;
       }
+      found.parent_par_id && setIsProgression(true)
 
-      // 3) Asignamos
+      setProgressions(allPars.filter(p => p.parent_par_id === id))
       setRoutine(found);
       setWeekName(found.name || "PAR sin nombre");
       setModifiedDay(found.routine);
       setAllDays(found.routine);
       setDay(found.routine);
+      setSelectedBlock(found.block || null);
 
       // Tomamos el primer día si existe
       if (found.routine && found.routine.length > 0) {
@@ -174,7 +310,7 @@ function ParDetailsPage() {
   }, [id, week_id, statusCancel, status]);
 
   // DB local
-  useEffect(() => {
+ /* useEffect(() => {
     const local = localStorage.getItem("DATABASE_USER");
     if (local != null) {
       setDatabaseUser(local);
@@ -182,7 +318,7 @@ function ParDetailsPage() {
     } else {
       setExercisesDatabase(Exercises);
     }
-  }, [databaseUser]);
+  }, [databaseUser]);*/
 
   // Manejo del ancho
   useEffect(() => {
@@ -216,6 +352,41 @@ function ParDetailsPage() {
       setCurrentDay({ ...day[indexDay] });
     }
   }, [day, indexDay]);
+
+  // -- BACKOFF FUNCTIONS --
+  const hasBackoff = exercise => (
+    exercise && typeof exercise.name === 'object' && Array.isArray(exercise.name.backoff) && exercise.name.backoff.length > 0
+  );
+
+  const handleOpenBackoffOverlay = (e, idx) => {
+    setEditingBackoffIndex(idx);
+    let lines = [{ sets: "", reps: "", peso: "" }];
+    const ex = day[indexDay]?.exercises[idx];
+    if (ex && typeof ex.name === 'object' && Array.isArray(ex.name.backoff)) {
+      lines = ex.name.backoff;
+    }
+    setBackoffData(lines);
+    backoffOverlayRef.current.toggle(e);
+  };
+
+  const handleSaveBackoff = () => {
+    if (editingBackoffIndex === null) return;
+    const upd = [...day];
+    const ex = upd[indexDay].exercises[editingBackoffIndex];
+    if (typeof ex.name === 'object') {
+      ex.name.backoff = backoffData;
+    } else {
+      ex.name = { name: ex.name, backoff: backoffData };
+    }
+    upd[indexDay].exercises[editingBackoffIndex] = ex;
+    setDay(upd);
+    setModifiedDay(upd);
+    backoffOverlayRef.current.hide();
+    setEditingBackoffIndex(null);
+    setIsEditing(true);
+    setBackoffData([{ sets: "", reps: "", peso: "" }]);
+  };
+  // -- END BACKOFF --
 
   /* ------------------------------------------------------------------
    * DRAG & DROP
@@ -375,6 +546,7 @@ function ParDetailsPage() {
       ...routine,
       name: weekName,
       routine: modifiedDay,
+      block: selectedBlock
     };
     // Llamamos a update
     PARService.updatePAR(routine._id, updatedPar).then(() => {
@@ -779,18 +951,35 @@ function ParDetailsPage() {
 
   
 
-    const designWeekToUser = useCallback((weekData, userId) => {
-      console.log(weekData)
-      // Asigna un PAR a un usuario
-      PARService.createPARroutine(weekData, userId)
-        .then(() => {
-          Notify.instantToast('PAR creado con éxito');
-          PARService.getPAR(id).then((newData) => {
-            console.log(newData);
-          });
-        });
-    }, [id]);
+  const designWeekToUsers = (template, userIds, name) => {
 
+    if(routine.parent_par_id){
+        PARService.createProgressionsPARToUsers(template, userIds)
+          .then(() => {
+            Notify.instantToast(`Rutina asignada a usuario con éxito`);
+          })
+          .catch((err) => {
+            console.error(`Error asignando a usuario :`, err);
+            Notify.instantToast(`Error asignando a usuario `);
+          });
+
+
+    } else{
+
+      userIds.forEach(userId => {
+        PARService.createPARroutine(template, userId)
+          .then(() => {
+            Notify.instantToast(`Rutina asignada a usuario ${name} con éxito`);
+          })
+          .catch((err) => {
+            console.error(`Error asignando a usuario ${name}:`, err);
+            Notify.instantToast(`Error asignando a usuario ${name}`);
+          });
+      });
+
+    }
+    
+  };
 
   const propiedades = [
     "⇄",
@@ -805,347 +994,253 @@ function ParDetailsPage() {
     "#",
   ];
 
-  const tableMobile = () => {
-    return (
-      <div className="table-responsiveCss">
-        <div className="row justify-content-center text-center mb-3">
-          <div className="col-6 mb-3">
-            <button className="btn btn-outline-dark me-2" onClick={() => incrementAllSeries()}>
+  const handleBlockDropdownChange = (value) => {
+    if (value === 'add-new-block') {
+      setShowBlockDialog(true);
+      return;
+    }
+    
+    const selected = blocks.find(block => block._id === value) || null;
+    setSelectedBlock(selected);
+    setIsEditing(true); // Marca que hay edición pendiente
+  };
+
+// NUEVO tableMobile adaptado a tu ParDetailsPage.jsx
+const tableMobile = () => {
+  return (
+    <div className="p-1">
+      {currentDay && (
+        <div className="row justify-content-center text-center mb-3 p-0">
+          <div className="col-6 mb-3 px-0">
+            <button
+              aria-label="sumar-series"
+              className="btn btn-outline-dark me-2 p-2"
+              onClick={() => incrementAllSeries()}
+            >
               <UpgradeIcon /> Sumar 1 serie
             </button>
           </div>
-          <div className="col-6 mb-3">
-            <button className="btn btn-outline-dark me-2" onClick={() => incrementAllReps()}>
+
+          <div className="col-6 mb-3 px-0">
+            <button
+              aria-label="sumar-reps"
+              className="btn btn-outline-dark me-2 p-2"
+              onClick={() => incrementAllReps()}
+            >
               <UpgradeIcon /> Sumar 1 rep
             </button>
           </div>
-          <div className="col-6">
-            <button className="btn btn-outline-dark" onClick={AddNewExercise}>
-              <AddIcon />
-              <span className="me-1">Añadir ejercicio</span>
-            </button>
-          </div>
-          <div className="col-6">
-            <button className="btn btn-outline-dark" onClick={AddNewCircuit}>
-              <AddIcon />
-              <span className="me-1">Añadir circuito</span>
-            </button>
-          </div>
         </div>
+      )}
 
-        <DragDropContext onDragEnd={handleOnDragEnd}>
-          <Droppable droppableId="exercises-mobile">
-            {(provided) => (
-              <table
-                className="table table-bordered"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Peso</th>
-                    <th>Sets</th>
-                    <th>Reps</th>
-                    {editMode && <th>Rest</th>}
-                    <th>Notas</th>
-                    {editMode && <th>Video</th>}
-                    <th>Reordenar / Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentDay &&
-                    currentDay.exercises.map((exercise, i) => (
-                      <Draggable
-                        key={exercise.exercise_id}
-                        draggableId={exercise.exercise_id}
-                        index={i}
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="exercises-mobile">
+          {(provided) => (
+            <div
+              className="div div-bordered p-0"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              {currentDay &&
+                currentDay.exercises.map((exercise, i) => (
+                  <Draggable
+                    key={exercise.exercise_id}
+                    draggableId={exercise.exercise_id}
+                    index={i}
+                  >
+                    {(providedDrag) => (
+                      <div
+                        ref={providedDrag.innerRef}
+                        {...providedDrag.dragHandleProps}
+                        className="mb-4 shadowCards p-2"
                       >
-                        {(providedDrag) => (
-                          <tr
-                            ref={providedDrag.innerRef}
-                            {...providedDrag.draggableProps}
-                            {...providedDrag.dragHandleProps}
-                            className="shadowCards"
-                          >
-                            {exercise.type === "exercise" ? (
-                              <>
-                                <td data-th="Nombre" className="text-center">
-                                  {editMode ? (
-                                    <AutoComplete
-                                      defaultValue={exercise.name}
-                                      onChange={(name, video) => {
-                                        changeModifiedData(i, name, "name");
-                                        changeModifiedData(i, video, "video");
-                                      }}
-                                    />
-                                  ) : (
-                                    <span>
-                                      {exercise.name === "" ? "Nombre" : exercise.name}
-                                    </span>
-                                  )}
-                                </td>
-                                <td data-th="Peso" className="text-center">
-                                  {customInputEditDay(exercise.peso, i, "peso")}
-                                </td>
-                                <td data-th="Sets" className="text-center">
-                                  {customInputEditDay(exercise.sets, i, "sets")}
-                                </td>
-                                <td data-th="Reps" className="text-center">
-                                  {customInputEditDay(exercise.reps, i, "reps")}
-                                </td>
-                                {editMode && (
-                                  <td data-th="Rest" className="text-center">
-                                    {customInputEditDay(exercise.rest, i, "rest")}
-                                  </td>
-                                )}
-                                {editMode ? (
-                                  <td data-th="Notas" className="text-center">
-                                    {customInputEditDay(exercise.notas, i, "notas")}
-                                  </td>
-                                ) : (
-                                  <td className="text-center">
-                                    {exercise.notas ? exercise.notas : ""}
-                                  </td>
-                                )}
-                                {editMode && (
-                                  <td data-th="Video" className="text-center">
-                                    {customInputEditDay(exercise.video, i, "video")}
-                                  </td>
-                                )}
-                                <td className="notStyle">
-                                  <div className="row justify-content-center">
-                                    <div className="col-6">
-                                      <Dropdown
-                                        value={exercise.numberExercise}
-                                        options={options}
-                                        onChange={(e) =>
-                                          changeModifiedData(
-                                            i,
-                                            e.target.value,
-                                            "numberExercise"
-                                          )
-                                        }
-                                        placeholder="#"
-                                        optionLabel="label"
-                                        className="p-dropdown-group w-100"
-                                      />
-                                    </div>
-                                    <div className="col-6">
-                                      <div className="row justify-content-around">
-                                        <div className="col-5">
-                                          <IconButton>
-                                            <DragIndicatorIcon />
-                                          </IconButton>
-                                        </div>
-                                        <div className="col-5">
-                                          <IconButton
-                                            aria-label="delete"
-                                            onClick={() =>
-                                              handleDeleteClick({
-                                                exercise_id: exercise.exercise_id,
-                                                name: exercise.name,
-                                              })
-                                            }
-                                          >
-                                            <CancelIcon className="colorIconDeleteExercise" />
-                                          </IconButton>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </td>
-                              </>
-                            ) : (
-                              // Circuit en mobile
-                              <>
-                                {editMode ? (
-                                  <>
-                                    <td className="text-center">
-                                      {customInputEditCircuit(exercise.type, i, "type")}
-                                    </td>
-                                    <td className="text-center">
-                                      {customInputEditCircuit(exercise.typeOfSets, i, "typeOfSets")}
-                                    </td>
-                                    <td className="notStyle">
-                                      {exercise.circuit.map((item, j) => (
-                                        <div
-                                          key={item.idRefresh}
-                                          className="row justify-content-center text-center"
-                                        >
-                                          <div className="mt-4">
-                                            <b className="mt-4 mb-2">Ejercicio {j + 1}</b>
-                                            <span className="text-end ps-5">
-                                              <IconButton
-                                                aria-label="delete-ex-circuit"
-                                                className="text-light"
-                                                onClick={() => {
-                                                  setIsEditing(true);
-                                                  const updatedDays = [...day];
-                                                  updatedDays[indexDay].exercises[i].circuit.splice(
-                                                    j,
-                                                    1
-                                                  );
-                                                  setDay(updatedDays);
-                                                  setModifiedDay(updatedDays);
-                                                }}
-                                              >
-                                                <CancelIcon className="colorIconDeleteExercise" />
-                                              </IconButton>
-                                            </span>
-                                          </div>
-                                          <span className="col-11 my-1 mb-2">
-                                            {customInputEditExerciseInCircuit(
-                                              item.name,
-                                              i,
-                                              j,
-                                              "name"
-                                            )}
-                                          </span>
-                                          <span className="col-6 my-1">
-                                            {customInputEditExerciseInCircuit(
-                                              item.reps,
-                                              i,
-                                              j,
-                                              "reps"
-                                            )}
-                                          </span>
-                                          <span className="col-5 my-1">
-                                            {customInputEditExerciseInCircuit(
-                                              item.peso,
-                                              i,
-                                              j,
-                                              "peso"
-                                            )}
-                                          </span>
-                                        </div>
-                                      ))}
-                                    </td>
-                                    <td className="notStyle">
-                                      <IconButton
-                                        aria-label="add-ex-circuit"
-                                        className="bgColor rounded-2 text-light text-center my-4"
-                                        onClick={() => AddExerciseToCircuit(i)}
-                                      >
-                                        <AddIcon />
-                                        <span className="font-icons me-1">
-                                          Añadir Ejercicio al Circuito
-                                        </span>
-                                      </IconButton>
-                                    </td>
-                                    <td className="text-center my-4">
-                                      {customInputEditCircuit(exercise.notas, i, "notas")}
-                                    </td>
-                                    <td className="notStyle">
-                                      <div className="row justify-content-between">
-                                        <div className="col-5">
-                                          <Dropdown
-                                            value={exercise.numberExercise}
-                                            options={options}
-                                            onChange={(e) =>
-                                              changeModifiedData(
-                                                i,
-                                                e.target.value,
-                                                "numberExercise"
-                                              )
-                                            }
-                                            placeholder="#"
-                                            optionLabel="label"
-                                            className="p-dropdown-group w-100"
-                                          />
-                                        </div>
-                                        <div className="col-7 mb-3">
-                                          <div className="row justify-content-between">
-                                            <IconButton
-                                              aria-label="delete-circuit"
-                                              className="bg-danger col-9 fontDeleteCircuit rounded-2 text-light"
-                                              onClick={() => deleteCircuit(exercise.name, i)}
-                                            >
-                                              <DeleteIcon />
-                                              Eliminar circuito
-                                            </IconButton>
-                                            <IconButton className="col-2">
-                                              <DragIndicatorIcon />
-                                            </IconButton>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </td>
-                                  </>
-                                ) : (
-                                  // Circuit modo lectura
-                                  <>
-                                    <td className="text-center">
-                                      {exercise.type === "" ? "Nombre" : exercise.type}
-                                    </td>
-                                    <td className="text-center">
-                                      {exercise.typeOfSets === ""
-                                        ? "Nombre"
-                                        : exercise.typeOfSets}
-                                    </td>
-                                    <td className="notStyle">
-                                      <div className="row justify-content-center">
-                                        <b className="col-5 my-3">Ejercicio</b>
-                                        <b className="col-3 my-3">Reps</b>
-                                        <b className="col-3 my-3">Peso</b>
-                                        {exercise.circuit.map((item) => (
-                                          <div
-                                            key={item.idRefresh}
-                                            className="row justify-content-center"
-                                          >
-                                            <span className="col-5 my-1">
-                                              {item.name === "" ? "Nombre" : item.name}
-                                            </span>
-                                            <span className="col-3 my-1">
-                                              {item.reps === "" ? "Reps" : item.reps}
-                                            </span>
-                                            <span className="col-3 my-1">
-                                              {item.peso === "" ? "Peso" : item.peso}
-                                            </span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </td>
-                                    <td className="text-center my-4 me-3">
-                                      {exercise.notas === "" ? "Nombre" : exercise.notas}
-                                    </td>
-                                    <td>
-                                      <IconButton>
-                                        <DragIndicatorIcon />
-                                      </IconButton>
-                                    </td>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </tr>
-                        )}
-                      </Draggable>
-                    ))}
-                  {provided.placeholder}
-                </tbody>
-              </table>
-            )}
-          </Droppable>
-        </DragDropContext>
+                        {/* Ejercicio simple */}
+                        {exercise.type === "exercise" ? (
+                          <>
+                            <div className="row justify-content-center">
+                              <div className="col-10 text-start">
+                                <AutoComplete
+                                  defaultValue={typeof exercise.name === 'object' ? exercise.name.name : exercise.name}
+                                  isProgression={routine.parent_par_id}
+                                  onChange={(name, video) => {
+                                    if (typeof exercise.name === 'object') {
+                                      changeModifiedData(i, { ...exercise.name, name }, 'name');
+                                    } else {
+                                      changeModifiedData(i, name, 'name');
+                                    }
+                                    changeModifiedData(i, video, 'video');
+                                  }}
+                                />
+                                <div className="d-flex align-items-center mt-1">
+                                  <button
+                                    className="btn btn-outline-dark py-0 px-1"
+                                    onClick={(e) => handleOpenBackoffOverlay(e, i)}
+                                  >
+                                    <AddIcon fontSize="small" /> Back off
+                                  </button>
+                                  <Tooltip title={hasBackoff(exercise) ? "Tiene backoff" : "No tiene backoff"}>
+                                    {hasBackoff(exercise) ? (
+                                      <CircleIcon color="success" className="ms-2" />
+                                    ) : (
+                                      <PanoramaFishEyeIcon className="ms-2" />
+                                    )}
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="col-1 text-start me-3">
+                                {customInputEditDay(exercise.video, i, 'video')}
+                              </div>
+                            </div>
 
-        <div className="row justify-content-center text-center mb-3">
-          <div className="col-6">
-            <button className="btn btn-outline-dark" onClick={AddNewExercise}>
-              <AddIcon />
-              <span className="me-1">Añadir ejercicio</span>
-            </button>
-          </div>
-          <div className="col-6">
-            <button className="btn btn-outline-dark" onClick={AddNewCircuit}>
-              <AddIcon />
-              <span className="me-1">Añadir circuito</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+                            <div className="row justify-content-center mt-2 ms-2 me-4">
+                              <div className="col-6 text-start">
+                                <span className="styleInputsSpan ms-1">Peso</span>
+                                <div className="largoInput">{customInputEditDay(exercise.peso, i, 'peso')}</div>
+                              </div>
+                              <div className="col-6 text-start">
+                                <span className="styleInputsSpan ms-1">Rest</span>
+                                <div className="largoInput">{customInputEditDay(exercise.rest, i, 'rest')}</div>
+                              </div>
+                            </div>
+
+                            <div className="row justify-content-center mt-2 ms-2 me-4">
+                              <div className="col-6 text-start">
+                                <span className="styleInputsSpan">Series</span>
+                                <div className="largoInput">{customInputEditDay(exercise.sets, i, 'sets')}</div>
+                              </div>
+                              <div className="col-6 text-start">
+                                <span className="styleInputsSpan">Reps</span>
+                                <div className="largoInput">{customInputEditDay(exercise.reps, i, 'reps')}</div>
+                              </div>
+                            </div>
+
+                            <div className="row justify-content-center my-2">
+                              <div className="col-11 text-start">
+                                <span className="styleInputsSpan">Notas</span>
+                                {customInputEditDay(exercise.notas, i, 'notas')}
+                              </div>
+                            </div>
+
+                            <div className="row justify-content-center marginDropDown">
+                              <div className="col-6">
+                                <Dropdown
+                                  value={exercise.numberExercise}
+                                  options={options}
+                                  onChange={(e) => changeModifiedData(i, e.target.value, 'numberExercise')}
+                                  placeholder="#"
+                                  optionLabel="label"
+                                  className="p-dropdown-group w-100"
+                                />
+                              </div>
+                              <div className="col-6">
+                                <div className="row justify-content-around">
+                                  <div className="col-6">
+                                    <IconButton>
+                                      <DragIndicatorIcon />
+                                    </IconButton>
+                                  </div>
+                                  <div className="col-6">
+                                    <IconButton
+                                      aria-label="delete"
+                                      onClick={() => handleDeleteClick({ exercise_id: exercise.exercise_id, name: exercise.name })}
+                                    >
+                                      <CancelIcon className="colorIconDeleteExercise" />
+                                    </IconButton>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                        /* CIRCULOS (CIRCUITOS) */
+                          <div className="row">
+                            {/* tipo y vueltas */}
+                            <div className="col-8">
+                              <span className="styleInputsSpan">Nombre</span>
+                              {customInputEditCircuit(exercise.type, i, 'type')}
+                            </div>
+                            <div className="col-4">
+                              <span className="styleInputsSpan">Min / vueltas</span>
+                              {customInputEditCircuit(exercise.typeOfSets, i, 'typeOfSets')}
+                            </div>
+
+                            {/* ejercicios del circuito */}
+                            {exercise.circuit.map((item, j) => (
+                              <div key={item.idRefresh} className="row justify-content-center text-center">
+                                <div className="col-11 my-2">
+                                  {customInputEditExerciseInCircuit(item.name, i, j, 'name')}
+                                </div>
+                                <div className="col-5 text-start">
+                                  <span className="styleInputsSpan">Peso</span>
+                                  <div className="largoInput">{customInputEditExerciseInCircuit(item.peso, i, j, 'peso')}</div>
+                                </div>
+                                <div className="col-5 text-start">
+                                  <span className="styleInputsSpan">Reps</span>
+                                  <div className="largoInput">{customInputEditExerciseInCircuit(item.reps, i, j, 'reps')}</div>
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* Botón agregar ejercicio al circuito */}
+                            <div className="row justify-content-center my-3">
+                              <div className="col-8">
+                                <IconButton
+                                  aria-label="add-exercise-circuit"
+                                  className="bgColor rounded-2 text-light"
+                                  onClick={() => AddExerciseToCircuit(i)}
+                                >
+                                  <AddIcon /> Añadir ejercicio
+                                </IconButton>
+                              </div>
+                            </div>
+
+                            {/* notas del circuito */}
+                            <div className="col-11">
+                              <span className="styleInputsSpan">Notas</span>
+                              {customInputEditCircuit(exercise.notas, i, 'notas')}
+                            </div>
+
+                            {/* acciones: eliminar circuito y ordenar */}
+                            <div className="row justify-content-center mt-3">
+                              <div className="col-4">
+                                <Dropdown
+                                  value={exercise.numberExercise}
+                                  options={options}
+                                  onChange={(e) => changeModifiedData(i, e.target.value, 'numberExercise')}
+                                  placeholder="#"
+                                  optionLabel="label"
+                                  className="p-dropdown-group w-100"
+                                />
+                              </div>
+                              <div className="col-7">
+                                <div className="row justify-content-around">
+                                  <IconButton
+                                    className="col-8 bg-danger rounded-2 text-light"
+                                    onClick={() => deleteCircuit(exercise.name, i)}
+                                  >
+                                    <DeleteIcon /> Eliminar
+                                  </IconButton>
+                                  <IconButton className="col-3">
+                                    <DragIndicatorIcon />
+                                  </IconButton>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </div>
+  );
+};
+
 
   const deletePAR = (idToDelete) => {
     return PARService.deletePAR(idToDelete).then(() => {
@@ -1160,6 +1255,72 @@ function ParDetailsPage() {
     setShowDeleteParDialog(true);
   };
 
+  function openManageProgressionsDialog() {
+    setShowManageProgressionsDialog(true);
+  }
+  function closeManageProgressionsDialog() {
+    setShowManageProgressionsDialog(false);
+  }
+
+  function enterProgression(id) {
+    setShowManageProgressionsDialog(false);
+    navigate(`/par/${id}`);
+  }
+
+  function cleanRoutineFields(routine) {
+    if (!Array.isArray(routine?.routine)) return routine;
+  
+    const isEmpty = (val) => {
+      if (val === null || val === undefined) return true;
+      if (typeof val === 'string') return val.trim() === '';
+      if (Array.isArray(val)) return val.length === 0;
+      if (typeof val === 'object') return Object.keys(val).length === 0;
+      return false;
+    };
+  
+    const cleaned = JSON.parse(JSON.stringify(routine)); // deep copy
+  
+    cleaned.routine.forEach(day => {
+      // Exercises
+      day.exercises?.forEach(ex => {
+        ['name', 'reps', 'sets', 'peso', 'rest', 'video', 'notas'].forEach(field => {
+          if (isEmpty(ex[field])) ex[field] = '';
+        });
+  
+        // Circuit
+        if (Array.isArray(ex.circuit)) {
+          ex.circuit.forEach(c => {
+            ['name', 'reps', 'peso', 'video'].forEach(f => {
+              if (isEmpty(c[f])) c[f] = '';
+            });
+          });
+        }
+  
+        // Backoff (opcional)
+        if (typeof ex.name === 'object' && Array.isArray(ex.name.backoff)) {
+          ex.name.backoff = ex.name.backoff.filter(b =>
+            !isEmpty(b.sets) || !isEmpty(b.reps) || !isEmpty(b.peso)
+          );
+        }
+      });
+  
+      // Warmup
+      day.warmup?.forEach(w => {
+        ['name', 'sets', 'reps', 'peso', 'video', 'notas'].forEach(field => {
+          if (isEmpty(w[field])) w[field] = '';
+        });
+      });
+  
+      // Movility
+      day.movility?.forEach(m => {
+        ['name', 'sets', 'reps', 'peso', 'video', 'notas'].forEach(field => {
+          if (isEmpty(m[field])) m[field] = '';
+        });
+      });
+    });
+  
+    return cleaned;
+  }
 
 
   return (
@@ -1257,54 +1418,99 @@ function ParDetailsPage() {
         </Sidebar>
       </div>
 
-      {/* Contenido principal, respetando el espacio del sidebar */}
-      <div className={` totalHeight ${collapsed ? "marginSidebarClosed" : " marginSidebarOpen"}`}>
-        <section className="container-fluid ">
+              {/* Contenido principal, respetando el espacio del sidebar */}
+              <div className={` totalHeight ${collapsed ? "marginSidebarClosed" : " marginSidebarOpen"}`}>
+                <section className="container-fluid ">
+                  <div className="row text-center mb-5 justify-content-center pb-3 align-items-center">
+                    <div className="col-10">
+                      <p className="fs-5 mb-0 pb-0 ">Rutina <strong>{weekName}</strong></p>       
+                    </div>
 
-          <div className="row text-center mb-5 justify-content-center pb-3 align-items-center">
-                  <div className="col-12">
+                    <div className="text-center mt-1">
+                      <button className="btn btn-danger" onClick={confirmDeletePAR}>
+                        <DeleteIcon className="text-light fs-5" /> Eliminar
+                      </button>
+                    </div>
+                          <div className="col-12 col-lg-6 my-3">
 
-                    <p className="fs-5">Rutina <strong>{weekName}</strong></p>
+                            <p>Actualmente te encontrás en esta rutina pre-armada. Podés asignarla a tus usuarios.</p>
 
-                    <p>Actualmente te encontrás en esta rutina pre-armada. Podés asignarla a uno de tus usuarios.</p>
-
-                  </div>
-
-                  <div className='col-12 col-lg-6'>
-                    <div className='row justify-content-center'>
-
-                      <div className={`col-10 col-lg-4 ${firstWidth > 992 && 'text-end'}`}>
-                        {users && <Dropdown
-                            value={actualUser}
-                            options={users}
-                            optionLabel="name"
-                            placeholder="Seleccioná un alumno"
-                            onChange={(e) => handleDropdownChange(e.value)}
-                            className=""
-                            filter
-                            scrollHeight={"360px"}
-                            filterPlaceholder={"Buscar alumno"}
-                            emptyFilterMessage={"No se encontró ningún alumno"}
-                            emptyMessage={"No se encontró ningún alumno"}
-                        />}
-                      </div>
-
-                      <div className={`col-6 col-lg-4 ${firstWidth > 992 ? 'text-center' : 'mt-4 text-end'}`}>
-                        <button
-                          className="btn btn-primary"
-                          disabled={!actualUser}
-                          onClick={() => designWeekToUser(routine, actualUser?._id)}
-                        >
-                          {!actualUser ? "Elige un alumno" : `Asignar rutina a ${actualUser && actualUser.name}`}
+                          </div>
+                        <div className="col-10">
+                          <div className="row justify-content-center">
                           
-                        </button>
-                      </div>
+                            <div className="col-12">
+                              <h5>Asignar a:</h5>
+                            
+                              {allCategories.map(category => {
+                                const isChecked = selectedCategories.includes(category)
+                                return (
+                                  <>
+                                    <div class="form-check form-check-inline"
+                                    style={{
+                                      border: '1px solid #ccc',
+                                      borderRadius: '4px',
+                                      padding: '0.5rem 1rem',
+                                      margin: '0.25rem',
+                                      cursor: 'pointer',
+                                      userSelect: 'none',
+                                      backgroundColor: isChecked ? '#0d6efd' : 'transparent',
+                                      color: isChecked ? '#fff' : '#000',
+                                      transition: 'background-color .2s, color .2s'
+                                    }}>
+                                      <div key={category} class="" onChange={(e) => handleCategoryCheckbox(e, category)} >
+                                        <input class="form-check-input d-none" type="checkbox" value="" id={`${category}`}  checked={selectedCategories.includes(category)}
+                                            />
+                                        <label style={{ cursor: 'pointer' }} class="form-check-label" for={`${category}`}>
+                                        {category}
+                                        </label>
+                                      </div>
+                                    </div>
+                                  </>)
+                                })}
+                              
+                            </div>
+                            <div className="col-12">
+                              <div className="row justify-content-center align-items-center mt-2">
 
-                      <div className={`col-6 col-lg-4 ${firstWidth > 992 ? 'text-start' : 'mt-4 text-start'}`}>
-                        <button className="btn btn-danger" onClick={confirmDeletePAR}>
-                          <DeleteIcon className="text-light" /> Eliminar
-                        </button>
-                      </div>
+                                <div className="col-12 col-md-3 p-0 ">
+                                  <button 
+                                    className="btn btn-primary w-100 rounded-0 sss" 
+                                    type="button" 
+                                    onClick={openManageProgressionsDialog}
+                                  >
+                                    Administrar progresiones
+                                  </button>
+                                </div>
+
+                                <div className="col-12 col-md-4  p-0">
+                                  <MultiSelect 
+                                    value={selectedStudents} 
+                                    className="w-100 rounded-0"
+                                    options={groupedOptions}
+                                    optionGroupLabel="label"
+                                    optionGroupChildren="items"
+                                    optionGroupTemplate={optionGroupTemplate}
+                                    optionLabel="name"
+                                    placeholder="Seleccioná alumnos..."
+                                    filter
+                                    display="chip"
+                                    onChange={(e) => setSelectedStudents(e.value)}
+                                  />
+                                </div>
+
+                                <div className="col-12 col-md-3 text-start p-0 ">
+                                  <button
+                                    className="btn btn-primary w-100 rounded-0 buttonAsingRight"
+                                    disabled={selectedStudents.length === 0}
+                                    onClick={() => designWeekToUsers(routine, selectedStudents.map(u => u._id), selectedStudents.map(u => u.name))}
+                                  >
+                                    Asignar rutina a {selectedStudents.length} alumno{selectedStudents.length !== 1 ? "s" : ""}
+                                  </button>
+                                </div>
+
+                              </div>
+                            </div>
 
                     </div>
 
@@ -1316,25 +1522,24 @@ function ParDetailsPage() {
           <div  className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
 
 
-          <div className="col-12 mb-3">
-                <div className="row justify-content-center align-items-center py-2">
-                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowMovility}>
-                    <EditIcon  className="me-2" />
-                    Administrar bloque de activación <strong className="d-block">{currentDay && currentDay.name}</strong>
-                  </div>
+                <div className="col-11 mb-3">
+                  <div className="row justify-content-around align-items-center py-2">
+
+                    <div id="warmup" className={`col-10 col-lg-4 ${ firstWidth > 992 ? 'me-3 ' : 'mb-4'} pt-4  btn boxDataWarmup`} onClick={handleShowMovility}>
+                      <EditIcon  className="me-2" />
+                      Administrar bloque de activación <strong className="d-block">{currentDay && currentDay.name}</strong>
+                    </div>
+                
+    
+                    <div id="warmup" className={`col-10 col-lg-4 ${ firstWidth > 992 && 'ms-3'} pt-4  btn boxDataWarmup`} onClick={handleShowWarmup}>
+                      <EditIcon  className="me-2" />
+                      <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
+                    </div>
+
                 </div>
+              
+
               </div>
-
-              <div className="col-12 mb-3">
-                <div className="row justify-content-center align-items-center py-2">
-                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
-                    <EditIcon  className="me-2" />
-                    <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
-                  </div>
-                </div>
-              </div>
-
-
               {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
                 <button
                   className="btn p-2"
@@ -1437,6 +1642,27 @@ function ParDetailsPage() {
               </>
                 }
           </div>
+          <div className="row justify-content-center">
+            <div className="col-6">
+           
+              <p className="styleInputsSpan">Asignar bloque</p>
+              <Dropdown
+                value={selectedBlock?._id || null}
+                options={[
+                  { name: 'Añadir/editar bloques', _id: 'add-new-block' },
+                  { name: 'Sin bloque', _id: null },
+                  ...blocks,
+                ]}
+                onChange={(e) => handleBlockDropdownChange(e.value)}
+                optionLabel="name"
+                optionValue="_id"
+                placeholder="Seleccionar bloque"
+                className="mb-4"
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+         
 
           {/* Tabla principal */}
           <div className="row justify-content-center align-middle text-center mb-5 pb-5">
@@ -1497,13 +1723,23 @@ function ParDetailsPage() {
                                     {exercise.type === "exercise" ? (
                                       <>
                                         <td className="td-2">
-                                          <AutoComplete
-                                            defaultValue={exercise.name}
-                                            onChange={(name, vid) => {
-                                              changeModifiedData(i, name, "name");
-                                              changeModifiedData(i, vid, "video");
-                                            }}
-                                          />
+                                             <AutoComplete
+                                                defaultValue={typeof exercise.name==='object'?exercise.name.name:exercise.name}
+                                                isProgression={routine.parent_par_id}
+                                                onChange={(name,video)=>{
+                                                  changeModifiedData(i,name,'name');
+                                                  changeModifiedData(i,video,'video');
+                                                }}
+                                              />
+                                              {/* Backoff */}
+                                              <div className="d-flex align-items-center mt-1">
+                                                <button className="btn btn-outline-dark btn-sm" onClick={(e)=>handleOpenBackoffOverlay(e,i)}>
+                                                  <AddIcon fontSize="small" /> Back off
+                                                </button>
+                                                <Tooltip title={hasBackoff(exercise)?"Tiene back off":"No tiene back off"}>                                      
+                                                  {hasBackoff(exercise)?<CircleIcon color="success"/>:<PanoramaFishEyeIcon/>}
+                                                </Tooltip>
+                                              </div>
                                         </td>
                                         <td className="td-3">
                                           {customInputEditDay(exercise.sets, i, "sets")}
@@ -1756,6 +1992,24 @@ function ParDetailsPage() {
             />
           </Dialog>
 
+          <Dialog
+              className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
+              contentClassName="colorDialog"
+              headerClassName="colorDialog"
+              header="Bloque de Activación"
+              visible={movilityVisible}
+              modal={false}
+              onHide={() => setMovilityVisible(false)}
+
+            >
+              <ModalCreateMovility
+                week={modifiedDay}
+                week_id={week_id}
+                day_id={currentDay && currentDay._id}
+                editAndClose={editAndClose}
+              />
+            </Dialog>
+
           {/* Editar nombre del día */}
           <Dialog
             header="Editar Nombre del Día"
@@ -1845,23 +2099,7 @@ function ParDetailsPage() {
               reject={() => setShowDeleteParDialog(false)}
             />
 
-            <Dialog
-              className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
-              contentClassName="colorDialog"
-              headerClassName="colorDialog"
-              header="Bloque de Activación"
-              visible={movilityVisible}
-              modal={false}
-              onHide={() => setMovilityVisible(false)}
-              blockScroll={window.innerWidth > 600 ? false : true}
-            >
-              <ModalCreateMovility
-                week={modifiedDay}
-                week_id={week_id}
-                day_id={currentDay && currentDay._id}
-                editAndClose={editAndClose}
-              />
-            </Dialog>
+
 
           {firstWidth < 992 && (
             <nav className="fixed-bottom colorNavBottom d-flex justify-content-around pb-4 " >
@@ -1898,6 +2136,80 @@ function ParDetailsPage() {
 
             </nav>
           )}
+
+          <OverlayPanel ref={backoffOverlayRef} className={firstWidth>992?'w-25':'w-75'}>
+            <div className="p-3">
+              {backoffData.map((line,idx)=>(
+                <div key={idx} className="row mb-2">
+                  {['sets','reps','peso'].map((f,i)=>(
+                    <div key={f} className="col-4">
+                      <label>{f.charAt(0).toUpperCase()+f.slice(1)}</label>
+                      <input
+                        type={f==='peso'?'text':'number'}
+                        className="form-control"
+                        value={line[f]}
+                        onChange={e=>{
+                          const arr=[...backoffData]; arr[idx][f]=e.target.value; setBackoffData(arr);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <div className="text-center mb-3">
+                <button className="btn btn-outline-dark" onClick={()=>setBackoffData([...backoffData,{ sets:'',reps:'',peso:'' }])}>
+                  Añadir línea
+                </button>
+              </div>
+              <div className="text-center">
+                <button className="btn btn-secondary me-2" onClick={()=>backoffOverlayRef.current.hide()}>Cancelar</button>
+                <button className="btn btn-dark" onClick={handleSaveBackoff}>Guardar</button>
+              </div>
+            </div>
+          </OverlayPanel>
+
+{/* Dialogo: Administrar Progresiones */}
+          <Dialog
+            header="Administrar Progresiones"
+            visible={showManageProgressionsDialog}
+            style={{ width: '50vw' }}
+            onHide={closeManageProgressionsDialog}
+          >
+            <div>
+              {progressions && progressions.length > 0 ? (
+                progressions.map((prog, idx) => (
+                  
+                  <button key={prog._id} className="p-2 btn btn-outline-dark mx-2" onClick={() => enterProgression(prog._id)  }>
+                    {`Progresión ${idx + 1}`}
+                  </button>
+                )) 
+               
+              ) : (
+                <p>No hay progresiones creadas.</p>
+              )}
+               <button  className="p-2 btn btn-outline-dark mx-2" onClick={() => handleCreateProgression()}>
+                    Crear progresión <AddIcon />
+                  </button>
+            </div>
+            <div className="p-dialog-footer">
+              <button
+                className="btn btn-secondary"
+                onClick={closeManageProgressionsDialog}
+              >
+                Cerrar
+              </button>
+            </div>
+          </Dialog>
+
+          <Dialog
+            header="Gestión de bloques"
+            visible={showBlockDialog}
+            style={{ width: '50vw' }}
+            onHide={() => setShowBlockDialog(false)}
+          >
+            <BlocksListPage id={trainer_id} />
+          </Dialog>
+
 
         </section>
       </div>

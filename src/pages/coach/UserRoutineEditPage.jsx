@@ -19,6 +19,8 @@ import { Dialog } from 'primereact/dialog';
 //.............................. COMPONENTES ..............................//
 import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
 import LogoChico from '../../components/LogoChico.jsx';
+import BloquesForm from './../../components/BloquesForm.jsx';
+import BlocksListPage from './../../components/BlocksListPage.jsx';
 
 //.............................. ICONOS MUI ..............................//
 import IconButton from "@mui/material/IconButton";
@@ -30,9 +32,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 
-
 function UserRoutineEditPage() {
-
     const { id } = useParams();
     const { username } = useParams();
 
@@ -53,10 +53,16 @@ function UserRoutineEditPage() {
         selection5: "",
         comments: "",
         lastSaved: ""
-      });
+    });
     
     const [showWeeklySummaryModal, setShowWeeklySummaryModal] = useState();
     const [profile, setProfile] = useState(true); // NUEVO ESTADO
+    const [showCorrectionsDialog, setShowCorrectionsDialog] = useState(false);
+    const [correctionsText, setCorrectionsText] = useState("");
+
+    const [showBlockForm, setShowBlockForm] = useState(false);
+    const [blocks, setBlocks] = useState([]);
+    
 
     const [weekDate, setWeekDate] = useState(() => {
         return localStorage.getItem("weekDate") || "";
@@ -66,7 +72,7 @@ function UserRoutineEditPage() {
         const saved = localStorage.getItem("useDate");
         return saved === "true";
     });
-    
+
     // NUEVO ESTADO PARA isEditable
     const [isEditable, setIsEditable] = useState(() => {
         const saved = localStorage.getItem("isEditable");
@@ -123,7 +129,6 @@ function UserRoutineEditPage() {
 
         WeekService.findRoutineByUserId(id)
             .then(data => {
-                console.log(data)
                 setRoutine(data);
                 setWeekNumber(data.length + 1);
                 setLoading(false);
@@ -135,7 +140,6 @@ function UserRoutineEditPage() {
         UserServices.getProfileById(id)
           .then((data) => {
             setProfile(data);
-            console.log(data);
             // Si data.resumen_semanal existe, úsalo; si no, usamos el objeto por defecto.
             setWeeklySummary(data.resumen_semanal || {
               selection1: "",
@@ -165,8 +169,6 @@ function UserRoutineEditPage() {
         setUseDate(newValue);
         localStorage.setItem("useDate", newValue.toString());
     };
-
-
 
     function createWeek() {
         setLoading(true);
@@ -216,18 +218,39 @@ function UserRoutineEditPage() {
         if (!value) return {};
         const val = value.toLowerCase().trim();
         if (val === 'muy mal' || val === 'muy mala' || val === 'muy malo') {
-          return { backgroundColor: '#fd0000', color: 'white' }; // Rojo fuerte
+          return { backgroundColor: '#fd0000', color: 'white' };
         } else if (val === 'mal' || val === 'mala' || val === 'malo') {
-          return { backgroundColor: '#9c0200', color: 'white' }; // Rojo claro
-        } else if (val === 'normal') {
-          return { backgroundColor: '#ffe700' }; // Azul claro
+          return { backgroundColor: '#9c0200', color: 'white' };
+        } else if (val === 'regular') {
+          return { backgroundColor: '#ffe700' };
         } else if (val === 'bien' || val === 'buena' || val === 'bueno') {
-          return { backgroundColor: '#94ff01' }; // Verde claro
+          return { backgroundColor: '#94ff01' };
         } else if (val === 'muy bien' || val === 'muy buena' || val === 'muy bueno') {
-          return { backgroundColor: '#02c101' }; // Verde fuerte
+          return { backgroundColor: '#02c101' };
         }
         return {};
-      };
+    };
+
+    // Nueva función para guardar las correcciones junto a la fecha
+    const handleCorrectionsSave = () => {
+        const now = new Date().toISOString();
+        // Combinar el perfil actual con la devolución y su fecha en nuevas propiedades:
+        const updatedProfile = { ...profile, devolucion: correctionsText, devolucionFecha: now };
+        // Para evitar problemas con _id si el servicio lo impide, lo extraemos.
+        const { _id, ...profileDataWithoutId } = updatedProfile;
+        
+        UserServices.editProfile(id, profileDataWithoutId)
+          .then(() => {
+            NotifyHelper.instantToast('Devolución actualizada con éxito!');
+            setProfile(updatedProfile);
+            setShowCorrectionsDialog(false);
+          })
+          .catch((err) => {
+            console.error("Código de error:", err.status);
+            console.error("Detalle del error:", err.data);
+            NotifyHelper.instantToast('Error al guardar la devolución');
+          });
+    };
 
     return (
         <>
@@ -240,13 +263,11 @@ function UserRoutineEditPage() {
                     rootStyles={{ color: 'white', border: 'none' }}
                 >
                     <Menu>
-
                         <MenuItem id={'alumno'} icon={collapsed ? <PersonIcon /> : ''} disabled={!collapsed} className="mt-5 pt-3">
                             <div className="bg-light rounded-2 text-center">
                                 <p className="m-0">Alumno <strong className="d-block">{username}</strong></p>
                             </div>
                         </MenuItem>
-
                         <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} id='switchWeek' className="mt-4">
                             <div className="bg-light rounded-2 text-center ">
                                 <div className="d-flex align-items-center justify-content-center flex-column ">
@@ -259,49 +280,71 @@ function UserRoutineEditPage() {
                             </div>
                         </MenuItem>
 
+                        <MenuItem id={'week0'} icon={collapsed ? <AddIcon /> : ''} className="mt-5 pt-2" onClick={createWeek}>
+                            <div className="bg-light rounded-2 text-center py-3" >
+                                <div className="d-flex align-items-center justify-content-center  ">
+                                <AddIcon className='text-dark me-2' />
+                                <p className="m-0">Nueva semana</p>
+                                </div>
+                            </div>
+                        </MenuItem>
 
+                        <MenuItem id='continueWeek' icon={collapsed ? <LibraryAddIcon/> : ''}  className="mt-4" onClick={createWeekCopyLastWeek}>
+                            <div className="bg-light rounded-2 text-center py-3">
+                                <div className="d-flex align-items-center justify-content-center  ">
+                                <LibraryAddIcon className='text-dark me-2' />
+                                <p className="m-0">Seguir semana</p>
+                                </div>
+                            </div>
+                        </MenuItem>
 
-                        {profile && 
+                        <MenuItem id='paste' icon={collapsed ? <ContentCopyIcon/> : ''}  className="mt-4" onClick={loadFromLocalStorage}>
+                            <div className="bg-light rounded-2 text-center py-3">
+                                <div className="d-flex align-items-center justify-content-center  ">
+                                <ContentCopyIcon className='text-dark me-2' />
+                                <p className="m-0">Pegar semana</p>
+                                </div>
+                            </div>
+                        </MenuItem>
+
+                        {profile && (
                         <>
-                        <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="mt-4">
-                            <div className='row justify-content-around'>
-                                <div className='col-6'>
-                                    <p className='text-light text-start p-1'>Edad</p> 
+                            <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="mt-5">
+                                <div className='row justify-content-around'>
+                                    <div className='col-6'>
+                                        <p className='text-light text-start p-1'>Edad</p> 
+                                    </div>
+                                    <div className='col-6 '>
+                                        <p className='text-dark rounded-2 colorItems text-center p-1'>{profile.edad || '-'}</p>
+                                    </div>
                                 </div>
-                                <div className='col-6 '>
-                                    <p className='text-dark rounded-2 colorItems text-center p-1'>{profile.edad || '-'}</p>
+                            </MenuItem>
+                            <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="">
+                                <div className='row justify-content-around'>
+                                    <div className='col-6'>
+                                        <p className='text-light text-start p-1'>Peso</p> 
+                                    </div>
+                                    <div className='col-6  '>
+                                        <p className='text-dark rounded-2 colorItems text-center p-1'>{profile.peso || '-'}kg</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </MenuItem>
-
-                        <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="">
-                            <div className='row justify-content-around'>
-                                <div className='col-6'>
-                                    <p className='text-light text-start p-1'>Peso</p> 
+                            </MenuItem>
+                            <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="">
+                                <div className='row justify-content-around '>
+                                    <div className='col-6 '>
+                                        <p className='text-light text-start p-1'>Altura</p> 
+                                    </div>
+                                    <div className='col-6 '>
+                                        <p className='text-dark colorItems rounded-2 text-center p-1'>{profile.altura || '-'}cm</p>
+                                    </div>
                                 </div>
-                                <div className='col-6  '>
-                                    <p className='text-dark rounded-2 colorItems text-center p-1'>{profile.peso || '-'}kg</p>
-                                </div>
-                            </div>
-                        </MenuItem>
-
-                        <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="">
-                            <div className='row justify-content-around '>
-                                <div className='col-6 '>
-                                    <p className='text-light text-start p-1'>Altura</p> 
-                                </div>
-                                <div className='col-6 '>
-                                    <p className='text-dark colorItems rounded-2 text-center p-1'>{profile.altura || '-'}cm</p>
-                                </div>
-                            </div>
-                        </MenuItem>
-                        </>}
-
-                        <MenuItem disabled className="margenLogoUserRoutine ">
+                            </MenuItem>
+                        </>
+                        )}
+                        <MenuItem disabled className=" ">
                             <LogoChico />
                         </MenuItem>
-
-                        <MenuItem className="mt-3 text-center botonHelpEdit" onClick={() => setTourVisible(true)}>
+                        <MenuItem className="text-center botonHelpEditUserRoutine" onClick={() => setTourVisible(true)}>
                             <IconButton className="p-2 bg-light ">
                                 <HelpOutlineIcon className="text-dark" />
                             </IconButton>
@@ -312,21 +355,10 @@ function UserRoutineEditPage() {
             </div>
 
             <section className='container-fluid totalHeight'>
-
                 <article className={`row justify-content-center ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}>
 
-                    {!profile &&
-                        <div className="col-10 col-sm-6 col-xl-4 mb-4">
-                            <div className="alert alert-warning text-center p-3">
-                                <strong>Este alumno aún no cargó su perfil.</strong><br />
-                                Se le notificará para que lo llene.
-                            </div>
-                        </div>
-                    }
-
-                    <div className="row text-center justify-content-center marginTableRoutine align-middle align-center align-items-center ">
-
-                        {firstWidth < 983 && (
+                {firstWidth < 983 && (<div className="row text-center justify-content-center marginTableRoutine align-middle align-center align-items-center ">
+                        
                             <>
                                 <div className="col-10 col-lg-3 mx-2 mb-4 boxData">
                                     <div className="bg-light rounded-2 text-center ">
@@ -339,95 +371,188 @@ function UserRoutineEditPage() {
                                         </div>
                                     </div>
                                 </div>
-
-                            </>
-                        )}
-
-                        <div className="col-10 col-lg-3 mx-2 mb-4 boxData">
-                            <button id={'week0'} className="btn p-3" onClick={createWeek}>
-                                <AddIcon className="me-2" />
-                                <span className=" me-1">Nueva semana</span>
-                            </button>
-                        </div>
-
-                        <div id='continueWeek' className="col-10 col-lg-3 mx-2 mb-4 boxData" onClick={createWeekCopyLastWeek}>
-                            <button disabled={routine.length === 0} className="btn p-3 disabledButton">
-                                <LibraryAddIcon className="me-2" />
-                                Seguir semana
-                            </button>
-                        </div>
-
-                        <div id='paste' className="col-10 col-lg-3 mx-2 mb-4 boxData">
-                            <button className="btn p-3 " onClick={loadFromLocalStorage}>
-                                <ContentCopyIcon className="me-2" />
-                                <span className=" me-1">Pegar rutina</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    {firstWidth > 991 && weeklySummary ? (
-                    <div className='col-10 mx-2'>
-                        <table
-                        className='caption-top'
-                        style={{
-                        width: '100%',
-                        border: '1px solid #ddd',
-                        borderCollapse: 'collapse',
-                        backgroundColor: '#fafafa',
-                        marginBottom: '20px'
-                        }}
-                    >
-                        <caption>
-                            <strong>Última actualización:</strong>{" "}
-                            {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '- '}
-                            {!weeklySummary.selection1 && ' Este es el resumen semanal. Una vez que tu alumno lo cargue, verás las sensaciones de su última semana.'}
-                        </caption>
-                             
-                        <thead>
-                        <tr>
-                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Alimentación</th>
-                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>NEAT</th>
-                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Sensaciones</th>
-                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Descanso / Sueño</th>
-                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Estrés</th>
-                            <th style={{ padding: '3px 10px', border: '1px solid #ddd' }}>Comentarios</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection1) }}>
-                                {weeklySummary.selection1 || '-'}
-                                </td>
-                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection2) }}>
-                                {weeklySummary.selection2 || '-'}
-                                </td>
-                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection3) }}>
-                                {weeklySummary.selection3 || '-'}
-                                </td>
-                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection4) }}>
-                                {weeklySummary.selection4 || '-'}
-                                </td>
-                                <td style={{ padding: '3px 10px', border: '1px solid #ddd', ...getBgForSelection(weeklySummary.selection5) }}>
-                                {weeklySummary.selection5 || '-'}
-                                </td>
-                                <td style={{ padding: '3px 10px', border: '1px solid #ddd' }}>
-                                {weeklySummary.comments || '-'}
-                                </td>
-                            </tr>
-                            </tbody>
-
-                    </table>
-                  </div> ) :
-                        (
-                            // Versión mobile: Muestra un botón que abre un diálogo vertical con el resumen
-                            <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-                              <button className="btn btn-outline-primary" onClick={() => setShowWeeklySummaryModal(true)}>
-                                Ver resumen semanal
-                              </button>
+                           
+                        
+                       
+                          
+                            <div className="col-10 col-lg-3 mx-2 mb-4 boxData">
+                                <button id={'week0'} className="btn p-3" onClick={createWeek}>
+                                    <AddIcon className="me-2" />
+                                    <span className=" me-1">Nueva semana</span>
+                                </button>
                             </div>
-                          )}
+                            <div id='continueWeek' className="col-10 col-lg-3 mx-2 mb-4 boxData" onClick={createWeekCopyLastWeek}>
+                                <button disabled={routine.length === 0} className="btn p-3 disabledButton">
+                                    <LibraryAddIcon className="me-2" />
+                                    Seguir semana
+                                </button>
+                            </div>
+                            <div id='paste' className="col-10 col-lg-3 mx-2 mb-4 boxData">
+                                <button className="btn p-3 " onClick={loadFromLocalStorage}>
+                                    <ContentCopyIcon className="me-2" />
+                                    <span className=" me-1">Pegar rutina</span>
+                                </button>
+                            </div>
+                            </>
+                    
+                    </div>)}
 
-                    <div className='col-12'>
+
+
+                    {firstWidth > 991 && weeklySummary ? (
+                        
+                            <div className='col-10 mb-3'>
+                            <div className='row justify-content-around'>
+                                <div className='col-10 col-sm-6 col-xl-5  stylesImportantResuemn'>
+
+                                
+                            <div className='' style={{ display: 'flex', flexDirection: 'row' }}>
+                            {/* Tabla vertical para las propiedades */}
+                            <table
+                            className=''
+                                style={{
+                                flex: 1,
+                                width: '100%',
+                                border: '1px solid #ddd',
+                                borderCollapse: 'collapse',
+                                backgroundColor: '#fafafa'
+                                }}
+                            >
+                                <tbody>
+                                <tr>
+                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                                    <strong>Alimentación</strong>
+                                    </td>
+                                    <td
+                                    style={{
+                                        padding: '5px',
+                                        border: '1px solid #ddd',
+                                        ...getBgForSelection(weeklySummary.selection1)
+                                    }}
+                                    >
+                                    {weeklySummary.selection1 || '-'}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                                    <strong>NEAT</strong>
+                                    </td>
+                                    <td
+                                    style={{
+                                        padding: '5px',
+                                        border: '1px solid #ddd',
+                                        ...getBgForSelection(weeklySummary.selection2)
+                                    }}
+                                    >
+                                    {weeklySummary.selection2 || '-'}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                                    <strong>Sensaciones</strong>
+                                    </td>
+                                    <td
+                                    style={{
+                                        padding: '5px',
+                                        border: '1px solid #ddd',
+                                        ...getBgForSelection(weeklySummary.selection3)
+                                    }}
+                                    >
+                                    {weeklySummary.selection3 || '-'}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                                    <strong>Descanso / Sueño</strong>
+                                    </td>
+                                    <td
+                                    style={{
+                                        padding: '5px',
+                                        border: '1px solid #ddd',
+                                        ...getBgForSelection(weeklySummary.selection4)
+                                    }}
+                                    >
+                                    {weeklySummary.selection4 || '-'}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                                    <strong>Estrés</strong>
+                                    </td>
+                                    <td
+                                    style={{
+                                        padding: '5px',
+                                        border: '1px solid #ddd',
+                                        ...getBgForSelection(weeklySummary.selection5)
+                                    }}
+                                    >
+                                    {weeklySummary.selection5 || '-'}
+                                    </td>
+                                </tr>
+                                </tbody>
+                                {profile && profile.devolucion ? (
+                                <tr>
+                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                                    <strong>Ult. devolución<noframes></noframes></strong>
+                                    </td>
+                                    <td
+                                    style={{
+                                        padding: '5px',
+                                        border: '1px solid #ddd'
+                                    }}
+                                    >
+                                    {profile.devolucionFecha ? new Date(profile.devolucionFecha).toLocaleDateString() : ''}
+                                    </td>
+                                </tr> ) : (
+                                '-'
+                                )}
+                                
+                            </table>
+
+                            </div>
+
+                            </div>
+                                {/* Columna para Comentarios y Devoluciones */}
+                                <div
+                                style={{
+                                    
+                                    flexDirection: 'column',  // Agregado: en columna
+                                    justifyContent: 'space-between', // Distribuye el contenido: comments arriba y botón abajo
+                                       // (Opcional) Definí una altura mínima para notar la separación
+                                  }}
+                                    className='col-sm-7 col-xl-6  border p-2 '
+                                >
+                                    
+                                    <strong>Comentarios del alumno:</strong>
+                                    
+                                    <p className='mt-3'>{weeklySummary.comments || '-'}</p>
+
+                                    <div className="text-center align-bottom">
+                                        <button 
+                                            className="btn btn-outline-dark"
+                                            onClick={() => {
+                                            setCorrectionsText(profile.devolucion || "");
+                                            setShowCorrectionsDialog(true);
+                                            }}
+                                        >
+                                            Cargar correcciones/devoluciones
+                                        </button>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+
+                            </div>
+
+                    ) : (
+                      <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                        <button className="btn btn-outline-primary" onClick={() => setShowWeeklySummaryModal(true)}>
+                          Ver resumen semanal
+                        </button>
+                      </div>
+                    )}
+
+                    <div className='col-12 col-xl-10'>
                         <div className='row justify-content-center'>
                             <PrimeReactTable_Routines
                                 id={id}
@@ -450,44 +575,87 @@ function UserRoutineEditPage() {
                     />
                 )}
 
-                    <Dialog
-                    header="Resumen Semanal"
-                    visible={showWeeklySummaryModal}
-                    style={{ width: '80vw' }}
-                    onHide={() => setShowWeeklySummaryModal(false)}
-                    draggable={true}
-                    >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <span className='styleInputsSpan'>Última actualización:</span>{" "}
-                        {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}
-                        <div>
+                <Dialog
+                  header="Resumen Semanal"
+                  visible={showWeeklySummaryModal}
+                  style={{ width: '80vw' }}
+                  onHide={() => setShowWeeklySummaryModal(false)}
+                  draggable={true}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <span className='styleInputsSpan'>Última actualización:</span>{" "}
+                      {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}
+                      <div>
                         <strong>Alimentación:</strong> {weeklySummary.selection1 || '-'}
-                        </div>
-                        <div>
+                      </div>
+                      <div>
                         <strong>NEAT:</strong> {weeklySummary.selection2 || '-'}
-                        </div>
-                        <div>
+                      </div>
+                      <div>
                         <strong>Sensaciones:</strong> {weeklySummary.selection3 || '-'}
-                        </div>
-                        <div>
+                      </div>
+                      <div>
                         <strong>Descanso / Sueño:</strong> {weeklySummary.selection4 || '-'}
-                        </div>
-                        <div>
+                      </div>
+                      <div>
                         <strong>Estrés:</strong> {weeklySummary.selection5 || '-'}
-                        </div>
-                        <div>
+                      </div>
+                      <div>
                         <strong>Comentarios:</strong> {weeklySummary.comments || '-'}
-                        </div>
-                        <div>
-                        
-                        </div>
+                      </div>
+                  </div>
+                  <div className="text-center align-bottom my-3">
+                        <button 
+                            className="btn btn-outline-dark"
+                            onClick={() => {
+                            setCorrectionsText(profile.devolucion || "");
+                            setShowCorrectionsDialog(true);
+                            }}
+                        >
+                            Cargar correcciones/devoluciones
+                        </button>
                     </div>
-                    <div className="row justify-content-center mt-3">
-                        <Button label="Cerrar" className="btn BlackBGtextWhite col-4" onClick={() => setShowWeeklySummaryModal(false)} />
-                    </div>
-                    </Dialog>
 
+                  <div className="row justify-content-center mt-3">
+                      <Button label="Cerrar" className="btn BlackBGtextWhite col-4" onClick={() => setShowWeeklySummaryModal(false)} />
+                  </div>
+                </Dialog>
 
+                {showBlockForm && (
+                <Dialog visible={showBlockForm} onHide={() => setShowBlockForm(false)} header="Crear Bloque">
+                    <BloquesForm 
+                    id={trainer_id}
+                    onSaved={() => {
+                    setShowBlockForm(false);
+                    BlockService.getBlocks(id).then(setBlocks);
+                    }} />
+                </Dialog>
+                )}
+
+                <Dialog
+                  header="Correcciones / Devolución"
+                  visible={showCorrectionsDialog}
+                  onHide={() => setShowCorrectionsDialog(false)}
+                  style={{ width: firstWidth > 900 ? '40%' : '90%' }}
+                >
+                  <div className="mb-3">
+                    <textarea 
+                      className="form-control" 
+                      rows="5" 
+                      value={correctionsText} 
+                      onChange={(e) => setCorrectionsText(e.target.value)}
+                      placeholder="Ingrese las correcciones o devolución..."
+                    />
+                  </div>
+                  <div className="d-flex justify-content-end">
+                    <button className="btn btn-secondary me-2" onClick={() => setShowCorrectionsDialog(false)}>
+                      Cancelar
+                    </button>
+                    <button className="btn btn-primary" onClick={handleCorrectionsSave}>
+                      Guardar
+                    </button>
+                  </div>
+                </Dialog>
             </section>
         </>
     );

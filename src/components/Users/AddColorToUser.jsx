@@ -1,6 +1,6 @@
 import { useEffect, useState} from 'react'
 import * as UsersService from '../../services/users.services.js'
-import * as addColorToUserService from '../../services/addColorsToUser.services..js'
+import * as ChangeProperty from '../../services/changePropertys.services.js'
 import * as Notify from '../../helpers/notify.js'
 
 import {useParams} from 'react-router-dom'

@@ -13,10 +13,8 @@ const CustomInputNumber = React.forwardRef(
 
     const [value, setValue] = useState(initialValue);
     const [isTextMode, setIsTextMode] = useState(typeof initialValue === 'string');
-    const [firstWidth, setFirstWidth] = useState();
+    const [firstWidth, setFirstWidth] = useState(window.innerWidth);
     useEffect(() => {
-      setFirstWidth(window.innerWidth)
-      console.log(currentDay)
       if (isTextMode && initialValue !== value) {
         setValue(initialValue);
       }
@@ -91,7 +89,7 @@ const CustomInputNumber = React.forwardRef(
 
               {isRep  && <div className={`  ${firstWidth < 992 ? `text-start  col-4 me-1 ${isNotNeedProp && 'positionMoreImportant'} positionModeText mt-1` : 'mt-2 text-center '}`}>
                   <SelectButton
-                    className={`${firstWidth > 992 && 'styleSelectButton'}`}
+                    className={`${firstWidth > 992 && 'styleSelectButton '}`}
                     value={isTextMode ? 'text' : 'number'}
                     onChange={handleSelectChange}
                     options={[

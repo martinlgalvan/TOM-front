@@ -35,6 +35,8 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import esES from 'rsuite/locales/es_ES'; 
 import ObjectId from 'bson-objectid';
 import { SelectButton } from 'primereact/selectbutton';
+import Tooltip from '@mui/material/Tooltip';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 //.............................. COMPONENTES ..............................//
 
@@ -71,8 +73,8 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import RemoveIcon from '@mui/icons-material/Remove';
-
-
+import CircleIcon from '@mui/icons-material/Circle';
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 
 function parseToDateForTimePicker(timeData) {
   if (timeData == null || timeData === "") {
@@ -156,6 +158,10 @@ function DayEditDetailsPage() {
   const [renderInputSets, setRenderInputSets] = useState(true);
   const [renderInputReps, setRenderInputReps] = useState(true);
 
+  const [editingBackoffIndex, setEditingBackoffIndex] = useState(null);
+  const [backoffData, setBackoffData] = useState([{ sets: "", reps: "", peso: "" }]);
+  const backoffOverlayRef = useRef(null);
+
   const productRefsSimple = useRef([]);
   const productRefsCircuit = useRef([]);
 
@@ -164,7 +170,6 @@ function DayEditDetailsPage() {
     Notify.notifyA("Cargando");
 
     WeekService.findByWeekId(week_id).then((data) => {
-
       setRoutine(data[0]);
       setWeekName(data[0].name);
       setModifiedDay(data[0].routine);
@@ -308,6 +313,54 @@ function DayEditDetailsPage() {
     setIsEditing(false);
   };
 
+  // =================== FUNCIONES PARA BACK OFF ===================
+  const handleOpenBackoffOverlay = (e, index) => {
+    setEditingBackoffIndex(index);
+    const currentExercise = day[indexDay].exercises[index];
+    let currentBackoff = [{ sets: "", reps: "", peso: "" }];
+    if (currentExercise && typeof currentExercise.name === 'object') {
+      // Si existe el campo backoff y es un array, lo usamos. Sino dejamos el valor por defecto.
+      currentBackoff = Array.isArray(currentExercise.name.backoff)
+        ? currentExercise.name.backoff
+        : currentBackoff;
+    }
+    setBackoffData(currentBackoff);
+    backoffOverlayRef.current.toggle(e);
+  };
+  
+
+  const handleSaveBackoff = () => {
+    if (editingBackoffIndex === null) return;
+    let updatedDays = [...day];
+    const currentExercise = updatedDays[indexDay].exercises[editingBackoffIndex];
+    let currentName = currentExercise.name;
+    if (typeof currentName === 'object') {
+      // Actualizamos la propiedad backoff manteniendo el nombre original
+      currentExercise.name = { ...currentName, backoff: backoffData };
+    } else {
+      // Convertimos el string a objeto
+      currentExercise.name = { name: currentName, backoff: backoffData };
+    }
+    updatedDays[indexDay].exercises[editingBackoffIndex] = currentExercise;
+    setDay(updatedDays);
+    setModifiedDay(updatedDays);
+    backoffOverlayRef.current.hide();
+    setEditingBackoffIndex(null);
+    // Reiniciamos backoffData con un objeto vacío por defecto
+    setIsEditing(true)
+    setBackoffData([{ sets: "", reps: "", peso: "" }]);
+  };
+
+  
+
+  const hasBackoff = (exercise) => {
+    return exercise &&
+      typeof exercise.name === 'object' &&
+      Array.isArray(exercise.name.backoff) &&
+      exercise.name.backoff.length > 0;
+  };
+
+
   /**  re-enumerar los ejercicios después de arrastrar y soltar. **/
   const reorderExercises = (exercisesArray) => {
     return exercisesArray.map((ex, idx) => {
@@ -348,6 +401,9 @@ function DayEditDetailsPage() {
 
   const hideDialogWarmup = () => {
     setWarmup(false);
+    if(allDays == modifiedDay){
+      
+    }
   };
 
   const propiedades = [
@@ -402,7 +458,7 @@ function DayEditDetailsPage() {
   };
 
   const customInputEditDay = (data, index, field) => {
-    if (field === "sets" ) {
+   if (field === "sets" ) {
       return (
         <>
         {renderInputSets ? 
@@ -449,8 +505,6 @@ function DayEditDetailsPage() {
           initialValue={data}
           onChange={(e) => changeModifiedData(index, e, field)}
           isRep={field === "reps"}
-          
-
           className={`mt-5`}
           onActivate={() => onActivateTextMode()}
         /> :
@@ -471,9 +525,17 @@ function DayEditDetailsPage() {
                     <AddIcon  />
                 </IconButton>
             </div>
+
+             <div className={`  ${firstWidth < 992 ? `text-start  col-4 me-1  positionModeText mt-1` : 'mt-2 text-center '}`}>
+                              <SelectButton
+                                className={`${firstWidth > 992 && 'styleSelectButton'}`}
+                                options={[
+                                  { label: firstWidth > 992 ? 'Modo Texto' : 'T', value: 'text' }
+                                ]}
+                              />
+                            </div> 
+                    
           </div>
-
-
 
           </>
         }
@@ -1042,18 +1104,42 @@ function DayEditDetailsPage() {
                             <>
                               <div className="row justify-content-center ">
                                 <div className="col-10 text-start ">
-                                  <span className="styleInputsSpan ms-3">Nombre</span>
-                                  <div className="largoo">
+                                  <div className="mb-2">
                                     <AutoComplete
-                                      defaultValue={exercise.name}
+                                      defaultValue={typeof exercise.name === 'object' ? exercise.name.name : exercise.name}
                                       onChange={(name, video) => {
-                                        changeModifiedData(i, name, 'name');
+                                        const currentName = exercise.name;
+                                        if (typeof currentName === 'object') {
+                                          changeModifiedData(i, { ...currentName, name }, 'name');
+                                        } else {
+                                          changeModifiedData(i, name, 'name');
+                                        }
+                                        // Se mantiene el video
                                         changeModifiedData(i, video, 'video');
                                       }}
                                     />
+                                    <div className="d-flex align-items-center mt-1">
+                                      <button
+                                        className="btn btn-outline-dark py-0 ps-1 m-0"
+                                        onClick={(e) => handleOpenBackoffOverlay(e, i)}
+                                      >
+                                        <AddIcon /> <span>Back off</span>
+                                      </button>
+                                      <Tooltip
+                                        title={hasBackoff(exercise) ? "Tiene back off" : "No tiene back off"}
+                                        enterDelay={0}
+                                        leaveDelay={0}
+                                      >
+                                        {hasBackoff(exercise) ? (
+                                          <CircleIcon color="success" className="ms-2" />
+                                        ) : (
+                                          <PanoramaFishEyeIcon className="ms-2" />
+                                        )}
+                                      </Tooltip>
+                                    </div>
                                   </div>
                                 </div>
-                              <div className="col-1 text-start mt-3 me-3">
+                              <div className="col-1 text-start me-3">
                                   {customInputEditDay(exercise.video, i, 'video')}
                                 </div>
                                 
@@ -1549,13 +1635,39 @@ function DayEditDetailsPage() {
                                   {exercise.type === "exercise" ? (
                                     <>
                                       <td className="td-2">
+                                      <div className="mt-4 pt-2">
                                         <AutoComplete
-                                          defaultValue={exercise.name}
+                                          defaultValue={typeof exercise.name === 'object' ? exercise.name.name : exercise.name}
                                           onChange={(name, video) => {
-                                            changeModifiedData(i, name, 'name');
+                                            const currentName = exercise.name;
+                                            if (typeof currentName === 'object') {
+                                              changeModifiedData(i, { ...currentName, name }, 'name');
+                                            } else {
+                                              changeModifiedData(i, name, 'name');
+                                            }
                                             changeModifiedData(i, video, 'video');
                                           }}
                                         />
+                                        <div className="d-flex align-items-center mt-1">
+                                          <button
+                                            className="btn btn-outline-dark fontBackOff py-0 ps-1 m-0 text-start"
+                                            onClick={(e) => handleOpenBackoffOverlay(e, i)}
+                                          >
+                                            <AddIcon className="" /> <span>Back off</span>
+                                          </button>
+                                          <Tooltip
+                                            title={hasBackoff(exercise) ? "Tiene back off" : "No tiene back off"}
+                                            enterDelay={0}
+                                            leaveDelay={0}
+                                          >
+                                            {hasBackoff(exercise) ? (
+                                              <CircleIcon color="success" className="ms-2" />
+                                            ) : (
+                                              <PanoramaFishEyeIcon  className="ms-2" />
+                                            )}
+                                          </Tooltip>
+                                        </div>
+                                      </div>
                                       </td>
                                       <td className="td-3">
                                         {customInputEditDay(
@@ -1699,6 +1811,17 @@ function DayEditDetailsPage() {
                                               </td>
                                             </tr>
                                           </tbody>
+                                          <tbody>
+                                            <td>
+                                            <button
+                onClick={() => AddNewExercise()}
+                  className="btn p-2"
+                >
+                  <AddIcon  className="me-2" />
+                  <span className=" me-1">Añadir ejercicio</span>
+                </button>
+                                            </td>
+                                          </tbody>
                                         </table>
                                       </td>
                                     </>
@@ -1717,6 +1840,9 @@ function DayEditDetailsPage() {
             ) : (
               tableMobile()
             )}
+            
+               
+             
           </div>
 
           {isEditing && (
@@ -1965,6 +2091,81 @@ function DayEditDetailsPage() {
             editAndClose={editAndClose}
           />
         </Dialog>
+
+{/* =================== OVERLAYPANEL PARA BACK OFF =================== */}
+<OverlayPanel ref={backoffOverlayRef} className={`${firstWidth > 992 ? 'w-25' : 'w-75'}`}>
+  <div className="p-3">
+    {backoffData.map((line, idx) => (
+      <div key={idx} className="mb-3">
+        <div className="row">
+          <div className="col-4">
+            <label className="styleInputsSpan">Sets</label>
+            <input
+              type="number"
+              className="form-control"
+              value={line.sets}
+              onChange={(e) => {
+                const newBackoff = [...backoffData];
+                newBackoff[idx].sets = e.target.value;
+                setBackoffData(newBackoff);
+              }}
+            />
+          </div>
+          <div className="col-4">
+            <label className=" styleInputsSpan">Reps</label>
+            <input
+              type="number"
+              className="form-control"
+              value={line.reps}
+              onChange={(e) => {
+                const newBackoff = [...backoffData];
+                newBackoff[idx].reps = e.target.value;
+                setBackoffData(newBackoff);
+              }}
+            />
+          </div>
+          <div className="col-4">
+            <label className="styleInputsSpan">Peso</label>
+            <input
+              type="text"
+              className="form-control"
+              value={line.peso}
+              onChange={(e) => {
+                const newBackoff = [...backoffData];
+                newBackoff[idx].peso = e.target.value;
+                setBackoffData(newBackoff);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    ))}
+    <div className="mb-3 text-center">
+      <button
+        className="btn btn-outline-dark text-center"
+        onClick={() =>
+          setBackoffData([...backoffData, { sets: "", reps: "", peso: "" }])
+        }
+      >
+        Añadir linea
+      </button>
+    </div>
+    <div className="text-center">
+
+      <button
+        className="btn btn-secondary me-2"
+        onClick={() => backoffOverlayRef.current?.hide()}
+      >
+        Cancelar
+      </button>
+      <button className="btn btn-dark " onClick={handleSaveBackoff}>
+        Guardar
+      </button>
+    </div>
+  </div>
+</OverlayPanel>
+
+
         </section>
       </div>
     </>
