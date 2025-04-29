@@ -613,7 +613,7 @@ const redirectToPerfil = () => {
                                       </Avatar>
                                     }
                                     title={
-                                      <span id={idx === 0 ? 'nombre' : null}>{element.name.name}</span>
+                                      <span id={idx === 0 ? 'nombre' : null}>{typeof element.name === 'object' ? element.name.name : element.name}</span>
                                     }
                                   />
 
@@ -863,7 +863,7 @@ const redirectToPerfil = () => {
                           <input
                             type="text"
                             className="form-control"
-                            value={completeExercise.name.name || ''}
+                            value={typeof completeExercise.name === 'object' ? completeExercise.name.name : completeExercise.name || ''}
                             disabled={true}
                           />
                         </div>
