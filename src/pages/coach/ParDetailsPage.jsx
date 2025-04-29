@@ -969,7 +969,7 @@ function ParDetailsPage() {
       userIds.forEach(userId => {
         PARService.createPARroutine(template, userId)
           .then(() => {
-            Notify.instantToast(`Rutina asignada a usuario ${name} con éxito`);
+            Notify.instantToast(`Rutina asignada a ${name} con éxito`);
           })
           .catch((err) => {
             console.error(`Error asignando a usuario ${name}:`, err);
