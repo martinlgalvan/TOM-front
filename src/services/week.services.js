@@ -97,6 +97,24 @@ async function editWeek(week_id, routine) {
     })
 }
 
+async function assignBlockToRoutine(weekId, block) {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${weekId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      },
+      body: JSON.stringify({
+        week_id: weekId, // necesario para que el backend lo reconozca
+        block
+      })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Error actualizando bloque");
+      return res.json();
+    });
+  }
+
 async function editNameWeek(week_id, name) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/`, {
         method: 'PATCH',
@@ -161,6 +179,7 @@ export {
     editWeek,
     editNameWeek,
     deleteWeek,
+    assignBlockToRoutine,
 
     exportToExcel
 }

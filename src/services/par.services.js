@@ -94,6 +94,42 @@ async function createPARroutine(routine, user_id) {
     })
 }
 
+async function createProgressionsPARToUsers(template, userIds) {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/routine/progression/multi`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        },
+            user_ids: userIds
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+        }
+            throw new Error(errorMessage || 'No se pudo obtener el usuario');
+        }
+    })
+}
+
+async function createProgressionFromPAR(par_id) {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/par/${par_id}/progression`, {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+            const errorMessage = response.text();
+            throw new Error(errorMessage || 'No se pudo obtener el usuario');
+        }
+    })
+}
+
+
+
 
 
 export {
@@ -101,5 +137,8 @@ export {
     createPAR,
     updatePAR,
     deletePAR,
-    createPARroutine
+    createPARroutine,
+    createProgressionFromPAR,
+    createProgressionsPARToUsers
+    
 }

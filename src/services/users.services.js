@@ -19,6 +19,7 @@ async function find(id) {
 
 //Crea alumnos
 async function createAlumno(id, user) {
+
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/${id}`, {
         method: 'POST',
         headers: {
@@ -28,25 +29,22 @@ async function createAlumno(id, user) {
         body: JSON.stringify(user)
     })
     .then(async response => {
+        const data = await response.json();
         if (response.ok) {
-            return response.json(); // Devuelve los datos si la creación es exitosa
-        } 
-        else if (response.status === 403) {
-            // Código de error 403: Manejo de límite de usuarios
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.message || 'Límite de usuarios alcanzado. No puedes crear más usuarios.');
-        } 
-        else if (response.status === 400) {
-            // Código de error 400: Manejo de email duplicado
-            const errorResponse = await response.json();
-            if (errorResponse.message.includes('email')) {
-                throw new Error('El email que ingresaste ya existe. Por favor, ingresá otro.');
+            return data; // Devuelve los datos si la creación es exitosa
+        } else {
+            console.error('createAlumno -> Error response:', data);
+            // Manejo específico de algunos códigos de error
+            if (response.status === 403) {
+                throw new Error(data.message || 'Límite de usuarios alcanzado. No puedes crear más usuarios.');
+            } else if (response.status === 400) {
+                if (data.message && data.message.includes('email')) {
+                    throw new Error('El email que ingresaste ya existe. Por favor, ingresá otro.');
+                }
+                throw new Error(data.message || 'Error de validación en los datos proporcionados.');
+            } else {
+                throw new Error('Ocurrió un error inesperado. Por favor, intentá de nuevo.');
             }
-            throw new Error(errorResponse.message || 'Error de validación en los datos proporcionados.');
-        } 
-        else {
-            // Otros errores no manejados
-            throw new Error('Ocurrió un error inesperado. Por favor, intentá de nuevo.');
         }
     });
 }
@@ -217,7 +215,7 @@ async function getProfileById(id) {
                 return response.json()
             }
             else {
-                throw new Error('No se pudo obtener la rutina')
+                throw new Error('No se pudo obtener el perfil')
             }
         })
 }
@@ -225,23 +223,31 @@ async function getProfileById(id) {
 
 
 async function editProfile(user_id, data) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'auth-token': localStorage.getItem('token')
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json()
-        }
-        else {
-            throw new Error('No se pudo editar el ejercicio')
-        }
-    })
-}
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      },
+      body: JSON.stringify(data)
+    });
+  
+    if (response.ok) {
+      return response.json();
+    } else {
+      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        errorData = { message: 'No se pudo parsear la respuesta de error' };
+      }
+      const error = new Error(`Error ${response.status}: No se pudo editar el perfil`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+  }
 
 
 export {
