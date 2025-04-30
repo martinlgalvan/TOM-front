@@ -1,5 +1,5 @@
 async function changeProperty(userId, category ) {
-    return fetch(``https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${userId}`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${userId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

@@ -203,7 +203,7 @@ async function findRoutineById(id) {
 
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function getProfileById(id) {
-    return fetch(``https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${id}/routine/clon`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${id}/routine/clon`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ async function getProfileById(id) {
 
 
 async function editProfile(user_id, data) {
-    const response = await fetch(``https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

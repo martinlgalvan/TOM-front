@@ -95,7 +95,7 @@ async function createPARroutine(routine, user_id) {
 }
 
 async function createProgressionsPARToUsers(template, userIds) {
-    return fetch(``https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/routine/progression/multi`, {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/routine/progression/multi`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
