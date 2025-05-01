@@ -13,6 +13,7 @@ import JEREMIAS_OLMEDO from '/src/assets/img/jeremias-olmedo.jpeg';
 import MATIAS_VILLALBA from '/src/assets/img/matias-logo.jpeg';
 import TORETTO_GYM from '/src/assets/img/mauri-logo.png';
 import PITBULL from '/src/assets/img/pitbull-logo.png';
+import CRISTIAN_QUIROGA from '/src/assets/img/cristian-logo.png';
 
 function LogoChico({isHomePage}){
 
@@ -38,7 +39,9 @@ function LogoChico({isHomePage}){
     else if(localStorage.getItem('email') == "mauricioarraztoa@gmail.com" || localStorage.getItem('entrenador_id') == "672d05cd7fa16a4779fe6135"){
         setUrlPath(TORETTO_GYM)
     
-    } else{
+    } else if(localStorage.getItem('email') == "cristian_quiroga_08@hotmail.com" || localStorage.getItem('entrenador_id') == "6813162770c9257968a79fe0"){
+            setUrlPath(CRISTIAN_QUIROGA)
+     } else{
         setUrlPath(TOM)
     }
     
@@ -48,10 +51,10 @@ function LogoChico({isHomePage}){
 
     return (
         <>
-        {urlPath === TOM ?
+        {urlPath === TOM || urlPath == CRISTIAN_QUIROGA ?
         <div className='row justify-content-center LargoLogo align-items-center '>
             <h1 className="visually-hidden">TOM</h1>
-            <img className="img-fluid LargoLogoChico text-center my-5 pt-3 pb-3 bg-white rounded-3" src={urlPath} alt="TOM" />
+            <img className={`img-fluid LargoLogoChico text-center mt-5 ${urlPath == TOM && 'py-3'}  bg-white rounded-3`} src={urlPath} alt="TOM" />
         </div> :
         <div className='row justify-content-center LargoLogo align-items-center '>
             <h1 className="visually-hidden">TOM</h1>
