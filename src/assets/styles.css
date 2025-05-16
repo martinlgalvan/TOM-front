@@ -1554,6 +1554,23 @@ font-size: 0.9em;
 
 }
 
+
+.colorBackPAR{
+  background-color: #95c8ff;
+}
+
+.colorBackPAR2{
+  background-color: #51a9e4;
+}
+
+.colorBackPAR3{
+  background-color: #69baf0;
+}
+
+.StylesSelect .p-component{
+  padding: 10px;
+}
+
 /*Efectos de eliminar y agregar*/
 
 @keyframes fadeIn {

@@ -162,10 +162,6 @@ function ParDetailsPage() {
     "Atleta avanzado"
   ];
 
-  /*onClick={() => {
-                        setShowSavedRoutinesDialog(false);
-                        navigate(`/par/${week._id}`);
-                      }}*/ 
 
     // Agrupar usuarios por categoría, en el orden deseado
   const [groupedOptions, setGroupedOptions] = useState([]);
@@ -195,6 +191,44 @@ function ParDetailsPage() {
       });
   }
 
+  
+  useEffect(() => {
+    UserServices.find(parent_id).then(data => {
+          setUsers(data);
+      });
+  }, [id]);
+
+  useEffect(() => {
+    setLoading(true);
+    Notify.notifyA("Cargando");
+    PARService.getPAR(user_id).then((allPars) => {
+      // 2) Buscamos el que tenga _id = week_id
+      const found = allPars.find((p) => p._id === id);
+      if (!found) {
+        Notify.instantToast("No se encontró el PAR seleccionado");
+        setLoading(false);
+        return;
+      }
+      found.parent_par_id && setIsProgression(true)
+
+      setProgressions(allPars.filter(p => p.parent_par_id === id))
+      setRoutine(found);
+      setWeekName(found.name || "PAR sin nombre");
+      setModifiedDay(found.routine);
+      setAllDays(found.routine);
+      setDay(found.routine);
+      setSelectedBlock(found.block || null);
+      console.log(found)
+
+      // Tomamos el primer día si existe
+      if (found.routine && found.routine.length > 0) {
+        setCurrentDay(found.routine[0]);
+      }
+
+      Notify.updateToast();
+      setLoading(false);
+    });
+  }, [id, week_id, statusCancel, status]);
 
   // Eliminar progresión
   function handleDeleteProgression(progId) {
@@ -272,42 +306,6 @@ function ParDetailsPage() {
   };
 
   
-      useEffect(() => {
-        UserServices.find(parent_id).then(data => {
-              setUsers(data);
-          });
-      }, [id]);
-
-  useEffect(() => {
-    setLoading(true);
-    Notify.notifyA("Cargando");
-    PARService.getPAR(user_id).then((allPars) => {
-      // 2) Buscamos el que tenga _id = week_id
-      const found = allPars.find((p) => p._id === id);
-      if (!found) {
-        Notify.instantToast("No se encontró el PAR seleccionado");
-        setLoading(false);
-        return;
-      }
-      found.parent_par_id && setIsProgression(true)
-
-      setProgressions(allPars.filter(p => p.parent_par_id === id))
-      setRoutine(found);
-      setWeekName(found.name || "PAR sin nombre");
-      setModifiedDay(found.routine);
-      setAllDays(found.routine);
-      setDay(found.routine);
-      setSelectedBlock(found.block || null);
-
-      // Tomamos el primer día si existe
-      if (found.routine && found.routine.length > 0) {
-        setCurrentDay(found.routine[0]);
-      }
-
-      Notify.updateToast();
-      setLoading(false);
-    });
-  }, [id, week_id, statusCancel, status]);
 
   // DB local
  /* useEffect(() => {
@@ -355,7 +353,9 @@ function ParDetailsPage() {
 
   // -- BACKOFF FUNCTIONS --
   const hasBackoff = exercise => (
-    exercise && typeof exercise.name === 'object' && Array.isArray(exercise.name.backoff) && exercise.name.backoff.length > 0
+    exercise && typeof exercise.name === 'object' &&
+    Array.isArray(exercise.name.backoff) &&
+    exercise.name.backoff.some(b => b.sets || b.reps || b.peso)
   );
 
   const handleOpenBackoffOverlay = (e, idx) => {
@@ -370,22 +370,45 @@ function ParDetailsPage() {
   };
 
   const handleSaveBackoff = () => {
-    if (editingBackoffIndex === null) return;
-    const upd = [...day];
-    const ex = upd[indexDay].exercises[editingBackoffIndex];
-    if (typeof ex.name === 'object') {
-      ex.name.backoff = backoffData;
-    } else {
-      ex.name = { name: ex.name, backoff: backoffData };
-    }
-    upd[indexDay].exercises[editingBackoffIndex] = ex;
-    setDay(upd);
-    setModifiedDay(upd);
+    saveBackoffInternally(backoffData);
     backoffOverlayRef.current.hide();
     setEditingBackoffIndex(null);
-    setIsEditing(true);
     setBackoffData([{ sets: "", reps: "", peso: "" }]);
   };
+
+  const saveBackoffInternally = (data) => {
+    if (editingBackoffIndex === null) return;
+
+    const updated = [...day];
+    const ex = updated[indexDay].exercises[editingBackoffIndex];
+    const rawName = ex.name;
+
+    const cleaned = data.filter(b => b.sets || b.reps || b.peso);
+
+    if (cleaned.length === 0) {
+      ex.name = typeof rawName === 'object' ? { ...rawName } : { name: rawName };
+      delete ex.name.backoff;
+    } else {
+      ex.name = typeof rawName === 'object'
+        ? { ...rawName, backoff: cleaned }
+        : { name: rawName, backoff: cleaned };
+    }
+
+    updated[indexDay].exercises[editingBackoffIndex] = ex;
+    setDay(updated);
+    setModifiedDay(updated);
+    setCurrentDay({ ...updated[indexDay] });
+    setIsEditing(true);
+  };
+
+
+    const removeBackoffLine = (index) => {
+    const updated = [...backoffData];
+    updated.splice(index, 1);
+    setBackoffData(updated);
+    saveBackoffInternally(updated);
+  };
+
   // -- END BACKOFF --
 
   /* ------------------------------------------------------------------
@@ -2138,35 +2161,58 @@ const tableMobile = () => {
           )}
 
           <OverlayPanel ref={backoffOverlayRef} className={firstWidth>992?'w-25':'w-75'}>
-            <div className="p-3">
-              {backoffData.map((line,idx)=>(
-                <div key={idx} className="row mb-2">
-                  {['sets','reps','peso'].map((f,i)=>(
-                    <div key={f} className="col-4">
-                      <label>{f.charAt(0).toUpperCase()+f.slice(1)}</label>
-                      <input
-                        type={f==='peso'?'text':'number'}
-                        className="form-control"
-                        value={line[f]}
-                        onChange={e=>{
-                          const arr=[...backoffData]; arr[idx][f]=e.target.value; setBackoffData(arr);
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div className="text-center mb-3">
-                <button className="btn btn-outline-dark" onClick={()=>setBackoffData([...backoffData,{ sets:'',reps:'',peso:'' }])}>
-                  Añadir línea
-                </button>
-              </div>
-              <div className="text-center">
-                <button className="btn btn-secondary me-2" onClick={()=>backoffOverlayRef.current.hide()}>Cancelar</button>
-                <button className="btn btn-dark" onClick={handleSaveBackoff}>Guardar</button>
-              </div>
-            </div>
-          </OverlayPanel>
+  <div className="p-3">
+    {backoffData.map((line, idx) => (
+      <div key={idx} className="row mb-2 align-items-end">
+        {["sets", "reps", "peso"].map((f) => (
+          <div key={f} className="col-3">
+            <label>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
+            <input
+              type={f === "peso" || f === "reps" ? "text" : "number"}
+              className="form-control"
+              value={line[f]}
+              onChange={(e) => {
+                const arr = [...backoffData];
+                arr[idx][f] = e.target.value;
+                setBackoffData(arr);
+                saveBackoffInternally(arr);
+              }}
+            />
+          </div>
+        ))}
+        <div className="col-3">
+          <IconButton
+            aria-label="delete"
+            className="mt-4"
+            onClick={() => removeBackoffLine(idx)}
+          >
+            <CancelIcon className="text-danger" />
+          </IconButton>
+        </div>
+      </div>
+    ))}
+
+    <div className="text-center mb-3">
+      <button
+        className="btn btn-outline-dark"
+        onClick={() => setBackoffData([...backoffData, { sets: '', reps: '', peso: '' }])}
+      >
+        Añadir línea
+      </button>
+    </div>
+    <div className="text-center">
+      <button
+        className="btn btn-secondary me-2"
+        onClick={() => backoffOverlayRef.current.hide()}
+      >
+        Cerrar
+      </button>
+      <button className="btn btn-dark" onClick={handleSaveBackoff}>
+        Seguir editando
+      </button>
+    </div>
+  </div>
+</OverlayPanel>
 
 {/* Dialogo: Administrar Progresiones */}
           <Dialog

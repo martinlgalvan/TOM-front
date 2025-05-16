@@ -45,6 +45,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CircleIcon from '@mui/icons-material/Circle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 
 // PrimeReact
@@ -164,6 +165,9 @@ function Randomizer() {
 
   // CHANGES: Referencia para los menús (uno por cada "week")
   const menuRefs = useRef({});
+
+  const topLevelWeeks = allWeeks.filter(week => !week.parent_par_id);
+const getProgressionsFor = (weekId) => allWeeks.filter(w => w.parent_par_id === weekId);
 
   /* --------------------------------------
    * useEffects de carga de datos 
@@ -488,27 +492,74 @@ function Randomizer() {
     backoffOverlayRef.current.toggle(e);
   };
 
-  const handleSaveBackoff = () => {
-    if (editingBackoffIndex === null) return;
-    const updated = [...day];
-    const ex = updated[indexDay].exercises[editingBackoffIndex];
-    const rawName = ex.name;
+const handleSaveBackoff = () => {
+  if (editingBackoffIndex === null) return;
+
+  const updated = [...day];
+  const ex = updated[indexDay].exercises[editingBackoffIndex];
+  const rawName = ex.name;
+
+  // Filtrar líneas vacías
+  const cleanedBackoff = backoffData.filter(b => b.sets || b.reps || b.peso);
+
+  if (cleanedBackoff.length === 0) {
+    // No guardar backoff si está vacío
     ex.name = typeof rawName === 'object'
-      ? { ...rawName, backoff: backoffData }
-      : { name: rawName, backoff: backoffData };
-    updated[indexDay].exercises[editingBackoffIndex] = ex;
-    setDay(updated);
-    setModifiedDay(updated);
-    backoffOverlayRef.current.hide();
-    setEditingBackoffIndex(null);
-    setIsEditing(true);
-    setBackoffData([{ sets: "", reps: "", peso: "" }]);
-  };
+      ? { ...rawName }
+      : { name: rawName };
 
-  const hasBackoff = (exercise) => (
-    exercise && typeof exercise.name === 'object' && Array.isArray(exercise.name.backoff) && exercise.name.backoff.length > 0
-  );
+    delete ex.name.backoff;
+  } else {
+    // Guardar el backoff filtrado
+    ex.name = typeof rawName === 'object'
+      ? { ...rawName, backoff: cleanedBackoff }
+      : { name: rawName, backoff: cleanedBackoff };
+  }
 
+  updated[indexDay].exercises[editingBackoffIndex] = ex;
+  setDay(updated);
+  setModifiedDay(updated);
+  backoffOverlayRef.current.hide();
+  setEditingBackoffIndex(null);
+  setIsEditing(true);
+  setBackoffData([{ sets: "", reps: "", peso: "" }]);
+};
+
+const saveBackoffInternally = (data) => {
+  if (editingBackoffIndex === null) return;
+
+  const updated = [...day];
+  const ex = updated[indexDay].exercises[editingBackoffIndex];
+  const rawName = ex.name;
+
+  const cleaned = data.filter(b => b.sets || b.reps || b.peso);
+
+  if (cleaned.length === 0) {
+    ex.name = typeof rawName === 'object' ? { ...rawName } : { name: rawName };
+    delete ex.name.backoff;
+  } else {
+    ex.name = typeof rawName === 'object'
+      ? { ...rawName, backoff: cleaned }
+      : { name: rawName, backoff: cleaned };
+  }
+
+  updated[indexDay].exercises[editingBackoffIndex] = ex;
+  setDay(updated);
+  setModifiedDay(updated);
+  setCurrentDay({...updated[indexDay]}); // Forzar re-render
+  setIsEditing(true);
+};
+
+const hasBackoff = (exercise) => {
+  if (
+    exercise &&
+    typeof exercise.name === 'object' &&
+    Array.isArray(exercise.name.backoff)
+  ) {
+    return exercise.name.backoff.some(b => b.sets || b.reps || b.peso);
+  }
+  return false;
+};
 
   // Funciones de input para exercise normal
   const customInputEditDay = (data, index, field) => {
@@ -966,6 +1017,13 @@ function Randomizer() {
     "#",
   ];
 
+const removeBackoffLine = (index) => {
+  const updated = [...backoffData];
+  updated.splice(index, 1);
+  setBackoffData(updated);
+  saveBackoffInternally(updated);
+};
+
   // Versión móvil
   const tableMobile = () => {
     return (
@@ -1356,24 +1414,18 @@ function Randomizer() {
               Lista de rutinas
             </MenuItem>
 
-            {allWeeks && 
-              allWeeks
-                .filter(week => !week.parent_par_id)  // Solo si NO tiene parent_par_id
-                .map((week) => (
-                  <MenuItem key={week._id} icon={collapsed ? <EditIcon /> : ''}>
-                    <div
-                      onClick={() => navigate(`/par/${week._id}`)}
-                      className=" "
-                    >
-                      <div className="">
-                        <div className="">
-                          <p className="m-0 text-light">{week.name}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </MenuItem>
-                ))
-            }
+            <MenuItem
+              className="text-center me-4"
+              icon={collapsed ? <VisibilityIcon /> : ''}
+              onClick={() => setShowSavedRoutinesDialog(true)}
+            >
+              <div className="bg-light rounded-2 text-center d-flex">
+                <IconButton>
+                  <VisibilityIcon className="text-dark" />
+                </IconButton>
+                  <p className="pt-3"><strong className="ms-2">Ver rutinas</strong></p>
+              </div>
+            </MenuItem>
 
             <MenuItem className="text-center marginHelpDays">
               <IconButton className="p-2 bg-light">
@@ -1926,38 +1978,59 @@ function Randomizer() {
 
           {/* CHANGES: Dialog para mostrar las rutinas guardadas en mobile */}
           <Dialog
-            header="Rutinas guardadas"
-            visible={showSavedRoutinesDialog}
-            style={firstWidth > 968 ? { width: "35vw" } : { width: "75vw" }}
-            onHide={() => setShowSavedRoutinesDialog(false)}
-          >
-            <div className="list-group">
-              {allWeeks && allWeeks.length > 0 ? (
-                allWeeks.map((week) => (
-                  <div key={week._id} className="row justify-content-between mt-1">
-                    <div className="col-9">
-                      <button
-                      key={week._id}
-                      className="btn"
-                      onClick={() => {
-                        setShowSavedRoutinesDialog(false);
-                        navigate(`/par/${week._id}`);
-                      }}
-                    >
-                      {week.name}
-                        
-                    </button>
-                    </div>
-                    <div className="col-3">
-                      <EditIcon />
-                      </div>
-                  </div>
-                ))
-              ) : (
-                <p>No hay rutinas guardadas</p>
-              )}
-            </div>
-          </Dialog>
+  header="Rutinas guardadas"
+  visible={showSavedRoutinesDialog}
+  style={firstWidth > 968 ? { width: "65vw" } : { width: "90vw" }}
+  onHide={() => setShowSavedRoutinesDialog(false)}
+  className={`col-12 col-md-10  ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
+>
+  <div className={`list-group d-flex ${firstWidth > 992 ? 'flex-row flex-wrap justify-content-start' : 'flex-column'}`}>
+    {allWeeks && allWeeks.filter(week => !week.parent_par_id).map((week) => (
+      <div
+        key={week._id}
+        className={`colorBackPAR2 card m-2 p-2 border-0 shadow ${firstWidth > 992 ? 'w-30' : ''}`}
+        style={{ minWidth: '250px' }}
+      >
+        <button
+          className="btn w-100 text-start shadow-sm colorBackPAR  p-3 d-flex justify-content-between align-items-center"
+          onClick={() => {
+            setShowSavedRoutinesDialog(false);
+            navigate(`/par/${week._id}`);
+          }}
+        >
+          <strong>{week.name}</strong>
+          <VisibilityIcon />
+        </button>
+
+        {/* Progresiones */}
+        {allWeeks.some(p => p.parent_par_id === week._id) && (
+          <div className="mt-2 px-3 p-2 shadow-sm colorBackPAR rounded ">
+            <p className="mb-1"><strong>Progresiones:</strong></p>
+            {allWeeks
+              .filter(p => p.parent_par_id === week._id)
+              .map((prog) => (
+                <button
+                  key={prog._id}
+                  className="btn w-100 text-start colorBackPAR3 mb-1 d-flex justify-content-between align-items-center ps-3 pe-2"
+                  onClick={() => {
+                    setShowSavedRoutinesDialog(false);
+                    navigate(`/par/${prog._id}`);
+                  }}
+                >
+                  <span>{prog.name}</span>
+                  <VisibilityIcon className="ms-2" />
+                </button>
+              ))}
+          </div>
+        )}
+      </div>
+    ))}
+    {(!allWeeks || allWeeks.length === 0) && (
+      <p>No hay rutinas guardadas</p>
+    )}
+  </div>
+</Dialog>
+
 
 
           <Dialog
@@ -1979,41 +2052,80 @@ function Randomizer() {
             />
           </Dialog>
 
-          <OverlayPanel ref={backoffOverlayRef} className={`${firstWidth>992?'w-25':'w-75'}`}>            
-            <div className="p-3">
-              {backoffData.map((line,idx)=>(
-                <div key={idx} className="row mb-2">
-                  <div className="col-4">
-                    <label>Sets</label>
-                    <input type="number" className="form-control" value={line.sets} onChange={e=>{
-                      const arr=[...backoffData]; arr[idx].sets=e.target.value; setBackoffData(arr);
-                    }} />
-                  </div>
-                  <div className="col-4">
-                    <label>Reps</label>
-                    <input type="number" className="form-control" value={line.reps} onChange={e=>{
-                      const arr=[...backoffData]; arr[idx].reps=e.target.value; setBackoffData(arr);
-                    }} />
-                  </div>
-                  <div className="col-4">
-                    <label>Peso</label>
-                    <input type="text" className="form-control" value={line.peso} onChange={e=>{
-                      const arr=[...backoffData]; arr[idx].peso=e.target.value; setBackoffData(arr);
-                    }} />
-                  </div>
-                </div>
-              ))}
-              <div className="text-center mb-3">
-                <button className="btn btn-outline-dark" onClick={()=>setBackoffData([...backoffData,{sets:'',reps:'',peso:''}])}>
-                  Añadir línea
-                </button>
-              </div>
-              <div className="text-center">
-                <button className="btn btn-secondary me-2" onClick={()=>backoffOverlayRef.current.hide()}>Cancelar</button>
-                <button className="btn btn-dark" onClick={handleSaveBackoff}>Guardar</button>
-              </div>
-            </div>
-          </OverlayPanel>
+          <OverlayPanel ref={backoffOverlayRef} className={`${firstWidth > 992 ? 'w-25' : 'w-75'}`}>
+  <div className="p-3">
+    {backoffData.map((line, idx) => (
+      <div key={idx} className="row mb-2 align-items-end">
+        <div className="col-3">
+          <label>Sets</label>
+          <input
+            type="number"
+            className="form-control"
+            value={line.sets}
+            onChange={e => {
+              const arr = [...backoffData];
+              arr[idx].sets = e.target.value;
+              setBackoffData(arr);
+              saveBackoffInternally(arr); // sin cerrar overlay
+            }}
+          />
+        </div>
+        <div className="col-3">
+          <label>Reps</label>
+          <input
+            type="text"
+            className="form-control"
+            value={line.reps}
+            onChange={e => {
+              const arr = [...backoffData];
+              arr[idx].reps = e.target.value;
+              setBackoffData(arr);
+              saveBackoffInternally(arr); // sin cerrar overlay
+            }}
+          />
+        </div>
+        <div className="col-3">
+          <label>Peso</label>
+          <input
+            type="text"
+            className="form-control"
+            value={line.peso}
+            onChange={e => {
+              const arr = [...backoffData];
+              arr[idx].peso = e.target.value;
+              setBackoffData(arr);
+              saveBackoffInternally(arr); // sin cerrar overlay
+            }}
+          />
+        </div>
+        <div className="col-3">
+          <IconButton
+            aria-label="delete"
+            className="mt-4"
+            onClick={() => removeBackoffLine(idx)}
+          >
+            <CancelIcon className="text-danger" />
+          </IconButton>
+        </div>
+      </div>
+    ))}
+
+    <div className="text-center mb-3">
+      <button className="btn btn-outline-dark" onClick={() => setBackoffData([...backoffData, { sets: '', reps: '', peso: '' }])}>
+        Añadir línea
+      </button>
+    </div>
+    <div className="text-center">
+      <button className="btn btn-secondary me-2" onClick={() => backoffOverlayRef.current.hide()}>
+        Cancelar
+      </button>
+      <button className="btn btn-dark" onClick={handleSaveBackoff}>
+        Seguir editando
+      </button>
+    </div>
+  </div>
+</OverlayPanel>
+
 
 
           {/* Footer móvil */}
