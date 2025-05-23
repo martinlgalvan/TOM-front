@@ -494,12 +494,12 @@ const handleConfirmDelete = async () => {
         <section   className="container-fluid totalHeight">
 
           <article className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>
-            {/*<button
+           <button
               label="Administrar anuncios"
               icon="pi pi-bullhorn"
               className="btn btn-warning my-3 col-9 col-lg-5"
               onClick={() => setShowAnnouncementsDialog(true)}
-            >Administrar anuncios </button> */}
+            >Administrar anuncios </button>
           </article>
 
             <article id={'tabla'} className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>

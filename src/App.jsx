@@ -665,40 +665,45 @@ async function onLogin(user, token) {
             </Dialog>
 
             {pendingAnnouncements.length > 0 && pendingAnnouncements[currentAnnouncementIndex] && (
-                <Dialog
-                header={pendingAnnouncements[currentAnnouncementIndex].title}
-                visible={showAnnouncementDialog}
-                onHide={handleDismissAnnouncement}
-                footer={
-                    <button
-                    className='btn btn-primary mt-3'
-                    onClick={handleDismissAnnouncement}
-                    autoFocus
-                    >Entendido</button>
-                }
-                >
-                {/* Texto con saltos de línea */}
-                <p style={{ whiteSpace: 'pre-line' }}>
-                    {pendingAnnouncements[currentAnnouncementIndex].message}
-                </p>
+                <div className='row justify-content-center'>
 
-                {/* Links como botones */}
-                {pendingAnnouncements[currentAnnouncementIndex].link_urls?.length > 0 && (
-                    <div className="mt-3 d-flex flex-column gap-2">
-                    {pendingAnnouncements[currentAnnouncementIndex].link_urls.map((link, idx, arr) => (
-                        <a
-                        key={idx}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-outline-primary"
-                        >
-                        {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
-                        </a>
-                    ))}
-                    </div>
-                )}
-                </Dialog>
+                    <Dialog
+                    header={pendingAnnouncements[currentAnnouncementIndex].title}
+                    visible={showAnnouncementDialog}
+                    onHide={handleDismissAnnouncement}
+                    className='col-10 col-lg-6'
+                    footer={
+                        <button
+                        className='btn btn-primary mt-3'
+                        onClick={handleDismissAnnouncement}
+                        autoFocus
+                        >Entendido</button>
+                    }
+                    >
+                    {/* Texto con saltos de línea */}
+                    <p style={{ whiteSpace: 'pre-line' }}>
+                        {pendingAnnouncements[currentAnnouncementIndex].message}
+                    </p>
+
+                    {/* Links como botones */}
+                    {pendingAnnouncements[currentAnnouncementIndex].link_urls?.length > 0 && (
+                        <div className="mt-3 d-flex flex-column gap-2">
+                        {pendingAnnouncements[currentAnnouncementIndex].link_urls.map((link, idx, arr) => (
+                            <a
+                            key={idx}
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-primary"
+                            >
+                            {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
+                            </a>
+                        ))}
+                        </div>
+                    )}
+                    </Dialog>
+                
+                </div>
 
             )}
 
