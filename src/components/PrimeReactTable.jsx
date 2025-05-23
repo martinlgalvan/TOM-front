@@ -13,6 +13,11 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Link } from 'react-router-dom';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+
+import dayjs from 'dayjs';
 
 import IconButton from '@mui/material/IconButton';
 import PersonIcon from '@mui/icons-material/Person';
@@ -21,8 +26,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
-
-export default function PrimeReactTable({ user_id, id, users, refresh }) {
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+export default function PrimeReactTable({ user_id, id, users, refresh, collapsed }) {
 
   const [showDialog, setShowDialog] = useState(false);
   const [qrDialogVisible, setQrDialogVisible] = useState(false);
@@ -41,7 +46,6 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
   const isInputValid = inputValue === 'ELIMINAR';
   const [first, setFirst] = useState(localStorage.getItem('userCurrentPage'));
   const [dialogg, setDialogg] = useState(false);
-
 
 
   let initSearchText = '';
@@ -104,29 +108,50 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
       user.name.toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase())
     );
-
-    // Orden alfabético por name/email
+  
+    // Orden por categoría (si aplica)
+    if (sortField === 'category' || !sortField) {
+      filtered.sort((a, b) => {
+        const aPrio = a.category === categoryOrder[categoryFilterIndex] ? 0 : 1;
+        const bPrio = b.category === categoryOrder[categoryFilterIndex] ? 0 : 1;
+  
+        if (aPrio !== bPrio) {
+          return aPrio - bPrio;
+        }
+  
+        // Si están en la misma categoría, ordenar por nombre (fallback)
+        return a.name.localeCompare(b.name);
+      });
+    }
+  
+    // Si ordenamos por name/email, aplicar después de ordenar por categoría
     if (sortField === 'name' || sortField === 'email') {
       filtered.sort((a, b) => {
-        const aVal = (a[sortField] || '').toString();
-        const bVal = (b[sortField] || '').toString();
+        // Primero por categoría
+        const aPrio = a.category === categoryOrder[categoryFilterIndex] ? 0 : 1;
+        const bPrio = b.category === categoryOrder[categoryFilterIndex] ? 0 : 1;
+        if (aPrio !== bPrio) return aPrio - bPrio;
+  
+        // Luego por campo seleccionado
+        const aVal = (a[sortField] || '').toLowerCase();
+        const bVal = (b[sortField] || '').toLowerCase();
         return sortOrder === 'asc'
           ? aVal.localeCompare(bVal)
           : bVal.localeCompare(aVal);
       });
     }
-
-    // Orden por categoría si corresponde
-    if (!sortField || sortField === 'category') {
-      filtered.sort((a, b) => {
-        const aPrio = a.category === categoryOrder[categoryFilterIndex] ? 0 : 1;
-        const bPrio = b.category === categoryOrder[categoryFilterIndex] ? 0 : 1;
-        return aPrio - bPrio;
-      });
-    }
-
+  
     setFilteredUsers(filtered);
   }, [searchText, users, sortField, sortOrder, categoryFilterIndex, categoryOrder]);
+
+  useEffect(() => {
+    setFirst(0);
+    try {
+      localStorage.setItem('userCurrentPage', '0');
+    } catch (err) {
+      console.warn('Error al resetear página en localStorage:', err);
+    }
+  }, [searchText, sortField, sortOrder, categoryFilterIndex]);
 
   useEffect(() => {
     const handleResize = () => setWidthPage(window.innerWidth);
@@ -152,12 +177,11 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
         edad: profileData.edad || '',
         modalidad: profileData.modalidad || '',
         category: profileData.category || null,
-        isEditable: profileData.isEditable ? 'true' : 'false'
+        isEditable: profileData.isEditable ? 'true' : 'false',
+        events: profileData.events || null
       });
     }
   }, [profileData]);
-
-
 
   const onSearchChange = (event) => {
     setSearchText(event.target.value);
@@ -178,6 +202,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
     UserServices.getProfileById(user._id)
         .then((data) => {
           setProfileData(data);
+          console.log(data)
           /*if(editedProfile.category == null ){
             UserServices.find(user._id)
             .then(data =>{
@@ -568,80 +593,150 @@ export default function PrimeReactTable({ user_id, id, users, refresh }) {
         </Dialog>
 
         <Dialog
-          header={`Perfil: ${selectedProfileName}`}
-          visible={profileDialogVisible}
-          onHide={() => setProfileDialogVisible(false)}
-          style={{ width: widthPage > 900 ? '40%' : '90%' }}
-        >
-          <div className="text-center">
-            {profileLoading && <p>Cargando perfil...</p>}
-            {!profileLoading && profileData !== undefined && (
-              <div className='row justify-content-center'>
-                {Object.keys(profileData).length === 0 && (
-                  <p>Por favor, pedile a tu alumno que llene los campos.</p>
-                )}
+  header={`Perfil: ${selectedProfileName}`}
+  visible={profileDialogVisible}
+  onHide={() => setProfileDialogVisible(false)}
+  className={`col-11 col-lg-10 col-xl-8 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
+>
+  <div className="row justify-content-center">
+    {profileLoading && <p>Cargando perfil...</p>}
+    {!profileLoading && profileData !== undefined && (
+      <div className="col-10 col-lg-12">
+        {Object.keys(profileData).length === 0 && (
+          <p>Por favor, pedile a tu alumno que llene los campos.</p>
+        )}
 
-                <div className="mb-3 col-6 mx-3">
-                  <label>Altura</label>
-                  <input 
-                    type="text"
-                    className="form-control"
-                    value={editedProfile.altura}
-                    onChange={(e) => setEditedProfile({ ...editedProfile, altura: e.target.value })}
-                  />
-                </div>
-                <div className="mb-3 col-6 mx-3">
-                  <label>Edad</label>
-                  <input 
-                    type="number"
-                    className="form-control"
-                    value={editedProfile.edad}
-                    onChange={(e) => setEditedProfile({ ...editedProfile, edad: e.target.value })}
-                  />
-                </div>
-                <div className="mb-3 col-6 mx-3">
-                  <label className='d-block'>Modalidad</label>
-                  <Dropdown 
-                    className='w-100'
-                    value={editedProfile.modalidad}
-                    options={modalidadOptions}
-                    onChange={(e) => setEditedProfile({ ...editedProfile, modalidad: e.value })}
-                    placeholder="Seleccione modalidad"
-                  />
-                </div>
-                {/* Campo para seleccionar la categoría */}
-                <div className="mb-3 col-6 mx-3">
-                  <label className='d-block'>Categoría</label>
-                  <Dropdown 
-                    className='w-100'
-                    value={editedProfile.category}
-                    options={nivelOptions}
-                    onChange={(e) => setEditedProfile({ ...editedProfile, category: e.value })}
-                    placeholder="Seleccione una categoría"
-                  />
-                </div>
-                <div className="mb-3 col-6 mx-3">
-                  <label className='d-block'>Bloquear edición de alumno</label>
-                  <Dropdown 
-                    className='w-100'
-                    value={editedProfile.isEditable}
-                    options={isEditableOptions}
-                    onChange={(e) => setEditedProfile({ ...editedProfile, isEditable: e.value })}
-                    placeholder="Seleccione opción"
-                  />
-                </div>
-                <div className="d-flex justify-content-around">
-                  <button className="btn btn-secondary" onClick={() => setProfileDialogVisible(false)}>
-                    Cancelar
-                  </button>
-                  <button className="btn btn-primary" onClick={handleProfileSave}>
-                    Guardar
-                  </button>
-                </div>
-              </div>
-            )}
+        <div className="row">
+          <div className="col-md-2 mb-3">
+            <div className="input-group">
+              <span className="input-group-text py-2 px-3">cm</span>
+              <input
+                type="text"
+                className="form-control text-center"
+                value={editedProfile.altura}
+                onChange={(e) => setEditedProfile({ ...editedProfile, altura: e.target.value })}
+              />
+            </div>
           </div>
-        </Dialog>
+
+          <div className="col-md-2 mb-3">
+            <div className="input-group">
+              <span className="input-group-text p-2">Edad</span>
+              <input
+                type="number"
+                className="form-control text-center"
+                value={editedProfile.edad}
+                onChange={(e) => setEditedProfile({ ...editedProfile, edad: e.target.value })}
+              />
+            </div>
+          </div>
+
+
+        <div className="col-md-3 mb-3">
+          <div className="d-flex align-items-center border text-center rounded overflow-hidden">
+            <span className="p-2 bg-light border-end">Bloquear </span>
+            <Dropdown
+              value={editedProfile.isEditable}
+              options={isEditableOptions}
+              onChange={(e) => setEditedProfile({ ...editedProfile, isEditable: e.value })}
+              placeholder="Seleccione opción"
+              className="flex-grow-1 border-0"
+              style={{ border: 'none', boxShadow: 'none' }}
+            />
+          </div>
+        </div>
+        
+        <div className="col-md-5 mb-3">
+            <div className="d-flex align-items-center border rounded overflow-hidden">
+              <span className="p-2 bg-light border-end">Categoría</span>
+              <Dropdown
+                value={editedProfile.category}
+                options={nivelOptions}
+                onChange={(e) => setEditedProfile({ ...editedProfile, category: e.value })}
+                placeholder="Seleccione categoría"
+                className="flex-grow-1 border-0"
+                style={{ border: 'none', boxShadow: 'none' }}
+              />
+            </div>
+          </div>
+          
+          <div className="col-12 mb-3 text-center">
+            <button
+              className="btn btn-primary "
+              onClick={() => {
+                const newEvents = editedProfile.events ? [...editedProfile.events] : [];
+                newEvents.push({ date: '', name: '' });
+                setEditedProfile({ ...editedProfile, events: newEvents });
+              }}
+            >
+            <CalendarMonthIcon />
+              Agregar evento al calendario
+            </button>
+        </div>
+
+        {editedProfile.events && editedProfile.events.map((event, index) => (
+                <div key={index} className="input-group mb-2">
+                  <span className="input-group-text me-2"><CalendarMonthIcon /></span>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      format="DD/MM/YYYY"
+                      value={event.date ? dayjs(event.date) : null}
+                      onChange={(newDate) => {
+                        const newEvents = [...editedProfile.events];
+                        newEvents[index].date = newDate ? newDate.toISOString() : '';
+                        setEditedProfile({ ...editedProfile, events: newEvents });
+                      }}
+                      slotProps={{
+                        textField: {
+                          variant: 'outlined',
+                          className: 'form-control',
+                          size: 'small',
+                          fullWidth: true
+                        }
+                      }}
+                    />
+                  </LocalizationProvider>
+                  <input
+                    type="text"
+                    className="form-control ms-2"
+                    placeholder="Nombre del evento"
+                    value={event.name}
+                    onChange={(e) => {
+                      const newEvents = [...editedProfile.events];
+                      newEvents[index].name = e.target.value;
+                      setEditedProfile({ ...editedProfile, events: newEvents });
+                    }}
+                  />
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => {
+                      const newEvents = [...editedProfile.events];
+                      newEvents.splice(index, 1);
+                      setEditedProfile({ ...editedProfile, events: newEvents });
+                    }}
+                  >
+                    X
+                  </button>
+                </div>
+                
+              ))}
+        </div>
+
+
+        <div className="d-flex justify-content-around mt-4">
+          <button className="btn btn-secondary px-4" onClick={() => setProfileDialogVisible(false)}>
+            Cancelar
+          </button>
+          <button className="btn btn-primary px-4" onClick={handleProfileSave}>
+            Guardar
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+</Dialog>
+
+
       </div>
     </div>
   );

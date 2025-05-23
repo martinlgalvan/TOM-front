@@ -249,6 +249,206 @@ async function editProfile(user_id, data) {
     }
   }
 
+    async function getAnnouncementsByCreator(id) {
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/creator/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      }
+    });
+  
+    if (response.ok) {
+      return response.json();
+    } else {
+      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        errorData = { message: 'No se pudo parsear la respuesta de error' };
+      }
+      const error = new Error(`Error ${response.status}: No se pudo editar el perfil`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+  }
+
+  async function createAnnouncement(data) {
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      },
+      body: JSON.stringify(data)
+    });
+  
+    if (response.ok) {
+      return response.json();
+    } else {
+      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        errorData = { message: 'No se pudo parsear la respuesta de error' };
+      }
+      const error = new Error(`Error ${response.status}: No se pudo editar el perfil`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+  }
+
+  
+  async function editAnnouncement(id, updates) {
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      },
+      body: JSON.stringify(updates)
+    });
+  
+    if (response.ok) {
+      return response.json();
+    } else {
+      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        errorData = { message: 'No se pudo parsear la respuesta de error' };
+      }
+      const error = new Error(`Error ${response.status}: No se pudo editar el perfil`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+  }
+
+    async function deleteAnnouncement(id) {
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      }
+    });
+  
+    if (response.ok) {
+      return response.json();
+    } else {
+      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        errorData = { message: 'No se pudo parsear la respuesta de error' };
+      }
+      const error = new Error(`Error ${response.status}: No se pudo editar el perfil`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+  }
+
+
+
+  async function getUnreadAnnouncements(id) {
+    console.log(id)
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/user/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      }
+    });
+  
+    if (response.ok) {
+      return response.json();
+    } else {
+      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        errorData = { message: 'No se pudo parsear la respuesta de error' };
+      }
+      const error = new Error(`Error ${response.status}: No se pudo editar el perfil`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+  }
+
+
+    async function markAnnouncementRead(announcementId, userId) {
+    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${announcementId}/read/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      }
+    });
+  
+    if (response.ok) {
+      return response.json();
+    } else {
+      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        errorData = { message: 'No se pudo parsear la respuesta de error' };
+      }
+      const error = new Error(`Error ${response.status}: No se pudo editar el perfil`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+  }
+
+  async function getAnnouncementsHistory(userId) {
+  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/user/${userId}/history`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    }
+  });
+  if (!response.ok) throw new Error('No se pudo obtener el historial de anuncios');
+  return response.json();
+}
+
+  async function getAnnouncementViewsWithNames(announcementId) {
+  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${announcementId}/viewers`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    }
+  });
+  if (!response.ok) throw new Error('No se pudo obtener el historial de anuncios');
+  return response.json();
+}
+
+  async function getAnnouncementViewCounts(creatorId) {
+  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${creatorId}/views-count`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    }
+  });
+  if (!response.ok) throw new Error('No se pudo obtener el conteo de anuncios');
+  return response.json();
+}
+
+
 
 export {
     find,
@@ -262,5 +462,17 @@ export {
     deleteExercise,
     findRoutineById,
     getProfileById,
-    editProfile
+    editProfile,
+
+    getAnnouncementsByCreator,
+    createAnnouncement,
+    editAnnouncement,
+    deleteAnnouncement,
+
+    getUnreadAnnouncements,
+    markAnnouncementRead,
+    getAnnouncementsHistory,
+    getAnnouncementViewsWithNames,
+    getAnnouncementViewCounts
+    
 }

@@ -21,7 +21,15 @@ import { Tour } from 'antd'; // Importamos el componente Tour
 import { ProgressBar } from "primereact/progressbar";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
-
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
+import { Calendar } from 'primereact/calendar';
+import { MultiSelect } from 'primereact/multiselect';
+import { Dropdown } from 'primereact/dropdown';
+import { RadioButton } from 'primereact/radiobutton';
+import { SelectButton } from 'primereact/selectbutton';
 
 //.............................. COMPONENTES ..............................//
 
@@ -39,7 +47,8 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CardMembershipIcon from '@mui/icons-material/CardMembership';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import Logo from "../../components/Logo.jsx";
-
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 function UsersListPage() {
@@ -57,6 +66,209 @@ function UsersListPage() {
     const [tourSteps, setTourSteps] = useState([]);
     const [tourVisible, setTourVisible] = useState(false);
     const [showDialog, setShowDialog] = useState();
+    const [firstWidth, setFirstWidth] = useState(); 
+    
+    const [showAnnouncementsDialog, setShowAnnouncementsDialog] = useState(false);
+    const [announcements, setAnnouncements] = useState([]);
+    const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
+    const [usersList, setUsersList] = useState([]); // Lista completa de usuarios para MultiSelect
+
+    const [formVisible, setFormVisible] = useState(false);
+    const [showLinkField, setShowLinkField] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [mode, setMode] = useState(null); // 'once' o 'repeat'
+    const [announcementToDelete, setAnnouncementToDelete] = useState(null);
+  const [announcementForm, setAnnouncementForm] = useState({
+    _id: null,
+    title: '',
+    message: '',
+    link_urls: [], // ← CAMBIO A ARRAY
+    mode: 'once',
+    show_at_date: null,
+    repeat_day: null,
+    day_of_month: null,
+    target_categories: [],
+    target_users: []
+  });
+
+  const [viewCounts, setViewCounts] = useState({});
+  const [viewsMap, setViewsMap] = useState({}); // { anuncioId: [usuarios] }
+  const [expandedViewId, setExpandedViewId] = useState(null); // el anuncio cuyo detalle se muestra
+
+  const [showViewsDialog, setShowViewsDialog] = useState(false);
+  const [viewsDialogData, setViewsDialogData] = useState({ title: '', users: [] });
+
+  
+  const DAYS = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
+  const CATEGORIES = ["Alumno casual", "Alumno dedicado", "Atleta iniciante", "Atleta avanzado"];
+  const MODE_OPTIONS = [
+    { label: 'Anuncio único', value: 'once' },
+    { label: 'Programar días', value: 'repeat' },
+    { label: 'Cada X del mes', value: 'monthly' }
+  ];
+
+  const fetchViewCounts = async () => {
+  try {
+    const counts = await UsersService.getAnnouncementViewCounts(id);
+    setViewCounts(counts);
+  } catch (err) {
+    Notify.instantToast("Error al obtener conteo de vistas");
+  }
+};
+
+useEffect(() => {
+  if (showAnnouncementsDialog) {
+    fetchAnnouncements();
+    fetchUsers();
+    fetchViewCounts(); // ← esto carga los conteos rápidos
+  }
+}, [showAnnouncementsDialog]);
+
+const fetchViewsForAnnouncement = async (announcementId, title) => {
+    if (viewsMap[announcementId]) {
+        setViewsDialogData({ title, users: viewsMap[announcementId] });
+        setShowViewsDialog(true);
+        return;
+    }
+
+    try {
+        const views = await UsersService.getAnnouncementViewsWithNames(announcementId);
+        console.log(views)
+        setViewsMap(prev => ({ ...prev, [announcementId]: views }));
+        setViewsDialogData(views);
+        setShowViewsDialog(true);
+    } catch (err) {
+        Notify.instantToast("Error al obtener vistas del anuncio");
+    }
+};
+
+const fetchAnnouncements = async () => {
+  setLoadingAnnouncements(true);
+  try {
+    const res = await UsersService.getAnnouncementsByCreator(id);
+
+    // Orden descendente por fecha
+    const sorted = res.sort((a, b) => {
+      const dateA =
+        a.show_at_date || new Date(0); // Manejo defensivo
+      const dateB =
+        b.show_at_date || new Date(0);
+
+      return new Date(dateB) - new Date(dateA); // más recientes primero
+    });
+
+    setAnnouncements(sorted);
+  } catch (err) {
+    Notify.instantToast("Error al obtener anuncios");
+  } finally {
+    setLoadingAnnouncements(false);
+  }
+};
+
+    const fetchUsers = async () => {
+    try {
+      const users = await UsersService.find(id);
+      setUsersList(users.map(u => ({ label: u.name, value: u._id })));
+    } catch (err) {
+      Notify.instantToast("Error al obtener usuarios");
+    }
+  };
+
+
+  useEffect(() => {
+      setFirstWidth(window.innerWidth);
+
+        if (showAnnouncementsDialog) {
+      fetchAnnouncements();
+      fetchUsers();
+    }
+  }, [showAnnouncementsDialog]);
+
+  const deleteAnnouncement = async (announcementId) => {
+    try {
+      await UsersService.deleteAnnouncement(announcementId);
+      Notify.instantToast("Anuncio eliminado");
+      fetchAnnouncements();
+    } catch (err) {
+      Notify.instantToast("Error al eliminar anuncio");
+    }
+  };
+
+const openEditForm = async (ann) => {
+  setAnnouncementForm({
+    ...ann,
+    link_urls: ann.link_urls || []
+  });
+  setEditMode(true);
+  setFormVisible(true);
+
+  if (!viewsMap[ann._id]) {
+    const views = await UsersService.getAnnouncementViewsWithNames(ann._id);
+    setViewsMap(prev => ({ ...prev, [ann._id]: views }));
+  }
+};
+
+const openNewForm = () => {
+  setAnnouncementForm({
+    _id: null,
+    title: '',
+    message: '',
+    link_url: '',
+    mode: 'once',
+    show_at_date: null,
+    repeat_day: null,
+    day_of_month: null,
+    target_categories: [],
+    target_users: []
+  });
+  setEditMode(false);
+  setFormVisible(true);
+  setShowLinkField(false);
+};
+
+const handleSubmit = async () => {
+  const payload = { ...announcementForm, creator_id: id };
+
+  // Validación extra para modo 'once'
+  if (
+    payload.mode === "once" &&
+    payload.show_at_date &&
+    new Date(payload.show_at_date) < new Date().setHours(0, 0, 0, 0)
+  ) {
+    Notify.instantToast("La fecha seleccionada no puede ser anterior a hoy.");
+    return;
+  }
+
+  try {
+    if (editMode) {
+      await UsersService.editAnnouncement(payload._id, payload);
+      Notify.instantToast("Anuncio actualizado");
+    } else {
+      await UsersService.createAnnouncement(payload);
+      Notify.instantToast("Anuncio creado");
+    }
+    setFormVisible(false);
+    fetchAnnouncements();
+  } catch (err) {
+    Notify.instantToast("Error al guardar anuncio");
+  }
+};
+
+const confirmDeleteAnnouncement = (announcementId) => {
+    setAnnouncementToDelete(announcementId);
+};
+
+const handleConfirmDelete = async () => {
+    try {
+        await UsersService.deleteAnnouncement(announcementToDelete);
+        Notify.instantToast("Anuncio eliminado");
+        setAnnouncementToDelete(null);
+        fetchAnnouncements();
+    } catch (err) {
+        Notify.instantToast("Error al eliminar anuncio");
+    }
+};
+
 
     let idRefresh = RefreshFunction.generateUUID();
 
@@ -162,6 +374,39 @@ function UsersListPage() {
           );
     }
 
+    const isPastDate = () => {
+      if (!announcementForm) return false;
+
+      if (announcementForm.mode === "once" && announcementForm.show_at_date) {
+        return new Date(announcementForm.show_at_date) < new Date();
+      }
+
+      const today = new Date();
+      if (announcementForm.mode === "repeat" && announcementForm.repeat_day) {
+        // Día de la semana pasado hoy
+        const daysMap = {
+          Lunes: 1,
+          Martes: 2,
+          Miercoles: 3,
+          Jueves: 4,
+          Viernes: 5,
+          Sabado: 6,
+          Domingo: 0,
+        };
+        return daysMap[announcementForm.repeat_day] < today.getDay();
+      }
+
+      if (announcementForm.mode === "monthly" && announcementForm.day_of_month) {
+        return announcementForm.day_of_month < today.getDate();
+      }
+
+      return false;
+    };
+
+    const isModeLocked = () => {
+      return !!(announcementForm.show_at_date || announcementForm.repeat_day || announcementForm.day_of_month);
+    };
+
     return (
         <>
     
@@ -248,9 +493,18 @@ function UsersListPage() {
         
         <section   className="container-fluid totalHeight">
 
+          <article className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>
+            <button
+              label="Administrar anuncios"
+              icon="pi pi-bullhorn"
+              className="btn btn-warning my-3 col-9 col-lg-5"
+              onClick={() => setShowAnnouncementsDialog(true)}
+            >Administrar anuncios </button>
+          </article>
+
             <article id={'tabla'} className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>
 
-                <PrimeReactTable id={id} users={users}  refresh={refresh} />
+                <PrimeReactTable id={id} users={users}  refresh={refresh} collapsed={collapsed} />
                 
             </article>
 
@@ -278,6 +532,261 @@ function UsersListPage() {
                 )}
 
         </section>
+
+        <Dialog
+        header="Administrar anuncios"
+        visible={showAnnouncementsDialog}
+        onHide={() => setShowAnnouncementsDialog(false)}
+        className="col-10 col-sm-9 col-lg-8 col-xl-6"
+      >
+        <button  icon="pi pi-plus" className="btn btn-primary mb-3" onClick={openNewForm}>Nuevo anuncio</button>
+
+        {loadingAnnouncements ? (
+          <p className="ms-1 my-3">Cargando...</p>
+        ) : announcements.length === 0 ? (
+          <p className="ms-1 my-3">No hay anuncios creados aún.</p>
+        ) : (
+          <ul className="list-group">
+            {announcements.map((a) => (
+              <li key={a._id} className="list-group-item">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{a.title}</strong>
+                    <p className="mb-0">{a.message}</p>
+                  </div>
+                  <div>
+                    <IconButton onClick={() => openEditForm(a)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => confirmDeleteAnnouncement(a._id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </div>
+                </div>
+
+                {/* FOOTER RESUMEN DE VISTAS */}
+                <div className="mt-2 border-top pt-2 d-flex justify-content-between align-items-center small text-muted">
+                    <span>
+                      Visto por {viewCounts[a._id] ?? 0} usuario(s)
+                    </span>
+                    <Button
+                      className="p-button-text p-button-sm"
+                      icon="pi pi-eye"
+                      label="Ver quién lo vio"
+                      onClick={() => fetchViewsForAnnouncement(a._id, a.title)}
+                    />
+                </div>
+
+                {/* LISTADO EXPANDIDO */}
+                {expandedViewId === a._id && viewsMap[a._id] && (
+                  <div className="mt-2 ps-2">
+                    <ul className="list-group">
+                     {expandedViewId === a._id && Array.isArray(viewsMap[a._id]) && (
+                        <div className="mt-2 ps-2">
+                          <ul className="list-group">
+                            {viewsMap[a._id].map((user) => (
+                              <li key={user._id} className="list-group-item py-1 px-2">
+                                <strong>{user.name}</strong> — <span className="text-muted small">{user.email}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </li>
+            ))}
+            
+          </ul>
+        )}
+      </Dialog>
+
+      <Dialog
+        header={editMode ? "Editar anuncio" : "Nuevo anuncio"}
+        visible={formVisible}
+        onHide={() => setFormVisible(false)}
+        className="col-10 col-sm-9 col-lg-8 col-xl-6"
+      >
+        <div className="p-fluid">
+          <div className="mb-3">
+            <label className="styleInputsSpan">Nombre</label>
+            <InputText value={announcementForm.title} onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })} />
+          </div>
+          <div className="mb-3">
+            <label className="styleInputsSpan">Mensaje</label>
+            <InputTextarea rows={3} value={announcementForm.message} onChange={(e) => setAnnouncementForm({ ...announcementForm, message: e.target.value })} />
+          </div>
+          <div className="mb-3">
+          <label className="styleInputsSpan d-block">Links</label>
+
+          {announcementForm.link_urls?.length > 0 && (
+            <ul className="list-group mb-2">
+              {announcementForm.link_urls.map((link, index) => (
+                <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                  <InputText
+                    className="flex-grow-1 me-2"
+                    value={link}
+                    onChange={(e) => {
+                      const updated = [...announcementForm.link_urls];
+                      updated[index] = e.target.value;
+                      setAnnouncementForm({ ...announcementForm, link_urls: updated });
+                    }}
+                  />
+                  <IconButton
+                    className="bg-danger"
+                    onClick={() => {
+                      const updated = [...announcementForm.link_urls];
+                      updated.splice(index, 1);
+                      setAnnouncementForm({ ...announcementForm, link_urls: updated });
+                    }}
+                  >
+                    <DeleteIcon className="text-light" />
+                  </IconButton>
+                </li>
+              ))}
+            </ul>
+          )}
+
+        <button
+          icon="pi pi-link"
+          onClick={() => setAnnouncementForm({
+            ...announcementForm,
+            link_urls: [...(announcementForm.link_urls || []), '']
+          })}
+          className="btn btn-primary text-center mt-2"
+        >Agregar link</button>
+      </div>
+
+          <div className="mb-3">
+          <label className="styleInputsSpan">Modo</label>
+            <SelectButton
+              value={announcementForm.mode}
+              options={MODE_OPTIONS}
+              onChange={(e) => {
+                const updatedForm = {
+                  ...announcementForm,
+                  mode: e.value,
+                  show_at_date: null,
+                  repeat_day: null,
+                  day_of_month: null
+                };
+                setAnnouncementForm(updatedForm);
+              }}
+              disabled={editMode && isModeLocked()}
+            />
+            {editMode && isModeLocked() && (
+              <small className="text-danger d-block mt-1">
+                No se puede modificar el modo una vez definido.
+              </small>
+            )}
+        </div>
+
+          {announcementForm.mode === 'once' && (
+            <div className="mb-3">
+              <label className="styleInputsSpan">Anuncio único</label>
+              <p className="styleInputsParaph">Por ejemplo, si selecciona el 17/05, unicamente esa fecha, se mostrará el anuncio.</p>
+              <Calendar
+                value={announcementForm.show_at_date ? new Date(announcementForm.show_at_date) : null}
+                onChange={(e) =>
+                  setAnnouncementForm({ ...announcementForm, show_at_date: e.value })
+                }
+                showIcon
+                disabled={editMode && isModeLocked()}
+                minDate={new Date()}
+              />
+            </div>
+          )}
+
+          {announcementForm.mode === 'repeat' && (
+            <div className="mb-3">
+              <label className="styleInputsSpanLarge">Una vez por semana</label>
+              <p className="styleInputsParaph">Por ejemplo, si selecciona el viernes, todos los viernes, se mostrará este anuncio.</p>
+              {editMode && announcementForm.repeat_day && <span className="styleInputsParaph text-danger">Por motivos de consistencia, no se puede editar una vez creado.</span>}
+              <Dropdown
+                value={announcementForm.repeat_day}
+                options={DAYS}
+                onChange={(e) =>
+                  setAnnouncementForm({ ...announcementForm, repeat_day: e.value })
+                }
+                placeholder="Seleccionar día"
+                disabled={editMode && isModeLocked()}
+              />
+            </div>
+          )}
+
+          {announcementForm.mode === 'monthly' && (
+            <div className="mb-3">
+              <label className="styleInputsSpan">Día del mes</label>
+              <p className="styleInputsParaph">Por ejemplo, si selecciona el 1, todos los 1 de todos los meses, se mostrará este mensaje.</p>
+              <Dropdown
+                value={announcementForm.day_of_month}
+                options={Array.from({ length: 31 }, (_, i) => ({
+                  label: `${i + 1}`,
+                  value: i + 1
+                }))}
+                onChange={(e) =>
+                  setAnnouncementForm({
+                    ...announcementForm,
+                    day_of_month: e.value
+                  })
+                }
+                placeholder="Seleccionar día"
+                disabled={editMode && isModeLocked()}
+              />
+            </div>
+          )}
+          <div className="row justify-content-center">
+            <div className="col-6">
+              <label className="styleInputsSpan">Categorías</label>
+              <MultiSelect value={announcementForm.target_categories} options={CATEGORIES} onChange={(e) => setAnnouncementForm({ ...announcementForm, target_categories: e.value })} placeholder="Seleccionar categorías" />
+            </div>
+
+            <div className="col-6">
+              <label className="styleInputsParaph">Usuarios específicos</label>
+              <MultiSelect value={announcementForm.target_users} options={usersList} onChange={(e) => setAnnouncementForm({ ...announcementForm, target_users: e.value })} placeholder="Seleccionar usuarios" filter />
+            </div>
+
+          </div>
+
+          <div className="mt-4 text-end">
+            <Button label={editMode ? "Actualizar" : "Crear"} icon="pi pi-check" onClick={handleSubmit} autoFocus />
+          </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        header={`Alumnos que vieron:`}
+        visible={showViewsDialog}
+        onHide={() => setShowViewsDialog(false)}
+        className="col-10 col-sm-9 col-lg-6 col-xl-5"
+      >
+              {Array.isArray(viewsDialogData.users) && viewsDialogData.users.length === 0 ? (
+        <p>Aún nadie ha visto este anuncio.</p>
+      ) : (
+        <ul className="list-group">
+          {Array.isArray(viewsDialogData.viewers) &&
+            viewsDialogData.viewers.map((user) => (
+              <li key={user._id} className="list-group-item py-1 px-2">
+                <strong>{user.name}</strong> — <span className="text-muted small">{user.email}</span>
+              </li>
+            ))}
+        </ul>
+      )}
+      </Dialog>
+
+      <ConfirmDialog
+        visible={!!announcementToDelete}
+        onHide={() => setAnnouncementToDelete(null)}
+        message="¿Estás seguro que deseas eliminar este anuncio?"
+        header="Confirmar eliminación"
+        icon="pi pi-exclamation-triangle"
+        acceptLabel="Sí, eliminar"
+        rejectLabel="Cancelar"
+        accept={handleConfirmDelete}
+        reject={() => setAnnouncementToDelete(null)}
+    />
+
     </>
     );
 }

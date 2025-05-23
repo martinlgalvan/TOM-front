@@ -1424,6 +1424,19 @@ width: 50px;
   width: 110px !important;
 }
 
+.styleInputsParaph{
+  color: #6e6e6e;
+  font-size: 0.9em;
+  text-align: start;
+}
+
+.styleInputsSpanLarge{
+  color: #6e6e6e;
+  font-size: 0.9em;
+  text-align: start;
+  width: 140px !important;
+}
+
 .stylesImportantResuemn{
   padding: 0 !important;
 }

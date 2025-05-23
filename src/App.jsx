@@ -34,6 +34,7 @@ import { registerServiceWorker } from './serviceWorkerRegistration.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import { Dialog } from "primereact/dialog";
+import { Button } from 'primereact/button';
 
 import AddToDriveIcon from '@mui/icons-material/AddToDrive';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -46,6 +47,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import NotFound404 from './pages/NotFound404.jsx'
 import ParDetailsPage from './pages/coach/ParDetailsPage.jsx'
+import UserAnnouncementsPage from './components/UserAnnouncementsPage.jsx'
 
 function RoutePrivate({ isAutenticate, children }) {
     return (
@@ -75,6 +77,11 @@ function App() {
     const location = useLocation(); // Obtén la ubicación actual
     const [isLoading, setIsLoading] = useState(true);
 
+    const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
+    const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
+    const [pendingAnnouncements, setPendingAnnouncements] = useState([]);
+    const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
+
     useEffect(() => {
         registerServiceWorker();
     }, []);
@@ -97,6 +104,38 @@ function App() {
         }
         return () => window.removeEventListener('beforeinstallprompt', () => { });
     }, [isAutenticated]);
+
+useEffect(() => {
+    const role = localStorage.getItem('role');
+    const id = localStorage.getItem('_id');
+
+    // Si no es admin y está autenticado
+    if (role !== 'admin' && id && isAutenticated) {
+        UserService.getUnreadAnnouncements(id)
+            .then(res => {
+                if (res && res.length > 0) {
+                    setPendingAnnouncements(res);
+                    setCurrentAnnouncement(res[0]);
+                    setCurrentAnnouncementIndex(0);
+                    setShowAnnouncementDialog(true);
+                }
+            })
+            .catch(err => console.error("Error buscando anuncios:", err));
+    }
+}, [location.pathname, isAutenticated]);
+
+const handleDismissAnnouncement = async () => {
+    const current = pendingAnnouncements[currentAnnouncementIndex];
+    if (current) {
+        await UserService.markAnnouncementRead(current._id, id);
+        const nextIndex = currentAnnouncementIndex + 1;
+        if (nextIndex < pendingAnnouncements.length) {
+            setCurrentAnnouncementIndex(nextIndex);
+        } else {
+            setShowAnnouncementDialog(false);
+        }
+    }
+};
 
     const handleInstallClick = async () => {
         if (deferredPrompt) {
@@ -161,35 +200,42 @@ function App() {
         setIsLoading(false);
     }, [user, status]);
 
-    function onLogin(user, token) {
-        setUser(user)
-        setIsAutenticated(true)
-        localStorage.setItem('token', token)
-        localStorage.setItem('role', user.role)
-        localStorage.setItem('_id', user._id)
-        localStorage.setItem('name', user.name)
-        localStorage.setItem('noShowPopup', 'false')
-        if(user.drive != undefined){
-            localStorage.setItem('drive', user.drive)
-        }
 
-        localStorage.setItem('email', user.email)
-        localStorage.setItem('entrenador_id', user.entrenador_id)
-        localStorage.setItem('logo', user.logo)
-
-        if (user.color === undefined) {
-            localStorage.setItem('color', '#1a1a1a')
-        } else {
-            localStorage.setItem('color', user.color)
-        }
-
-        if (user.color === undefined) {
-            localStorage.setItem('textColor', false)
-        } else {
-            localStorage.setItem('textColor', user.textColor)
-        }
-        navigate(`/`)
+async function onLogin(user, token) {
+    setUser(user);
+    setIsAutenticated(true);
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', user.role);
+    localStorage.setItem('_id', user._id);
+    localStorage.setItem('name', user.name);
+    localStorage.setItem('noShowPopup', 'false');
+    if (user.drive != undefined) {
+        localStorage.setItem('drive', user.drive);
     }
+
+    localStorage.setItem('email', user.email);
+    localStorage.setItem('entrenador_id', user.entrenador_id);
+    localStorage.setItem('logo', user.logo);
+    localStorage.setItem('color', user.color || '#1a1a1a');
+    localStorage.setItem('textColor', user.textColor || false);
+
+    if(user.role != "admin"){
+
+            try {
+        const res = await UserService.getUnreadAnnouncements(user._id);
+        
+            setPendingAnnouncements(res);
+            setCurrentAnnouncementIndex(0);
+            setShowAnnouncementDialog(true);
+            console.log()
+    } catch (err) {
+        console.error("Error obteniendo anuncios en login:", err);
+    }
+
+    }
+
+    navigate(`/`);
+}
 
     function onLogout() {
         setOpenDialogLogout(false)
@@ -345,6 +391,13 @@ function App() {
                                     </Link>
                                 </li>
                             )}
+                            {isAutenticated && !isAdmin() && (
+                                <li className="nav-item">
+                                    <Link className={`nav-link text-light ${location.pathname === `/anuncios/${id}` && 'active'}`} to={`/anuncios/`}>
+                                        Ver anuncios
+                                    </Link>
+                                </li>
+                            )}
                             {!isAutenticated && (
                                 <li className="nav-item">
                                     <Link className={`nav-link text-light ${location.pathname === `/login` && 'active'}`} to={"/login"}>
@@ -471,6 +524,15 @@ function App() {
                             </RoutePrivate>
                         }
                     />
+
+                    <Route
+                        path="/anuncios"
+                        element={
+                            <RoutePrivate isAutenticate={isAutenticated}>
+                                <UserAnnouncementsPage />
+                            </RoutePrivate>
+                        }
+                    />
                     <Route path="*" element={<NotFound404 />} />
                 </Routes>
             </main>
@@ -536,6 +598,14 @@ function App() {
                             </Link>
                         </li>
                     )}
+                    {isAutenticated && !isAdmin() && (
+                         <li className="list-group-item">
+                            <Link className={`nav-link ${location.pathname === `/anuncios/${id}` && 'active'}`} to={`/anuncios/`} onClick={() => setMenuSidebar(false)}>
+                                Ver anuncios
+                            </Link>
+                        </li>
+                    )}
+
                     {!isAutenticated && (
                         <li className="list-group-item">
                             <Link className='nav-link' to={"/login"} onClick={() => setMenuSidebar(false)}>
@@ -593,6 +663,44 @@ function App() {
                     </div>
                 </div>
             </Dialog>
+
+            {pendingAnnouncements.length > 0 && pendingAnnouncements[currentAnnouncementIndex] && (
+                <Dialog
+                header={pendingAnnouncements[currentAnnouncementIndex].title}
+                visible={showAnnouncementDialog}
+                onHide={handleDismissAnnouncement}
+                footer={
+                    <button
+                    className='btn btn-primary mt-3'
+                    onClick={handleDismissAnnouncement}
+                    autoFocus
+                    >Entendido</button>
+                }
+                >
+                {/* Texto con saltos de línea */}
+                <p style={{ whiteSpace: 'pre-line' }}>
+                    {pendingAnnouncements[currentAnnouncementIndex].message}
+                </p>
+
+                {/* Links como botones */}
+                {pendingAnnouncements[currentAnnouncementIndex].link_urls?.length > 0 && (
+                    <div className="mt-3 d-flex flex-column gap-2">
+                    {pendingAnnouncements[currentAnnouncementIndex].link_urls.map((link, idx, arr) => (
+                        <a
+                        key={idx}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-outline-primary"
+                        >
+                        {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
+                        </a>
+                    ))}
+                    </div>
+                )}
+                </Dialog>
+
+            )}
 
             <ToastContainer
                 position="bottom-center"
