@@ -46,29 +46,6 @@ function UserAnnouncementsPage() {
         <div className="container-fluid totalHeight mt-4">
             <Logo />
 
-            <h2>Anuncios Programados</h2>
-            {history.upcoming.length === 0 ? (
-                <p>No hay anuncios programados.</p>
-            ) : (
-                <ul className="list-group mb-4">
-                    {history.upcoming.map((a) => (
-                        <li key={a._id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{a.title}</strong>
-                                <p className="mb-0 text-muted small">
-                                    {a.repeat_day
-                                        ? `Todos los ${a.repeat_day}`
-                                        : a.day_of_month
-                                            ? `Todos los ${a.day_of_month} de cada mes`
-                                            : `${formatDate(a.show_at_date)}`}
-                                </p>
-                            </div>
-                            <Button label="Ver" onClick={() => openDialog(a)} className="p-button-sm" />
-                        </li>
-                    ))}
-                </ul>
-            )}
-
             <h2>Anuncios Anteriores</h2>
             {history.past.length === 0 ? (
                 <p>No hay anuncios anteriores.</p>
