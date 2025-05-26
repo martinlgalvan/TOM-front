@@ -96,7 +96,7 @@ function UsersListPage() {
   const [expandedViewId, setExpandedViewId] = useState(null); // el anuncio cuyo detalle se muestra
 
   const [showViewsDialog, setShowViewsDialog] = useState(false);
-  const [viewsDialogData, setViewsDialogData] = useState({ title: '', users: [] });
+  const [viewsDialogData, setViewsDialogData] = useState();
 
   
   const DAYS = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
@@ -125,45 +125,37 @@ useEffect(() => {
 }, [showAnnouncementsDialog]);
 
 const fetchViewsForAnnouncement = async (announcementId, title) => {
-    if (viewsMap[announcementId]) {
-        setViewsDialogData({ title, users: viewsMap[announcementId] });
-        setShowViewsDialog(true);
-        return;
-    }
-
-    try {
-        const views = await UsersService.getAnnouncementViewsWithNames(announcementId);
-        console.log(views)
-        setViewsMap(prev => ({ ...prev, [announcementId]: views }));
-        setViewsDialogData(views);
-        setShowViewsDialog(true);
-    } catch (err) {
-        Notify.instantToast("Error al obtener vistas del anuncio");
-    }
+  console.log(announcementId, title)
+  try {
+    const views = await UsersService.getAnnouncementViewsWithNames(announcementId);
+    setViewsMap(prev => ({ ...prev, [announcementId]: views })); // Si querés seguir guardando
+    setViewsDialogData(views.viewers);
+    setShowViewsDialog(true);
+    console.log(views)
+  } catch (err) {
+    console.error("Error al obtener vistas del anuncio:", err);
+    Notify.instantToast("Error al obtener vistas del anuncio");
+  }
 };
 
 const fetchAnnouncements = async () => {
   setLoadingAnnouncements(true);
   try {
     const res = await UsersService.getAnnouncementsByCreator(id);
-
-    // Orden descendente por fecha
     const sorted = res.sort((a, b) => {
-      const dateA =
-        a.show_at_date || new Date(0); // Manejo defensivo
-      const dateB =
-        b.show_at_date || new Date(0);
-
-      return new Date(dateB) - new Date(dateA); // más recientes primero
+      const dateA = a.show_at_date || new Date(0);
+      const dateB = b.show_at_date || new Date(0);
+      return new Date(dateB) - new Date(dateA);
     });
-
     setAnnouncements(sorted);
   } catch (err) {
+    console.error("Error en fetchAnnouncements:", err);
     Notify.instantToast("Error al obtener anuncios");
   } finally {
     setLoadingAnnouncements(false);
   }
 };
+
 
     const fetchUsers = async () => {
     try {
@@ -229,19 +221,36 @@ const openNewForm = () => {
 const handleSubmit = async () => {
   const payload = { ...announcementForm, creator_id: id };
 
-  // Validación extra para modo 'once'
+  // Solo aplicar validación de fecha en modo 'once' si es creación (no edición)
   if (
+    !editMode &&
     payload.mode === "once" &&
-    payload.show_at_date &&
-    new Date(payload.show_at_date) < new Date().setHours(0, 0, 0, 0)
+    payload.show_at_date
   ) {
-    Notify.instantToast("La fecha seleccionada no puede ser anterior a hoy.");
-    return;
+    const showDate = new Date(payload.show_at_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // ← Importante: ajustar `today` al inicio del día
+
+    if (showDate < today) {
+      Notify.instantToast("La fecha seleccionada no puede ser anterior a hoy.");
+      return;
+    }
   }
+
+  console.log("Payload enviado al editar:", payload);
 
   try {
     if (editMode) {
-      await UsersService.editAnnouncement(payload._id, payload);
+      // Eliminar campos no válidos para edición
+      const {
+        _id,
+        created_at,
+        read_by,
+        link_url, // campo no usado
+        ...cleanedPayload
+      } = payload;
+
+      await UsersService.editAnnouncement(_id, cleanedPayload);
       Notify.instantToast("Anuncio actualizado");
     } else {
       await UsersService.createAnnouncement(payload);
@@ -253,6 +262,8 @@ const handleSubmit = async () => {
     Notify.instantToast("Error al guardar anuncio");
   }
 };
+
+
 
 const confirmDeleteAnnouncement = (announcementId) => {
     setAnnouncementToDelete(announcementId);
@@ -761,18 +772,18 @@ const handleConfirmDelete = async () => {
         onHide={() => setShowViewsDialog(false)}
         className="col-10 col-sm-9 col-lg-6 col-xl-5"
       >
-              {Array.isArray(viewsDialogData.users) && viewsDialogData.users.length === 0 ? (
-        <p>Aún nadie ha visto este anuncio.</p>
-      ) : (
-        <ul className="list-group">
-          {Array.isArray(viewsDialogData.viewers) &&
-            viewsDialogData.viewers.map((user) => (
-              <li key={user._id} className="list-group-item py-1 px-2">
-                <strong>{user.name}</strong> — <span className="text-muted small">{user.email}</span>
-              </li>
-            ))}
-        </ul>
-      )}
+        {Array.isArray(viewsDialogData) && viewsDialogData.length === 0 ? (
+          <p>Aún nadie ha visto este anuncio.</p>
+        ) : (
+          <ul className="list-group">
+            {Array.isArray(viewsDialogData) &&
+              viewsDialogData.map((user) => (
+                <li key={user._id} className="list-group-item py-1 px-2">
+                  <strong>{user.name}</strong> — <span className="text-muted small">{user.email}</span>
+                </li>
+              ))}
+          </ul>
+        )}
       </Dialog>
 
       <ConfirmDialog
