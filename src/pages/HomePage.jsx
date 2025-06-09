@@ -108,12 +108,12 @@ function HomePage() {
 
                 <div class="flex-blog">
 
-                  <div class="blog-slider__img row">
+                  <div class="blog-slider__img  row">
                     <IconButton className='text-center' onClick={() => handleUserType('entrenador')}>
                       <LaptopIcon className='fs-1 text-light d-block' />
                     </IconButton>
                   </div>
-                  <div class="blog-slider__content">
+                  <div class="blog-slider__content ">
                     <div class="blog-slider__title">¿Sos entrenador?</div>
                     <div class="blog-slider__text">Ingresá y mirá las caracteristicas de nuestro software. </div>
                     <button  class="blog-slider__button" onClick={() => handleUserType('entrenador')}>Ver</button>

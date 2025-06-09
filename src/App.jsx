@@ -276,8 +276,8 @@ async function onLogin(user, token) {
                 style={{ backgroundColor: color }}>
                 <div className="container-fluid">
                     <a className="navbar-brand" href="/">TOM</a>
-                    <button className="navbar-toggler" type="button" onClick={handleMenuSidebarOpen}>
-                        <span className="navbar-toggler-icon"></span>
+                <button className="navbar-toggler text-light " type="button" onClick={handleMenuSidebarOpen}>
+                        <AlignJustify />
                     </button>
                     <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
                         
@@ -341,7 +341,7 @@ async function onLogin(user, token) {
                 >
                 <div className="container-fluid">
                     <a className="navbar-brand text-light" href="/">TOM</a>
-                    <button className="navbar-toggler " type="button" onClick={handleMenuSidebarOpen}>
+                    <button className="navbar-toggler text-light " type="button" onClick={handleMenuSidebarOpen}>
                         <AlignJustify />
                     </button>
                     <div className="collapse navbar-collapse justify-content-end" id="navbarNav">

@@ -87,10 +87,8 @@ function LoginPage({ onLogin }) {
                         <div className="d-grid">
                             <button 
                                 type="submit" 
-                                className="btn btn-lg" 
+                                className="btn colorMainAll text-light btn-lg" 
                                 style={{
-                                    backgroundColor: color || '#1a1a1a', 
-                                    color: textColor === 'false' || !textColor ? '#fff' : textColor, 
                                     fontWeight: 500,
                                     borderRadius: '10px',
                                     padding: '12px'
