@@ -76,6 +76,17 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import CircleIcon from '@mui/icons-material/Circle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 
+import {
+  User,
+  CalendarPlus,
+  Repeat,
+  ClipboardCopy,
+  HelpCircle,
+  ToggleLeft,
+  SquarePlus,
+  Info
+} from 'lucide-react';
+
 function parseToDateForTimePicker(timeData) {
   if (timeData == null || timeData === "") {
     // Por defecto, retornamos 00:00
@@ -176,6 +187,7 @@ function DayEditDetailsPage() {
       setAllDays(data[0].routine);
       setDay(data[0].routine);
       setCurrentDay(data[0].routine[0]);
+      console.log(data[0].routine)
       Notify.updateToast();
     });
   }, [statusCancel]);
@@ -1371,159 +1383,130 @@ const hasBackoff = exercise => (
       {/**
        * SIDEBAR: fijo a la izquierda 
        */}
-      <div className="sidebarProExercises">
-        <Sidebar 
-          collapsed={collapsed}
-          collapsedWidth={'85px'}
-          width="200px"
-          backgroundColor="colorMain"
-          rootStyles={{
-            color: 'white',
-            border: 'none'
-          }}
-        >
-          <Menu>
-            <MenuItem
-              onClick={() => {
-                setCollapsed(!collapsed);
-              }}
-              className="mt-3 mb-5"
-              icon={<ViewHeadlineIcon/> }
-              style={{ height: 'auto', whiteSpace: 'normal' }}
-            > 
-              <span>Ocultar barra</span>
-            </MenuItem>
+       <div className='sidebarPro colorMainAll'>
+                 <div className="d-flex flex-column justify-content-between colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh' }}>
+                 <div className="p-3">
+                   <h5 className="fw-bold text-center mb-4">TOM</h5>
+       
+                   <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
+                     <div className=' col-1'><User /></div>
+                     <div className='text-center col-10'><strong >{username}</strong></div>
+                   </div>
+
+                    <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 stylePointer" onClick={openEditWeekNameDialog}>
+                     <div className=' col-1'><EditIcon /></div>
+                     <div className='text-center col-10'><strong >{weekName}</strong></div>
+                   </div>
+
             
-            <MenuItem id="dias" style={{ height: 'auto', whiteSpace: 'normal' }}>
-              <div style={{ padding: '1rem 0' }}>
-                <Segmented
-                  className="w-100 stylesSegmented"
-                  size="large"
-                  vertical
-                  options={allDays.map((day, index) => ({
-                    label: day.name,
-                    value: day._id,
-                    icon: 
-                      index === 0 ? <LooksOneIcon /> :
-                      index === 1 ? <LooksTwoIcon /> :
-                      index === 2 ? <Looks3Icon /> :
-                      index === 3 ? <Looks4Icon /> :
-                      index === 4 ? <Looks5Icon /> :
-                      index === 5 ? <Looks6Icon /> :
-                      <CalendarTodayIcon />
-                  }))}
-                  value={currentDay ? currentDay._id : ''}
-                  onChange={(value) => {
-                    const selectedDay = allDays.find((day) => day._id === value);
-                    if (selectedDay) {
-                      const selectedIndex = allDays.findIndex((d) => d._id === selectedDay._id);
-                      setIndexDay(selectedIndex);
-                      setCurrentDay(allDays[selectedIndex]);
-                    }
-                  }}
-                />
-              </div>
-            </MenuItem>
-            
-            <MenuItem id="agregarDia" onClick={addNewDay} icon={<AddIcon  />}>
-              Agregar día
-            </MenuItem>
+       
+                   <div className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
+                     <Segmented
+                        className="w-100 stylesSegmented"
+                        size="large"
+                        vertical
+                        options={allDays.map((day, index) => ({
+                          label: day.name,
+                          value: day._id,
+                          icon: 
+                            index === 0 ? <LooksOneIcon /> :
+                            index === 1 ? <LooksTwoIcon /> :
+                            index === 2 ? <Looks3Icon /> :
+                            index === 3 ? <Looks4Icon /> :
+                            index === 4 ? <Looks5Icon /> :
+                            index === 5 ? <Looks6Icon /> :
+                            <CalendarTodayIcon />
+                        }))}
+                        value={currentDay ? currentDay._id : ''}
+                        onChange={(value) => {
+                          const selectedDay = allDays.find((day) => day._id === value);
+                          if (selectedDay) {
+                            const selectedIndex = allDays.findIndex((d) => d._id === selectedDay._id);
+                            setIndexDay(selectedIndex);
+                            setCurrentDay(allDays[selectedIndex]);
+                          }
+                        }}
+                      />
+                    
+                   </div>        
 
-            <MenuItem id="editarDia" onClick={() => openEditNameDialog(currentDay)} icon={<EditIcon />}>
-            <span>Editar {`${currentDay && currentDay.name}`}</span> 
-            </MenuItem>
+                  <div className="text-muted small">
 
-            <MenuItem id="eliminarDia" onClick={handleDeleteDayClick} icon={<DeleteIcon />}>
-              <span>Eliminar {`${currentDay && currentDay.name}`}</span>
-            </MenuItem>
+                    <div id="agregarDia"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={addNewDay}>
+                      <div className=' col-1'><AddIcon /></div>
+                      <div className='text-center col-10'><strong >Agregar día</strong></div>
+                    </div>
 
-            <MenuItem  disabled className="margenLogoDay ">
-              <LogoChico />
-            </MenuItem>
+                    <div id="editarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => openEditNameDialog(currentDay)} >
+                    
+                                <div className=' col-1'><EditIcon /></div>
+                      <div className='text-center col-10'><strong >Editar {`${currentDay && currentDay.name}`}</strong></div>
+                    </div>
 
-            <MenuItem className="text-center marginHelpDays " onClick={() => setTourVisible(true)}>
-              <IconButton className="p-2 bg-light ">
-                <HelpOutlineIcon className="text-dark" /> 
-              </IconButton> 
-              <span className="ms-2">Ayuda</span>
-            </MenuItem>
-          </Menu>
-        </Sidebar>
-      </div>
+                    <div id="eliminarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={handleDeleteDayClick} >
+                      <span></span>
+                         <div className=' col-1'><DeleteIcon /></div>
+                      <div className='text-center col-10'><strong >Eliminar {`${currentDay && currentDay.name}`}</strong></div>
+                    </div>
 
+                  </div>
+
+                    <div className="text-muted small mt-5">
+
+                      <div id="agregarDia"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewExercise()}>
+                        <div className=' col-1'><AddIcon  className="me-2" /></div>
+                        <div className='text-center col-10'><strong >Añadir ejercicio</strong></div>
+                      </div>
+
+                      <div id="editarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewCircuit()} >
+                      
+                                  <div className=' col-1'><AddIcon /></div>
+                        <div className='text-center col-10'><strong >Añadir circuito</strong></div>
+                      </div>
+
+
+                    </div>
+
+                   <div className="p-3 mb-3 text-center">
+                              <div className="small text-light mb-2">
+                                <strong>TOM</strong><br />Planificación digital
+                              </div>
+                              <button className="btn btn-outline-light btn-sm" onClick={() => setTourVisible(true)}>
+                                <HelpCircle size={16} className="me-1" /> Ayuda
+                              </button>
+                            </div>
+                          </div>
+       
+                 </div>
+    </div>
+       
+       
 
       <div className={`${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}>
         <section className="container-fluid totalHeight">
           
-          <div  className={`row text-center ${firstWidth > 992 && 'mb-5'} justify-content-center pb-3 align-middle align-center align-items-center`}>
-            <div className="col-12 mb-3">
-                <div className="row justify-content-center align-items-center py-2">
-                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowMovility}>
+          <div  className={`row text-center ${firstWidth > 992 && 'mb-3'} justify-content-center pb-3 align-middle align-center align-items-center`}>
+
+            <div className="col-12 col-lg-6 pb-3">
+                <div className="row justify-content-center align-items-center m-auto pb-3">
+                  <div id="warmup" className="col-10 col-lg-6  btn bgItemsDropdown shadow pt-4" onClick={handleShowMovility}>
                     <EditIcon  className="me-2" />
-                    <span className=" me-1">Bloque de activación/movilidad <strong className="d-block">{currentDay && currentDay.name}</strong></span>
+                    <span className=" me-1">Bloque de <strong>activación/movilidad</strong> <strong className="d-block">{currentDay && currentDay.name}</strong></span>
                   </div>
                 </div>
               </div>
 
-              <div className="col-12 mb-3">
-                <div className="row justify-content-center align-items-center py-2">
-                  <div id="warmup" className="col-10 col-lg-6 pt-4 btn boxDataWarmup " onClick={handleShowWarmup}>
+              <div className="col-12 col-lg-6 pb-3">
+                <div className="row justify-content-center align-items-center m-auto pb-3">
+                  <div id="warmup" className="col-10 col-lg-6 btn bgItemsDropdown shadow pt-4" onClick={handleShowWarmup}>
                     <EditIcon  className="me-2" />
-                    <span className=" me-1">Bloque de entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
+                    <span className=" me-1">Bloque de <strong>entrada en calor</strong> <strong className="d-block">{currentDay && currentDay.name}</strong></span>
                   </div>
                 </div>
               </div>
 
 
-              {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
-                <button
-                  className="btn p-2"
-                >
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Añadir ejercicio</span>
-                </button>
-              </div>}
-
-              <div id="nameWeek" className="col-10 col-lg-3 btn mx-2 mb-4 boxData" onClick={openEditWeekNameDialog}>
-                <button className="btn p-2" >
-                 <EditIcon className="me-2" />
-                  <strong>{weekName}</strong>
-                </button>
-              </div>
-
-              {firstWidth > 992 &&
-               <div id="addCircuit" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewCircuit()}>
-                <button className="btn p-2 ">
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Añadir circuito</span>
-                </button>
-              </div>}
-
-              {firstWidth > 992 && <div id="addSets" className="col-3 btn mx-2 boxData" onClick={() => incrementAllSeries()}>
-                <button
-                  className="btn p-2"
-                >
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Sumar 1 serie</span>
-                </button>
-              </div>}
-
-              <div id="diaActual" className="col-10 col-lg-3 mx-2 ">
-                <h4  className=" m-0 p-2" >
-                  <strong>{currentDay && currentDay.name}</strong>
-                </h4>
-              </div>
-
-              {firstWidth > 992 && <div id="addReps" className="col-3 btn mx-2 boxData" onClick={() => incrementAllReps()}>
-                <button
-                  className="btn p-2 "
-                >
-                  <AddIcon  className="me-2" />
-                  <span className=" me-1">Sumar 1 rep</span>
-                </button>
-              </div> 
-              }
-
+          
               {firstWidth < 992 && 
               <>
               <div className={`col-10 col-sm-6 text-center mb-4`}>
@@ -1579,6 +1562,38 @@ const hasBackoff = exercise => (
           </div>
 
           <div className="row justify-content-center align-middle text-center mb-5 pb-5">
+            {firstWidth > 992 && (
+              <div className="row justify-content-around mb-2 ">
+
+                 <div className="col-3">
+                    <div id="addSets" className="bgItemsDropdownUl border-0 rounded-0 m-3 p-2 row justify-content-center"  onClick={() => incrementAllSeries()} >
+                      <div className=' col-1'><AddIcon /></div>
+                      <div className='text-center col-10'>
+                        <strong >Herramientas generales: </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                <div className="col-2 bgItemsDropdownUl stylePointer border-0 rounded-0 p-2 m-3 shadow">
+                  <div id="addSets" className=" row justify-content-center"  onClick={() => incrementAllSeries()} >
+                    <div className=' col-1'><AddIcon /></div>
+                    <div className='text-center col-10'>
+                      <strong >Sumar 1 serie</strong>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-2 bgItemsDropdownUl stylePointer border-0 rounded-0 p-2 m-3 shadow">
+                  <div id="addReps" className=" row justify-content-center"  onClick={() => incrementAllReps()} >
+                    <div className=' col-1'><AddIcon /></div>
+                    <div className='text-center col-10'><strong >Sumar 1 repetición</strong></div>
+                  </div>
+                </div>
+
+
+
+              </div>
+            )}
+
             {firstWidth > 992 ? (
               /** Tabla de escritorio con Drag&Drop **/
               <DragDropContext onDragEnd={handleOnDragEnd}>
@@ -1836,27 +1851,6 @@ const hasBackoff = exercise => (
                         </tbody>
                         {provided.placeholder}
                       </table>
-                       <div className="row justify-content-center">
-
-                   
-                            <button
-                             onClick={() => AddNewExercise()}
-                              className="boxData col-4 m-2 btn p-2"
-                            >
-                              <AddIcon  className="me-2" />
-                              <span className=" me-1">Añadir ejercicio</span>
-                            </button>
-                        
-                          
-                        
-                       
-                            <button className="boxData col-4 m-2 btn p-2 " onClick={() => AddNewCircuit()}>
-                              <AddIcon  className="me-2" />
-                              <span className=" me-1">Añadir circuito</span>
-                            </button>
-                        
-                        
-                       </div> 
                     </div>
                   )}
                 </Droppable>

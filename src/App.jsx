@@ -48,6 +48,13 @@ import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import NotFound404 from './pages/NotFound404.jsx'
 import ParDetailsPage from './pages/coach/ParDetailsPage.jsx'
 import UserAnnouncementsPage from './components/UserAnnouncementsPage.jsx'
+import PaymentsManagerPage from './pages/coach/PaymentsManagerPage.jsx'
+
+import {
+  AlignJustify
+} from 'lucide-react';
+
+
 
 function RoutePrivate({ isAutenticate, children }) {
     return (
@@ -330,12 +337,12 @@ async function onLogin(user, token) {
     return (
         <>
             {/* NAVBAR FIJA */}
-            <nav className={`navbar navbar-expand-lg navbar-dark fixed-top colorFooter`}
-                style={{ backgroundColor: color }}>
+            <nav className={`navbar navbar-expand-lg colorMainAll text-light fixed-top `}
+                >
                 <div className="container-fluid">
-                    <a className="navbar-brand" href="/">TOM</a>
-                    <button className="navbar-toggler" type="button" onClick={handleMenuSidebarOpen}>
-                        <span className="navbar-toggler-icon"></span>
+                    <a className="navbar-brand text-light" href="/">TOM</a>
+                    <button className="navbar-toggler " type="button" onClick={handleMenuSidebarOpen}>
+                        <AlignJustify />
                     </button>
                     <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
                         <ul className="navbar-nav text-center">
@@ -346,6 +353,13 @@ async function onLogin(user, token) {
                                 <li className="nav-item">
                                     <Link className={`nav-link text-light ${location.pathname === `/users/${id}` && 'active'}`} to={`/users/${id}`}>
                                         Lista de alumnos
+                                    </Link>
+                                </li>
+                            )}
+                            {isAdmin() && (
+                                <li className="nav-item">
+                                    <Link className={`nav-link text-light ${location.pathname === `/usuarios/${id}` && 'active'}`} to={`/usuarios/${id}`}>
+                                        Gestion de alumnos
                                     </Link>
                                 </li>
                             )}
@@ -533,6 +547,15 @@ async function onLogin(user, token) {
                             </RoutePrivate>
                         }
                     />
+
+                    <Route
+                        path="/usuarios/:id"
+                        element={
+                            <RoutePrivate isAutenticate={isAutenticated}>
+                                <PaymentsManagerPage />
+                            </RoutePrivate>
+                        }
+                    />
                     <Route path="*" element={<NotFound404 />} />
                 </Routes>
             </main>
@@ -553,6 +576,13 @@ async function onLogin(user, token) {
                         <li className="list-group-item">
                             <Link className='nav-link' to={`/users/${id}`} onClick={() => setMenuSidebar(false)}>
                                 Lista de alumnos
+                            </Link>
+                        </li>
+                    )}
+                    {isAdmin() && (
+                        <li className="list-group-item">
+                            <Link className='nav-link' to={`/usuarios/${id}`} onClick={() => setMenuSidebar(false)}>
+                                Gestión de aluimnos
                             </Link>
                         </li>
                     )}
@@ -633,7 +663,7 @@ async function onLogin(user, token) {
                 </ul>
             </Sidebar>
 
-            <footer className={`container-fluid colorFooter`}>
+            <footer className={`container-fluid colorMainAll`}>
                 <div className={`row marginSidebarClosed`}>
                     <ul className="text-center">
                         <li className="text-light py-2">TOM</li>

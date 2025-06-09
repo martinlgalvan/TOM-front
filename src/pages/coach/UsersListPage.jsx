@@ -51,6 +51,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from '@mui/icons-material/Delete';
 
 
+import { SquarePen, CircleX, Copy, HelpCircle } from 'lucide-react';
+
 function UsersListPage() {
 
     const { id } = useParams();
@@ -421,97 +423,62 @@ const handleConfirmDelete = async () => {
     return (
         <>
     
-        <div className="sidebarPro">
-        <Sidebar 
-          collapsed={collapsed}
-          collapsedWidth={'85px'}
-          width="200px"
-          backgroundColor="colorMain"
-          rootStyles={{
-            color: 'white',
-            border: 'none'
-          }}
-        >
-          <Menu>
+       <div className='sidebarPro colorMainAll'>
+          <div className="d-flex flex-column justify-content-between colorMainAll shadow-sm" style={{ width: collapsed ? '85px' : '220px', height: '100vh' }}>
+            <div className="p-3">
+              <h5 className="fw-bold text-center mb-4">TOM</h5>
 
-          <MenuItem
-              onClick={() => {
-                setCollapsed(!collapsed);
-              }}
-              className="mt-3"
-              icon={<ViewHeadlineIcon/> }
-              style={{ height: 'auto', whiteSpace: 'normal' }}
-            > 
-              <span>Ocultar barra</span>
-            </MenuItem>
 
-            <MenuItem
-              onClick={() => {
-                setCollapsed(!collapsed);
-              }}
-              className="mt-3"
-              icon={<ViewHeadlineIcon/> }
-              style={{ height: 'auto', whiteSpace: 'normal' }}
-            > 
-              <span>Ocultar barra</span>
-            </MenuItem>
-
-            <MenuItem id={'username'} icon={collapsed ? <PersonIcon /> : ''} disabled={collapsed ? false : true} className="mt-3 "> 
-              <div className="bg-light rounded-2 text-center">
-                <p className="m-0">Bienvenido <strong className="d-block">{localStorage.getItem("name")}</strong></p>
+              {/* NOMBRE */}
+              <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
+                <div className='col-1'><PersonIcon /></div>
+                {!collapsed && (
+                  <div className='text-center text-light col-10'>
+                    <strong>{localStorage.getItem("name")}</strong>
+                  </div>
+                )}
               </div>
-            </MenuItem>
 
-
-
-            <MenuItem id={'plan'} icon={collapsed ? <CardMembershipIcon />: ''} disabled={collapsed ? false : true}  className="mt-3 "> 
-              <div className="bg-light rounded-2 text-center py-2">
-                <p className="m-0">Plan <strong className="d-block">{plan}</strong></p>
+              {/* PLAN */}
+              <div className="text-light small bgItemsDropdown rounded mx-2 mb-3 p-2 text-center">
+                <span className="d-block">Plan</span>
+                <strong>{plan}</strong>
               </div>
-            </MenuItem>
-            
-            
-            <MenuItem id={'alumnos'} icon={collapsed ? <BarChartIcon />: ''} disabled={collapsed ? false : true} className="mt-4 " >
-                <div className="bg-light rounded-2 text-center py-2">
-                    <p className="m-0">  ({totalUsers}/{planLimit} alumnos)
-                        <span className="d-block">  <ProgressBar
-                                        value={progress}
-                                        showValue={false}
-                                        className="mx-3"
-                                        style={{ height: "20px", borderRadius: "10px" }}
-                                    /></span>
-                    </p>
-                </div>              
-            </MenuItem>
 
-            <MenuItem disabled className="margenLogoUserListPage ">
+              {/* PROGRESO */}
+              <div className="bgItemsDropdown text-light rounded mx-2 mb-4 p-2 text-center small">
+                <span>({totalUsers}/{planLimit} alumnos)</span>
+                <ProgressBar
+                  value={progress}
+                  showValue={false}
+                  className="mx-2 mt-1"
+                  style={{ height: "20px", borderRadius: "10px" }}
+                />
+              </div>
+            <div className=" text-light rounded text-center small">
+              <button
+                  label="Administrar anuncios"
+                  icon="pi pi-bullhorn"
+                  className="btn btn-warning my-1 text-center"
+                  onClick={() => setShowAnnouncementsDialog(true)}
+                >Administrar anuncios </button>
+                </div>
+            </div>
+            {/* LOGO */}
+            <div className="d-grid ">
               <LogoChico />
+            </div>
 
-            </MenuItem>
-
-
-
-            <MenuItem className="mt-3 text-center botonHelp"  onClick={() => setTourVisible(true)}>
-              <IconButton className="p-2 bg-light ">
-                <HelpOutlineIcon className="text-dark" /> 
-              </IconButton>
-              <span className="ms-2">Ayuda</span>
-            </MenuItem>
-
-          </Menu>
-        </Sidebar>
-      </div>
+            {/* AYUDA */}
+            <div className="p-3 text-center ">
+              <button className="btn btn-outline-light btn-sm" onClick={() => setTourVisible(true)}>
+                <HelpCircle size={16} className="me-1" /> {!collapsed && "Ayuda"}
+              </button>
+            </div>
+          </div>
+        </div>
         
         <section   className="container-fluid totalHeight">
-
-          <article className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>
-           <button
-              label="Administrar anuncios"
-              icon="pi pi-bullhorn"
-              className="btn btn-warning my-3 col-9 col-lg-5"
-              onClick={() => setShowAnnouncementsDialog(true)}
-            >Administrar anuncios </button>
-          </article>
 
             <article id={'tabla'} className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>
 

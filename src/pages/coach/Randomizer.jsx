@@ -1387,55 +1387,32 @@ const removeBackoffLine = (index) => {
 
   return (
     <>
-      {/* Render de PARs: card con las semanas y usuarios */}
-      {/* Sidebar con react-pro-sidebar al estilo del primer código */}
-      <div className="sidebarProExercises">
-        <Sidebar 
-          collapsed={collapsed}
-          collapsedWidth={'85px'}
-          width="200px"
-          backgroundColor="colorMain"
-          rootStyles={{
-            color: 'white',
-            border: 'none'
-          }}
+      <div className='sidebarPro colorMainAll'>
+  <div className="d-flex flex-column justify-content-between colorMainAll shadow-sm" style={{ width: '220px', height: '100vh' }}>
+    <div className="p-3">
+      <h5 className="fw-bold text-center mb-4">TOM</h5>
+
+      <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
+        <div className='text-center col-12'><strong>Planificador</strong></div>
+
+      <div className="mb-4">
+        <button
+          className="btn btn-outline-light w-100 text-start mb-2"
+          onClick={() => setShowSavedRoutinesDialog(true)}
         >
-          <ProSidebarMenu>
-            <MenuItem
-              onClick={() => setCollapsed(!collapsed)}
-              className="mt-3 mb-2"
-              icon={<ViewHeadlineIcon />}
-              style={{ height: 'auto', whiteSpace: 'normal' }}
-            >
-              <span>Ocultar barra</span>
-            </MenuItem>
+          <VisibilityIcon className="me-2" /> Ver rutinas
+        </button>
 
-            <MenuItem disabled className="text-center">
-              Lista de rutinas
-            </MenuItem>
-
-            <MenuItem
-              className="text-center me-4"
-              icon={collapsed ? <VisibilityIcon /> : ''}
-              onClick={() => setShowSavedRoutinesDialog(true)}
-            >
-              <div className="bg-light rounded-2 text-center d-flex">
-                <IconButton>
-                  <VisibilityIcon className="text-dark" />
-                </IconButton>
-                  <p className="pt-3"><strong className="ms-2">Ver rutinas</strong></p>
-              </div>
-            </MenuItem>
-
-            <MenuItem className="text-center marginHelpDays">
-              <IconButton className="p-2 bg-light">
-                <HelpOutlineIcon className="text-dark" /> 
-              </IconButton> 
-              <span className="ms-2">Ayuda</span>
-            </MenuItem>
-          </ProSidebarMenu>
-        </Sidebar>
       </div>
+    </div>
+
+    <div className="p-3 text-center">
+      <div className="small text-light mb-2">
+        <strong>TOM</strong><br />Planificación digital
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* Contenido principal (respetando espacio del sidebar) */}
       <div className={` ${collapsed ? "marginSidebarClosed" : " marginSidebarOpen"}`}>

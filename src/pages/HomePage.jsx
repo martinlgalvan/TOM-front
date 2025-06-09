@@ -162,7 +162,7 @@ function HomePage() {
               <div ref={leftRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-left">
                 <div className="card-body text-center">
                   <IconButton>
-                    <GroupIcon className='fs-1 color-icons' />
+                    <GroupIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Gestión de alumnos</h3>
                   <p className="card-text">Contá con un panel de alumnos, donde podés agregar, buscar o eliminar alumnos de forma sencilla.</p>
@@ -172,7 +172,7 @@ function HomePage() {
               <div ref={centerRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-center">
                 <div className="card-body text-center">
                   <IconButton>
-                    <LaptopChromebookIcon className='fs-1 color-icons' />
+                    <LaptopChromebookIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Planificación</h3>
                   <p className="card-text">Gestioná la planificación de cada alumno, donde podés agregar semanas, e ir guardando el progreso de cada uno.</p>
@@ -182,7 +182,7 @@ function HomePage() {
               <div ref={rightRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-right">
                 <div className="card-body text-center">
                   <IconButton>
-                    <SettingsIcon className='fs-1 color-icons' />
+                    <SettingsIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Versatilidad</h3>
                   <p className="card-text">Crea semanas, días, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b className='d-block'>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
@@ -192,7 +192,7 @@ function HomePage() {
               <div ref={leftRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-left">
                 <div className="card-body text-center">
                   <IconButton>
-                    <MessageIcon className='fs-1 color-icons' />
+                    <MessageIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Comunicación con tus alumnos</h3>
                   <p className="card-text">Tus alumnos te van a poder comentar sus sensaciones, tanto semanales, como en cada ejercicio.</p>
@@ -202,7 +202,7 @@ function HomePage() {
               <div ref={centerRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-center">
                 <div className="card-body text-center">
                   <IconButton>
-                    <MenuBookIcon className='fs-1 color-icons' />
+                    <MenuBookIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Biblioteca de ejercicios</h3>
                   <p className="card-text">Accedé a nuestra biblioteca de ejercicios, con subdivisiones en los básicos, y grupo musculares. También podrás cargar la tuya propia.</p>
@@ -212,7 +212,7 @@ function HomePage() {
               <div ref={rightRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-right">
                 <div className="card-body text-center">
                   <IconButton>
-                    <WorkIcon className='fs-1 color-icons' />
+                    <WorkIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Profesionalismo</h3>
                   <p className="card-text">Es tu carta de presentación. Llevá tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificación en su celular.</p>

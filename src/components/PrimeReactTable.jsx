@@ -427,7 +427,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
       <div className="col-6 col-lg-4 text-center m-0 pt-2">
         <div 
           id={'crearAlumno'} 
-          className="boxData marginBoxRegister" 
+          className="bgItemsDropdown" 
           onClick={() => setDialogg(true)}
           style={{ cursor: 'pointer' }}
         >

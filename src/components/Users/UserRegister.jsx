@@ -187,7 +187,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
                             )}
                         </li>
                         <li className="list-group-item">
-                            <button type="submit" className="btn BlackBGtextWhite my-1 w-100">
+                            <button type="submit" className="btn colorMainAll text-light my-1 w-100">
                                 Crear usuario
                             </button>
                         </li>

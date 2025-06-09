@@ -117,15 +117,76 @@ p {
   }
 
 
-
   .usersListTable td{
     text-align: center !important;
+  }
+
+    .usersListTable th{
+    font-size: 1em;
+    color: #929191;
+    background-color: rgba(255, 255, 255, 0) !important;
+  }
+
+  .stylesDate{
+    font-size: 0.9em !important;
+  }
+
+  .stylesHour{
+    font-size: 0.8em !important;
+  }
+
+  .styleBadgeDays{
+    padding: 10px 15px;
+    border-radius: 300px;
+    background-image: linear-gradient(147deg, #172f4b 0%, #142b47 100%);
+    color: white;
   }
 
   .usersListTable tr{
     border-bottom: 1px solid rgb(233, 233, 233);
   }
 
+  .userListTable{
+      overflow-y: visible !important;
+  }
+
+  .colorMainAll{
+  background-image: linear-gradient(147deg, #041324 0%, #041324 100%);
+  }
+
+  .colorMainAllText{
+    color: #0b213a;
+  }
+
+  .bgItemsDropdown{
+    background-color: #0d2744;
+    border: 1px solid #041324;
+    padding: 5px;
+    border-radius: 90px;
+    color: white;
+  }
+
+  .stylePointer{
+    cursor: pointer;
+  }
+
+    .stylePointer:hover{
+    background-color: #36485c;
+  }
+
+  .navbar-toggler-icon{
+    color: white !important;
+    background-color: white !important;
+    border-radius: 10px;
+  }
+
+    .bgItemsDropdownUl{
+    background-color: #112f52;
+    border: 1px solid #041324;
+    margin: 3px 5px;
+    border-radius: 90px;
+    color: white;
+  }
 
   .usersListTable .p-column-header-content{
     padding-top: 10px !important;
@@ -1437,6 +1498,16 @@ width: 50px;
   width: 140px !important;
 }
 
+.normalized-input {
+  height: 40px !important;
+  font-size: 0.875rem !important;
+  width: 100% !important;
+}
+
+.fontMenuPayments{
+  font-size: 0.9em;
+}
+
 .stylesImportantResuemn{
   padding: 0 !important;
 }
@@ -2266,7 +2337,7 @@ font-size: 0.9em;
 .blog-slider__img {
   width: 30%;
   flex-shrink: 0;
-  background-image: linear-gradient(147deg, #000000 0%, #686868 74%);
+  background-image: linear-gradient(147deg, #041324 0%, #223a55 74%);
   box-shadow: 4px 13px 30px 1px rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   transform: translateX(-80px);
@@ -2293,7 +2364,7 @@ font-size: 0.9em;
 }
 .blog-slider__button {
   display: inline-flex;
-  background-image: linear-gradient(147deg, #000000 0%, #6e6e6e 74%);
+  background-image: linear-gradient(147deg, #041324 0%, #223a55 74%);
   padding: 10px 30px;
   border-radius: 50px;
   color: #fff;
@@ -2713,6 +2784,7 @@ input:checked + .slider:before {
 
 
 
+
 .sidebarPro {
   position: fixed;
   background: rgb(0,0,0);
@@ -2724,6 +2796,19 @@ input:checked + .slider:before {
 
 }
 
+
+.sidebarProPayment {
+  position: fixed;
+  background: rgb(0,0,0);
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgb(32, 32, 32) 49%, rgba(0,0,0,1) 100%);
+  height: 100% !important;
+  z-index: 1;
+  top: 0px;
+  left: 0px;
+
+}
+
+
 .sidebarProExercises{
   position: fixed;
   background: rgb(0,0,0);
@@ -2734,6 +2819,9 @@ input:checked + .slider:before {
   left: 0px;
 }
 
+.borderDropdown{
+  border: 1px solid dark !important;
+}
 
 .contentArea {
   margin-left: 200px; /* ancho por defecto cuando está abierto */

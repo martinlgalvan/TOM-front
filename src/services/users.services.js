@@ -448,6 +448,19 @@ async function editProfile(user_id, data) {
   return response.json();
 }
 
+async function updatePaymentInfo(userId, paymentInfo) {
+  return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${userId}/payment-info`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    },
+    body: JSON.stringify(paymentInfo)
+  }).then(res => {
+    if (!res.ok) throw new Error('Error al guardar el pago');
+    return res.json();
+  });
+}
 
 
 export {
@@ -473,6 +486,8 @@ export {
     markAnnouncementRead,
     getAnnouncementsHistory,
     getAnnouncementViewsWithNames,
-    getAnnouncementViewCounts
+    getAnnouncementViewCounts,
+
+    updatePaymentInfo
     
 }

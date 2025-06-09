@@ -15,12 +15,24 @@ import { Tour } from 'antd';
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 //.............................. COMPONENTES ..............................//
 import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
 import LogoChico from '../../components/LogoChico.jsx';
 import BloquesForm from './../../components/BloquesForm.jsx';
 import BlocksListPage from './../../components/BlocksListPage.jsx';
+import {
+  User,
+  CalendarPlus,
+  Repeat,
+  ClipboardCopy,
+  HelpCircle,
+  ToggleLeft,
+  SquarePlus,
+  Info
+} from 'lucide-react';
 
 //.............................. ICONOS MUI ..............................//
 import IconButton from "@mui/material/IconButton";
@@ -31,6 +43,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
+import AddToDriveIcon from '@mui/icons-material/AddToDrive';
 
 function UserRoutineEditPage() {
     const { id } = useParams();
@@ -140,6 +153,7 @@ function UserRoutineEditPage() {
         UserServices.getProfileById(id)
           .then((data) => {
             setProfile(data);
+            console.log(data)
             // Si data.resumen_semanal existe, úsalo; si no, usamos el objeto por defecto.
             setWeeklySummary(data.resumen_semanal || {
               selection1: "",
@@ -231,133 +245,180 @@ function UserRoutineEditPage() {
         return {};
     };
 
-    // Nueva función para guardar las correcciones junto a la fecha
-    const handleCorrectionsSave = () => {
-        const now = new Date().toISOString();
-        // Combinar el perfil actual con la devolución y su fecha en nuevas propiedades:
-        const updatedProfile = { ...profile, devolucion: correctionsText, devolucionFecha: now };
-        // Para evitar problemas con _id si el servicio lo impide, lo extraemos.
-        const { _id, ...profileDataWithoutId } = updatedProfile;
-        
-        UserServices.editProfile(id, profileDataWithoutId)
-          .then(() => {
-            NotifyHelper.instantToast('Devolución actualizada con éxito!');
-            setProfile(updatedProfile);
-            setShowCorrectionsDialog(false);
-          })
-          .catch((err) => {
-            console.error("Código de error:", err.status);
-            console.error("Detalle del error:", err.data);
-            NotifyHelper.instantToast('Error al guardar la devolución');
-          });
-    };
+    const getBadgeStyle = (value) => {
+  if (!value) return 'bg-secondary';
+  const val = value.toLowerCase();
+  if (val.includes('muy bien')) return 'bg-success';
+  if (val.includes('bien')) return 'bg-success-subtle text-dark';
+  if (val.includes('regular')) return 'bg-warning text-dark';
+  if (val.includes('mal')) return 'bg-danger';
+  return 'bg-secondary';
+};
 
+    // Nueva función para guardar las correcciones junto a la fecha
+   const handleCorrectionsSave = () => {
+  const now = new Date().toISOString();
+
+  // Creamos un nuevo objeto excluyendo campos que no deben ser reenviados
+  const {
+    _id,
+    id: ignoredId,
+    user_id, // 👈 NO reenviar esto
+    ...safeProfile
+  } = profile;
+
+  const updatedProfile = {
+    ...safeProfile,
+    devolucion: correctionsText,
+    devolucionFecha: now
+  };
+
+  UserServices.editProfile(id, updatedProfile)
+    .then(() => {
+      NotifyHelper.instantToast('Devolución actualizada con éxito!');
+      setProfile(prev => ({
+        ...prev,
+        devolucion: correctionsText,
+        devolucionFecha: now
+      }));
+      setShowCorrectionsDialog(false);
+    })
+    .catch((err) => {
+      console.error("Código de error:", err.status);
+      console.error("Detalle del error:", err.data);
+      NotifyHelper.instantToast('Error al guardar la devolución');
+    });
+};
     return (
         <>
-            <div className="sidebarPro">
-                <Sidebar
-                    collapsed={collapsed}
-                    collapsedWidth={'85px'}
-                    width="200px"
-                    backgroundColor="colorMain"
-                    rootStyles={{ color: 'white', border: 'none' }}
-                >
-                    <Menu>
-                        <MenuItem id={'alumno'} icon={collapsed ? <PersonIcon /> : ''} disabled={!collapsed} className="mt-5 pt-3">
-                            <div className="bg-light rounded-2 text-center">
-                                <p className="m-0">Alumno <strong className="d-block">{username}</strong></p>
-                            </div>
-                        </MenuItem>
-                        <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} id='switchWeek' className="mt-4">
-                            <div className="bg-light rounded-2 text-center ">
-                                <div className="d-flex align-items-center justify-content-center flex-column ">
-                                    <p className='mt-1 mb-0'>{useDate ? "Modo fecha" : "Modo numérico"}</p>
-                                    <label className="switch mb-2">
-                                        <input type="checkbox" checked={useDate} onChange={handleToggleUseDate} />
-                                        <span className="slider round"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </MenuItem>
+        <div className='sidebarPro colorMainAll'>
+          <div className="d-flex flex-column justify-content-between colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh' }}>
+          <div className="p-3">
+            <h5 className="fw-bold text-center mb-4">TOM</h5>
 
-                        <MenuItem id={'week0'} icon={collapsed ? <AddIcon /> : ''} className="mt-5 pt-2" onClick={createWeek}>
-                            <div className="bg-light rounded-2 text-center py-3" >
-                                <div className="d-flex align-items-center justify-content-center  ">
-                                <AddIcon className='text-dark me-2' />
-                                <p className="m-0">Nueva semana</p>
-                                </div>
-                            </div>
-                        </MenuItem>
-
-                        <MenuItem id='continueWeek' icon={collapsed ? <LibraryAddIcon/> : ''}  className="mt-4" onClick={createWeekCopyLastWeek}>
-                            <div className="bg-light rounded-2 text-center py-3">
-                                <div className="d-flex align-items-center justify-content-center  ">
-                                <LibraryAddIcon className='text-dark me-2' />
-                                <p className="m-0">Seguir semana</p>
-                                </div>
-                            </div>
-                        </MenuItem>
-
-                        <MenuItem id='paste' icon={collapsed ? <ContentCopyIcon/> : ''}  className="mt-4" onClick={loadFromLocalStorage}>
-                            <div className="bg-light rounded-2 text-center py-3">
-                                <div className="d-flex align-items-center justify-content-center  ">
-                                <ContentCopyIcon className='text-dark me-2' />
-                                <p className="m-0">Pegar semana</p>
-                                </div>
-                            </div>
-                        </MenuItem>
-
-                        {profile && (
-                        <>
-                            <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="mt-5">
-                                <div className='row justify-content-around'>
-                                    <div className='col-6'>
-                                        <p className='text-light text-start p-1'>Edad</p> 
-                                    </div>
-                                    <div className='col-6 '>
-                                        <p className='text-dark rounded-2 colorItems text-center p-1'>{profile.edad || '-'}</p>
-                                    </div>
-                                </div>
-                            </MenuItem>
-                            <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="">
-                                <div className='row justify-content-around'>
-                                    <div className='col-6'>
-                                        <p className='text-light text-start p-1'>Peso</p> 
-                                    </div>
-                                    <div className='col-6  '>
-                                        <p className='text-dark rounded-2 colorItems text-center p-1'>{profile.peso || '-'}kg</p>
-                                    </div>
-                                </div>
-                            </MenuItem>
-                            <MenuItem icon={collapsed ? <ToggleOnIcon /> : ''} disabled={!collapsed} id='switchWeek' className="">
-                                <div className='row justify-content-around '>
-                                    <div className='col-6 '>
-                                        <p className='text-light text-start p-1'>Altura</p> 
-                                    </div>
-                                    <div className='col-6 '>
-                                        <p className='text-dark colorItems rounded-2 text-center p-1'>{profile.altura || '-'}cm</p>
-                                    </div>
-                                </div>
-                            </MenuItem>
-                        </>
-                        )}
-                        <MenuItem disabled className=" ">
-                            <LogoChico />
-                        </MenuItem>
-                        <MenuItem className="text-center botonHelpEditUserRoutine" onClick={() => setTourVisible(true)}>
-                            <IconButton className="p-2 bg-light ">
-                                <HelpOutlineIcon className="text-dark" />
-                            </IconButton>
-                            <span className="ms-2">Ayuda</span>
-                        </MenuItem>
-                    </Menu>
-                </Sidebar>
+            <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
+              <div className=' col-1'><User /></div>
+              <div className='text-center col-10'><strong >{username}</strong></div>
             </div>
 
+            <div className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
+              <span className="text-light mx-2 small d-flex align-items-center">
+                {useDate ? "Modo fecha" : "Modo numérico"}
+                <OverlayTrigger
+                  placement="right"
+                  overlay={
+                    <Tooltip id="switch-mode-tooltip">
+                      Es el nombre que se le pondrá a las semanas. En modo fecha: "Semana - xx/xx/xxxx". En modo numérico: "Semana x"
+                    </Tooltip>
+                  }
+                >
+                  <Info size={14} className="ms-2" style={{ cursor: 'pointer' }} />
+                </OverlayTrigger>
+              </span>
+              <div className="form-check form-switch">
+                <input className="form-check-input" type="checkbox" checked={useDate} onChange={handleToggleUseDate} />
+              </div>
+            </div>
+
+
+
+            {profile && (
+              <div className="text-muted small">
+                <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Edad</span><strong className='me-2'>{profile.edad || '-'} años</strong></div>
+                <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Peso</span><strong className='me-2'>{profile.peso || '-'} kg</strong></div>
+                <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Altura</span><strong className='me-2'>{profile.altura || '-'} cm</strong></div>
+              </div>
+            )}
+          </div>
+
+          {weeklySummary && (
+            <div className="px-2">
+              <h6 className="text-light ms-2">Resumen semanal</h6>
+              <ul className="list-group small mb-2">
+                 <li className=" d-flex justify-content-between">
+                </li>
+                <li className="list-group-item py-1 bgItemsDropdownUl d-flex justify-content-between">
+                  Alimentación <span className={`badge ${getBadgeStyle(weeklySummary.selection1)}`}>{weeklySummary.selection1 || '-'}</span>
+                </li>
+                <li className="list-group-item py-1 bgItemsDropdownUl d-flex justify-content-between">
+                  NEAT <span className={`badge ${getBadgeStyle(weeklySummary.selection2)}`}>{weeklySummary.selection2 || '-'}</span>
+                </li>
+                <li className="list-group-item bgItemsDropdownUl py-1 d-flex justify-content-between">
+                  Sensaciones <span className={`badge ${getBadgeStyle(weeklySummary.selection3)}`}>{weeklySummary.selection3 || '-'}</span>
+                </li>
+                <li className="list-group-item bgItemsDropdownUl py-1 d-flex justify-content-between">
+                  Sueño <span className={`badge ${getBadgeStyle(weeklySummary.selection4)}`}>{weeklySummary.selection4 || '-'}</span>
+                </li>
+                <li className="list-group-item bgItemsDropdownUl py-1 d-flex justify-content-between">
+                  Estrés <span className={`badge ${getBadgeStyle(weeklySummary.selection5)}`}>{weeklySummary.selection5 || '-'}</span>
+                </li>
+                 <li className=" d-flex justify-content-between">
+                </li>
+              </ul>
+
+              {weeklySummary.lastSaved && (
+                <p className='text-light small text-center mb-2'>
+                  Última actualización: {new Date(weeklySummary.lastSaved).toLocaleDateString()}
+                </p>
+              )}
+
+              {/* Comentario con vista expandible */}
+              <div className="position-relative">
+                <label className='text-light small ms-2' htmlFor="">Comentarios</label>
+                <OverlayTrigger
+                  placement="right"
+                  delay={{ show: 200, hide: 150 }}
+                  overlay={
+                    <Tooltip id="full-comment-tooltip">
+                      <div style={{ maxWidth: '250px', fontSize: '1rem', whiteSpace: 'normal' }}>
+                        {weeklySummary.comments}
+                      </div>
+                    </Tooltip>
+                  }
+                >
+                  <p
+                    className="small mx-2 rounded p-2 text-light bgItemsDropdown"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {
+                      weeklySummary.comments?.split(" ").length > 15
+                        ? weeklySummary.comments.split(" ").slice(0, 15).join(" ") + "..."
+                        : weeklySummary.comments || "No hay comentarios"
+                    }
+                  </p>
+                </OverlayTrigger>
+              </div>
+
+              <div className="d-grid mt-2">
+                <button className="btn btn-outline-light btn-sm" onClick={() => {
+                  setCorrectionsText(profile.devolucion || "");
+                  setShowCorrectionsDialog(true);
+                }}>
+                  Cargar correciones
+                </button>
+              </div>
+                <div className="d-grid mt-2">
+                <a target='blank' href={`${profile.drive_link}`} className="btn btn-outline-light btn-sm" >
+                  <AddToDriveIcon /> Ver videos subidos
+                </a>
+              </div>
+            </div>
+          )}
+
+          <div className="p-3 mb-3 text-center">
+            <div className="small text-light mb-2">
+              <strong>TOM</strong><br />Planificación digital
+            </div>
+            <button className="btn btn-outline-light btn-sm" onClick={() => setTourVisible(true)}>
+              <HelpCircle size={16} className="me-1" /> Ayuda
+            </button>
+          </div>
+        </div>
+      </div>
             <section className='container-fluid totalHeight'>
                 <article className={`row justify-content-center ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}>
 
-                {firstWidth < 983 && (<div className="row text-center justify-content-center marginTableRoutine align-middle align-center align-items-center ">
+                {firstWidth < 983 ? (<div className="row text-center justify-content-center marginTableRoutine align-middle align-center align-items-center ">
                         
                             <>
                                 <div className="col-10 col-lg-3 mx-2 mb-4 boxData">
@@ -395,162 +456,25 @@ function UserRoutineEditPage() {
                             </div>
                             </>
                     
-                    </div>)}
+                    </div>) :
+                    <div className="row justify-content-around mb-5 mt-5 ">
+                      <button onClick={createWeek} className="btn bgItemsDropdown btn-sm col-3"><CalendarPlus size={16} className="me-2" /> Nueva semana</button>
+                      <button onClick={createWeekCopyLastWeek} className="btn bgItemsDropdown btn-sm col-3"><Repeat size={16} className="me-2" /> Seguir semana</button>
+                      <button onClick={loadFromLocalStorage} className="btn bgItemsDropdown btn-sm col-3"><ClipboardCopy size={16} className="me-2" /> Pegar semana</button>
+                    </div>
+            }
 
 
 
-                    {firstWidth > 991 && weeklySummary ? (
-                        
-                            <div className='col-10 mb-3'>
-                            <div className='row justify-content-around'>
-                                <div className='col-10 col-sm-6 col-xl-5  stylesImportantResuemn'>
-
-                                
-                            <div className='' style={{ display: 'flex', flexDirection: 'row' }}>
-                            {/* Tabla vertical para las propiedades */}
-                            <table
-                            className=''
-                                style={{
-                                flex: 1,
-                                width: '100%',
-                                border: '1px solid #ddd',
-                                borderCollapse: 'collapse',
-                                backgroundColor: '#fafafa'
-                                }}
-                            >
-                                <tbody>
-                                <tr>
-                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
-                                    <strong>Alimentación</strong>
-                                    </td>
-                                    <td
-                                    style={{
-                                        padding: '5px',
-                                        border: '1px solid #ddd',
-                                        ...getBgForSelection(weeklySummary.selection1)
-                                    }}
-                                    >
-                                    {weeklySummary.selection1 || '-'}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
-                                    <strong>NEAT</strong>
-                                    </td>
-                                    <td
-                                    style={{
-                                        padding: '5px',
-                                        border: '1px solid #ddd',
-                                        ...getBgForSelection(weeklySummary.selection2)
-                                    }}
-                                    >
-                                    {weeklySummary.selection2 || '-'}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
-                                    <strong>Sensaciones</strong>
-                                    </td>
-                                    <td
-                                    style={{
-                                        padding: '5px',
-                                        border: '1px solid #ddd',
-                                        ...getBgForSelection(weeklySummary.selection3)
-                                    }}
-                                    >
-                                    {weeklySummary.selection3 || '-'}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
-                                    <strong>Descanso / Sueño</strong>
-                                    </td>
-                                    <td
-                                    style={{
-                                        padding: '5px',
-                                        border: '1px solid #ddd',
-                                        ...getBgForSelection(weeklySummary.selection4)
-                                    }}
-                                    >
-                                    {weeklySummary.selection4 || '-'}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
-                                    <strong>Estrés</strong>
-                                    </td>
-                                    <td
-                                    style={{
-                                        padding: '5px',
-                                        border: '1px solid #ddd',
-                                        ...getBgForSelection(weeklySummary.selection5)
-                                    }}
-                                    >
-                                    {weeklySummary.selection5 || '-'}
-                                    </td>
-                                </tr>
-                                </tbody>
-                                {profile && profile.devolucion ? (
-                                <tr>
-                                    <td style={{ padding: '5px', border: '1px solid #ddd' }}>
-                                    <strong>Ult. devolución<noframes></noframes></strong>
-                                    </td>
-                                    <td
-                                    style={{
-                                        padding: '5px',
-                                        border: '1px solid #ddd'
-                                    }}
-                                    >
-                                    {profile.devolucionFecha ? new Date(profile.devolucionFecha).toLocaleDateString() : ''}
-                                    </td>
-                                </tr> ) : (
-                                '-'
-                                )}
-                                
-                            </table>
-
-                            </div>
-
-                            </div>
-                                {/* Columna para Comentarios y Devoluciones */}
-                                <div
-                                style={{
-                                    
-                                    flexDirection: 'column',  // Agregado: en columna
-                                    justifyContent: 'space-between', // Distribuye el contenido: comments arriba y botón abajo
-                                       // (Opcional) Definí una altura mínima para notar la separación
-                                  }}
-                                    className='col-sm-7 col-xl-6  border p-2 '
-                                >
-                                    
-                                    <strong>Comentarios del alumno:</strong>
-                                    
-                                    <p className='mt-3'>{weeklySummary.comments || '-'}</p>
-
-                                    <div className="text-center align-bottom">
-                                        <button 
-                                            className="btn btn-outline-dark"
-                                            onClick={() => {
-                                            setCorrectionsText(profile.devolucion || "");
-                                            setShowCorrectionsDialog(true);
-                                            }}
-                                        >
-                                            Cargar correcciones/devoluciones
-                                        </button>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </div>
-
-                    ) : (
+                    {firstWidth < 991 && weeklySummary &&
+  (
                       <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-                        <button className="btn btn-outline-primary" onClick={() => setShowWeeklySummaryModal(true)}>
+                        <button className='btn btn-outline-primary' onClick={() => setShowWeeklySummaryModal(true)}>
                           Ver resumen semanal
                         </button>
                       </div>
                     )}
+
 
                     <div className='col-12 col-xl-10'>
                         <div className='row justify-content-center'>

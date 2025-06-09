@@ -44,7 +44,8 @@ import { NavigateBefore } from "@mui/icons-material";
 import Tooltip from '@mui/material/Tooltip';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { InputTextarea } from "primereact/inputtextarea";
-
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import LinkIcon from '@mui/icons-material/Link';
 
 function DayDetailsPage() {
     const { id, week_id, index } = useParams();
@@ -75,6 +76,10 @@ function DayDetailsPage() {
     const [selectedObject, setSelectedObject] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
     const [drive, setDrive] = useState(null);
+
+    const [driveLink, setDriveLink] = useState('');
+    const [editingDriveLink, setEditingDriveLink] = useState(false);
+    const [showDriveDialog, setShowDriveDialog] = useState(false);
     // Nuevo estado para controlar el modal cuando no existe el perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
 
@@ -144,37 +149,55 @@ const redirectToPerfil = () => {
       }
     }, [allDays, currentDay]);
 
-    useEffect(() => {
-      const driveLocal = localStorage.getItem('drive');
-      if (!driveLocal) {
-        UserService.findUserById(id)
-          .then((data) => {
-            if (data.drive) {
-              localStorage.setItem('drive', data.drive);
-              setDrive(data.drive);
-            }
-          })
-          .catch((err) => {
-            console.error("Error al obtener el drive:", err);
-          });
-      } else {
-        setDrive(driveLocal);
-      }
-    }, []);
 
-    useEffect(() => {
-      UserService.getProfileById(id)
-        .then((data) => {
-          setUserProfile(data);
-          if (data.resumen_semanal) {
-            setWeeklySummary(data.resumen_semanal);
-          }
-        })
-        .catch((error) => {
-          setShowProfileMissingModal(true);
-        });
-    }, [id]);
+useEffect(() => {
+  UserService.getProfileById(id)
+    .then((data) => {
+      setUserProfile(data);
+      if (data.drive_link) setDriveLink(data.drive_link);
+      if (data.resumen_semanal) {
+        setWeeklySummary(data.resumen_semanal);
+      }
+    })
+    .catch(() => setShowProfileMissingModal(true));
+}, [id]);
     
+const saveDriveLink = async () => {
+  if (!driveLink.startsWith("https://drive.google.com")) {
+    Notify.instantToast("Debe ser un link válido de Google Drive");
+    return;
+  }
+
+  try {
+    const currentProfile = await UserService.getProfileById(id);
+
+    const {
+      _id,
+      id: ignoredId,
+      user_id, // 👈 evitar reenviar esto
+      ...safeProfile
+    } = currentProfile;
+
+    const updatedProfile = {
+      ...safeProfile,
+      drive_link: driveLink
+    };
+
+    await UserService.editProfile(id, updatedProfile);
+
+    setUserProfile(prev => ({
+      ...prev,
+      drive_link: driveLink
+    }));
+
+    Notify.instantToast("Link de Drive actualizado");
+    setEditingDriveLink(false);
+    setShowDriveDialog(false);
+  } catch (error) {
+    console.error("Error al guardar el link de Drive", error);
+    Notify.instantToast("Error al guardar el link de Drive");
+  }
+};
 
     useEffect(() => {
         setTourSteps([
@@ -935,26 +958,25 @@ const redirectToPerfil = () => {
                   className="fixed-bottom d-flex justify-content-around align-items-center py-2"
                   style={{ backgroundColor: '#000' }}
                 >
-                    <button
-                      className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
-                      onClick={() => setShowWeeklySummaryModal(true)}
-                    >
-                      <IconButton className="fs-1">
-                        <CommitIcon className="text-light small" /> 
-                      </IconButton>
-                      <span className="text-light small">Resumen</span>
-                    </button>
+                  <button
+                    className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
+                    onClick={() => setShowWeeklySummaryModal(true)}
+                  >
+                    <IconButton className="fs-1">
+                      <CommitIcon className="text-light small" />
+                    </IconButton>
+                    <span className="text-light small">Resumen</span>
+                  </button>
 
-                  
-                    {drive && <button
-                      className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
-                      onClick={() => SetShowUploadVideos(true)}
-                    >
-                      <IconButton className="fs-1">
-                        <AddToDriveIcon className="text-light small" />
-                      </IconButton>
-                      <span className="text-light small">Drive</span>
-                    </button>}
+                  <button
+                    className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
+                    onClick={() => setShowDriveDialog(true)}
+                  >
+                    <IconButton className="fs-1">
+                      <AddToDriveIcon className="text-light small" />
+                    </IconButton>
+                    <span className="text-light small">{driveLink ? 'Drive' : 'Agregar Drive'}</span>
+                  </button>
                 </nav>
 
                 {/* Nuevo Dialog para mostrar el mensaje cuando no existe el perfil */}
@@ -977,6 +999,38 @@ const redirectToPerfil = () => {
                     }
                 >
                     <p>Hola! {username}, por favor completa tu perfil asi tu entrenador tiene más datos sobre vos.</p>
+                </Dialog>
+
+
+                <Dialog header="Tu carpeta de Google Drive" visible={showDriveDialog} style={{ width: '90vw' }} onHide={() => setShowDriveDialog(false)}>
+                  <div className="mb-3">
+                    <label htmlFor="driveLink" className="form-label">Link de tu carpeta de google drive</label>
+                    <input
+                      type="text"
+                      id="driveLink"
+                      className="form-control"
+                      placeholder="https://drive.google.com/..."
+                      value={driveLink}
+                      onChange={(e) => setDriveLink(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="alert alert-info small">
+                    <strong>¿Cómo obtener tu link?</strong>
+                    <ul className="mb-2 list-group list-group-flush">
+                      <li className="list-group-item bg-transparent">Ingresá a tu<button className="py-0 btn btn-primary ms-2 py-1"><AddToDriveIcon className="text-light" /> <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer">Google Drive</a></button></li>
+                      <li className="list-group-item bg-transparent">Creá una carpeta con tu nombre y apellido</li>
+                      <li className="list-group-item bg-transparent">Entrá a tu carpeta, presioná en este icono <IconButton className="py-0"><MoreVertIcon /></IconButton>y hacé click en “Compartir”</li>
+                      <li className="list-group-item bg-transparent">Presioná en administrar/gestionar acceso, luego, en acceso general y, si está en restringido, cambialo a “Cualquier persona que tenga el vinculo/enlace”</li>
+                      <li className="list-group-item bg-transparent">Lo importante es que no sea privado, así tu entrenador puede ver tu carpeta.</li>
+                      <li className="list-group-item bg-transparent">Apretá en el icono <IconButton className="py-0"><LinkIcon /></IconButton> copia el vinculo, y pegalo acá.</li>
+                    </ul>
+                  </div>
+
+                  <div className="d-flex justify-content-end gap-2 mt-3">
+                    <button className="btn btn-outline-dark" onClick={() => setShowDriveDialog(false)} >Cancelar</button>
+                    <button className="btn btn-primary"  onClick={saveDriveLink} >Guardar</button>
+                  </div>
                 </Dialog>
 
 
