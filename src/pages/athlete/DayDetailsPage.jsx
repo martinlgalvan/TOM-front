@@ -936,13 +936,13 @@ const saveDriveLink = async () => {
 
                         <div className="col-12 text-center">
                           <button
-                            className="btn btn-secondary me-3"
+                            className="btn btn-outline-dark me-3"
                             onClick={hideDialogEditExercises}
                           >
                             Cancelar
                           </button>
                           <button
-                            className="btn BlackBGtextWhite"
+                            className="btn colorMainAll text-light"
                             onClick={handleUpdateExercise}
                             disabled={userProfile && userProfile.isEditable}
                           >
@@ -955,27 +955,36 @@ const saveDriveLink = async () => {
                 </Dialog>
 
                 <nav
-                  className="fixed-bottom d-flex justify-content-around align-items-center py-2"
+                  className="fixed-bottom d-flex justify-content-around align-items-center py-2 colorMainAll"
                   style={{ backgroundColor: '#000' }}
                 >
+                <button
+                    className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
+                    onClick={() => setShowCalculator(true)}
+                  >
+                    <IconButton className="fs-1">
+                      <PercentIcon className="text-light small" />
+                    </IconButton>
+                    <span className="text-light small">Calculadora</span>
+                  </button>
                   <button
-                    className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
+                    className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
                     onClick={() => setShowWeeklySummaryModal(true)}
                   >
                     <IconButton className="fs-1">
                       <CommitIcon className="text-light small" />
                     </IconButton>
-                    <span className="text-light small">Resumen</span>
+                    <span className="text-light small">Resumen semanal</span>
                   </button>
 
                   <button
-                    className="nav-item d-flex flex-column align-items-center border-0 bg-transparent"
+                    className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
                     onClick={() => setShowDriveDialog(true)}
                   >
                     <IconButton className="fs-1">
                       <AddToDriveIcon className="text-light small" />
                     </IconButton>
-                    <span className="text-light small">{driveLink ? 'Drive' : 'Agregar Drive'}</span>
+                    <span className="text-light small">{driveLink ? 'Google Drive' : 'Agregar Drive'}</span>
                   </button>
                 </nav>
 
@@ -1029,171 +1038,171 @@ const saveDriveLink = async () => {
 
                   <div className="d-flex justify-content-end gap-2 mt-3">
                     <button className="btn btn-outline-dark" onClick={() => setShowDriveDialog(false)} >Cancelar</button>
-                    <button className="btn btn-primary"  onClick={saveDriveLink} >Guardar</button>
+                    <button className="btn colorMainAll text-light"  onClick={saveDriveLink} >Guardar</button>
                   </div>
                 </Dialog>
 
 
                 <Dialog
-  header={`Resumen Semanal`}
-  className="paddingDialog"
-  visible={showWeeklySummaryModal}
-  style={{ width: '85vw' }}
-  onHide={() => setShowWeeklySummaryModal(false)}
-  draggable={true}
->
-  <div className="">
-    <div className="text-start mb-3">
-    <span className="styleInputsSpan"><b className="me-2">Última actualización:</b>
-          {weeklySummary.lastSaved
-            ? new Date(weeklySummary.lastSaved).toLocaleString()
-            : '-'}
-    </span>
+                  header={`Resumen Semanal`}
+                  className="paddingDialog"
+                  visible={showWeeklySummaryModal}
+                  style={{ width: '85vw' }}
+                  onHide={() => setShowWeeklySummaryModal(false)}
+                  draggable={true}
+                >
+                  <div className="">
+                    <div className="text-start mb-3">
+                    <span className="styleInputsSpan"><b className="me-2">Última actualización:</b>
+                          {weeklySummary.lastSaved
+                            ? new Date(weeklySummary.lastSaved).toLocaleString()
+                            : '-'}
+                    </span>
 
-    </div>
-    <div className="mb-3">
-      <span className="styleInputsSpan">Alimentación</span>
-      <select
-        value={weeklySummary.selection1}
-        onChange={(e) =>
-          setWeeklySummary(prev => ({ ...prev, selection1: e.target.value }))
-        }
-        className="form-control"
-      >
-        <option value="">Seleccionar...</option>
-        <option value="Muy mala">Muy mala</option>
-        <option value="Mala">Mala</option>
-        <option value="Regular">Regular</option>
-        <option value="Buena">Buena</option>
-        <option value="Muy buena">Muy buena</option>
-      </select>
-    </div>
-    <div className="mb-3">
-      <span className="styleInputsSpan">
-        NEAT
-        <Tooltip 
-          title="NEAT se refiere a la energía que gastas en tus actividades cotidianas. Por ejemplo, si tu trabajo es ser mesero 12hs, tu NEAT es alto. Si trabajas de uber u oficina, tu NEAT es bajo."
-          arrow
-          enterTouchDelay={0}
-          leaveTouchDelay={8000}
-        >
-          <IconButton size="small" style={{ marginLeft: '5px' }}>
-            <HelpOutlineIcon fontSize="inherit" />
-          </IconButton>
-        </Tooltip>
-      </span>
-      <select
-        value={weeklySummary.selection2}
-        onChange={(e) =>
-          setWeeklySummary(prev => ({ ...prev, selection2: e.target.value }))
-        }
-        className="form-control"
-      >
-        <option value="">Seleccionar...</option>
-        <option value="Muy malo">Muy malo</option>
-        <option value="Malo">Malo</option>
-        <option value="Regular">Regular</option>
-        <option value="Bueno">Bueno</option>
-        <option value="Muy bueno">Muy bueno</option>
-      </select>
-    </div>
-    <div className="mb-3">
-      <span className="styleInputsSpan w-100">Sensaciones del entrenamiento</span>
-      <select
-        value={weeklySummary.selection3}
-        onChange={(e) =>
-          setWeeklySummary(prev => ({ ...prev, selection3: e.target.value }))
-        }
-        className="form-control"
-      >
-        <option value="">Seleccionar...</option>
-        <option value="Muy mal">Muy mal</option>
-        <option value="Mal">Mal</option>
-        <option value="Regular">Regular</option>
-        <option value="Bien">Bien</option>
-        <option value="Muy bien">Muy bien</option>
-      </select>
-    </div>
-    <div className="mb-3">
-      <span className="styleInputsSpan">Descanso / sueño</span>
-      <select
-        value={weeklySummary.selection4}
-        onChange={(e) =>
-          setWeeklySummary(prev => ({ ...prev, selection4: e.target.value }))
-        }
-        className="form-control"
-      >
-        <option value="">Seleccionar...</option>
-        <option value="Muy mal">Muy mal</option>
-        <option value="Mal">Mal</option>
-        <option value="Regular">Regular</option>
-        <option value="Bien">Bien</option>
-        <option value="Muy bien">Muy bien</option>
-      </select>
-    </div>
-    <div className="mb-3">
-      <span className="styleInputsSpan">Niveles de estrés</span>
-      <select
-        value={weeklySummary.selection5}
-        onChange={(e) =>
-          setWeeklySummary(prev => ({ ...prev, selection5: e.target.value }))
-        }
-        className="form-control"
-      >
-        <option value="">Seleccionar...</option>
-        <option value="Muy mal">Muy mal</option>
-        <option value="Mal">Mal</option>
-        <option value="Regular">Regular</option>
-        <option value="Bien">Bien</option>
-        <option value="Muy bien">Muy bien</option>
-      </select>
-    </div>
-    <div className="mb-3">
-      <span>Comentarios sobre la semana</span>
-      <InputTextarea
-        type="text"
-        autoResize
-        value={weeklySummary.comments || ""}
-        onChange={(e) =>
-          setWeeklySummary(prev => ({ ...prev, comments: e.target.value }))
-        }
-        className="form-control"
-        placeholder="Escribí acá tus comentarios..."
-      />
-    </div>
-    <div className="row justify-content-end">
-      <div className="col-4">
-        <Button
-          label="Cancelar"
-          className="btn btn-outline-dark"
-          onClick={() => setShowWeeklySummaryModal(false)}
-        />
-      </div>
-      <div className="col-4">
-        <Button
-          label="Guardar"
-          className="btn BlackBGtextWhite me-2"
-          onClick={() => {
-            const updatedSummary = { 
-              ...weeklySummary, 
-              lastSaved: new Date().toISOString()
-            };
-            UserService.editProfile(id, { resumen_semanal: updatedSummary })
-              .then(() => {
-                setWeeklySummary(updatedSummary);
-                setShowWeeklySummaryModal(false);
-                Notify.instantToast("Resumen semanal guardado");
-              })
-              .catch((err) => {
-                console.error("Error al guardar el resumen semanal", err);
-                Notify.instantToast("Error al guardar el resumen semanal");
-              });
-          }}
-        />
-      </div>
-    </div>
-  </div>
-</Dialog>
+                    </div>
+                    <div className="mb-3">
+                      <span className="styleInputsSpan">Alimentación</span>
+                      <select
+                        value={weeklySummary.selection1}
+                        onChange={(e) =>
+                          setWeeklySummary(prev => ({ ...prev, selection1: e.target.value }))
+                        }
+                        className="form-control"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Muy mala">Muy mala</option>
+                        <option value="Mala">Mala</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Buena">Buena</option>
+                        <option value="Muy buena">Muy buena</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <span className="styleInputsSpan">
+                        NEAT
+                        <Tooltip 
+                          title="NEAT se refiere a la energía que gastas en tus actividades cotidianas. Por ejemplo, si tu trabajo es ser mesero 12hs, tu NEAT es alto. Si trabajas de uber u oficina, tu NEAT es bajo."
+                          arrow
+                          enterTouchDelay={0}
+                          leaveTouchDelay={8000}
+                        >
+                          <IconButton size="small" style={{ marginLeft: '5px' }}>
+                            <HelpOutlineIcon fontSize="inherit" />
+                          </IconButton>
+                        </Tooltip>
+                      </span>
+                      <select
+                        value={weeklySummary.selection2}
+                        onChange={(e) =>
+                          setWeeklySummary(prev => ({ ...prev, selection2: e.target.value }))
+                        }
+                        className="form-control"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Muy malo">Muy malo</option>
+                        <option value="Malo">Malo</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Bueno">Bueno</option>
+                        <option value="Muy bueno">Muy bueno</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <span className="styleInputsSpan w-100">Sensaciones del entrenamiento</span>
+                      <select
+                        value={weeklySummary.selection3}
+                        onChange={(e) =>
+                          setWeeklySummary(prev => ({ ...prev, selection3: e.target.value }))
+                        }
+                        className="form-control"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Muy mal">Muy mal</option>
+                        <option value="Mal">Mal</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Bien">Bien</option>
+                        <option value="Muy bien">Muy bien</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <span className="styleInputsSpan">Descanso / sueño</span>
+                      <select
+                        value={weeklySummary.selection4}
+                        onChange={(e) =>
+                          setWeeklySummary(prev => ({ ...prev, selection4: e.target.value }))
+                        }
+                        className="form-control"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Muy mal">Muy mal</option>
+                        <option value="Mal">Mal</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Bien">Bien</option>
+                        <option value="Muy bien">Muy bien</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <span className="styleInputsSpan">Niveles de estrés</span>
+                      <select
+                        value={weeklySummary.selection5}
+                        onChange={(e) =>
+                          setWeeklySummary(prev => ({ ...prev, selection5: e.target.value }))
+                        }
+                        className="form-control"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Muy mal">Muy mal</option>
+                        <option value="Mal">Mal</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Bien">Bien</option>
+                        <option value="Muy bien">Muy bien</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <span>Comentarios sobre la semana</span>
+                      <InputTextarea
+                        type="text"
+                        autoResize
+                        value={weeklySummary.comments || ""}
+                        onChange={(e) =>
+                          setWeeklySummary(prev => ({ ...prev, comments: e.target.value }))
+                        }
+                        className="form-control"
+                        placeholder="Escribí acá tus comentarios..."
+                      />
+                    </div>
+                    <div className="row justify-content-end">
+                      <div className="col-4">
+                        <Button
+                          label="Cancelar"
+                          className="btn btn-outline-dark"
+                          onClick={() => setShowWeeklySummaryModal(false)}
+                        />
+                      </div>
+                      <div className="col-4">
+                        <Button
+                          label="Guardar"
+                          className="btn colorMainAll text-light me-2"
+                          onClick={() => {
+                            const updatedSummary = { 
+                              ...weeklySummary, 
+                              lastSaved: new Date().toISOString()
+                            };
+                            UserService.editProfile(id, { resumen_semanal: updatedSummary })
+                              .then(() => {
+                                setWeeklySummary(updatedSummary);
+                                setShowWeeklySummaryModal(false);
+                                Notify.instantToast("Resumen semanal guardado");
+                              })
+                              .catch((err) => {
+                                console.error("Error al guardar el resumen semanal", err);
+                                Notify.instantToast("Error al guardar el resumen semanal");
+                              });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Dialog>
 
 
             </section>

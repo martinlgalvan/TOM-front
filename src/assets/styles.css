@@ -166,6 +166,10 @@ p {
     color: white;
   }
 
+  .btn-bottom-nav {
+  min-width: 100px;
+}
+
   .stylePointer{
     cursor: pointer;
   }

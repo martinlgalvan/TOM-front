@@ -43,7 +43,8 @@ const PercentageCalculator = () => {
         />
       </div>
 
-      <p className='text-center'>El {percentage} % de {value}kg es : <b>{result}</b></p>
+      <p className='text-center'>El {percentage}% de {value}kg es : <b>{result}kg</b></p>
+      <p className='text-center'>Por lo tanto, en tu barra debe haber <b>{value - result }kg</b></p>
     </div>
   );
 };
