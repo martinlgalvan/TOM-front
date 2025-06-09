@@ -1394,6 +1394,7 @@ const removeBackoffLine = (index) => {
 
       <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
         <div className='text-center col-12'><strong>Planificador</strong></div>
+      </div>
 
       <div className="mb-4">
         <button
