@@ -482,6 +482,18 @@ const handleConfirmDelete = async () => {
 
             <article id={'tabla'} className={`row justify-content-center text-center ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}>
 
+              {firstWidth < 982 && 
+              <div className="text-center mb-3">
+                <button
+                    label="Administrar anuncios"
+                    icon="pi pi-bullhorn"
+                    className="btn btn-warning my-1 text-center"
+                    onClick={() => setShowAnnouncementsDialog(true)}
+                  >Administrar anuncios </button>
+                  </div>
+            
+              }
+
                 <PrimeReactTable id={id} users={users}  refresh={refresh} collapsed={collapsed} />
                 
             </article>
