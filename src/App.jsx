@@ -121,6 +121,7 @@ useEffect(() => {
         UserService.getUnreadAnnouncements(id)
             .then(res => {
                 if (res && res.length > 0) {
+                    console.log(res)
                     setPendingAnnouncements(res);
                     setCurrentAnnouncement(res[0]);
                     setCurrentAnnouncementIndex(0);
@@ -132,15 +133,18 @@ useEffect(() => {
 }, [location.pathname, isAutenticated]);
 
 const handleDismissAnnouncement = async () => {
-    const current = pendingAnnouncements[currentAnnouncementIndex];
-    if (current) {
-        await UserService.markAnnouncementRead(current._id, id);
-        const nextIndex = currentAnnouncementIndex + 1;
-        if (nextIndex < pendingAnnouncements.length) {
-            setCurrentAnnouncementIndex(nextIndex);
-        } else {
-            setShowAnnouncementDialog(false);
+    const isLast = currentAnnouncementIndex === pendingAnnouncements.length - 1;
+
+    if (isLast) {
+        // Marca todos como leídos juntos
+        for (const anuncio of pendingAnnouncements) {
+            await UserService.markAnnouncementRead(anuncio._id, id);
         }
+        setShowAnnouncementDialog(false);
+    } else {
+        const nextIndex = currentAnnouncementIndex + 1;
+        setCurrentAnnouncementIndex(nextIndex);
+        setCurrentAnnouncement(pendingAnnouncements[nextIndex]);
     }
 };
 
@@ -209,12 +213,14 @@ const handleDismissAnnouncement = async () => {
 
 
 async function onLogin(user, token) {
+    console.log(user)
     setUser(user);
     setIsAutenticated(true);
     localStorage.setItem('token', token);
     localStorage.setItem('role', user.role);
     localStorage.setItem('_id', user._id);
     localStorage.setItem('name', user.name);
+    localStorage.setItem('state', user.payment_info.isPaid);
     localStorage.setItem('noShowPopup', 'false');
     if (user.drive != undefined) {
         localStorage.setItem('drive', user.drive);
@@ -226,18 +232,23 @@ async function onLogin(user, token) {
     localStorage.setItem('color', user.color || '#1a1a1a');
     localStorage.setItem('textColor', user.textColor || false);
 
-    if(user.role != "admin"){
-
-            try {
+    if (user.role !== "admin") {
+    try {
         const res = await UserService.getUnreadAnnouncements(user._id);
-        
+        if (res && res.length > 0) {
             setPendingAnnouncements(res);
+            setCurrentAnnouncement(res[0]);
             setCurrentAnnouncementIndex(0);
             setShowAnnouncementDialog(true);
-            console.log()
+        } else {
+            setPendingAnnouncements([]);
+            setCurrentAnnouncement(null);
+            setShowAnnouncementDialog(false);
+        }
     } catch (err) {
         console.error("Error obteniendo anuncios en login:", err);
     }
+
 
     }
 
@@ -694,48 +705,41 @@ async function onLogin(user, token) {
                 </div>
             </Dialog>
 
-            {pendingAnnouncements.length > 0 && pendingAnnouncements[currentAnnouncementIndex] && (
-                <div className='row justify-content-center'>
+            <Dialog
+  header={pendingAnnouncements[currentAnnouncementIndex]?.title}
+  visible={showAnnouncementDialog}
+  onHide={handleDismissAnnouncement}
+  className='col-10 col-lg-6'
+  footer={
+    <button
+      className='btn btn-primary mt-3'
+      onClick={handleDismissAnnouncement}
+      autoFocus
+    >
+      {currentAnnouncementIndex === pendingAnnouncements.length - 1 ? 'Entendido' : 'Siguiente'}
+    </button>
+  }
+>
+  <p style={{ whiteSpace: 'pre-line' }}>
+    {pendingAnnouncements[currentAnnouncementIndex]?.message}
+  </p>
 
-                    <Dialog
-                    header={pendingAnnouncements[currentAnnouncementIndex].title}
-                    visible={showAnnouncementDialog}
-                    onHide={handleDismissAnnouncement}
-                    className='col-10 col-lg-6'
-                    footer={
-                        <button
-                        className='btn btn-primary mt-3'
-                        onClick={handleDismissAnnouncement}
-                        autoFocus
-                        >Entendido</button>
-                    }
-                    >
-                    {/* Texto con saltos de línea */}
-                    <p style={{ whiteSpace: 'pre-line' }}>
-                        {pendingAnnouncements[currentAnnouncementIndex].message}
-                    </p>
-
-                    {/* Links como botones */}
-                    {pendingAnnouncements[currentAnnouncementIndex].link_urls?.length > 0 && (
-                        <div className="mt-3 d-flex flex-column gap-2">
-                        {pendingAnnouncements[currentAnnouncementIndex].link_urls.map((link, idx, arr) => (
-                            <a
-                            key={idx}
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-outline-primary"
-                            >
-                            {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
-                            </a>
-                        ))}
-                        </div>
-                    )}
-                    </Dialog>
-                
-                </div>
-
-            )}
+  {pendingAnnouncements[currentAnnouncementIndex]?.link_urls?.length > 0 && (
+    <div className="mt-3 d-flex flex-column gap-2">
+      {pendingAnnouncements[currentAnnouncementIndex].link_urls.map((link, idx, arr) => (
+        <a
+          key={idx}
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-outline-primary"
+        >
+          {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
+        </a>
+      ))}
+    </div>
+  )}
+</Dialog>
 
             <ToastContainer
                 position="bottom-center"

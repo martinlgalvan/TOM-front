@@ -826,7 +826,7 @@ const saveDriveLink = async () => {
                 <Dialog
                   header="Calculadora de Porcentaje"
                   visible={showCalculator}
-                  style={{ width: '80vw' }}
+                  style={{ width: '90vw' }}
                   onHide={toggleCalculator}
                   draggable={true}
                 >

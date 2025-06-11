@@ -41,32 +41,46 @@ export default function PaymentsManagerPage() {
   const [rows, setRows] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [editedRows, setEditedRows] = useState({});
-  const [sidebarCollapsed, setSidebarCollapsed] = useState();
-  const [filters, setFilters] = useState({
-    text: { name: '' },
-    selects: {
-      goal: null,
-      method: null,
-      isPaid: null
-    }
-  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+const [filters, setFilters] = useState({
+  text: { name: '' },
+  selects: {
+    goal: null,
+    method: null,
+    isPaid: null,
+    nutricion: null, 
+    plan: null      
+  }
+});
   const [sortField, setSortField] = useState('');
   const [sortAsc, setSortAsc] = useState(true);
 
-  useEffect(() => {
-    
-    UsersService.find(id).then(data => {
-      const formatted = data.map(user => ({
-        ...user,
-        isPaid: user.payment_info?.isPaid ?? false,
-        payment_method: user.payment_info?.payment_method ?? '',
-        payment_date: user.payment_info?.payment_date ? new Date(user.payment_info.payment_date) : '',
-        payment_amount: user.payment_info?.payment_amount ?? '',
-        payment_goal: user.payment_info?.payment_goal ?? ''
-      }));
-      setRows(formatted);
-    });
-  }, [id]);
+useEffect(() => {
+  UsersService.find(id).then(data => {
+    const formatted = data.map(user => ({
+      ...user,
+      isPaid: user.payment_info?.isPaid ?? null,
+      payment_method: user.payment_info?.payment_method ?? '',
+      payment_date: user.payment_info?.payment_date ? new Date(user.payment_info.payment_date) : '',
+      payment_amount: user.payment_info?.payment_amount ?? '',
+      payment_goal: user.payment_info?.payment_goal ?? '',
+      nutricion: user.payment_info?.nutricion ?? null,  // NUEVO
+      plan: user.payment_info?.plan ?? '',              // NUEVO
+    }));
+    setRows(formatted);
+  });
+}, [id]);
+
+const nutricionOptions = [
+  { label: 'Sí', value: true },
+  { label: 'No', value: false }
+];
+
+const planOptions = [
+  { label: 'Trimestral', value: 'Trimestral' },
+  { label: 'Semestral', value: 'Semestral' },
+  { label: 'Anual', value: 'Anual' }
+];
 
   const handleEditChange = (id, field, value) => {
     setEditedRows(prev => {
@@ -87,6 +101,8 @@ const handleSaveAll = async () => {
           payment_date: data.payment_date ? new Date(data.payment_date).toISOString() : '',
           payment_amount: parseFloat(data.payment_amount),
           payment_goal: data.payment_goal,
+          nutricion: data.nutricion,
+          plan: data.plan
         };
         return UsersService.updatePaymentInfo(id, payload);
       }));
@@ -97,11 +113,13 @@ const handleSaveAll = async () => {
       UsersService.find(id).then(data => {
         const formatted = data.map(user => ({
           ...user,
-          isPaid: user.payment_info?.isPaid === false ? 'bloquear' : user.payment_info?.isPaid ?? 'bloquear',
+          isPaid: user.payment_info?.isPaid ?? null,
           payment_method: user.payment_info?.payment_method ?? '',
           payment_date: user.payment_info?.payment_date ? new Date(user.payment_info.payment_date) : '',
           payment_amount: user.payment_info?.payment_amount ?? '',
-          payment_goal: user.payment_info?.payment_goal ?? ''
+          payment_goal: user.payment_info?.payment_goal ?? '',
+          nutricion: user.payment_info?.nutricion ?? null,   // 👈 faltaba
+          plan: user.payment_info?.plan ?? ''                // 👈 faltaba
         }));
         setRows(formatted);
       });
@@ -161,6 +179,15 @@ const handleSaveAll = async () => {
     activeFilterChips.push({ label: `Objetivo: ${filters.selects.goal}` });
   }
 
+  if (filters.selects.nutricion !== null) {
+    result = result.filter(r => r.nutricion === filters.selects.nutricion);
+  }
+
+  if (filters.selects.plan !== null) {
+    result = result.filter(r => r.plan === filters.selects.plan);
+  }
+
+
 
 
   return (
@@ -174,7 +201,7 @@ const handleSaveAll = async () => {
           <h5 className="fw-bold text-center mb-4">TOM</h5>
 
           <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
-            <div className='text-center col-12'><strong>Gestión de alumnos</strong></div>
+            <div className='text-center small'><strong>Gestión de alumnos</strong></div>
           </div>
 
           <div className="mb-3">
@@ -226,7 +253,41 @@ const handleSaveAll = async () => {
               </div>
             ))}
           </div>
+
+          <div className="mb-3">
+            <p className="text-light small mb-1">Nutrición</p>
+            {nutricionOptions.map(opt => (
+              <div key={opt.value.toString()} className="form-check text-light small">
+                <input
+                  type="checkbox"
+                  className="form-check-input me-1"
+                  checked={filters.selects.nutricion === opt.value}
+                  onChange={() => handleSelectFilter('nutricion', opt.value)}
+                />
+                <label className="form-check-label">{opt.label}</label>
+              </div>
+            ))}
+          </div>
+
+          <div className="mb-3">
+            <p className="text-light small mb-1">Plan</p>
+            {planOptions.map(opt => (
+              <div key={opt.value} className="form-check text-light small">
+                <input
+                  type="checkbox"
+                  className="form-check-input me-1"
+                  checked={filters.selects.plan === opt.value}
+                  onChange={() => handleSelectFilter('plan', opt.value)}
+                />
+                <label className="form-check-label">{opt.label}</label>
+              </div>
+            ))}
+          </div>
+
+
         </div>
+
+        
 
         <div className="p-3 text-center">
           <div className="small text-light mb-2">
@@ -270,12 +331,14 @@ const handleSaveAll = async () => {
           <table className='table align-middle table-bordered text-center'>
             <thead className='table-light'>
               <tr>
-                <th style={{ width: '15%' }}>Nombre</th>
+                <th style={{ width: '10%' }}>Nombre</th>
                 <th style={{ width: '0%' }}>Estado</th>
-                <th style={{ width: '4%' }}>Método</th>
-                <th style={{ width: '14%' }}>Fecha</th>
+                <th style={{ width: '0%' }}>Método</th>
+                <th style={{ width: '16%' }}>Fecha</th>
                 <th style={{ width: '10%' }}>Monto</th>
-                <th style={{ width: '12%' }}>Objetivo</th>
+                <th style={{ width: '8%' }}>Objetivo</th>
+                <th style={{ width: '8%' }}>Nutrición</th>
+                <th style={{ width: '5%' }}>Plan</th>
               </tr>
             </thead>
             <tbody>
@@ -284,24 +347,82 @@ const handleSaveAll = async () => {
                 const edited = editedRows[row._id] || row;
                 return (
                   <tr className='text-center' key={row._id}>
-                    <td style={{ width: '15%' }}>{row.name}</td>
-                    <td style={{ width: '0%' }}>{isEditing ? (
-  <Dropdown className='w-100' value={edited.isPaid} options={paidOptions} onChange={(e) => handleEditChange(row._id, 'isPaid', e.value)} />
-) : (
-  <Chip
-    label={row.isPaid === true ? 'Activo' : row.isPaid === 'permitir' ? 'Inactivo - Permitir acceso' : 'Inactivo - Bloquear acceso '}
-    color={row.isPaid === true ? 'success' : row.isPaid === 'permitir' ? 'warning' : row.isPaid === 'bloquear' ? 'error' : 'default'}
-  />
-)}</td>
-                    <td style={{ width: '4%' }}>{isEditing ? <Dropdown className='w-100' value={edited.payment_method} options={methodOptions} onChange={(e) => handleEditChange(row._id, 'payment_method', e.value)} /> : row.payment_method}</td>
-                    <td style={{ width: '13%' }}>{isEditing ? <Calendar className='w-100 text-center' value={edited.payment_date} onChange={(e) => handleEditChange(row._id, 'payment_date', e.value)} dateFormat="yy-mm-dd" showIcon /> : (row.payment_date ? new Date(row.payment_date).toLocaleDateString() : '')}</td>
+                    <td style={{ width: '10%' }}>{row.name}</td>
+                 <td style={{ width: '0%' }}>
+  {isEditing ? (
+    <Dropdown
+      className='w-100'
+      value={edited.isPaid}
+      options={paidOptions}
+      onChange={(e) => handleEditChange(row._id, 'isPaid', e.value)}
+    />
+  ) : (
+    row.isPaid === null || row.isPaid === undefined || row.isPaid === '' ? (
+      <span className="text-muted">-</span>
+    ) : (
+      <Chip
+        label={
+          row.isPaid === true
+            ? 'Activo'
+            : row.isPaid === 'permitir'
+            ? 'Inactivo - Permitir acceso'
+            : 'Inactivo - Bloquear acceso'
+        }
+        color={
+          row.isPaid === true
+            ? 'success'
+            : row.isPaid === 'permitir'
+            ? 'warning'
+            : row.isPaid === 'bloquear'
+            ? 'error'
+            : 'default'
+        }
+      />
+    )
+  )}
+</td>
+                    <td style={{ width: '0%' }}>{isEditing ? <Dropdown className='w-100' value={edited.payment_method} options={methodOptions} onChange={(e) => handleEditChange(row._id, 'payment_method', e.value)} /> : row.payment_method}</td>
+                    <td style={{ width: '16%' }}>{isEditing ? <Calendar className='w-100 text-center' value={edited.payment_date} onChange={(e) => handleEditChange(row._id, 'payment_date', e.value)} dateFormat="yy-mm-dd" showIcon /> : (row.payment_date ? new Date(row.payment_date).toLocaleDateString() : '')}</td>
                     <td style={{ widt: '12%' }}>{isEditing ? (
-  <div className="input-group">
-    <span className="input-group-text">$</span>
+  <div className="">
+
     <InputText className='form-control text-center' value={edited.payment_amount} onChange={(e) => handleEditChange(row._id, 'payment_amount', e.target.value)} />
   </div>
 ) : `$${row.payment_amount}`}</td>
-                    <td style={{ width: '15%' }}>{isEditing ? <Dropdown className='w-100' value={edited.payment_goal} options={goalOptions} onChange={(e) => handleEditChange(row._id, 'payment_goal', e.value)} /> : <Chip label={row.payment_goal} color={goalsColors[row.payment_goal] || 'default'} />}</td>
+                    <td style={{ width: '8%' }}>{isEditing ? <Dropdown className='w-100' value={edited.payment_goal} options={goalOptions} onChange={(e) => handleEditChange(row._id, 'payment_goal', e.value)} /> : <Chip label={row.payment_goal} color={goalsColors[row.payment_goal] || 'default'} />}</td>
+                  <td style={{ width: '8%' }}>
+  {isEditing ? (
+    <Dropdown
+      className='w-100'
+      value={edited.nutricion}
+      options={nutricionOptions}
+      onChange={(e) => handleEditChange(row._id, 'nutricion', e.value)}
+    />
+  ) : (
+    row.nutricion === null || row.nutricion === undefined ? (
+      <span className="text-muted">-</span>
+    ) : (
+      <Chip label={row.nutricion ? 'Sí' : 'No'} color={row.nutricion ? 'success' : 'error'} />
+    )
+  )}
+</td>
+
+<td style={{ width: '5%' }}>
+  {isEditing ? (
+    <Dropdown
+      className='w-100'
+      value={edited.plan}
+      options={planOptions}
+      onChange={(e) => handleEditChange(row._id, 'plan', e.value)}
+    />
+  ) : (
+    row.plan ? (
+      <Chip label={row.plan} color='primary' />
+    ) : (
+      <span className="text-muted">-</span>
+    )
+  )}
+</td>
                   </tr>
                 );
               })}

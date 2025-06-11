@@ -9,6 +9,7 @@ import * as NotifyHelper from './../../helpers/notify.js';
 
 import Logo from '../../components/Logo.jsx';
 import ActionAreaCard from '../../components/MUI/ActionAreaCard.jsx';
+import { UserLock} from 'lucide-react';
 
 function UserRoutinePage() {
     const { id } = useParams();
@@ -22,6 +23,8 @@ function UserRoutinePage() {
     // Nuevo estado para controlar el modal cuando no existe perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
+    const isPaid = localStorage.getItem('state');
+    const puedeVerRutina = isPaid === 'permitir' || isPaid === 'true' || isPaid === null || isPaid === undefined;
 
     // Crear un array vacío para referencias múltiples
     const weekRefs = useRef([]);
@@ -98,7 +101,9 @@ function UserRoutinePage() {
                 <Logo />
             </section>
 
-            <section className='container'>
+            
+                <section className='container'>
+            {puedeVerRutina ? ( <>
                 <div className='transition-rigth-to-medium'>
                     <h2 className='text-center mt-4 mb-3'>Ver rutina</h2>
                     <p className='my-3 text-center'>
@@ -146,6 +151,19 @@ function UserRoutinePage() {
                     )}
                 </article>
 
+                </> ) : 
+                (
+               <div className="d-flex flex-column align-items-center justify-content-center my-5 py-5 px-4 card shadow-sm bg-light">
+                    <UserLock />
+                    <h4 className="mb-3 text-danger fw-bold">Acceso restringido</h4>
+                    <p className="text-muted text-center" style={{ maxWidth: '500px' }}>
+                        Para poder visualizar tu rutina de entrenamiento, es necesario que tengas la mensualidad al día.
+                    </p>
+                    <p className="text-muted text-center" style={{ maxWidth: '500px' }}>
+                        Si creés que esto es un error, por favor <strong>contactá con tu entrenador</strong>.
+                    </p>
+                </div>
+                )}
                 {routine && (
                     <Dialog
                         className='col-12 col-md-10 col-xxl-8'
