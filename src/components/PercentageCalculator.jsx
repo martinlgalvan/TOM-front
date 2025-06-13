@@ -130,6 +130,7 @@ const PercentageCalculator = () => {
               onChange={(e) => setModoCompetencia(e.value)} 
               optionLabel="label"
               optionValue="value"
+              allowEmpty={false}
             />
           </div>
           <p className="side-text">

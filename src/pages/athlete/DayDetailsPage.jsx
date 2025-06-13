@@ -65,7 +65,7 @@ function DayDetailsPage() {
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);
     const [completeExercise, setCompleteExercise] = useState();
     const [showToolsDialog, setShowToolsDialog] = useState(false);
-    const [selectedTool, setSelectedTool] = useState("calculator1");
+    const [selectedTool, setSelectedTool] = useState("calculator");
     const [showUploadVideos, SetShowUploadVideos] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const [isRendered, setIsRendered] = useState();
