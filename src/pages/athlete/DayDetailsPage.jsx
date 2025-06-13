@@ -36,6 +36,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import PercentIcon from '@mui/icons-material/Percent';
 import PercentageCalculator from "../../components/PercentageCalculator.jsx";
+import Formulas from "../../components/Formulas.jsx";
 import CountdownTimer from "../../components/CountdownTimer.jsx";
 import ImageIcon from '@mui/icons-material/Image';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -63,7 +64,8 @@ function DayDetailsPage() {
     const [currentDay, setCurrentDay] = useState(null);
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);
     const [completeExercise, setCompleteExercise] = useState();
-    const [showCalculator, setShowCalculator] = useState(false);
+    const [showToolsDialog, setShowToolsDialog] = useState(false);
+    const [selectedTool, setSelectedTool] = useState("calculator1");
     const [showUploadVideos, SetShowUploadVideos] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const [isRendered, setIsRendered] = useState();
@@ -823,15 +825,41 @@ const saveDriveLink = async () => {
                   />
                 )}
 
-                <Dialog
-                  header="Calculadora de Porcentaje"
-                  visible={showCalculator}
-                  style={{ width: '90vw' }}
-                  onHide={toggleCalculator}
-                  draggable={true}
-                >
-                  <PercentageCalculator />
-                </Dialog>
+        <Dialog
+          header="Herramientas"
+          visible={showToolsDialog}
+          style={{ width: '97vw', minHeight: '90%' }}
+          className="DialogCalculator"
+          onHide={() => setShowToolsDialog(false)}
+          draggable={true}
+        >
+          <div className="mb-4 text-center">
+            <Segmented
+              block
+              options={[
+                { label: 'Calculadora & Contador', value: 'calculator' },
+                { label: '1RM Estimado', value: 'pr' }
+              ]}
+              value={selectedTool}
+              onChange={setSelectedTool}
+            />
+          </div>
+
+          <div className="mt-3">
+            {selectedTool === "calculator" && <PercentageCalculator />}
+            {selectedTool === "pr" && (
+              <div className="text-center">
+                <Formulas />
+              </div>
+            )}
+            {selectedTool === "chart" && (
+              <div className="text-center">
+                <h5>Gráfico</h5>
+                <p className="text-muted">Visualización de progreso (pendiente)</p>
+              </div>
+            )}
+          </div>
+        </Dialog>
 
                 <Dialog
                   header="Subir videos al drive"
@@ -960,7 +988,7 @@ const saveDriveLink = async () => {
                 >
                 <button
                     className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
-                    onClick={() => setShowCalculator(true)}
+                    onClick={() => setShowToolsDialog(true)}
                   >
                     <IconButton className="fs-1">
                       <PercentIcon className="text-light small" />

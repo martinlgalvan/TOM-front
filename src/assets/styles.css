@@ -170,6 +170,206 @@ p {
   min-width: 100px;
 }
 
+.DialogCalculator .p-dialog-header, .p-dialog-content{
+  background-color: #0b213a ;
+  color: white;
+}
+
+.calc-container {
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  padding: 1.5rem;
+  border-radius: 16px;
+  max-width: 500px;
+  margin: auto;
+}
+
+.title {
+  text-align: center;
+  color: #f8fafc;
+  margin-bottom: 2rem;
+
+  .highlight {
+    color: #ef4444;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    color: #94a3b8;
+  }
+}
+
+.card-dark {
+  background-color: #1e293b;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.input-dark {
+  background-color: #334155;
+  border: none;
+  border-radius: 8px;
+  color: #f8fafc;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+}
+
+.unit {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.percentage-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.perc-btn {
+  background-color: #334155;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: #f8fafc;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.perc-btn.active,
+.perc-btn:hover {
+  background: linear-gradient(to right, #f97316, #ef4444);
+  color: white;
+}
+
+.result-card {
+  background: linear-gradient(to right, #ef4444, #f97316);
+  border-radius: 16px;
+  padding: 1.5rem;
+  color: white;
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);
+}
+
+.big-result {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.small-text {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.side-text {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.result-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-name {
+  font-weight: 500;
+  color: #e2e8f0;
+  min-width: 120px;
+  text-align: left;
+}
+
+.result-value {
+  font-weight: 700;
+  color: #ffffff;
+  text-align: right;
+}
+
+.bar-simulation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.bar-line {
+  width: 50px;
+  height: 10px;
+  background-color: #334155;
+  border-radius: 5px;
+}
+
+
+.plates-container {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 4px;
+}
+
+.plate {
+  width: 20px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tope {
+  width: 24px;
+  height: 30px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  background-color: #464646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plate-25   { background-color: #dc2626; height: 60px; }   
+.plate-20   { background-color: #2563eb; height: 60px; }   
+.plate-15   { background-color: #facc15; color: #1e293b; height: 50px; } 
+.plate-10   { background-color: #10b981; height: 40px; }  
+.plate-5    { background-color: #6e6e6e; color: #111827; height: 30px; } 
+.plate-2_5  { background-color: #aaaaaa; height: 30px; }   
+.plate-1_25 { background-color: #dadada; color: #111827; height: 20px; }
+
+.stylesCalculator .p-highlight{
+  background-color: #2b4768;
+}
+
   .stylePointer{
     cursor: pointer;
   }
