@@ -5,21 +5,24 @@ const PercentageCalculator = () => {
   const [value, setValue] = useState('');
   const [percentage, setPercentage] = useState('');
   const [barra, setBarra] = useState(20);
-  const [result, setResult] = useState(null);
   const [modoCompetencia, setModoCompetencia] = useState(false);
+  const [modoCalculo, setModoCalculo] = useState('directo');
 
-  useEffect(() => {
-    const val = parseFloat(value);
-    const perc = parseFloat(percentage);
-    if (val && perc) {
-      const res = (val * perc) / 100;
-      setResult(res);
-    } else if (val && !perc) {
-      setResult(0);
-    } else {
-      setResult(null);
-    }
-  }, [value, percentage]);
+  const val = parseFloat(value) || 0;
+  const perc = parseFloat(percentage) || 0;
+  const bar = parseFloat(barra) || 0;
+  const topes = modoCompetencia ? 5 : 0;
+
+  let workingWeight = 0;
+  if (modoCalculo === 'restar') {
+    workingWeight = val - (val * perc / 100);
+  } else {
+    workingWeight = (val * perc) / 100;
+  }
+
+  const effectiveWeight = modoCalculo === 'restar' ? workingWeight : val - workingWeight;
+  const plateWeight = Math.max(effectiveWeight - bar - topes, 0);
+  const weightPerSide = plateWeight / 2;
 
   const generatePlateLoading = (weightPerSide) => {
     const plateSizes = modoCompetencia
@@ -40,21 +43,17 @@ const PercentageCalculator = () => {
       .flatMap(([plate, count]) => Array(count).fill(plate));
   };
 
-  const val = parseFloat(value) || 0;
-  const perc = parseFloat(percentage) || 0;
-  const bar = parseFloat(barra) || 0;
-  const topes = modoCompetencia ? 5 : 0;
-
-  const workingWeight = val - (val * perc / 100);
-  const plateWeight = Math.max(workingWeight - bar - topes, 0);
-  const weightPerSide = plateWeight / 2;
-  const renderedWeight = generatePlateLoading(weightPerSide).reduce((acc, curr) => acc + curr, 0);
-
-  const sideWeight = () => renderedWeight;
+  const plateArray = generatePlateLoading(weightPerSide);
+  const renderedWeight = plateArray.reduce((acc, curr) => acc + curr, 0);
 
   const modeOptions = [
     { label: 'Competencia', value: true },
     { label: 'Normal', value: false }
+  ];
+
+  const calcModeOptions = [
+    { label: 'Usar % del peso', value: 'directo' },
+    { label: 'Restar % al peso', value: 'restar' }
   ];
 
   return (
@@ -63,7 +62,6 @@ const PercentageCalculator = () => {
       <div className="card-dark row justify-content-center">
         <div className='col-6'>
           <label className="label">Peso</label>
-        
           <input
             type="number"
             className="input-dark"
@@ -71,7 +69,6 @@ const PercentageCalculator = () => {
             value={value}
             onChange={(e) => setValue(e.target.value)}
           />
-           
         </div>
         <div className='col-6'>
           <label className="label">Barra</label>
@@ -107,20 +104,40 @@ const PercentageCalculator = () => {
         />
       </div>
 
-      {result !== null ? (
+      <div className="card-dark mt-2">
+        <label className="label">Modo de cálculo</label>
+        <div className="card flex justify-content-center mt-2 bg-transparent">
+        <SelectButton
+          value={modoCalculo}
+          options={calcModeOptions}
+          className='d-flex mx-2 gap-2 stylesCalculator'
+          onChange={(e) => setModoCalculo(e.value)}
+          allowEmpty={false}
+        />
+        </div>
+      </div>
+
+      {val && perc ? (
         <div className="result-card">
-          <strong>Tu levantamiento es con</strong>
-          <div className="big-result">{(value - result)} kg</div>
-          {percentage > 0 && <p className="small-text m-0">el <b>{percentage || 0}%</b> de <b>{value} kg</b> es <b>{result} kg</b></p>}
+          <p className="small-text m-0">
+            {modoCalculo === 'restar'
+              ? <span>El <strong>{percentage}%</strong> de <strong>{value} kg</strong> se <strong>descuenta</strong>, dando </span>
+              : <span>El <strong>{percentage}%</strong> de <strong>{value} kg</strong> es </span>
+              }
+          </p>
+
+          <div className="big-result">{workingWeight} kg</div>
+            {modoCalculo === 'restar'
+              ? <span>Por lo tanto, en la barra, debes tener <strong>{val - workingWeight}kg</strong></span>
+              : <span>Por lo tanto, debés sacar <strong>{val - workingWeight}kg</strong> </span>
+              }
+
         </div>
       ) : (
-        <div>
         <p className="text-light text-center mt-4">Ingresá los valores para calcular el peso.</p>
-
-        </div>
       )}
 
-      {result !== null && weightPerSide > 0 && (
+      {val && perc && weightPerSide > 0 && (
         <>
           <div className="card flex justify-content-center mt-2 bg-transparent">
             <SelectButton 
@@ -134,11 +151,11 @@ const PercentageCalculator = () => {
             />
           </div>
           <p className="side-text">
-            <strong className='d-block text-light small text-center'>Por lado: {sideWeight()} kg  {modoCompetencia && '+ tope de 2.5kg'} </strong>
+            <strong className='d-block text-light small text-center'>Por lado: {renderedWeight} kg {modoCompetencia && '+ tope de 2.5kg'} </strong>
           </p>
           <div className="bar-simulation mt-4">
             <div className="plates-container">
-              {generatePlateLoading(weightPerSide).map((plate, index) => (
+              {plateArray.map((plate, index) => (
                 <div key={`left-${index}`} className={`plate plate-${plate.toString().replace('.', '_')}`} title={`${plate} kg`}>
                   {plate}
                 </div>

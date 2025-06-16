@@ -593,7 +593,7 @@ async function onLogin(user, token) {
                     {isAdmin() && (
                         <li className="list-group-item">
                             <Link className='nav-link' to={`/usuarios/${id}`} onClick={() => setMenuSidebar(false)}>
-                                Gestión de aluimnos
+                                Gestión de alumnos
                             </Link>
                         </li>
                     )}
@@ -706,40 +706,40 @@ async function onLogin(user, token) {
             </Dialog>
 
             <Dialog
-  header={pendingAnnouncements[currentAnnouncementIndex]?.title}
-  visible={showAnnouncementDialog}
-  onHide={handleDismissAnnouncement}
-  className='col-10 col-lg-6'
-  footer={
-    <button
-      className='btn btn-primary mt-3'
-      onClick={handleDismissAnnouncement}
-      autoFocus
-    >
-      {currentAnnouncementIndex === pendingAnnouncements.length - 1 ? 'Entendido' : 'Siguiente'}
-    </button>
-  }
->
-  <p style={{ whiteSpace: 'pre-line' }}>
-    {pendingAnnouncements[currentAnnouncementIndex]?.message}
-  </p>
+            header={pendingAnnouncements[currentAnnouncementIndex]?.title}
+            visible={showAnnouncementDialog}
+            onHide={handleDismissAnnouncement}
+            className='col-10 col-lg-6 text-light '
+            footer={
+                <button
+                className='btn btn-primary mt-3'
+                onClick={handleDismissAnnouncement}
+                autoFocus
+                >
+                {currentAnnouncementIndex === pendingAnnouncements.length - 1 ? 'Entendido' : 'Siguiente'}
+                </button>
+            }
+            >
+            <p className='text-light' style={{ whiteSpace: 'pre-line' }}>
+                {pendingAnnouncements[currentAnnouncementIndex]?.message}
+            </p>
 
-  {pendingAnnouncements[currentAnnouncementIndex]?.link_urls?.length > 0 && (
-    <div className="mt-3 d-flex flex-column gap-2">
-      {pendingAnnouncements[currentAnnouncementIndex].link_urls.map((link, idx, arr) => (
-        <a
-          key={idx}
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-outline-primary"
-        >
-          {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
-        </a>
-      ))}
-    </div>
-  )}
-</Dialog>
+            {pendingAnnouncements[currentAnnouncementIndex]?.link_urls?.length > 0 && (
+                <div className="mt-3 d-flex flex-column gap-2">
+                {pendingAnnouncements[currentAnnouncementIndex].link_urls.map((link, idx, arr) => (
+                    <a
+                    key={idx}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline-primary"
+                    >
+                    {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
+                    </a>
+                ))}
+                </div>
+            )}
+            </Dialog>
 
             <ToastContainer
                 position="bottom-center"

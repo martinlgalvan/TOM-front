@@ -170,7 +170,7 @@ p {
   min-width: 100px;
 }
 
-.DialogCalculator .p-dialog-header, .p-dialog-content{
+.p-dialog-header, .p-dialog-content, .p-dialog-footer{
   background-color: #0b213a ;
   color: white;
 }
@@ -367,7 +367,7 @@ p {
 .plate-1_25 { background-color: #dadada; color: #111827; height: 20px; }
 
 .stylesCalculator .p-highlight{
-  background-color: #2b4768;
+  background-color: #0c77f1;
 }
 
   .stylePointer{

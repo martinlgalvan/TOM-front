@@ -85,6 +85,7 @@ function DayDetailsPage() {
     // Nuevo estado para controlar el modal cuando no existe el perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
 
+
     let sliderRef = useRef(null);
     let sliderRef2 = useRef(null);
 
@@ -100,6 +101,23 @@ function DayDetailsPage() {
       selection5: ""
 });
 
+const [allWeeks, setAllWeeks] = useState([]);
+const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+    const isCurrentWeek = currentWeekIndex === 0;
+useEffect(() => {
+  const fetchWeeks = async () => {
+    try {
+      const weeks = await WeekService.findRoutineByUserId(id);
+      const sortedWeeks = weeks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // última primero
+      setAllWeeks(sortedWeeks);
+      const selectedIndex = sortedWeeks.findIndex(w => w._id === week_id);
+      setCurrentWeekIndex(selectedIndex !== -1 ? selectedIndex : 0);
+    } catch (err) {
+      console.error("Error al cargar semanas", err);
+    }
+  };
+  fetchWeeks();
+}, [id]);
 
 
 const redirectToPerfil = () => {
@@ -150,6 +168,38 @@ const redirectToPerfil = () => {
         setFirstValue(allDays[currentDay].name);
       }
     }, [allDays, currentDay]);
+
+    useEffect(() => {
+  const week = allWeeks[currentWeekIndex];
+  if (!week) return;
+
+  setNameWeek(week.name);
+  const currentRoutine = week.routine || [];
+  setAllDays(currentRoutine);
+
+  const firstDay = currentRoutine[0];
+  if (firstDay) {
+    setDay_id(firstDay._id);
+    setModifiedDay(firstDay.exercises);
+    setFirstValue(firstDay.name);
+  }
+
+  const prevWeek = allWeeks[currentWeekIndex + 1];
+  if (prevWeek) {
+    const alignedDays = currentRoutine.map((day, idx) => {
+      const previousDay = prevWeek.routine[idx];
+      if (!previousDay) return day;
+      return {
+        ...day,
+        exercises: compareExercises(day.exercises, previousDay.exercises)
+      };
+    });
+    setAllDays(alignedDays);
+    setModifiedDay(alignedDays[0]?.exercises || []);
+  }
+
+  setCurrentDay(0);
+}, [allWeeks, currentWeekIndex]);
 
 
 useEffect(() => {
@@ -489,6 +539,26 @@ const saveDriveLink = async () => {
     };
 
 
+    function compareExercises(currentExercises, previousExercises) {
+  return currentExercises.map((exercise, index) => {
+    const previous = previousExercises[index];
+    if (!previous) return { ...exercise, changed: true };
+
+    const isDifferent = (
+      exercise.name !== previous.name ||
+      exercise.sets !== previous.sets ||
+      exercise.reps !== previous.reps ||
+      exercise.peso !== previous.peso ||
+      JSON.stringify(exercise?.name?.backoff) !== JSON.stringify(previous?.name?.backoff)
+    );
+
+    return {
+      ...exercise,
+      changed: isDifferent
+    };
+  });
+}
+
     return (
         <>
             <div className="container-fluid p-0 ">
@@ -496,19 +566,56 @@ const saveDriveLink = async () => {
             </div>
 
             <section className="container-fluid p-0">
-                <h2 className="mt-1 mb-4 text-center">{nameWeek}</h2>
 
-                <div className="text-center">
-                    <Segmented
+        
+               <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'bg-danger text-light' : ''}`}>
+  <div className="d-flex justify-content-center align-items-center">
+    <IconButton
+      className="me-2"
+      onClick={() => setCurrentWeekIndex(prev => Math.min(prev + 1, allWeeks.length - 1))}
+      disabled={currentWeekIndex === allWeeks.length - 1}
+    >
+      <NavigateBeforeIcon className={`fs-2 ${currentWeekIndex === allWeeks.length - 1 ? 'text-muted' : ''}`} />
+    </IconButton>
+
+    <div className="d-flex flex-column align-items-center">
+<h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
+      <small className="text-muted">
+        {allWeeks[currentWeekIndex]?.createdAt 
+          ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
+          : ''}
+      </small>
+    </div>
+
+    <IconButton
+      className="ms-2"
+      onClick={() => setCurrentWeekIndex(prev => Math.max(prev - 1, 0))}
+      disabled={currentWeekIndex === 0}
+    >
+      <NavigateNextIcon className={`fs-2 ${currentWeekIndex === 0 ? 'text-muted' : ''}`} />
+    </IconButton>
+  </div>
+
+  {currentWeekIndex !== 0 && (
+    <small className="d-block mt-1 text-warning">
+      Estás viendo una semana anterior, no se puede editar.
+    </small>
+  )}
+</div>
+
+                  {allDays.length > 0 && (
+                    <div className="text-center my-3">
+                      <Segmented
                         options={allDays.map((day) => ({
-                            label: day.name,
-                            value: day._id
+                          label: day.name,
+                          value: day._id
                         }))}
                         className="stylesSegmented"
                         value={day_id}
                         onChange={handleDayChange}
-                    />
-                </div>
+                      />
+                    </div>
+                  )}
 
                 {currentDay !== null && (
                 <div className="row align-items-center text-center m-0 px-1 my-5">
@@ -634,6 +741,11 @@ const saveDriveLink = async () => {
                                   />
 
                                 <CardContent className="p-0">
+                                  <Card
+  key={element.exercise_id}
+  ref={(el) => (cardRefs.current[idx] = el)}
+  className={`mb-4 p-0 cardShadow titleCard ${element.changed ? 'bg-warning-subtle border-warning' : ''}`}
+></Card>
                                   <div className="card border-0">
                                     <table className="table border-0 p-0">
                                       <thead>
@@ -699,6 +811,7 @@ const saveDriveLink = async () => {
                                     <IconButton
                                       id={idx === 0 ? 'edicion' : null}
                                       aria-label="video"
+                                      disabled={!isCurrentWeek}
                                       className="p-0 col-3 mb-2"
                                       onClick={() => handleEditMobileExercise(element, idx)}
                                     >
@@ -852,12 +965,6 @@ const saveDriveLink = async () => {
                 <Formulas />
               </div>
             )}
-            {selectedTool === "chart" && (
-              <div className="text-center">
-                <h5>Gráfico</h5>
-                <p className="text-muted">Visualización de progreso (pendiente)</p>
-              </div>
-            )}
           </div>
         </Dialog>
 
@@ -899,6 +1006,11 @@ const saveDriveLink = async () => {
                 >
                   {completeExercise && (
                     <div className="container-fluid">
+                      {!isCurrentWeek && (
+                        <div className="alert alert-warning text-center">
+                          No podés editar ejercicios de semanas anteriores. Ingresá a la semana correspondiente para hacerlo.
+                        </div>
+                      )}
                       <div className="row">
                         <div className="col-12 mb-3">
                           <label>Nombre</label>
@@ -935,7 +1047,7 @@ const saveDriveLink = async () => {
                           <input
                             type="text"
                             className="form-control"
-                            disabled={userProfile && userProfile.isEditable}
+                            disabled={!isCurrentWeek || (userProfile && userProfile.isEditable)}
                             value={completeExercise.peso || ''}
                             onChange={(e) =>
                               setCompleteExercise({
@@ -951,7 +1063,7 @@ const saveDriveLink = async () => {
                           <textarea
                             className="form-control"
                             rows="3"
-                            disabled={userProfile && userProfile.isEditable}
+                            disabled={!isCurrentWeek || (userProfile && userProfile.isEditable)}
                             value={completeExercise.notas || ''}
                             onChange={(e) =>
                               setCompleteExercise({
@@ -972,7 +1084,7 @@ const saveDriveLink = async () => {
                           <button
                             className="btn colorMainAll text-light"
                             onClick={handleUpdateExercise}
-                            disabled={userProfile && userProfile.isEditable}
+                            disabled={!isCurrentWeek || (userProfile && userProfile.isEditable)}
                           >
                             Guardar
                           </button>
@@ -1065,156 +1177,82 @@ const saveDriveLink = async () => {
                   </div>
 
                   <div className="d-flex justify-content-end gap-2 mt-3">
-                    <button className="btn btn-outline-dark" onClick={() => setShowDriveDialog(false)} >Cancelar</button>
-                    <button className="btn colorMainAll text-light"  onClick={saveDriveLink} >Guardar</button>
+                    <button className="btn btn-outline-light" onClick={() => setShowDriveDialog(false)} >Cancelar</button>
+                    <button className="btn  text-light" style={{ background: 'linear-gradient(to right, #f97316, #ef4444)' }}  onClick={saveDriveLink} >Guardar</button>
                   </div>
                 </Dialog>
 
 
-                <Dialog
-                  header={`Resumen Semanal`}
+               <Dialog
+                  header="Resumen Semanal"
                   className="paddingDialog"
                   visible={showWeeklySummaryModal}
                   style={{ width: '85vw' }}
                   onHide={() => setShowWeeklySummaryModal(false)}
-                  draggable={true}
+                  draggable
                 >
-                  <div className="">
-                    <div className="text-start mb-3">
-                    <span className="styleInputsSpan"><b className="me-2">Última actualización:</b>
-                          {weeklySummary.lastSaved
-                            ? new Date(weeklySummary.lastSaved).toLocaleString()
-                            : '-'}
-                    </span>
+                  <div className="calc-container">
+                    <div className="card-dark mb-3">
+                      <span className="label"><strong>Última actualización:</strong> {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}</span>
+                    </div>
 
-                    </div>
-                    <div className="mb-3">
-                      <span className="styleInputsSpan">Alimentación</span>
-                      <select
-                        value={weeklySummary.selection1}
-                        onChange={(e) =>
-                          setWeeklySummary(prev => ({ ...prev, selection1: e.target.value }))
-                        }
-                        className="form-control"
-                      >
-                        <option value="">Seleccionar...</option>
-                        <option value="Muy mala">Muy mala</option>
-                        <option value="Mala">Mala</option>
-                        <option value="Regular">Regular</option>
-                        <option value="Buena">Buena</option>
-                        <option value="Muy buena">Muy buena</option>
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <span className="styleInputsSpan">
-                        NEAT
-                        <Tooltip 
-                          title="NEAT se refiere a la energía que gastas en tus actividades cotidianas. Por ejemplo, si tu trabajo es ser mesero 12hs, tu NEAT es alto. Si trabajas de uber u oficina, tu NEAT es bajo."
-                          arrow
-                          enterTouchDelay={0}
-                          leaveTouchDelay={8000}
+                    {[
+                      { label: 'Alimentación', key: 'selection1' },
+                      { label: 'NEAT', key: 'selection2', tooltip: 'NEAT se refiere a la energía que gastas en tus actividades cotidianas...' },
+                      { label: 'Sensaciones del entrenamiento', key: 'selection3' },
+                      { label: 'Descanso / sueño', key: 'selection4' },
+                      { label: 'Niveles de estrés', key: 'selection5' }
+                    ].map(({ label, key, tooltip }) => (
+                      <div key={key} className="card-dark mb-3">
+                        <label className="label d-flex align-items-center">
+                          {label}
+                          {tooltip && (
+                            <Tooltip title={tooltip} arrow enterTouchDelay={0} leaveTouchDelay={8000}>
+                              <IconButton size="small" className="ms-2 text-light">
+                                <HelpOutlineIcon fontSize="inherit" className="text-light" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </label>
+                        <select
+                          value={weeklySummary[key]}
+                          onChange={(e) => setWeeklySummary(prev => ({ ...prev, [key]: e.target.value }))}
+                          className="input-dark"
                         >
-                          <IconButton size="small" style={{ marginLeft: '5px' }}>
-                            <HelpOutlineIcon fontSize="inherit" />
-                          </IconButton>
-                        </Tooltip>
-                      </span>
-                      <select
-                        value={weeklySummary.selection2}
-                        onChange={(e) =>
-                          setWeeklySummary(prev => ({ ...prev, selection2: e.target.value }))
-                        }
-                        className="form-control"
-                      >
-                        <option value="">Seleccionar...</option>
-                        <option value="Muy malo">Muy malo</option>
-                        <option value="Malo">Malo</option>
-                        <option value="Regular">Regular</option>
-                        <option value="Bueno">Bueno</option>
-                        <option value="Muy bueno">Muy bueno</option>
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <span className="styleInputsSpan w-100">Sensaciones del entrenamiento</span>
-                      <select
-                        value={weeklySummary.selection3}
-                        onChange={(e) =>
-                          setWeeklySummary(prev => ({ ...prev, selection3: e.target.value }))
-                        }
-                        className="form-control"
-                      >
-                        <option value="">Seleccionar...</option>
-                        <option value="Muy mal">Muy mal</option>
-                        <option value="Mal">Mal</option>
-                        <option value="Regular">Regular</option>
-                        <option value="Bien">Bien</option>
-                        <option value="Muy bien">Muy bien</option>
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <span className="styleInputsSpan">Descanso / sueño</span>
-                      <select
-                        value={weeklySummary.selection4}
-                        onChange={(e) =>
-                          setWeeklySummary(prev => ({ ...prev, selection4: e.target.value }))
-                        }
-                        className="form-control"
-                      >
-                        <option value="">Seleccionar...</option>
-                        <option value="Muy mal">Muy mal</option>
-                        <option value="Mal">Mal</option>
-                        <option value="Regular">Regular</option>
-                        <option value="Bien">Bien</option>
-                        <option value="Muy bien">Muy bien</option>
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <span className="styleInputsSpan">Niveles de estrés</span>
-                      <select
-                        value={weeklySummary.selection5}
-                        onChange={(e) =>
-                          setWeeklySummary(prev => ({ ...prev, selection5: e.target.value }))
-                        }
-                        className="form-control"
-                      >
-                        <option value="">Seleccionar...</option>
-                        <option value="Muy mal">Muy mal</option>
-                        <option value="Mal">Mal</option>
-                        <option value="Regular">Regular</option>
-                        <option value="Bien">Bien</option>
-                        <option value="Muy bien">Muy bien</option>
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <span>Comentarios sobre la semana</span>
+                          <option value="">Seleccionar...</option>
+                          {['Muy mala', 'Mala', 'Regular', 'Buena', 'Muy buena'].map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+
+                    <div className="card-dark mb-3">
+                      <label className="label">Comentarios sobre la semana</label>
                       <InputTextarea
-                        type="text"
                         autoResize
                         value={weeklySummary.comments || ""}
-                        onChange={(e) =>
-                          setWeeklySummary(prev => ({ ...prev, comments: e.target.value }))
-                        }
-                        className="form-control"
+                        onChange={(e) => setWeeklySummary(prev => ({ ...prev, comments: e.target.value }))}
+                        className="input-dark"
                         placeholder="Escribí acá tus comentarios..."
                       />
                     </div>
+
                     <div className="row justify-content-end">
                       <div className="col-4">
                         <Button
                           label="Cancelar"
-                          className="btn btn-outline-dark"
+                          className="btn btn-outline-light w-100"
                           onClick={() => setShowWeeklySummaryModal(false)}
                         />
                       </div>
                       <div className="col-4">
                         <Button
                           label="Guardar"
-                          className="btn colorMainAll text-light me-2"
+                          className="btn text-light w-100"
+                          style={{ background: 'linear-gradient(to right, #f97316, #ef4444)' }}
                           onClick={() => {
-                            const updatedSummary = { 
-                              ...weeklySummary, 
-                              lastSaved: new Date().toISOString()
-                            };
+                            const updatedSummary = { ...weeklySummary, lastSaved: new Date().toISOString() };
                             UserService.editProfile(id, { resumen_semanal: updatedSummary })
                               .then(() => {
                                 setWeeklySummary(updatedSummary);
@@ -1231,7 +1269,6 @@ const saveDriveLink = async () => {
                     </div>
                   </div>
                 </Dialog>
-
 
             </section>
         </>
