@@ -20,8 +20,7 @@ const PercentageCalculator = () => {
     workingWeight = (val * perc) / 100;
   }
 
-  const effectiveWeight = modoCalculo === 'restar' ? workingWeight : val - workingWeight;
-  const plateWeight = Math.max(effectiveWeight - bar - topes, 0);
+  const plateWeight = Math.max(workingWeight - bar - topes, 0);
   const weightPerSide = plateWeight / 2;
 
   const generatePlateLoading = (weightPerSide) => {
@@ -43,8 +42,7 @@ const PercentageCalculator = () => {
       .flatMap(([plate, count]) => Array(count).fill(plate));
   };
 
-  const plateArray = generatePlateLoading(weightPerSide);
-  const renderedWeight = plateArray.reduce((acc, curr) => acc + curr, 0);
+  const renderedWeight = generatePlateLoading(weightPerSide).reduce((acc, curr) => acc + curr, 0);
 
   const modeOptions = [
     { label: 'Competencia', value: true },
@@ -127,17 +125,17 @@ const PercentageCalculator = () => {
           </p>
 
           <div className="big-result">{workingWeight} kg</div>
-            {modoCalculo === 'restar'
-              ? <span>Por lo tanto, en la barra, debes tener <strong>{val - workingWeight}kg</strong></span>
-              : <span>Por lo tanto, debés sacar <strong>{val - workingWeight}kg</strong> </span>
-              }
+            {/*modoCalculo === 'restar'
+              ? <span>Por lo tanto, en la barra, debes tener <strong>{workingWeight}kg</strong></span>
+              : <span>Por lo tanto, debés sacar <strong>{value - workingWeight}kg</strong> </span>
+              */}
 
         </div>
       ) : (
         <p className="text-light text-center mt-4">Ingresá los valores para calcular el peso.</p>
       )}
 
-      {val && perc && weightPerSide > 0 && (
+      {/*val && perc && weightPerSide > 0 && (
         <>
           <div className="card flex justify-content-center mt-2 bg-transparent">
             <SelectButton 
@@ -155,7 +153,7 @@ const PercentageCalculator = () => {
           </p>
           <div className="bar-simulation mt-4">
             <div className="plates-container">
-              {plateArray.map((plate, index) => (
+              {generatePlateLoading(weightPerSide).map((plate, index) => (
                 <div key={`left-${index}`} className={`plate plate-${plate.toString().replace('.', '_')}`} title={`${plate} kg`}>
                   {plate}
                 </div>
@@ -167,7 +165,7 @@ const PercentageCalculator = () => {
             <div className="bar-line" />
           </div>
         </>
-      )}
+      )*/}
     </div>
   );
 };
