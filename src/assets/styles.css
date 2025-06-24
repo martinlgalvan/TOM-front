@@ -175,6 +175,10 @@ p {
   color: white;
 }
 
+.colorDialog .p-dialog-header-close{
+  color: dark;
+}
+
 .calc-container {
   background-color: #0f172a;
   color: #f8fafc;
@@ -256,6 +260,88 @@ p {
 .perc-btn:hover {
   background: linear-gradient(to right, #f97316, #ef4444);
   color: white;
+}
+
+.colorCardsExercises{
+  background: linear-gradient(to right, #334155, #224069);
+    border-radius: 10px 10px 00px 0px;
+
+}
+
+.shadowCardsDayDetails{
+  box-shadow: 5px 5px 10px 5px;
+}
+
+.ColorExercises{
+      background: linear-gradient(to right, #c5c4c4, #e0edff);
+}
+
+.ColorExercisesInside{
+      background-color: white;
+      margin: 0 0px;
+}
+
+.stylesNameExercise{
+font-size: 0.9em;
+font-weight: 550;
+}
+
+.fontStylesSpan{
+  color: #555252 !important;
+  font-weight: 600;
+  font-size: 0.9em !important;
+  margin-bottom: 0;
+}
+
+.detailsNumber{
+  border-radius: 0 0px 20px 0;
+  height: 40px;
+}
+
+.detailsContador{
+    border-radius: 0 0px 0px 20px;
+  height: 40px;
+}
+
+.widgetNumber{
+  background: linear-gradient(to right, #051229, #0b2b5e);
+}
+
+.colorButonContador{
+  background: linear-gradient(to right, #1e293b2a, #374a6928);
+    font-size: 0.75em !important;
+}
+
+.bordeContador{
+  border: 1px solid #00000023;
+}
+
+.colorButonContador:hover{
+    background: linear-gradient(to right, #ef4444 ,  #f97316);
+    color: white;
+
+}
+
+.stylesBadgesItemsExerciseSpan{
+
+  font-size: 1em !important;
+}
+
+.fontStylesPeso{
+  background: linear-gradient(to right, #334155, #0962df);
+  border-radius: 10px;
+  color: white !important;
+  font-size: 1em !important;
+  padding: 5px 8px;
+}
+
+.textCards{
+ background: linear-gradient(to right, #d2e7ff, #f0f7ff);
+}
+
+.textCardsInside{
+  background-color: #8d4444;
+  margin: 0 0.5px;
 }
 
 .result-card {
@@ -669,11 +755,6 @@ p {
 
   .displayFlexInMobile{
     display: none;
-  }
-
-  .colorDialog{
-    background-color: #f5f5f5 !important;
-
   }
 
 
@@ -2702,11 +2783,12 @@ font-size: 0.9em;
 }
 
 .quadre{
-  background-color: #ffffff;
+  font-size: 0.7em;
   border: 1px solid rgb(255, 255, 255);
   border-radius: 10px;
   box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.432);
   margin: 1px;
+  padding: 5px;
 }
 
 .asd{

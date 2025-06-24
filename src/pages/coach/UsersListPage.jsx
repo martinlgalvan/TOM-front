@@ -596,19 +596,19 @@ const handleConfirmDelete = async () => {
         header={editMode ? "Editar anuncio" : "Nuevo anuncio"}
         visible={formVisible}
         onHide={() => setFormVisible(false)}
-        className="col-10 col-sm-9 col-lg-8 col-xl-6"
+        className="col-10 col-sm-9 col-lg-8 col-xl-6 "
       >
-        <div className="p-fluid">
-          <div className="mb-3">
-            <label className="styleInputsSpan">Nombre</label>
+        <div className="p-fluid text-dark">
+          <div className="mb-3 ">
+            <label className="styleInputsSpan text-light">Nombre</label>
             <InputText value={announcementForm.title} onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })} />
           </div>
           <div className="mb-3">
-            <label className="styleInputsSpan">Mensaje</label>
+            <label className="styleInputsSpan text-light">Mensaje</label>
             <InputTextarea rows={3} value={announcementForm.message} onChange={(e) => setAnnouncementForm({ ...announcementForm, message: e.target.value })} />
           </div>
           <div className="mb-3">
-          <label className="styleInputsSpan d-block">Links</label>
+          <label className="styleInputsSpan d-block text-light">Links</label>
 
           {announcementForm.link_urls?.length > 0 && (
             <ul className="list-group mb-2">
@@ -649,7 +649,7 @@ const handleConfirmDelete = async () => {
       </div>
 
           <div className="mb-3">
-          <label className="styleInputsSpan">Modo</label>
+          <label className="styleInputsSpan text-light">Modo</label>
             <SelectButton
               value={announcementForm.mode}
               options={MODE_OPTIONS}
@@ -674,8 +674,8 @@ const handleConfirmDelete = async () => {
 
           {announcementForm.mode === 'once' && (
             <div className="mb-3">
-              <label className="styleInputsSpan">Anuncio único</label>
-              <p className="styleInputsParaph">Por ejemplo, si selecciona el 17/05, unicamente esa fecha, se mostrará el anuncio.</p>
+              <label className="styleInputsSpan text-light">Anuncio único</label>
+              <p className="styleInputsParaph text-light">Por ejemplo, si selecciona el 17/05, unicamente esa fecha, se mostrará el anuncio.</p>
               <Calendar
                 value={announcementForm.show_at_date ? new Date(announcementForm.show_at_date) : null}
                 onChange={(e) =>
@@ -690,8 +690,8 @@ const handleConfirmDelete = async () => {
 
           {announcementForm.mode === 'repeat' && (
             <div className="mb-3">
-              <label className="styleInputsSpanLarge">Una vez por semana</label>
-              <p className="styleInputsParaph">Por ejemplo, si selecciona el viernes, todos los viernes, se mostrará este anuncio.</p>
+              <label className="styleInputsSpanLarge text-light">Una vez por semana</label>
+              <p className="styleInputsParaph text-light">Por ejemplo, si selecciona el viernes, todos los viernes, se mostrará este anuncio.</p>
               {editMode && announcementForm.repeat_day && <span className="styleInputsParaph text-danger">Por motivos de consistencia, no se puede editar una vez creado.</span>}
               <Dropdown
                 value={announcementForm.repeat_day}
@@ -707,8 +707,8 @@ const handleConfirmDelete = async () => {
 
           {announcementForm.mode === 'monthly' && (
             <div className="mb-3">
-              <label className="styleInputsSpan">Día del mes</label>
-              <p className="styleInputsParaph">Por ejemplo, si selecciona el 1, todos los 1 de todos los meses, se mostrará este mensaje.</p>
+              <label className="styleInputsSpan text-light">Día del mes</label>
+              <p className="styleInputsParaph text-light">Por ejemplo, si selecciona el 1, todos los 1 de todos los meses, se mostrará este mensaje.</p>
               <Dropdown
                 value={announcementForm.day_of_month}
                 options={Array.from({ length: 31 }, (_, i) => ({
@@ -728,18 +728,18 @@ const handleConfirmDelete = async () => {
           )}
           <div className="row justify-content-center">
             <div className="col-6">
-              <label className="styleInputsSpan">Categorías</label>
+              <label className="styleInputsSpan text-light">Categorías</label>
               <MultiSelect value={announcementForm.target_categories} options={CATEGORIES} onChange={(e) => setAnnouncementForm({ ...announcementForm, target_categories: e.value })} placeholder="Seleccionar categorías" />
             </div>
 
             <div className="col-6">
-              <label className="styleInputsParaph">Usuarios específicos</label>
+              <label className="styleInputsParaph text-light">Usuarios específicos</label>
               <MultiSelect value={announcementForm.target_users} options={usersList} onChange={(e) => setAnnouncementForm({ ...announcementForm, target_users: e.value })} placeholder="Seleccionar usuarios" filter />
             </div>
 
           </div>
 
-          <div className="mt-4 text-end">
+          <div className="mt-4 text-end text-light">
             <Button label={editMode ? "Actualizar" : "Crear"} icon="pi pi-check" onClick={handleSubmit} autoFocus />
           </div>
         </div>

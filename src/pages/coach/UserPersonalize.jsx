@@ -116,9 +116,7 @@ function UsersListPage() {
 
                 <div className="row justify-content-center">
 
-                    <div className="col-10 col-lg-6">
-                        <AddColorToUser />
-                    </div>
+
 
                     <div className="col-10 text-center my-5">
                         <h2>Más personalización pronto...</h2>

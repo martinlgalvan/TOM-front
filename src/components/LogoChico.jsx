@@ -38,10 +38,11 @@ function LogoChico({isHomePage}){
             setUrlPath(PITBULL)}
     else if(localStorage.getItem('email') == "mauricioarraztoa@gmail.com" || localStorage.getItem('entrenador_id') == "672d05cd7fa16a4779fe6135"){
         setUrlPath(TORETTO_GYM)
-    
     } else if(localStorage.getItem('email') == "cristian_quiroga_08@hotmail.com" || localStorage.getItem('entrenador_id') == "6813162770c9257968a79fe0"){
             setUrlPath(CRISTIAN_QUIROGA)
-     } else{
+     } else if(localStorage.getItem('email') == "beltrameramiro@gmail.com" || localStorage.getItem('entrenador_id') == "685372d397535c64dfc56d71"){
+             setUrlPath(RAMABELTRAME)
+    } else{
         setUrlPath(TOM)
     }
     

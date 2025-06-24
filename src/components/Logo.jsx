@@ -43,7 +43,6 @@ function Logo({isHomePage}){
         setUrlPath(CRISTIAN_QUIROGA)
     } else if(localStorage.getItem('email') == "beltrameramiro@gmail.com" || localStorage.getItem('entrenador_id') == "685372d397535c64dfc56d71"){
         setUrlPath(RAMABELTRAME)
-    
     }else{
         setUrlPath(TOM)
     }

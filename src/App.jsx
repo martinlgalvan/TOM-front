@@ -220,7 +220,8 @@ async function onLogin(user, token) {
     localStorage.setItem('role', user.role);
     localStorage.setItem('_id', user._id);
     localStorage.setItem('name', user.name);
-    localStorage.setItem('state', user.payment_info.isPaid);
+
+
     localStorage.setItem('noShowPopup', 'false');
     if (user.drive != undefined) {
         localStorage.setItem('drive', user.drive);
@@ -251,7 +252,9 @@ async function onLogin(user, token) {
 
 
     }
-
+    if(user.role !== 'admin'){
+    localStorage.setItem('state', user.payment_info.isPaid);
+    }
     navigate(`/`);
 }
 
