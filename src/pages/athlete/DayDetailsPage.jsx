@@ -1047,7 +1047,7 @@ const saveDriveLink = async () => {
                           <input
                             type="text"
                             className="form-control"
-                            disabled={!isCurrentWeek || (userProfile && userProfile.isEditable)}
+                            disabled={userProfile && userProfile.isEditable}
                             value={completeExercise.peso || ''}
                             onChange={(e) =>
                               setCompleteExercise({
@@ -1058,12 +1058,13 @@ const saveDriveLink = async () => {
                           />
                         </div>
 
+
                         <div className="col-12 mb-3">
                           <label>Notas</label>
                           <textarea
                             className="form-control"
                             rows="3"
-                            disabled={!isCurrentWeek || (userProfile && userProfile.isEditable)}
+                            disabled={userProfile && userProfile.isEditable}
                             value={completeExercise.notas || ''}
                             onChange={(e) =>
                               setCompleteExercise({
@@ -1076,7 +1077,7 @@ const saveDriveLink = async () => {
 
                         <div className="col-12 text-center">
                           <button
-                            className="btn btn-outline-dark me-3"
+                            className="btn btn-outline-light me-3"
                             onClick={hideDialogEditExercises}
                           >
                             Cancelar
@@ -1084,7 +1085,7 @@ const saveDriveLink = async () => {
                           <button
                             className="btn colorMainAll text-light"
                             onClick={handleUpdateExercise}
-                            disabled={!isCurrentWeek || (userProfile && userProfile.isEditable)}
+                            disabled={userProfile && userProfile.isEditable}
                           >
                             Guardar
                           </button>
@@ -1237,6 +1238,8 @@ const saveDriveLink = async () => {
                         placeholder="Escribí acá tus comentarios..."
                       />
                     </div>
+
+
 
                     <div className="row justify-content-end">
                       <div className="col-4">
