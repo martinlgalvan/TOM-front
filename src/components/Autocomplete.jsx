@@ -144,7 +144,7 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
           inputRef.current = el; 
           setReferenceElement(el); // Lo asociamos a Popper
         }}
-        value={isProgression ? 'No se cambiará el nombre ' : inputValue}
+        value={inputValue}
         onChange={handleChange}
         onFocus={handleFocusOrClick}
         onClick={handleFocusOrClick}

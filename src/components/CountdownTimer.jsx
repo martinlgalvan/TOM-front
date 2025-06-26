@@ -1,233 +1,153 @@
-import React, { useState, useEffect, useRef } from "react";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import ReplayIcon from "@mui/icons-material/Replay";
-import IconButton from "@mui/material/IconButton";
-import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Box, Typography, IconButton, Fade, Grow } from '@mui/material';
+import { Play, Pause, RefreshCcw } from 'lucide-react';
 
-// Importa la función de suscripción
-import { subscribeUserToPush } from "./../pushNotifications";
-
-const CountdownTimer = ({ initialTime }) => {
-  // (Tu lógica existente para detectar iOS, Safari, etc.)
-  const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isStandalone = isiOS && ("standalone" in window.navigator) && window.navigator.standalone;
-
-  // Funciones para formatear y convertir tiempo...
-  const normalizeTimeInput = (input) => {
-    if (typeof input !== "string") input = input.toString().trim();
-    if (input.includes(":")) {
-      const [minutes, seconds] = input.split(":").map(Number);
-      return `${String(minutes || 0).padStart(2, "0")}:${String(seconds || 0).padStart(2, "0")}`;
+// CountdownTimer: initial, running, paused, expired states with overlay animations and controls
+export default function CountdownTimer({ initialTime = "00:30" }) {
+  // Normalize input to MM:SS
+  const normalize = input => {
+    const str = String(input).trim();
+    if (str.includes(':')) {
+      const [m, s] = str.split(':').map(Number);
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
-    const match = input.match(/\d+/g);
-    if (!match) return "00:00";
-    const minutes = parseInt(match[0], 10);
-    const seconds = match.length > 1 ? parseInt(match[1], 10) : 0;
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    const digits = str.match(/\d+/g) || [];
+    const m = Number(digits[0] || 0);
+    const s = Number(digits[1] || 0);
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+  const toSeconds = ts => ts.split(':').reduce((acc, v, i) => i ? acc + Number(v) : Number(v) * 60, 0);
+  const toMMSS = sec => {
+    const m = Math.floor(sec / 60), s = sec % 60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   };
 
-  const timeStringToSeconds = (timeString) => {
-    const [minutes, seconds] = timeString.split(":").map(Number);
-    return minutes * 60 + (seconds || 0);
-  };
-
-  // Inicialización del tiempo y estados
-  const initialSeconds =
-    !initialTime || initialTime === 0
-      ? null
-      : timeStringToSeconds(normalizeTimeInput(initialTime));
-
-  const [timeLeft, setTimeLeft] = useState(initialSeconds);
+  const baseSeconds = toSeconds(normalize(initialTime));
+  const [timeLeft, setTimeLeft] = useState(baseSeconds);
   const [isRunning, setIsRunning] = useState(false);
-  const [hasFinished, setHasFinished] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
+  const intervalRef = useRef(null);
 
-  const startTimestampRef = useRef(null);
-  const remainingTimeRef = useRef(initialSeconds);
-  const audioContextRef = useRef(null);
-
-  const handleStart = () => {
-    if (isSafari && !audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioContextRef.current.state === "suspended") {
-        audioContextRef.current.resume();
+  const tick = useCallback(() => {
+    setTimeLeft(prev => {
+      if (prev <= 1) {
+        clearInterval(intervalRef.current);
+        setIsRunning(false);
+        return 0;
       }
-    }
-    startTimestampRef.current = Date.now();
-    setIsRunning(true);
-  };
-
-  const handlePause = () => {
-    setIsRunning(false);
-    remainingTimeRef.current = timeLeft;
-  };
-
-  const handleReset = () => {
-    const newTime = timeStringToSeconds(normalizeTimeInput(initialTime));
-    setTimeLeft(newTime);
-    remainingTimeRef.current = newTime;
-    setHasFinished(false);
-  };
-
-  useEffect(() => {
-    let interval;
-    if (isRunning) {
-      interval = setInterval(() => {
-        const now = Date.now();
-        const elapsed = Math.floor((now - startTimestampRef.current) / 1000);
-        const updatedTime = Math.max(remainingTimeRef.current - elapsed, 0);
-        setTimeLeft(updatedTime);
-        if (updatedTime === 0) {
-          clearInterval(interval);
-          setIsRunning(false);
-          setHasFinished(true);
-          triggerAlarm();
-        }
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isRunning]);
-
-
-  
-
-  // Mostrar diálogo para solicitar permiso de notificaciones si es posible:
-  // En iOS, solo si la app está instalada (standalone)
- /*useEffect(() => {
-    if (
-      (( !isiOS ) || (isiOS && isStandalone)) &&
-      "Notification" in window &&
-      Notification.permission === "default" &&
-      !localStorage.getItem("notificationRequested")
-    ) {
-      setShowDialog(true);
-    }
-  }, [isiOS, isStandalone]);*/
-
- /* const requestNotificationPermission = () => {
-
-    setShowDialog(false);
-    Notification.requestPermission().then((permission) => {
-      if (permission === "granted") {
-        localStorage.setItem("notificationRequested", "true");
-        subscribeUserToPush().then((subscription) => {
-          if (subscription) {
-            fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/save-subscription', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ subscription, userId: "TU_USER_ID_OPCIONAL" })
-            })
-            .then(response => {
-              return response.json();
-            })
-              .then(data => console.log("Suscripción guardada en el backend:", data))
-              .catch(err => console.error("Error enviando la suscripción al backend:", err));
-          }
-        });
-      }
+      return prev - 1;
     });
-  };*/
-  
+  }, []);
 
-  const triggerAlarm = async () => {
-    playBeep();
+  // Derived states
+  const isExpired = timeLeft === 0 && !isRunning;
+  const isStopped = !isRunning && timeLeft === baseSeconds;
+  const isPaused = !isRunning && timeLeft > 0 && timeLeft < baseSeconds;
 
-    if ("vibrate" in navigator) {
-      navigator.vibrate([200, 100, 200, 100, 200]);
-    }
+  const handleStartPause = e => {
+  e.stopPropagation();
 
-    /*if (!isiOS && "Notification" in window && Notification.permission === "granted") {
-      new Notification("⏳ ¡Tiempo terminado!", {
-        body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
-        icon: "/icon.png"
-      });
-    } else if (isiOS && isStandalone) {
-      if ('serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg) {
-          reg.showNotification("⏳ ¡Tiempo terminado!", {
-            body: "Tu descanso ha finalizado, es hora de continuar con el entrenamiento.",
-            icon: "/icon.png"
-          });
-        } else {
-          alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
-        }
-      } else {
-        alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
-      }
-    } else {
-      alert("⏳ ¡Tiempo terminado! Tu descanso ha finalizado, es hora de continuar con el entrenamiento.");
-    }*/
-  };
+  if (isExpired) {
+    // Si expiró: reinicio completo y arranco de nuevo
+    setTimeLeft(baseSeconds);
+    intervalRef.current = setInterval(tick, 1000);
+    setIsRunning(true);
 
-  const playBeep = () => {
-    let audioCtx;
-    if (isSafari && audioContextRef.current) {
-      audioCtx = audioContextRef.current;
-    } else {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    const beepDuration = 0.2;
-    const pauseBetweenBeeps = 0.1;
-    const pairsCount = 3;
-    let startTime = audioCtx.currentTime;
+  } else if (isPaused || isStopped) {
+    // Si está pausado o detenido al inicio: reanudo sin tocar timeLeft
+    intervalRef.current = setInterval(tick, 1000);
+    setIsRunning(true);
 
-    for (let i = 0; i < pairsCount; i++) {
-      for (let j = 0; j < 2; j++) {
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(750, startTime);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start(startTime);
-        oscillator.stop(startTime + beepDuration);
-        gainNode.gain.setValueAtTime(1, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + beepDuration);
-        startTime += beepDuration + pauseBetweenBeeps;
-      }
-      startTime += 0.4;
-    }
-  };
-
-  const formatTimeDisplay = (totalSeconds) => {
-    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-    const seconds = String(totalSeconds % 60).padStart(2, "0");
-    return (
-      <div className="fonnt mb-2">
-        <span className="quadre p-2">{minutes}</span>
-        <span className="text-dark spanPuntitos">:</span>
-        <span className="quadre p-2">{seconds}</span>
-      </div>
-    );
-  };
-
-  return (
-    <div>
-      {timeLeft !== null ? formatTimeDisplay(timeLeft) : "--:--"}
-      <IconButton onClick={() => { isRunning ? handlePause() : handleStart(); }}>
-        {isRunning ? <PauseIcon /> : <PlayArrowIcon />}
-      </IconButton>
-      <IconButton onClick={handleReset}>
-        <ReplayIcon />
-      </IconButton>
-
-      {/*<Dialog
-        header="Activar Notificaciones"
-        visible={showDialog}
-        style={{ width: "50vw" }}
-        onHide={() => setShowDialog(false)}
-      >
-        <p>
-          ¿Quieres activar las notificaciones para que la alarma funcione incluso con el celular bloqueado?
-        </p>
-        <Button label="Activar" onClick={requestNotificationPermission} />
-      </Dialog>*/}
-    </div>
-  );
+  } else if (isRunning) {
+    // Si está corriendo: pauso
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+  }
 };
 
-export default CountdownTimer;
+  const handleReset = e => {
+    e.stopPropagation();
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+    setTimeLeft(baseSeconds);
+  };
+
+  useEffect(() => () => clearInterval(intervalRef.current), []);
+
+  return (
+    <Box position="relative" className="timerBox" display="inline-block">
+      {/* Timer display */}
+      <Typography
+        variant="subtitle2"
+        sx={{
+          fontFamily: 'monospace', p: 1, borderRadius: 1,
+            
+        }}
+        className="timer"
+      >
+        {toMMSS(timeLeft)}
+      </Typography>
+
+      {/* Expired overlay: red background + play button */}
+      <Fade in={isExpired} timeout={400} mountOnEnter unmountOnExit appear>
+        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+          display="flex" alignItems="center" justifyContent="center"
+          sx={{ backgroundColor: 'rgba(255,0,0,0.4)', borderRadius: 1, backdropFilter: 'blur(0.5px)'  }}
+        >
+          <Grow in={isExpired} timeout={300} mountOnEnter unmountOnExit>
+            <IconButton onClick={handleStartPause} size="small">
+              <Play size={20} />
+            </IconButton>
+          </Grow>
+        </Box>
+      </Fade>
+
+      {/* Initial stopped overlay: play button */}
+      <Fade in={isStopped} timeout={400} mountOnEnter unmountOnExit appear>
+        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+          display="flex" alignItems="center" justifyContent="center"
+          sx={{ backgroundColor: 'transparent', borderRadius: 1 }}
+        >
+          <Grow in={isStopped} timeout={300} mountOnEnter unmountOnExit>
+            <IconButton className={'marginPlayButton'} onClick={handleStartPause} size="small">
+              <Play size={20} />
+            </IconButton>
+          </Grow>
+        </Box>
+      </Fade>
+
+      {/* Running overlay: pause button rotates from play */}
+      <Fade in={isRunning} timeout={400} mountOnEnter unmountOnExit appear>
+        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+          display="flex" alignItems="center" justifyContent="center"
+          
+          sx={{  borderRadius: 1 }}
+        >
+          <Grow in={isRunning} timeout={300} mountOnEnter unmountOnExit>
+            <IconButton className={'marginPlayButton'}  onClick={handleStartPause} size="small">
+              <Pause size={18} style={{ transform: 'rotate(180deg)', transition: 'transform 300ms' }} />
+            </IconButton>
+          </Grow>
+        </Box>
+      </Fade>
+
+      {/* Paused overlay: pause icon rotated + reset button */}
+      <Fade in={isPaused} timeout={400} mountOnEnter unmountOnExit appear>
+        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+          display="flex" alignItems="center" justifyContent="center"
+          sx={{ backgroundColor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(0.5px)', borderRadius: 1 }}
+        >
+          <Grow in={isPaused} timeout={300} mountOnEnter unmountOnExit>
+            <Box className={'contButton'} display="flex" gap={0.5}>
+              <IconButton  onClick={handleReset} className="ms-4 ps-3"  size="small">
+                <RefreshCcw className="text-dark" size={18} />
+              </IconButton>
+              <IconButton  onClick={handleStartPause} size="small">
+              <Play className="text-dark" size={18}  />
+              </IconButton>
+            </Box>
+          </Grow>
+        </Box>
+      </Fade>
+    </Box>
+  );
+}

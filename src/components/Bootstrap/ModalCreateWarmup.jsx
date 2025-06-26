@@ -235,7 +235,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   // Función para confirmar eliminación
   const deleteWarmup = (event, index, name) => {
     confirmDialog({
-      message: `¿Estás seguro de que deseas eliminar el warmup "${name}"?`,
+      message: `¿Estás seguro de que deseas eliminar este ejercicio?`,
       header: "Confirmación",
       icon: "pi pi-exclamation-triangle",
       acceptLabel: "Sí, eliminar",

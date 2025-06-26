@@ -1989,7 +1989,7 @@ const removeBackoffLine = (index) => {
               .map((prog) => (
                 <button
                   key={prog._id}
-                  className="btn w-100 text-start colorBackPAR3 mb-1 d-flex justify-content-between align-items-center ps-3 pe-2"
+                  className="btn w-100 text-start  mb-1 d-flex justify-content-between align-items-center ps-3 pe-2"
                   onClick={() => {
                     setShowSavedRoutinesDialog(false);
                     navigate(`/par/${prog._id}`);

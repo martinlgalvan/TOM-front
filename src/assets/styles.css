@@ -307,19 +307,57 @@ font-weight: 550;
   background: linear-gradient(to right, #051229, #0b2b5e);
 }
 
+.colorWarmup{
+  background: linear-gradient(to right, #720303, #270202);
+}
+
+.colorMovility{
+  background: linear-gradient(to right, #ef4444, #f97316);
+}
+
+
 .colorButonContador{
   background: linear-gradient(to right, #1e293b2a, #374a6928);
     font-size: 0.75em !important;
 }
 
-.bordeContador{
-  border: 1px solid #00000023;
+.timerBox{
+
+  height: 35px !important;
 }
 
-.colorButonContador:hover{
-    background: linear-gradient(to right, #ef4444 ,  #f97316);
-    color: white;
+.timer{
+  font-size: 1.15em !important;
 
+}
+
+.colorNote{
+  background: linear-gradient(to right, #0464ff2d, #5093ff3d);
+  border: 1px;
+  margin: 0 20px;
+}
+
+.colorNote2{
+  background: linear-gradient(to right, #ef44446c, #f974163d);
+  border: 1px;
+  margin: 0 20px;
+}
+
+.textNotesA{
+  font-size: 0.9em;
+}
+
+.marginTimer{
+  margin-top: 13px;
+}
+
+.fontNumberE{
+  font-size: 0.76em;
+  font-weight: 600;
+}
+
+.bordeContador{
+  border: 1px solid #00000023;
 }
 
 .stylesBadgesItemsExerciseSpan{
@@ -756,7 +794,9 @@ font-weight: 550;
   .displayFlexInMobile{
     display: none;
   }
-
+.marginPlayButton{
+  margin-left: 80px !important;
+}
 
 
 
@@ -1770,6 +1810,15 @@ width: 50px;
   width: 110px !important;
 }
 
+.styleInputsNote-back{
+  color: #6e6e6e;
+  font-size: 0.9em;
+  text-align: start;
+  margin-left: 6px !important;
+}
+
+
+
 .styleInputsParaph{
   color: #6e6e6e;
   font-size: 0.9em;
@@ -1781,6 +1830,15 @@ width: 50px;
   font-size: 0.9em;
   text-align: start;
   width: 140px !important;
+}
+
+.backgroundCardsWarmMov{
+
+  background-color: #cccccc3b;
+}
+
+.largoCarddds{
+  width: 93%;
 }
 
 .normalized-input {

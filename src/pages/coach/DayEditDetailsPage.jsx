@@ -1965,7 +1965,7 @@ const hasBackoff = exercise => (
             }
             onHide={handleDeleteCancel}
           >
-            <p className="p-4">
+            <p className="p-4 text-light">
               ¡Cuidado! Estás por eliminar{" "}
               <b>"{exerciseToDelete?.name}"</b>. ¿Estás seguro?
             </p>

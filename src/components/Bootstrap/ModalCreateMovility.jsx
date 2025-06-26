@@ -227,8 +227,9 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
 
   // Función para confirmar la eliminación de un ejercicio
   const deleteMovility = (event, index, name) => {
+    console.log(event,index,name)
     confirmDialog({
-      message: `¿Estás seguro de que deseas eliminar el ejercicio "${name}"?`,
+      message: `¿Estás seguro de que deseas eliminar este ejercicio?`,
       header: "Confirmación",
       icon: "pi pi-exclamation-triangle",
       acceptLabel: "Sí, eliminar",

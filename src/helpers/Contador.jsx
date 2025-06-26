@@ -14,11 +14,11 @@ function Contador({max}) {
   };
 
   return (
-      <div className='row justify-content-center text-center p-2' onClick={() => handleClick()}>
-               <div className="col-12 ">
-                  {count}
+      <div className='row justify-content-center text-center ' onClick={() => handleClick()}>
+               <button className=" btn colorButonContador col-12 text-start">
+                  Contador de series<strong className='bordeContador shadow p-1 rounded-1 ms-2'>{count}</strong>
 
-              </div>
+              </button>
       </div>
  
   );

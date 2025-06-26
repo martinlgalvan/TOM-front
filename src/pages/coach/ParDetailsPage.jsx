@@ -28,7 +28,7 @@ import CustomInputNumber from "../../components/CustomInputNumber.jsx";
 import AutoComplete from "../../components/Autocomplete.jsx";
 import ModalCreateMovility from "../../components/Bootstrap/ModalCreateMovility.jsx";
 
-import { ConfirmDialog } from "primereact/confirmdialog";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { InputTextarea } from "primereact/inputtextarea";
@@ -2196,7 +2196,7 @@ const tableMobile = () => {
               {progressions && progressions.length > 0 ? (
                 progressions.map((prog, idx) => (
                   
-                  <button key={prog._id} className="p-2 btn btn-outline-dark mx-2" onClick={() => enterProgression(prog._id)  }>
+                  <button key={prog._id} className="p-2 btn btn-outline-light mx-2" onClick={() => enterProgression(prog._id)  }>
                     {`Progresión ${idx + 1}`}
                   </button>
                 )) 
@@ -2204,7 +2204,7 @@ const tableMobile = () => {
               ) : (
                 <p>No hay progresiones creadas.</p>
               )}
-               <button  className="p-2 btn btn-outline-dark mx-2" onClick={() => handleCreateProgression()}>
+               <button  className="p-2 btn btn-outline-light mx-2" onClick={() => handleCreateProgression()}>
                     Crear progresión <AddIcon />
                   </button>
             </div>
@@ -2229,6 +2229,8 @@ const tableMobile = () => {
 
 
         </section>
+
+              <ConfirmDialog />
       </div>
     </>
   );

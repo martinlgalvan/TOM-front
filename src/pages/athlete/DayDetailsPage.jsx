@@ -16,13 +16,19 @@ import Floating from "../../helpers/Floating.jsx";
 import ReactPlayer from 'react-player';
 import * as _ from "lodash";
 
-import Slider from "react-slick";
 
 import { Sidebar } from 'primereact/sidebar';
 import { Segmented } from 'antd';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import CommitIcon from '@mui/icons-material/Commit';
+
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -47,6 +53,14 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { InputTextarea } from "primereact/inputtextarea";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import LinkIcon from '@mui/icons-material/Link';
+
+import LooksOneIcon from '@mui/icons-material/LooksOne';
+import LooksTwoIcon from '@mui/icons-material/LooksTwo';
+import LooksThreeIcon from '@mui/icons-material/Looks3';
+import LooksFourIcon from '@mui/icons-material/Looks4';
+import LooksFiveIcon from '@mui/icons-material/Looks5';
+import LooksSixIcon from '@mui/icons-material/Looks6';
+
 
 function DayDetailsPage() {
     const { id, week_id, index } = useParams();
@@ -85,9 +99,37 @@ function DayDetailsPage() {
     // Nuevo estado para controlar el modal cuando no existe el perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
 
+    const numberIconMap = {
+      1: LooksOneIcon,
+      2: LooksTwoIcon,
+      3: LooksThreeIcon,
+      4: LooksFourIcon,
+      5: LooksFiveIcon,
+      6: LooksSixIcon,
+
+    };
+
+    function renderNumberIcon(n) {
+    // solo si es entero y entre 1 y 8
+    if (Number.isInteger(n) && numberIconMap[n]) {
+      const IconComp = numberIconMap[n];
+      return <IconComp />;
+    }
+    // caso 1.2, 2.3, etc.
+    return <span className="bg-light btn p-1 fontNumberE m-0">{n}</span>;
+  }
 
     let sliderRef = useRef(null);
     let sliderRef2 = useRef(null);
+
+    // sustituye tus `let sliderRef = useRef(null);` por esto:
+    const movilitySwiper = useRef(null);
+    const warmupSwiper  = useRef(null);
+
+    const nextMovility    = () => movilitySwiper.current?.slideNext();
+    const prevMovility    = () => movilitySwiper.current?.slidePrev();
+    const nextWarmup      = () => warmupSwiper.current?.slideNext();
+    const prevWarmup      = () => warmupSwiper.current?.slidePrev();
 
     // Estado para controlar la visibilidad del modal de resumen semanal
     const [showWeeklySummaryModal, setShowWeeklySummaryModal] = useState(false);
@@ -98,12 +140,15 @@ function DayDetailsPage() {
       selection2: "",
       selection3: "",
       selection4: "",
-      selection5: ""
-});
+      selection5: "",
+      pesoCorporal: "",     // ← nuevo campo
+      comments: "",         // ya usabas comments
+      lastSaved: ""         // ya usabas lastSaved
+    });
 
 const [allWeeks, setAllWeeks] = useState([]);
 const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
-    const isCurrentWeek = currentWeekIndex === 0;
+const isCurrentWeek = currentWeekIndex === 0;
 useEffect(() => {
   const fetchWeeks = async () => {
     try {
@@ -125,19 +170,6 @@ const redirectToPerfil = () => {
     navigate(`/perfil/${id}`);
 };
 
-    const next = () => {
-      sliderRef.slickNext();
-    };
-    const previous = () => {
-      sliderRef.slickPrev();
-    };
-
-    const next2 = () => {
-      sliderRef2.slickNext();
-    };
-    const previous2 = () => {
-      sliderRef2.slickPrev();
-    };
 
     const handleExpandClick = () => {
         setExpanded(!expanded);
@@ -399,67 +431,63 @@ const saveDriveLink = async () => {
     const productTemplate = useCallback((exercise, idx, isWarmup) => {
         const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 450;
         const cardMaxWidth = isSmallScreen ? '380px' : '400px';
-      
-        
         return (
-            <div 
-                style={{ 
-                    width: '100%', 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    padding: '0 5px'
-                }}
-            >
+            <div cla>
                 <div 
-                    className="border-1 surface-border border-round text-center pt-3" 
-                    style={{ width: '90%', maxWidth: cardMaxWidth, boxSizing: 'border-box' }}
+                    className="text-center pt-3 pb-4" 
                 >
-                  <div className="row justify-content-center">
-                      <div className="col-2">    
-                        <Avatar
-                          id={idx === 0 ? 'numeroSerie' : null}
-                          aria-label="recipe"
-                          className="avatarSize avatarColor"
-                        >
-                          {exercise.numberWarmup ? exercise.numberWarmup : exercise.numberMovility}
-                        </Avatar>
-                      </div>
-                    <div className="col-8 m-auto">{exercise.name}</div>
-                    <div className="col-2">
-                        <IconButton
-                            aria-label="video"
-                            className="p-0"
-                            disabled={!exercise.video}
-                            onClick={() => handleButtonClick(exercise)}
-                        >
-                            <YouTubeIcon className={exercise.video ? 'ytColor' : 'ytColor-disabled'} />
-                        </IconButton>
-                    </div>
-                  </div>
-                    <table className="table  border-0 p-0 mt-3 ">
-                      <thead className="">
-                        <tr className="border-0 ">
-                          <th id={idx === 0 ? 'series' : null} className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'} `}>
-                            Sets
-                          </th>
-                          <th id={idx === 0 ? 'reps' : null} className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>
-                            Reps
-                          </th>
-                          <th id={idx === 0 ? 'peso' : null} className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>
-                            Peso
-                          </th>
-                         
-                        </tr>
-                      </thead>
-                      <tbody className="border-0 ">
-                        <tr className="border-0">
-                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>{exercise.sets}</td>
-                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>{exercise.reps}</td>
-                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>{exercise.peso}</td>
-                        
-                        </tr>
-                      </tbody>
-                    </table>
+                  
+                  <div className="row justify-content-center backgroundCardsWarmMov  rounded-2 m-1 mb-3">
+
+                                    <div className={`col-12 shadow ${exercise.numberWarmup ? 'colorWarmup' : 'colorMovility'} py-2`}>
+                                      <div className="row justify-content-center">
+
+                                        <div className="col-1 m-auto text-light">
+                                          {renderNumberIcon(exercise.numberWarmup ?? exercise.numberMovility)}
+                                        
+                                      </div>
+                                        <div className="col-8 m-auto text-start">
+                                          <p className="stylesNameExercise text-light mb-0" id={idx === 0 ? 'nombre' : null}>
+                                            <span className="">{typeof exercise.name === 'object' ? exercise.name.name : exercise.name}</span>
+                                          </p>
+                                        </div>
+                                     
+                                      <div className="col-2">
+                                      
+                                         <IconButton
+                                            aria-label="video"
+                                            className="p-0"
+                                            disabled={!exercise.video}
+                                            onClick={() => handleButtonClick(exercise)}
+                                        >
+                                            <YouTubeIcon className={exercise.video ? 'ytColor' : 'ytColor-disabled'} />
+                                        </IconButton>
+  
+                                      </div>
+                                       </div>
+                                    </div>
+                                      <div className="col-4 pb-3 mt-4 mb-2">
+                                        <div>
+                                          <span className="stylesBadgesItemsExerciseSpan d-block">{exercise.sets}</span>
+                                          <p className="fontStylesSpan">Sets</p>
+                                        </div>
+                                        
+                                      </div>
+                                       <div className="col-4  p-0 mt-4 mb-2">
+                                        <div>
+                                           <span className="stylesBadgesItemsExerciseSpan border-1 d-block">{exercise.reps}</span>
+                                            <p className="fontStylesSpan ">Reps</p>
+                                        </div>
+                                       
+                                      </div>
+                                       <div className="col-4 p-0  mt-4 mb-2">
+                                        <div>
+                                          <span className="stylesBadgesItemsExerciseSpan d-block">{exercise.peso ? exercise.peso : '-'}</span>
+                                          <p className="fontStylesSpan ">Peso</p>
+                                        </div>
+                                      </div>
+                                </div>
+
                     <div>
 
                     {exercise.notas && exercise.notas.trim().length > 0 ? (
@@ -490,47 +518,7 @@ const saveDriveLink = async () => {
         );
     }, []);
 
-    // Configuración de react-slick para el carrusel de entrada en calor
-    const sliderSettings = {
-        dots: true,
-        infinite: true,
-        speed: 400,
-        arrows: false,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        adaptiveHeight: true, // Agregado para que la altura se adapte
-        waitForAnimate: false,
-        responsive: [
-            {
-              breakpoint: 1400,
-              settings: {
-                slidesToShow: 2,
-                slidesToScroll: 1
-              }
-            },
-            {
-              breakpoint: 1199,
-              settings: {
-                slidesToShow: 3,
-                slidesToScroll: 1
-              }
-            },
-            {
-              breakpoint: 767,
-              settings: {
-                slidesToShow: 2,
-                slidesToScroll: 1
-              }
-            },
-            {
-              breakpoint: 575,
-              settings: {
-                slidesToShow: 1,
-                slidesToScroll: 1
-              }
-            }
-        ]
-    };
+
 
     const handleDayChange = (value) => {
         const actualDay = allDays.find(item => item._id === value);
@@ -623,269 +611,220 @@ const saveDriveLink = async () => {
                         {allDays[currentDay]?.name}
                     </h2>
 
-                    {allDays[currentDay]?.movility != null &&
-                      <div 
-                      className="card mb-4 colorCardsActivation" 
-                      style={{ position: 'relative', overflow: 'hidden' }}
-                    >
-                        <div className="text-start m-0 p-0">
-                          <span className="mt-3 styleInputsSpan ">Activación / movilidad</span>
-                        </div>
-                        <div className="card mb-4 colorCardsActivation">
-                          <Slider
-                          ref={slider => {
-                            sliderRef = slider;
-                          }}
-                           {...sliderSettings} 
-                           className="mx-0">
+                   {allDays[currentDay]?.movility && (
+                    <>
+                      <div className="text-start"><span>Activación / movilidad</span></div>
+                      <Swiper
+                        modules={[Navigation, Pagination, Autoplay]}
+                        loop
+                        speed={600}
+                        pagination={{ clickable: true }}
+                        autoplay={false}
+                        slidesPerView={1}
+                        spaceBetween={20}
+                        breakpoints={{
+                          575:  { slidesPerView: 1 },
+                          767:  { slidesPerView: 2 },
+                          1199: { slidesPerView: 3 },
+                          1400: { slidesPerView: 2 },
+                        }}
+                        onSwiper={swiper => (movilitySwiper.current = swiper)}
+                        className="mx-0 px-0">
                             {allDays[currentDay].movility.map((exercise, idx) => (
-                              <div key={idx}>
-                                {productTemplate(exercise, 'warmup')}
-                              </div>
+                              <SwiperSlide key={idx}>
+                                {productTemplate(exercise, idx, true)}
+                              </SwiperSlide>
                             ))}
-                          </Slider>
-                          
-                        </div>
-                        <div className="row justify-content-between border-0" style={{ position: 'absolute', bottom: 80, left: 0, right: 0 }}>
-                          <div className="col-6 text-start">
-                            <IconButton onClick={previous}>
-                              <NavigateBeforeIcon className="editStyle p-0" />
-                            </IconButton>
-                          </div>
-                          <div className="col-6 text-end">
-                            <IconButton onClick={next}>
-                              <NavigateNextIcon className="editStyle p-0" />
-                            </IconButton>
-                          </div>
-                        </div>
-                      </div>
-                    }
+                          </Swiper>
+                   
+                          </>
+                      )}
 
-                    {allDays[currentDay]?.warmup != null &&
-                     <div 
-                     className="card mb-4 colorCards" 
-                     style={{ position: 'relative', overflow: 'hidden' }}
-                   >
-                      <div className="text-start m-0 p-0">
-                        <span className="mt-3 styleInputsSpan ">Entrada en calor</span>
-                      </div>
-                        <div className={`card mb-4 colorCards`}>
-                            
-                            <Slider
-                            ref={slider => {
-                              sliderRef2 = slider;
-                            }}
-                            {...sliderSettings} 
-                            className="mx-0">
-                                {allDays[currentDay].warmup.map((exercise, idx) => (
-                                    <div key={idx}>
-                                        {productTemplate(exercise, 'activation')}
-                                    </div>
-                                ))}
-                            </Slider>
-                          
-                            </div>
-                            <div className="row justify-content-between border-0" style={{ position: 'absolute', bottom: 80, left: 0, right: 0 }}>
-                              <div className="col-6 text-start">
-                                <IconButton onClick={previous2}>
-                                  <NavigateBeforeIcon className="editStyle p-0" />
-                                </IconButton>
-                              </div>
-                              <div className="col-6 text-end">
-                                <IconButton onClick={next2}>
-                                  <NavigateNextIcon className="editStyle p-0" />
-                                </IconButton>
-                              </div>
-                            </div>
-                          </div>
-                      
-                    }
+                   {allDays[currentDay]?.warmup && (
+                    <>
+                      <div className="text-start"><span>Entrada en calor</span></div>
+                      <Swiper
+                        modules={[Navigation, Pagination, Autoplay]}
+                        loop
+                        speed={600}
+                        pagination={{ clickable: true }}
+                        autoplay={false}
+                        slidesPerView={1}
+                        spaceBetween={20}
+                        breakpoints={{
+                          575:  { slidesPerView: 1 },
+                          767:  { slidesPerView: 2 },
+                          1199: { slidesPerView: 3 },
+                          1400: { slidesPerView: 2 },
+                        }}
+                        onSwiper={swiper => (movilitySwiper.current = swiper)}
+                        className="mx-0 px-0">
+                            {allDays[currentDay].warmup.map((exercise, idx) => (
+                              <SwiperSlide key={idx}>
+                                {productTemplate(exercise, idx, false)}
+                              </SwiperSlide>
+                            ))}
+                          </Swiper>
+                 
+                      </>
+                    )}
+
                     
-                      <div className="text-start m-0 mt-4 p-0">
-                        <span className="mt-3 styleInputsSpan ">Rutina del día</span>
-                      </div>
+                      <div className="row m-auto px-0 ">
+                        
+                        <h2 className=" p-2 mb-0 text-start  ">Rutina del día</h2>
                       
-                    {allDays[currentDay]?.exercises.map((element, idx) => {
-                        return (
-                          <Fragment key={`${element.exercise_id}-${idx}`}>
-                            {element.type === 'exercise' ? (
-                              <>
-                                
-                                <Card
-                                  key={element.exercise_id}
-                                  ref={(el) => (cardRefs.current[idx] = el)}
-                                  className={`mb-4 p-0 cardShadow titleCard`}
+                            {allDays[currentDay]?.exercises.map((element, idx) => {
+                              const isExercise = element.type === 'exercise';
+                              const number     = element.numberExercise || element.numberCircuit;
+                              const name       = typeof element.name === 'object' ? element.name.name : element.name;
+
+                              return (
+                                <div
+                                  key={`${element.exercise_id}-${idx}`}
+                                  ref={el => (cardRefs.current[idx] = el)}
+                                  className="px-1"
                                 >
-                                  <CardHeader
-                                    avatar={
-                                      <Avatar
-                                        id={idx === 0 ? 'numeroSerie' : null}
-                                        aria-label="recipe"
-                                        className="avatarSize avatarColor"
-                                      >
-                                        {element.numberExercise}
-                                      </Avatar>
-                                    }
-                                    action={
-                                      <Avatar
-                                        id={idx === 0 ? 'contador' : null}
-                                        aria-label="recipe"
-                                        className=" avatarSize bg-dark "
-                                      >
-                                        <Contador className={'p-2'} max={element.sets} />
-                                      </Avatar>
-                                    }
-                                    title={
-                                      <span id={idx === 0 ? 'nombre' : null}>{typeof element.name === 'object' ? element.name.name : element.name}</span>
-                                    }
-                                  />
-
-                                <CardContent className="p-0">
-                                  <Card
-  key={element.exercise_id}
-  ref={(el) => (cardRefs.current[idx] = el)}
-  className={`mb-4 p-0 cardShadow titleCard ${element.changed ? 'bg-warning-subtle border-warning' : ''}`}
-></Card>
-                                  <div className="card border-0">
-                                    <table className="table border-0 p-0">
-                                      <thead>
-                                        <tr className="border-0">
-                                          <th id={idx === 0 ? 'series' : null} className="border-0">Sets</th>
-                                          <th id={idx === 0 ? 'reps' : null} className="border-0">Reps</th>
-                                          <th id={idx === 0 ? 'peso' : null} className="border-0">Peso</th>
-                                          <th id={idx === 0 ? 'descanso' : null} className="border-0">Descanso x serie</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody className="border-0">
-                                        <tr className="border-0">
-                                          <td className="border-0">{element.sets}</td>
-                                          <td className="border-0">{element.reps}</td>
-                                          <td className="border-0">{element.peso}</td>
-                                          <td className="border-0">
-                                            <CountdownTimer initialTime={element.rest} />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                  
-                                  {/* Nuevo bloque Back off: se muestra solo si element.name es un objeto con propiedad backoff */}
-                                  {element.name && typeof element.name === 'object' && 
-                                  Array.isArray(element.name.backoff) && element.name.backoff.length > 0 && (
-                                    <div>
-                                      <p className="titleObservaciones">Back off</p>
-                                      {element.name.backoff.map((line, idx) => (
-                                        <p key={idx} className="paraphObservaciones">
-                                          {line.sets} Series x {line.reps} Reps / {line.peso}
-                                        </p>
-                                      ))}
+                                  <div className="row justify-content-center bg-light shadow rounded-2 m-1 mb-3">
+                                    {/* — CABECERA (número + nombre) — */}
+                                    <div className="col-12 widgetNumber py-2">
+                                      <div className="row justify-content-center">
+                                        <div className="col-1 m-auto text-light">
+                                          {renderNumberIcon(number)}
+                                        </div>
+                                        <div className="col-10 m-auto text-start">
+                                          <p
+                                            className="stylesNameExercise text-light mb-0"
+                                            id={idx === 0 ? 'nombre' : null}
+                                          >
+                                            {isExercise ? name : <span>{element.type} - {element.typeOfSets} </span> }
+                                          </p>
+                                        </div>
+                                      </div>
                                     </div>
-                                  )}
 
-                                  {element.notas && (
-                                    <div style={{ whiteSpace: 'pre-wrap' }}>
-                                      <p className="titleObservaciones">Notas / otros</p>
-                                      <p className="paraphObservaciones">{element.notas}</p>
-                                    </div>
-                                  )}
-                                </CardContent>
+                                    {/* — CUERPO: sets/reps/peso + timer o tabla de circuito — */}
+                                    {isExercise ? (
+                                      <>
+                                        <div className="col-2 p-0 mt-4 mb-2">
+                                          <span className="stylesBadgesItemsExerciseSpan d-block">
+                                            {element.sets}
+                                          </span>
+                                          <p className="fontStylesSpan">Sets</p>
+                                        </div>
+                                        <div className="col-2 p-0 mt-4 mb-2">
+                                          <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
+                                            {element.reps}
+                                          </span>
+                                          <p className="fontStylesSpan">Reps</p>
+                                        </div>
+                                        <div className="col-4 p-0 mt-4 mb-2">
+                                          <span className="stylesBadgesItemsExerciseSpan d-block">
+                                            {element.peso}
+                                          </span>
+                                          <p className="fontStylesSpan">Peso</p>
+                                        </div>
+                                        <div className="col-3 marginTimer mb-2">
+                                          <CountdownTimer initialTime={element.rest}/>
+                                          <p className="fontStylesSpan">Descanso</p>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <>
 
-                                  <CardActions className="p-0 row justify-content-between">
-                                    <IconButton
-                                      id={idx === 0 ? 'video' : null}
-                                      aria-label="video"
-                                      className="p-0 col-3 mb-2"
-                                      disabled={!element.video}
-                                      onClick={() => handleButtonClick(element)}
-                                    >
-                                      {element.isImage ? (
-                                        <ImageIcon className={` ${!element.video ? 'imageIconDisabled' : 'imageIcon'}`} />
-                                      ) : (
-                                        <YouTubeIcon
-                                          className={element.video ? 'ytColor' : 'ytColor-disabled'}
-                                        />
-                                      )}
-                                    </IconButton>
+                                        <div className="col-12 p-0 mt-4 mb-2">
+                                          <table className="table border-0">
+                                            <thead>
+                                              <tr>
+                                                <th className="border-0 text-start">Nombre</th>
+                                                <th className="border-0">Reps</th>
+                                                <th className="border-0">Peso</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {element.circuit.map(c => (
+                                                <tr key={c.idRefresh}>
+                                                  <td className="border-0 text-start">{c.name}</td>
+                                                  <td className="border-0">{c.reps}</td>
+                                                  <td className="border-0">{c.peso}</td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </>
+                                    )}
 
+                                    {/* — BACKOFF y NOTAS (idéntico en ambos casos) — */}
+                                    {element.name?.backoff?.length > 0 && (
+                                      <>
+                                        <span className="styleInputsNote-back">Back off</span>
+                                        <div className="colorNote2 py-2 rounded-1 col-11 mb-2">
+                                          {element.name.backoff.map((line,i) => (
+                                            <p key={i} className="mb-0 ms-1">
+                                              {line.sets}×{line.reps} / {line.peso}
+                                            </p>
+                                          ))}
+                                        </div>
+                                      </>
+                                    )}
+                                    {element.notas && (
+                                      <>
+                                        <span className="styleInputsNote-back text-start">
+                                          Notas / otros
+                                        </span>
+                                        <div
+                                          className="colorNote py-2 rounded-1 col-11 largoCarddds"
+                                          style={{ whiteSpace: 'pre-wrap' }}
+                                        >
+                                          <p className="pb-0 mb-0">{element.notas}</p>
+                                        </div>
+                                      </>
+                                    )}
+
+                                    {/* — FOOTER: Contador + botones — */}
+                                    {isExercise ? 
+                                    <>
+                                    <div className="row justify-content-between">
+                                      
+                                      <div className="col-6 text-start m-auto">
+                                        <Contador max={element.sets}/>
+                                      </div>
                                     
-                                    <IconButton
-                                      id={idx === 0 ? 'edicion' : null}
-                                      aria-label="video"
-                                      disabled={!isCurrentWeek}
-                                      className="p-0 col-3 mb-2"
-                                      onClick={() => handleEditMobileExercise(element, idx)}
-                                    >
-                                      <EditNoteIcon className="editStyle p-0" />
-                                    </IconButton>
-                                  </CardActions>
-                                </Card>
-                              </>
-                            ) : (
-                              <Card
-                                key={`circuit-${element.exercise_id}-${idx}`}
-                                ref={(el) => (cardRefs.current[idx] = el)}
-                                className={`my-3 cardShadow titleCard`}
-                              >
-                                <CardHeader
-                                  className="me-4 ps-1"
-                                  avatar={
-                                    <Avatar aria-label="recipe" className="avatarSize avatarColor">
-                                      {element.numberExercise}
-                                    </Avatar>
-                                  }
-                                  title={element.type}
-                                />
-
-                                <CardContent className="p-0">
-                                  <div className="card border-0">
-                                    <p className="border-0"><b>{element.typeOfSets} series</b></p>
-
-                                    <table className="table border-0">
-                                      <thead>
-                                        <tr className="border-0">
-                                          <th className="border-0">Nombre</th>
-                                          <th className="border-0">Reps</th>
-                                          <th className="border-0">Peso</th>
-                                        </tr>
-                                      </thead>
-                                      {element.circuit.map((circuit) => (
-                                        <tbody key={circuit.idRefresh} className="border-0">
-                                          <tr className="border-0">
-                                            <td className="border-0">{circuit.name}</td>
-                                            <td className="border-0">{circuit.reps}</td>
-                                            <td className="border-0">{circuit.peso}</td>
-                                          </tr>
-                                        </tbody>
-                                      ))}
-                                    </table>
-                                  </div>
-
-                                  {element.notas && (
-                                    <div>
-                                      <p className="titleObservaciones">Observaciones</p>
-                                      <p className="paraphObservaciones">{element.notas}</p>
+                                      
+                                      <div className="col-3">
+                                        <IconButton
+                                          id={idx === 0 ? 'video' : null}
+                                          aria-label="video"
+                                          disabled={!element.video}
+                                          onClick={() => handleButtonClick(element)}
+                                        >
+                                          {element.isImage
+                                            ? <ImageIcon className={!element.video ? 'imageIconDisabled' : 'imageIcon'}/>
+                                            : <YouTubeIcon className={element.video ? 'ytColor' : 'ytColor-disabled'}/>
+                                          }
+                                        </IconButton>
+                                      </div>
+                                      <IconButton
+                                        id={idx===0?'edicion':null}
+                                        aria-label="editar"
+                                        disabled={!isCurrentWeek}
+                                        className="p-0 col-3"
+                                        onClick={() => handleEditMobileExercise(element,idx)}
+                                      >
+                                        <EditNoteIcon className="editStyle p-0"/>
+                                      </IconButton>
                                     </div>
-                                  )}
-                                </CardContent>
-
-                                <CardActions className="p-0 row justify-content-center">
-                                  <IconButton
-                                    aria-label="video"
-                                    className="p-0 col-3 mb-2"
-                                    disabled={!element.video}
-                                    onClick={() => handleButtonClick(element)}
-                                  >
-                                    <YouTubeIcon
-                                      className={element.video ? 'ytColor' : 'ytColor-disabled'}
-                                    />
-                                  </IconButton>
-                                </CardActions>
-                              </Card>
-                            )}
-                          </Fragment>
-                        );
-                    })}
+                                    </> : <div className={'mb-3'}></div> }
+                                  </div>
+                              
+                                </div>
+                              );
+                            })}
+                    
                 </div>
+                </div>
+                
                 )}
 
                 <div className="row justify-content-center">
@@ -1188,7 +1127,7 @@ const saveDriveLink = async () => {
                   header="Resumen Semanal"
                   className="paddingDialog"
                   visible={showWeeklySummaryModal}
-                  style={{ width: '85vw' }}
+                  style={{ width: '95vw' }}
                   onHide={() => setShowWeeklySummaryModal(false)}
                   draggable
                 >
@@ -1227,6 +1166,23 @@ const saveDriveLink = async () => {
                         </select>
                       </div>
                     ))}
+
+                    
+                        <div className="card-dark mb-3">
+                          <label className="label">Peso corporal (kg)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            className="input-dark text-light form-control"
+                            value={weeklySummary.pesoCorporal}
+                            onChange={e =>
+                              setWeeklySummary(prev => ({
+                                ...prev,
+                                pesoCorporal: e.target.value
+                              }))
+                            }
+                          />
+                        </div>
 
                     <div className="card-dark mb-3">
                       <label className="label">Comentarios sobre la semana</label>
