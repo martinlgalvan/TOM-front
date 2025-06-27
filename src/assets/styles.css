@@ -331,6 +331,10 @@ font-weight: 550;
 
 }
 
+.timerNoEspecifica{
+  font-size: 0.7em;
+}
+
 .colorNote{
   background: linear-gradient(to right, #0464ff2d, #5093ff3d);
   border: 1px;

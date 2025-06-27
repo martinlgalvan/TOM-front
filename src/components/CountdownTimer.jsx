@@ -5,17 +5,36 @@ import { Play, Pause, RefreshCcw } from 'lucide-react';
 // CountdownTimer: initial, running, paused, expired states with overlay animations and controls
 export default function CountdownTimer({ initialTime = "00:30" }) {
   // Normalize input to MM:SS
-  const normalize = input => {
-    const str = String(input).trim();
-    if (str.includes(':')) {
-      const [m, s] = str.split(':').map(Number);
-      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    }
-    const digits = str.match(/\d+/g) || [];
-    const m = Number(digits[0] || 0);
-    const s = Number(digits[1] || 0);
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  };
+ const normalize = input => {
+  const str = String(input).trim()
+    // convertir comas, apóstrofos y puntos a “:”
+    .replace(/[,.'´`]/g, ':')
+    // eliminar todo lo que no sea dígito o “:”
+    .replace(/[^0-9:]/g, '')
+
+  const parts = str.split(':').filter(Boolean)
+  let m = 0, s = 0
+
+  if (parts.length === 0) {
+    // nada válido
+    m = 0; s = 0
+  } else if (parts.length === 1) {
+    // un solo número → minutos
+    m = parseInt(parts[0], 10) || 0
+  } else {
+    // al menos MM:SS
+    m = parseInt(parts[0], 10) || 0
+    s = parseInt(parts[1], 10) || 0
+  }
+
+  // si segundos ≥ 60, los pasamos a minutos
+  m += Math.floor(s / 60)
+  s = s % 60
+
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+}
+
+
   const toSeconds = ts => ts.split(':').reduce((acc, v, i) => i ? acc + Number(v) : Number(v) * 60, 0);
   const toMMSS = sec => {
     const m = Math.floor(sec / 60), s = sec % 60;
@@ -25,6 +44,7 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
   const baseSeconds = toSeconds(normalize(initialTime));
   const [timeLeft, setTimeLeft] = useState(baseSeconds);
   const [isRunning, setIsRunning] = useState(false);
+  const noRestSpecified  = baseSeconds === 0;
   const intervalRef = useRef(null);
 
   const tick = useCallback(() => {
@@ -72,6 +92,19 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
   };
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
+
+    if (noRestSpecified) {
+    return (
+      <div className="timerBox" display="inline-block">
+        <p
+
+          className="timerNoEspecifica"
+        >
+          No especifica
+        </p>
+      </div>
+    );
+  }
 
   return (
     <Box position="relative" className="timerBox" display="inline-block">

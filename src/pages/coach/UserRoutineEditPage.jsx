@@ -352,6 +352,9 @@ function UserRoutineEditPage() {
                 <li className="list-group-item bgItemsDropdownUl py-1 d-flex justify-content-between">
                   Estrés <span className={`badge ${getBadgeStyle(weeklySummary.selection5)}`}>{weeklySummary.selection5 || '-'}</span>
                 </li>
+                <li className="list-group-item bgItemsDropdownUl py-1 d-flex justify-content-between">
+                  Peso (Kg) <span className={`badge ${getBadgeStyle(weeklySummary.selection5)}`}>{weeklySummary.pesoCorporal || '-'}</span>
+                </li>
                  <li className=" d-flex justify-content-between">
                 </li>
               </ul>
