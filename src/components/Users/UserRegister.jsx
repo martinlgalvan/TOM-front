@@ -95,7 +95,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
         <Dialog
             header="Crear alumno"
             visible={dialogg}
-            className='col-10 col-lg-6'
+            className='col-10 col-lg-6 colorPrimaryDialog'
             modal
             onHide={onClose}
         >

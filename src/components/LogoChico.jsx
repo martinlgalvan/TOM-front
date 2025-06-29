@@ -14,6 +14,8 @@ import MATIAS_VILLALBA from '/src/assets/img/matias-logo.jpeg';
 import TORETTO_GYM from '/src/assets/img/mauri-logo.png';
 import PITBULL from '/src/assets/img/pitbull-logo.png';
 import CRISTIAN_QUIROGA from '/src/assets/img/cristian-logo.png';
+import FRANCO from '/src/assets/img/Franco.jpeg';
+import SOL from '/src/assets/img/SvStrong.jpeg';
 
 function LogoChico({isHomePage}){
 
@@ -42,7 +44,11 @@ function LogoChico({isHomePage}){
             setUrlPath(CRISTIAN_QUIROGA)
      } else if(localStorage.getItem('email') == "beltrameramiro@gmail.com" || localStorage.getItem('entrenador_id') == "685372d397535c64dfc56d71"){
              setUrlPath(RAMABELTRAME)
-    } else{
+    } else if(localStorage.getItem('email') == "Francogonzalez.trainer@gmail.com" || localStorage.getItem('entrenador_id') == "686162e2dbfbe24db072ca57"){
+            setUrlPath(FRANCO)
+    }else if(localStorage.getItem('email') == "Svstrong.training@gmail.com" || localStorage.getItem('entrenador_id') == "6861636cdbfbe24db072ca58"){
+            setUrlPath(SOL)
+    }else{
         setUrlPath(TOM)
     }
     

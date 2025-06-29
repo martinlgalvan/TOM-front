@@ -52,11 +52,11 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, id }) {
     <div className="row justify-content-start ">
       <div className=' mb-3'>
         <label  class="form-label">Nombre</label>
-        <InputText value={isEditMode && form.name} onChange={(e) => handleChange('name', e.target.value)} class="form-control" />
+        <InputText value={isEditMode && form.name} onChange={(e) => handleChange('name', e.target.value)} class="form-control text-dark" />
       </div>
 
       <div className='text-start '>
-        <label className=' '>Color</label>
+        <label className=''>Color</label>
         <input type="color" class="form-control form-control-color" value={isEditMode && form.color} onChange={(e) => handleChange('color', e.target.value)} />
       </div>
 

@@ -321,7 +321,15 @@ const handleConfirmDelete = async () => {
               nextButtonProps: { children: 'Siguiente »' }
           },
           {
-              title: 'Cracion de alumnos',
+              title: 'Administración de anuncios',
+              description: 'Botón para administrar anuncios. Estos son mensajes generales para tus alumnos.',
+              target: () => document.getElementById('anuncios'),
+              placement: 'right',
+              prevButtonProps: { children: '« Anterior' },
+              nextButtonProps: { children: 'Siguiente »' }
+          },
+          {
+              title: 'Creación de alumnos',
               description: 'Este botón te permitira crear el usuario para tu alumno.',
               target: () => document.getElementById('crearAlumno'),
               placement: 'right',
@@ -430,7 +438,7 @@ const handleConfirmDelete = async () => {
 
 
               {/* NOMBRE */}
-              <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
+              <div id={'username'} className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
                 <div className='col-1'><PersonIcon /></div>
                 {!collapsed && (
                   <div className='text-center text-light col-10'>
@@ -440,13 +448,13 @@ const handleConfirmDelete = async () => {
               </div>
 
               {/* PLAN */}
-              <div className="text-light small bgItemsDropdown rounded mx-2 mb-3 p-2 text-center">
+              <div id={'plan'} className="text-light small bgItemsDropdown rounded mx-2 mb-3 p-2 text-center">
                 <span className="d-block">Plan</span>
                 <strong>{plan}</strong>
               </div>
 
               {/* PROGRESO */}
-              <div className="bgItemsDropdown text-light rounded mx-2 mb-4 p-2 text-center small">
+              <div  id={'alumnos'}  className="bgItemsDropdown text-light rounded mx-2 mb-4 p-2 text-center small">
                 <span>({totalUsers}/{planLimit} alumnos)</span>
                 <ProgressBar
                   value={progress}
@@ -455,7 +463,7 @@ const handleConfirmDelete = async () => {
                   style={{ height: "20px", borderRadius: "10px" }}
                 />
               </div>
-            <div className=" text-light rounded text-center small">
+            <div id={'anuncios'} className=" text-light rounded text-center small">
               <button
                   label="Administrar anuncios"
                   icon="pi pi-bullhorn"
@@ -532,9 +540,9 @@ const handleConfirmDelete = async () => {
         <button  icon="pi pi-plus" className="btn btn-primary mb-3" onClick={openNewForm}>Nuevo anuncio</button>
 
         {loadingAnnouncements ? (
-          <p className="ms-1 my-3">Cargando...</p>
+          <p className="ms-1 my-3 text-light">Cargando...</p>
         ) : announcements.length === 0 ? (
-          <p className="ms-1 my-3">No hay anuncios creados aún.</p>
+          <p className="ms-1 my-3 text-light">No hay anuncios creados aún.</p>
         ) : (
           <ul className="list-group">
             {announcements.map((a) => (

@@ -155,6 +155,7 @@ useEffect(() => {
       const weeks = await WeekService.findRoutineByUserId(id);
       const sortedWeeks = weeks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // última primero
       setAllWeeks(sortedWeeks);
+      
       const selectedIndex = sortedWeeks.findIndex(w => w._id === week_id);
       setCurrentWeekIndex(selectedIndex !== -1 ? selectedIndex : 0);
     } catch (err) {
@@ -415,7 +416,6 @@ const saveDriveLink = async () => {
         const newExercises = [...modifiedDay];
         newExercises[indexOfExercise] = completeExercise;
         setModifiedDay(newExercises);
-
         ExercisesService.editExercise(week_id, day_id, newExercises)
           .then((data) => {
             refreshEdit(newExercises);
@@ -436,7 +436,6 @@ const saveDriveLink = async () => {
                 <div 
                     className="text-center pt-3 pb-4" 
                 >
-                  
                   <div className="row justify-content-center backgroundCardsWarmMov  rounded-2 m-1 mb-3">
 
                                     <div className={`col-12 shadow ${exercise.numberWarmup ? 'colorWarmup' : 'colorMovility'} py-2`}>
@@ -486,31 +485,27 @@ const saveDriveLink = async () => {
                                           <p className="fontStylesSpan ">Peso</p>
                                         </div>
                                       </div>
-                                </div>
+
+                                      {exercise.notas && exercise.notas.trim().length > 0 ? (
+                                       <>
+                                        <span className="styleInputsNote-back text-start">
+                                          Notas / otros
+                                        </span>
+                                        <div
+                                          className="border mb-2 py-2 rounded-1 col-11 largoCarddds"
+                                          style={{ whiteSpace: 'pre-wrap' }}
+                                        >
+                                          <p className="pb-0 mb-0">{exercise.notas}</p>
+                                        </div>
+                                      </>
+                                      ) : null}
+                                      </div>
+
+                                
 
                     <div>
 
-                    {exercise.notas && exercise.notas.trim().length > 0 ? (
-                    <table className="table border-0 p-0 mt-3">
-                      <thead>
-                        <tr className="border-0">
-                          <th
-                            id={idx === 0 ? 'notas' : null}
-                            className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}
-                          >
-                            Notas
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="border-0">
-                        <tr className="border-0">
-                          <td className={`border-0 ${exercise.numberWarmup ? 'colorCards' : 'colorCardsActivation'}`}>
-                            {exercise.notas}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  ) : null}
+                    
 
                     </div>
                 </div>
@@ -556,40 +551,40 @@ const saveDriveLink = async () => {
             <section className="container-fluid p-0">
 
         
-               <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'bg-danger text-light' : ''}`}>
-  <div className="d-flex justify-content-center align-items-center">
-    <IconButton
-      className="me-2"
-      onClick={() => setCurrentWeekIndex(prev => Math.min(prev + 1, allWeeks.length - 1))}
-      disabled={currentWeekIndex === allWeeks.length - 1}
-    >
-      <NavigateBeforeIcon className={`fs-2 ${currentWeekIndex === allWeeks.length - 1 ? 'text-muted' : ''}`} />
-    </IconButton>
+               <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'bg-danger rounded-1 text-light' : ''}`}>
+                  <div className="d-flex justify-content-center align-items-center">
+                    <IconButton
+                      className="me-2"
+                      onClick={() => setCurrentWeekIndex(prev => Math.min(prev + 1, allWeeks.length - 1))}
+                      disabled={currentWeekIndex === allWeeks.length - 1}
+                    >
+                      <NavigateBeforeIcon className={`fs-2 ${currentWeekIndex === allWeeks.length - 1 ? 'text-muted' : ''}`} />
+                    </IconButton>
 
-    <div className="d-flex flex-column align-items-center">
-<h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
-      <small className="text-muted">
-        {allWeeks[currentWeekIndex]?.createdAt 
-          ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
-          : ''}
-      </small>
-    </div>
+                    <div className="d-flex flex-column align-items-center">
+                <h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
+                      <small className="text-muted">
+                        {allWeeks[currentWeekIndex]?.createdAt 
+                          ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
+                          : ''}
+                      </small>
+                    </div>
 
-    <IconButton
-      className="ms-2"
-      onClick={() => setCurrentWeekIndex(prev => Math.max(prev - 1, 0))}
-      disabled={currentWeekIndex === 0}
-    >
-      <NavigateNextIcon className={`fs-2 ${currentWeekIndex === 0 ? 'text-muted' : ''}`} />
-    </IconButton>
-  </div>
+                    <IconButton
+                      className="ms-2"
+                      onClick={() => setCurrentWeekIndex(prev => Math.max(prev - 1, 0))}
+                      disabled={currentWeekIndex === 0}
+                    >
+                      <NavigateNextIcon className={`fs-2 ${currentWeekIndex === 0 ? 'text-muted' : ''}`} />
+                    </IconButton>
+                  </div>
 
-  {currentWeekIndex !== 0 && (
-    <small className="d-block mt-1 text-warning">
-      Estás viendo una semana anterior, no se puede editar.
-    </small>
-  )}
-</div>
+                  {currentWeekIndex !== 0 && (
+                    <small className="d-block mt-1 mx-3 text-light">
+                      <span className="border rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. Tampoco podrás realizar ninguna edición.
+                    </small>
+                  )}
+                </div>
 
                   {allDays.length > 0 && (
                     <div className="text-center my-3">
@@ -683,7 +678,7 @@ const saveDriveLink = async () => {
                                 <div
                                   key={`${element.exercise_id}-${idx}`}
                                   ref={el => (cardRefs.current[idx] = el)}
-                                  className="px-1"
+                                  className="px-1 mb-3"
                                 >
                                   <div className="row justify-content-center bg-light shadow rounded-2 m-1 mb-3">
                                     {/* — CABECERA (número + nombre) — */}
@@ -720,7 +715,7 @@ const saveDriveLink = async () => {
                                         </div>
                                         <div className="col-4 p-0 mt-4 mb-2">
                                           <span className="stylesBadgesItemsExerciseSpan d-block">
-                                            {element.peso}
+                                            {element.peso ? element.peso : '-'}
                                           </span>
                                           <p className="fontStylesSpan">Peso</p>
                                         </div>
@@ -1173,7 +1168,7 @@ const saveDriveLink = async () => {
                           <input
                             type="number"
                             step="0.1"
-                            className="input-dark text-light form-control"
+                            className="input-dark "
                             value={weeklySummary.pesoCorporal}
                             onChange={e =>
                               setWeeklySummary(prev => ({

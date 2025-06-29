@@ -219,6 +219,14 @@ function DayEditDetailsPage() {
   useEffect(() => {
     setTourSteps([
       {
+        title: 'Nombre de la semana.',
+        description: 'Ademas de ser el nombre, podés editarlo apretando el botón.',
+        target: () => document.getElementById('nameWeek'),
+        placement: 'right',
+        prevButtonProps: { children: '« Anterior' },
+        nextButtonProps: { children: '¡Finalizar!' }
+      },
+      {
         title: 'Días de la semana',
         description: 'Estos son los dias que contiene la semana. Podes navegar entre ellos apretando en el día correspondiente.',
         target: () => document.getElementById('dias'),
@@ -249,27 +257,11 @@ function DayEditDetailsPage() {
         prevButtonProps: { children: '« Anterior' },
         nextButtonProps: { children: '¡Finalizar!' }
       },
-      {
-        title: 'Bloque de entrada en calor',
-        description: 'Ingresá al bloque de entrada en calor de tu alumno. Podes agregar los ejercicios de movilidad / activación que desees.',
-        target: () => document.getElementById('warmup'),
-        placement: 'bottom',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
-      },
-      {
+        {
         title: 'Añadir ejercicio',
         description: 'Podes agregar un ejercicio para luego completarlo.',
         target: () => document.getElementById('addEjercicio'),
-        placement: 'top',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
-      },
-      {
-        title: 'Nombre de la semana.',
-        description: 'Ademas de ser el nombre, podés editarlo apretando el botón.',
-        target: () => document.getElementById('nameWeek'),
-        placement: 'top',
+        placement: 'right',
         prevButtonProps: { children: '« Anterior' },
         nextButtonProps: { children: '¡Finalizar!' }
       },
@@ -277,7 +269,23 @@ function DayEditDetailsPage() {
         title: 'Añadir circuito',
         description: 'Podes agregar la estructura de un circuito, para luego completarlo.',
         target: () => document.getElementById('addCircuit'),
-        placement: 'top',
+        placement: 'right',
+        prevButtonProps: { children: '« Anterior' },
+        nextButtonProps: { children: '¡Finalizar!' }
+      },
+      {
+        title: 'Bloque de movilidad/activación',
+        description: 'Ingresá al bloque de activación/movilidad de tu alumno. ',
+        target: () => document.getElementById('movility'),
+        placement: 'bottom',
+        prevButtonProps: { children: '« Anterior' },
+        nextButtonProps: { children: '¡Finalizar!' }
+      },
+      {
+        title: 'Bloque de entrada en calor',
+        description: 'Ingresá al bloque de entrada en calor de tu alumno. ',
+        target: () => document.getElementById('warmup'),
+        placement: 'bottom',
         prevButtonProps: { children: '« Anterior' },
         nextButtonProps: { children: '¡Finalizar!' }
       },
@@ -285,14 +293,6 @@ function DayEditDetailsPage() {
         title: 'Sumar 1 serie ( general )',
         description: 'Podés sumar una serie a todos los ejercicios del día correspondiente.',
         target: () => document.getElementById('addSets'),
-        placement: 'top',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
-      },
-      {
-        title: 'Dia actual',
-        description: 'Este es el día en el que te encontrás actualmente. Todo lo que agregues y edites, será de este día.',
-        target: () => document.getElementById('diaActual'),
         placement: 'top',
         prevButtonProps: { children: '« Anterior' },
         nextButtonProps: { children: '¡Finalizar!' }
@@ -1393,7 +1393,7 @@ const hasBackoff = exercise => (
                      <div className='text-center col-10'><strong >{username}</strong></div>
                    </div>
 
-                    <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 stylePointer" onClick={openEditWeekNameDialog}>
+                    <div id={'nameWeek'} className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 stylePointer" onClick={openEditWeekNameDialog}>
                      <div className=' col-1'><EditIcon /></div>
                      <div className='text-center col-10'><strong >{weekName}</strong></div>
                    </div>
@@ -1402,6 +1402,7 @@ const hasBackoff = exercise => (
        
                    <div className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
                      <Segmented
+                     id={'dias'}
                         className="w-100 stylesSegmented"
                         size="large"
                         vertical
@@ -1453,14 +1454,13 @@ const hasBackoff = exercise => (
 
                     <div className="text-muted small mt-5">
 
-                      <div id="agregarDia"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewExercise()}>
+                      <div id="addEjercicio"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewExercise()}>
                         <div className=' col-1'><AddIcon  className="me-2" /></div>
                         <div className='text-center col-10'><strong >Añadir ejercicio</strong></div>
                       </div>
 
-                      <div id="editarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewCircuit()} >
-                      
-                                  <div className=' col-1'><AddIcon /></div>
+                      <div id="addCircuit" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewCircuit()} >
+                        <div className=' col-1'><AddIcon /></div>
                         <div className='text-center col-10'><strong >Añadir circuito</strong></div>
                       </div>
 
@@ -1489,7 +1489,7 @@ const hasBackoff = exercise => (
 
             <div className="col-12 col-lg-6 pb-3">
                 <div className="row justify-content-center align-items-center m-auto pb-3">
-                  <div id="warmup" className="col-10 col-lg-6  btn bgItemsDropdown shadow pt-4" onClick={handleShowMovility}>
+                  <div id="movility" className="col-10 col-lg-6  btn bgItemsDropdown shadow pt-4" onClick={handleShowMovility}>
                     <EditIcon  className="me-2" />
                     <span className=" me-1">Bloque de <strong>activación/movilidad</strong> <strong className="d-block">{currentDay && currentDay.name}</strong></span>
                   </div>
@@ -1566,25 +1566,25 @@ const hasBackoff = exercise => (
               <div className="row justify-content-around mb-2 ">
 
                  <div className="col-3">
-                    <div id="addSets" className="bgItemsDropdownUl border-0 rounded-0 m-3 p-2 row justify-content-center"  onClick={() => incrementAllSeries()} >
-                      <div className=' col-1'><AddIcon /></div>
+                    <div  className="stylePointer2 py-1 row justify-content-center"  onClick={() => incrementAllSeries()} >
+         
                       <div className='text-center col-10'>
                         <strong >Herramientas generales: </strong>
                       </div>
                     </div>
                   </div>
 
-                <div className="col-2 bgItemsDropdownUl stylePointer border-0 rounded-0 p-2 m-3 shadow">
+                <div className="col-2  stylePointer2  py-1 m-3 shadow">
                   <div id="addSets" className=" row justify-content-center"  onClick={() => incrementAllSeries()} >
-                    <div className=' col-1'><AddIcon /></div>
+                    <div className=' col-1'><AddIcon className="stylesIconPointer" /></div>
                     <div className='text-center col-10'>
                       <strong >Sumar 1 serie</strong>
                     </div>
                   </div>
                 </div>
-                <div className="col-2 bgItemsDropdownUl stylePointer border-0 rounded-0 p-2 m-3 shadow">
+                <div className="col-2  stylePointer2  py-1 m-3 shadow">
                   <div id="addReps" className=" row justify-content-center"  onClick={() => incrementAllReps()} >
-                    <div className=' col-1'><AddIcon /></div>
+                    <div className=' col-1'><AddIcon className="stylesIconPointer" /></div>
                     <div className='text-center col-10'><strong >Sumar 1 repetición</strong></div>
                   </div>
                 </div>
@@ -1860,19 +1860,19 @@ const hasBackoff = exercise => (
             )}
             
                
-             
+               
           </div>
 
           {isEditing && (
             <div className="floating-button-mobile index-up">
               <button
-                className="px-5 btn colorCancel  my-4"
+                className="px-5 btn btn-light  my-4"
                 onClick={() => applyChanges()}
               >
                 Guardar
               </button>
               <button
-                className="px-5 btn colorRed   my-4"
+                className="px-5 btn btn-danger   my-4"
                 onClick={() => confirmCancel()}
               >
                 Cancelar

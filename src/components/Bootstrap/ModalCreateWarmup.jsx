@@ -70,7 +70,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       setModifiedWarmup(week); // Array de objetos inicial (los ejercicios)
       setWarmup(week);
     } else {
-      console.warn("La semana o la rutina no están disponibles");
+      console.log("La semana o la rutina no están disponibles");
     }
   }, [week, day_id, statusCancel]);
 
@@ -268,7 +268,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
 
   const tableMobile = () => {
     return (
-      <div className="p-0">
+      <div className="p-0 bg-light">
 
           <div>
             {modifiedWarmup[indexWarmupA] &&

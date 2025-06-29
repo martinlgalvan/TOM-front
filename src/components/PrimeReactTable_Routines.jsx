@@ -206,6 +206,7 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
           paginator
           rows={8}
           value={routine}
+          emptyMessage=" "
           scrollable={false}
         >
           {firstWidth > 568 && <Column body={blockDropdownTemplate} field="block" header="Bloque" />}

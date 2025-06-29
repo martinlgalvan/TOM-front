@@ -94,7 +94,6 @@ p {
   }
 
   .LargoLogo{
-    margin-top: 56px;
     min-height: 300px;
     max-height: 400px;
   }
@@ -164,6 +163,34 @@ p {
     padding: 5px;
     border-radius: 90px;
     color: white;
+  }
+
+  .stylePointer{
+    cursor: pointer;
+    background-color: #0d2744;
+    color: white;
+
+  }
+
+    .stylePointer:hover{
+    background-color: #132d4b57;
+  }
+
+    .stylePointer2{
+    cursor: pointer;
+    background-color: #0d2744;
+    color: white;
+    font-size: 0.8em;
+    margin: auto !important;
+    border-radius: 100px !important;
+  }
+
+    .stylePointer2:hover{
+    background-color: #04172c;
+  }
+
+  .stylesIconPointer{
+    font-size: 1.3em !important;
   }
 
   .btn-bottom-nav {
@@ -335,6 +362,10 @@ font-weight: 550;
   font-size: 0.7em;
 }
 
+.colorPrimaryDialog{
+  background-color: white !important;
+}
+
 .colorNote{
   background: linear-gradient(to right, #0464ff2d, #5093ff3d);
   border: 1px;
@@ -498,13 +529,7 @@ font-weight: 550;
   background-color: #0c77f1;
 }
 
-  .stylePointer{
-    cursor: pointer;
-  }
 
-    .stylePointer:hover{
-    background-color: #36485c;
-  }
 
   .navbar-toggler-icon{
     color: white !important;
@@ -1743,7 +1768,7 @@ width: 50px;
   transform: translateX(-50%);
   display: flex;
   width: 100%;
-  background-color: #000000;
+  background-image: linear-gradient(147deg, #041324 0%, #041324 100%);
   gap: 10px;
   z-index: 52000;
   justify-content: center;
@@ -1757,7 +1782,7 @@ width: 50px;
   transform: translateX(-50%);
   display: flex;
   width: 100%;
-  background-color: #000000;
+  background-image: linear-gradient(147deg, #041324 0%, #041324 100%);
   gap: 10px;
   z-index: 52000;
   justify-content: center;
@@ -1771,7 +1796,7 @@ width: 50px;
   transform: translateX(-50%);
   display: flex;
   width: 100%;
-  background-color: #000000;
+  background-image: linear-gradient(147deg, #041324 0%, #041324 100%);
   gap: 10px;
   z-index: 52000;
   justify-content: center;

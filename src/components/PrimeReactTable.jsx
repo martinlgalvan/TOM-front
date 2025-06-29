@@ -444,7 +444,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
 
       <div className='col-12 col-sm-10 m-0 mb-5 fontUserList'>
         <DataTable 
-          emptyMessage="Cargando usuarios..." 
+          emptyMessage=" " 
           className='usersListTable alignDatatable pt-0' 
           paginator 
           rows={10} 
@@ -542,7 +542,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
               />
             </div>
             <div className='col-12 text-center'>
-              <button className="btn btn-sseccon m-3" onClick={handleCancel}>
+              <button className="btn btn-outline-light m-3" onClick={handleCancel}>
                 Cancelar
               </button>
               <button 
@@ -567,7 +567,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
             {error && <p style={{ color: 'red' }}>{error}</p>}
             {qrImage && (
               <div>
-                <p>Este es el código QR para que <b>{currentQrUser?.name}</b> inicie sesión.</p>
+                <p className='text-light'>Este es el código QR para que <b>{currentQrUser?.name}</b> inicie sesión.</p>
                 <img
                   src={qrImage}
                   alt="Código QR"

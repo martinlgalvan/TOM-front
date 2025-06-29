@@ -227,7 +227,6 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
 
   // Función para confirmar la eliminación de un ejercicio
   const deleteMovility = (event, index, name) => {
-    console.log(event,index,name)
     confirmDialog({
       message: `¿Estás seguro de que deseas eliminar este ejercicio?`,
       header: "Confirmación",
@@ -263,7 +262,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
   // Versión para móviles (tabla)
   const tableMobile = () => {
     return (
-      <div className="p-0">
+      <div className="p-0 bg-light">
 
           <div>
             {modifiedMovility[indexMovilityA] &&

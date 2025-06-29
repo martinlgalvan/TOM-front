@@ -67,7 +67,8 @@ function UserRoutineEditPage() {
         comments: "",
         lastSaved: ""
     });
-    
+
+    const [showDriveLinkDialog, setShowDriveLinkDialog] = useState(false);
     const [showWeeklySummaryModal, setShowWeeklySummaryModal] = useState();
     const [profile, setProfile] = useState(true); // NUEVO ESTADO
     const [showCorrectionsDialog, setShowCorrectionsDialog] = useState(false);
@@ -105,6 +106,34 @@ function UserRoutineEditPage() {
                 title: 'Switch de semana',
                 description: 'Este switch permite que crees las semanas de manera numérica ( semana 1, semana 2, etc..) o, la creación de semanas a partir de la fecha actual.',
                 target: () => document.getElementById('switchWeek'),
+                placement: 'top',
+                nextButtonProps: { children: 'Siguiente »' }
+            },
+            {
+                title: 'Perfil del alumno',
+                description: 'En este apartado encontrarás información de tu alumno, cuando rellene su perfil.',
+                target: () => document.getElementById('perfil'),
+                placement: 'top',
+                nextButtonProps: { children: 'Siguiente »' }
+            },
+            {
+                title: 'Resumen semanal',
+                description: 'Estos datos son rellenados por el alumno. La idea es que los llene semana a semana para poder trabajar con más información.',
+                target: () => document.getElementById('resumen'),
+                placement: 'top',
+                nextButtonProps: { children: 'Siguiente »' }
+            },
+              {
+                title: 'Devolución',
+                description: 'Este botón sirve para poder cargar la corrección al alumno. El la verá cuando entre a la sección de "Ver Rutina"',
+                target: () => document.getElementById('correcciones'),
+                placement: 'top',
+                nextButtonProps: { children: 'Siguiente »' }
+            },
+              {
+                title: 'Drive',
+                description: 'Cuando el usuario suba su link de drive, podrás ingresar a su carpeta. La idea es manejar los videos mediante este sistema, para que tengas todo centralizado.',
+                target: () => document.getElementById('drive'),
                 placement: 'top',
                 nextButtonProps: { children: 'Siguiente »' }
             },
@@ -296,12 +325,12 @@ function UserRoutineEditPage() {
           <div className="p-3">
             <h5 className="fw-bold text-center mb-4">TOM</h5>
 
-            <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
+            <div id={'alumno'} className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
               <div className=' col-1'><User /></div>
               <div className='text-center col-10'><strong >{username}</strong></div>
             </div>
 
-            <div className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
+            <div id={'switchWeek'} className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
               <span className="text-light mx-2 small d-flex align-items-center">
                 {useDate ? "Modo fecha" : "Modo numérico"}
                 <OverlayTrigger
@@ -323,7 +352,7 @@ function UserRoutineEditPage() {
 
 
             {profile && (
-              <div className="text-muted small">
+              <div id='perfil' className="text-muted small">
                 <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Edad</span><strong className='me-2'>{profile.edad || '-'} años</strong></div>
                 <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Peso</span><strong className='me-2'>{profile.peso || '-'} kg</strong></div>
                 <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Altura</span><strong className='me-2'>{profile.altura || '-'} cm</strong></div>
@@ -332,9 +361,9 @@ function UserRoutineEditPage() {
           </div>
 
           {weeklySummary && (
-            <div className="px-2">
+            <div  className="px-2">
               <h6 className="text-light ms-2">Resumen semanal</h6>
-              <ul className="list-group small mb-2">
+              <ul id='resumen' className="list-group small mb-2">
                  <li className=" d-flex justify-content-between">
                 </li>
                 <li className="list-group-item py-1 bgItemsDropdownUl d-flex justify-content-between">
@@ -366,7 +395,7 @@ function UserRoutineEditPage() {
               )}
 
               {/* Comentario con vista expandible */}
-              <div className="position-relative">
+              <div id='comments' className="position-relative">
                 <label className='text-light small ms-2' htmlFor="">Comentarios</label>
                 <OverlayTrigger
                   placement="right"
@@ -392,7 +421,7 @@ function UserRoutineEditPage() {
                 </OverlayTrigger>
               </div>
 
-              <div className="d-grid mt-2">
+              <div id='correcciones' className="d-grid mt-2">
                 <button className="btn btn-outline-light btn-sm" onClick={() => {
                   setCorrectionsText(profile.devolucion || "");
                   setShowCorrectionsDialog(true);
@@ -400,11 +429,25 @@ function UserRoutineEditPage() {
                   Cargar correciones
                 </button>
               </div>
-                <div className="d-grid mt-2">
-                <a target='blank' href={`${profile.drive_link}`} className="btn btn-outline-light btn-sm" >
-                  <AddToDriveIcon /> Ver videos subidos
-                </a>
-              </div>
+                 <div id='drive' className="d-grid mt-2">
+                    {profile.drive_link ? (
+                      <a
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={profile.drive_link}
+                        className="btn btn-outline-light btn-sm"
+                      >
+                        <AddToDriveIcon /> Ver videos subidos
+                      </a>
+                    ) : (
+                      <button
+                        className="btn btn-outline-light btn-sm"
+                        onClick={() => setShowDriveLinkDialog(true)}
+                      >
+                        <AddToDriveIcon /> Ver videos subidos
+                      </button>
+                    )}
+                  </div>
             </div>
           )}
 
@@ -439,8 +482,8 @@ function UserRoutineEditPage() {
                         
                        
                           
-                            <div className="col-10 col-lg-3 mx-2 mb-4 boxData">
-                                <button id={'week0'} className="btn p-3" onClick={createWeek}>
+                            <div id={'week0'} className="col-10 col-lg-3 mx-2 mb-4 boxData">
+                                <button  className="btn p-3" onClick={createWeek}>
                                     <AddIcon className="me-2" />
                                     <span className=" me-1">Nueva semana</span>
                                 </button>
@@ -461,9 +504,9 @@ function UserRoutineEditPage() {
                     
                     </div>) :
                     <div className="row justify-content-around mb-5 mt-5 ">
-                      <button onClick={createWeek} className="btn bgItemsDropdown btn-sm col-3"><CalendarPlus size={16} className="me-2" /> Nueva semana</button>
-                      <button onClick={createWeekCopyLastWeek} className="btn bgItemsDropdown btn-sm col-3"><Repeat size={16} className="me-2" /> Seguir semana</button>
-                      <button onClick={loadFromLocalStorage} className="btn bgItemsDropdown btn-sm col-3"><ClipboardCopy size={16} className="me-2" /> Pegar semana</button>
+                      <button id={'week0'} onClick={createWeek} className="btn bgItemsDropdown btn-sm col-3"><CalendarPlus size={16} className="me-2" /> Nueva semana</button>
+                      <button id='continueWeek' onClick={createWeekCopyLastWeek} className="btn bgItemsDropdown btn-sm col-3"><Repeat size={16} className="me-2" /> Seguir semana</button>
+                      <button id='paste' onClick={loadFromLocalStorage} className="btn bgItemsDropdown btn-sm col-3"><ClipboardCopy size={16} className="me-2" /> Pegar semana</button>
                     </div>
             }
 
@@ -510,8 +553,8 @@ function UserRoutineEditPage() {
                   draggable={true}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <span className='styleInputsSpan'>Última actualización:</span>{" "}
-                      {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}
+                      <span className=''>Últ. actualización: 
+                      {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}</span>
                       <div>
                         <strong>Alimentación:</strong> {weeklySummary.selection1 || '-'}
                       </div>
@@ -527,13 +570,16 @@ function UserRoutineEditPage() {
                       <div>
                         <strong>Estrés:</strong> {weeklySummary.selection5 || '-'}
                       </div>
+                           <div>
+                        <strong>Peso:</strong> {weeklySummary.pesoCorporal || '-'}
+                      </div>
                       <div>
                         <strong>Comentarios:</strong> {weeklySummary.comments || '-'}
                       </div>
                   </div>
                   <div className="text-center align-bottom my-3">
                         <button 
-                            className="btn btn-outline-dark"
+                            className="btn btn-outline-light"
                             onClick={() => {
                             setCorrectionsText(profile.devolucion || "");
                             setShowCorrectionsDialog(true);
@@ -583,6 +629,19 @@ function UserRoutineEditPage() {
                     </button>
                   </div>
                 </Dialog>
+
+                <Dialog
+                  header="Sin link de Drive"
+                  visible={showDriveLinkDialog}
+                  onHide={() => setShowDriveLinkDialog(false)}
+                  style={{ width: '30vw' }}
+                >
+                  <p className='text-light'>Pedile a tu alumno que suba el link de su drive para poder verlo!</p>
+                  <div className="text-center mt-3">
+                    <Button label="Cerrar" onClick={() => setShowDriveLinkDialog(false)} />
+                  </div>
+                </Dialog>
+
             </section>
         </>
     );
