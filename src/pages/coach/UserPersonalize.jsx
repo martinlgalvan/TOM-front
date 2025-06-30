@@ -73,7 +73,7 @@ function UsersListPage() {
 
                         <p>Para mantener tu plan activo, aboná del 1 al 10 de cada mes.</p>
                         <p>Datos bancarios</p>
-                        <p>Alias: martinlgalvan.uala</p>
+                        <p>Alias: plani.tom.uala</p>
                         <p>CVU: 0000007900204282114220</p>
                         <p>Enviá el comprobante acá</p>
                         <a href="https://wa.me/message/6PSH46QCW4OTP1" target="_blank" class="whatsapp-btn">WhatsApp</a>
