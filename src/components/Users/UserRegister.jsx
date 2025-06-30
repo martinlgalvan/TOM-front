@@ -74,9 +74,9 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
             password,
             logo
         })
-        /*.then((newUser) => {
+        .then((newUser) => {
             return ChangePropertyService.changeProperty(newUser._id, category);
-        })*/
+        })
         .then(() => {
             Notify.updateToast();
             refresh();
