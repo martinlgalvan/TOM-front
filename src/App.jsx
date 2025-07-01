@@ -88,6 +88,8 @@ function App() {
     const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
     const [pendingAnnouncements, setPendingAnnouncements] = useState([]);
     const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
+  
+
 
     useEffect(() => {
         registerServiceWorker();
@@ -113,24 +115,58 @@ function App() {
     }, [isAutenticated]);
 
 useEffect(() => {
-    const role = localStorage.getItem('role');
-    const id = localStorage.getItem('_id');
+  const role   = localStorage.getItem('role');
+  const userId = localStorage.getItem('_id');
 
-    // Si no es admin y está autenticado
-    if (role !== 'admin' && id && isAutenticated) {
-        UserService.getUnreadAnnouncements(id)
-            .then(res => {
-                if (res && res.length > 0) {
-                    console.log(res)
-                    setPendingAnnouncements(res);
-                    setCurrentAnnouncement(res[0]);
-                    setCurrentAnnouncementIndex(0);
-                    setShowAnnouncementDialog(true);
-                }
-            })
-            .catch(err => console.error("Error buscando anuncios:", err));
-    }
-}, [location.pathname, isAutenticated]);
+  if (role !== 'admin' && userId && isAutenticated) {
+    UserService.getUnreadAnnouncements(userId)
+      .then(res => {
+        // 1) Convertimos cada anuncio y lo filtramos:
+        const pending = res.filter(anuncio => {
+          // A) Si es “once”, que sólo se muestre el día correspondiente:
+          if (anuncio.mode === 'once') {
+            const showDate   = new Date(anuncio.show_at_date);
+            const today      = new Date();
+            // comparamos sólo año-mes-día
+            if (
+              showDate.getUTCFullYear()  !== today.getUTCFullYear() ||
+              showDate.getUTCMonth()     !== today.getUTCMonth()    ||
+              showDate.getUTCDate()      !== today.getUTCDate()
+            ) {
+              return false;
+            }
+          }
+
+          // B) Extraemos sólo los IDs de `read_by`
+          const readByIds = anuncio.read_by.map(rb => {
+            // Si viene como { $oid: "..." }
+            if (typeof rb === 'object') {
+              return rb.$oid || rb._id || '';
+            }
+            // Si ya viene como string
+            return String(rb);
+          });
+
+          // C) Si ya estoy en read_by, lo descartamos
+          return !readByIds.includes(userId);
+        });
+        // 2) Actualizamos el estado
+        setPendingAnnouncements(pending);
+
+        if (pending.length > 0) {
+          setCurrentAnnouncement(pending[0]);
+          setCurrentAnnouncementIndex(0);
+          setShowAnnouncementDialog(true);
+        } else {
+          // si no queda ninguno, cerramos
+          setCurrentAnnouncement(null);
+          setCurrentAnnouncementIndex(0);
+          setShowAnnouncementDialog(false);
+        }
+      })
+      .catch(err => console.error("Error buscando anuncios:", err));
+  }
+}, [location.pathname,isAutenticated]);
 
 const handleDismissAnnouncement = async () => {
     const isLast = currentAnnouncementIndex === pendingAnnouncements.length - 1;
@@ -233,25 +269,6 @@ async function onLogin(user, token) {
     localStorage.setItem('color', user.color || '#1a1a1a');
     localStorage.setItem('textColor', user.textColor || false);
 
-    if (user.role !== "admin") {
-    try {
-        const res = await UserService.getUnreadAnnouncements(user._id);
-        if (res && res.length > 0) {
-            setPendingAnnouncements(res);
-            setCurrentAnnouncement(res[0]);
-            setCurrentAnnouncementIndex(0);
-            setShowAnnouncementDialog(true);
-        } else {
-            setPendingAnnouncements([]);
-            setCurrentAnnouncement(null);
-            setShowAnnouncementDialog(false);
-        }
-    } catch (err) {
-        console.error("Error obteniendo anuncios en login:", err);
-    }
-
-
-    }
     if(user.role !== 'admin'){
     localStorage.setItem('state', user.payment_info.isPaid);
     }
