@@ -17,6 +17,8 @@ import alumnoImg from './../assets/img/alumno.jpg'
 function HomePage() {
   // Estado para el tipo de usuario
   const [userType, setUserType] = useState(null);
+  const [isLoged, setIsLoged] = useState(null);
+  const [username, setUsername] = useState(null);
   const navigate = useNavigate()
 
   // Crear refs únicos para cada card
@@ -29,7 +31,12 @@ function HomePage() {
 
 
 
-
+  useEffect(() => {
+    if(localStorage.getItem('role') === 'common'){
+      setIsLoged(true)
+      setUsername(localStorage.getItem('name'))
+    }
+  }, [userType]); // Se ejecutará solo cuando `userType` cambie
 
   
   // Efecto para configurar el IntersectionObserver solo si el usuario es "entrenador"
@@ -74,6 +81,7 @@ function HomePage() {
       if(localStorage.getItem('token')){
         if(localStorage.getItem('role') === 'common'){
           navigate(`/routine/${localStorage.getItem('_id')}`)
+          setIsLoged(true)
         } else if(localStorage.getItem('role') === 'admin')
           navigate(`/users/${localStorage.getItem('_id')}`)
       } else{
@@ -82,7 +90,7 @@ function HomePage() {
 
     } else{
       setUserType(type);
-
+      console.log(type)
     }
   };
 
@@ -102,6 +110,28 @@ function HomePage() {
       {!userType ? (
         
         <div className='row justify-content-center text-center'>
+
+                   <div className='col-10 col-lg-5 mt-5 mb-5'>
+
+        <div class="blog-slider bounce-in-right" >
+            <div class="flex-blog">
+
+              <div class="blog-slider__img row">
+                <IconButton className='text-center' onClick={() => handleUserType('atleta')}>
+                  <FitnessCenterIcon className='fs-1 text-light d-block' />
+                </IconButton>
+              </div>
+              <div class="blog-slider__content">
+                <div class="blog-slider__title">{isLoged ? `Bienvenido ${username}` : 'Iniciar sesión'}</div>
+                <div class="blog-slider__text">{isLoged ? 'Entrá ' : 'Inicia sesión'} y observá la planificación que tu entrenador armó. </div>
+                <button  class="blog-slider__button" onClick={() => handleUserType('atleta')}>{isLoged ? 'Ver rutina' : 'Iniciar sesión'}</button>
+              </div>
+          </div>
+        </div>
+
+        </div>
+
+        
           <div className='col-10 col-lg-5  mt-5'>
 
             <div class="blog-slider bounce-in-left" >
@@ -123,25 +153,7 @@ function HomePage() {
 
           </div>
 
-          <div className='col-10 col-lg-5 mt-5 mb-5'>
-
-        <div class="blog-slider bounce-in-right" >
-            <div class="flex-blog">
-
-              <div class="blog-slider__img row">
-                <IconButton className='text-center' onClick={() => handleUserType('atleta')}>
-                  <FitnessCenterIcon className='fs-1 text-light d-block' />
-                </IconButton>
-              </div>
-              <div class="blog-slider__content">
-                <div class="blog-slider__title">¿Sos alumno?</div>
-                <div class="blog-slider__text">Inicia sesión y observá la planificación que tu entrenador armó. </div>
-                <button  class="blog-slider__button" onClick={() => handleUserType('atleta')}>Iniciar sesión</button>
-              </div>
-          </div>
-        </div>
-
-        </div>
+ 
 
         </div>
 

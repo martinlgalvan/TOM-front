@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 //.............................. SERVICES ..............................//
 import * as WeekService from '../../services/week.services.js';
@@ -44,8 +44,10 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 import AddToDriveIcon from '@mui/icons-material/AddToDrive';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 function UserRoutineEditPage() {
+    const navigate = useNavigate();
     const { id } = useParams();
     const { username } = useParams();
 
@@ -68,6 +70,7 @@ function UserRoutineEditPage() {
         lastSaved: ""
     });
 
+    const [showProfileDialog, setShowProfileDialog] = useState(false);
     const [showDriveLinkDialog, setShowDriveLinkDialog] = useState(false);
     const [showWeeklySummaryModal, setShowWeeklySummaryModal] = useState();
     const [profile, setProfile] = useState(true); // NUEVO ESTADO
@@ -321,16 +324,15 @@ function UserRoutineEditPage() {
     return (
         <>
         <div className='sidebarPro colorMainAll'>
-          <div className="d-flex flex-column justify-content-between colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh' }}>
-          <div className="p-3">
-            <h5 className="fw-bold text-center mb-4">TOM</h5>
+          <div className="d-flex flex-column  colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh', paddingTop: '50px' }}>
 
-            <div id={'alumno'} className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
+          <div className="p-3">
+            <div id={'alumno'} onClick={() => setShowProfileDialog(true)} className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3">
               <div className=' col-1'><User /></div>
               <div className='text-center col-10'><strong >{username}</strong></div>
             </div>
 
-            <div id={'switchWeek'} className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
+            <div id={'switchWeek'} className="d-flex justify-content-between text-light bgItemsDropdown align-items-center 3">
               <span className="text-light mx-2 small d-flex align-items-center">
                 {useDate ? "Modo fecha" : "Modo numérico"}
                 <OverlayTrigger
@@ -349,15 +351,6 @@ function UserRoutineEditPage() {
               </div>
             </div>
 
-
-
-            {profile && (
-              <div id='perfil' className="text-muted small">
-                <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Edad</span><strong className='me-2'>{profile.edad || '-'} años</strong></div>
-                <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Peso</span><strong className='me-2'>{profile.peso || '-'} kg</strong></div>
-                <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Altura</span><strong className='me-2'>{profile.altura || '-'} cm</strong></div>
-              </div>
-            )}
           </div>
 
           {weeklySummary && (
@@ -641,6 +634,25 @@ function UserRoutineEditPage() {
                     <Button label="Cerrar" onClick={() => setShowDriveLinkDialog(false)} />
                   </div>
                 </Dialog>
+
+                <Dialog
+                header="Perfil del Alumno"
+                visible={showProfileDialog}
+                style={{ width: '30vw' }}
+                onHide={() => setShowProfileDialog(false)}
+                draggable={true}
+            >
+                {profile && (
+                    <div className="text-muted small">
+                        <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Edad</span><strong className='me-2'>{profile.edad || '-'} años</strong></div>
+                        <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Peso</span><strong className='me-2'>{profile.peso || '-'} kg</strong></div>
+                        <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Altura</span><strong className='me-2'>{profile.altura || '-'} cm</strong></div>
+                    </div>
+                )}
+                <div className="text-center mt-3">
+                    <Button label="Cerrar" onClick={() => setShowProfileDialog(false)} />
+                </div>
+            </Dialog>
 
             </section>
         </>

@@ -109,6 +109,16 @@ function DayDetailsPage() {
 
     };
 
+    const goToWeek = (newIndex) => {
+        setCurrentWeekIndex(newIndex);
+        const newWeek = allWeeks[newIndex];
+        if (newWeek) {
+            // Resetea al día 0 al navegar
+            navigate(`/routine/${id}/day/0/${newWeek._id}/${newIndex}`);
+        }
+    };
+
+
     function renderNumberIcon(n) {
     // solo si es entero y entre 1 y 8
     if (Number.isInteger(n) && numberIconMap[n]) {
@@ -190,6 +200,7 @@ const redirectToPerfil = () => {
         if (!data?.length) return;
         setAllDays(data[0].routine);
         setNameWeek(data[0].name);
+        console.log(data[0])
         setCurrentDay(prev => (prev === null ? 0 : prev));
       });
     }, [week_id, status]); 
@@ -549,13 +560,12 @@ const saveDriveLink = async () => {
             </div>
 
             <section className="container-fluid p-0">
-
         
                <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'bg-danger rounded-1 text-light' : ''}`}>
                   <div className="d-flex justify-content-center align-items-center">
                     <IconButton
                       className="me-2"
-                      onClick={() => setCurrentWeekIndex(prev => Math.min(prev + 1, allWeeks.length - 1))}
+                       onClick={() => goToWeek(Math.min(currentWeekIndex + 1, allWeeks.length - 1))}
                       disabled={currentWeekIndex === allWeeks.length - 1}
                     >
                       <NavigateBeforeIcon className={`fs-2 ${currentWeekIndex === allWeeks.length - 1 ? 'text-muted' : ''}`} />
@@ -572,7 +582,7 @@ const saveDriveLink = async () => {
 
                     <IconButton
                       className="ms-2"
-                      onClick={() => setCurrentWeekIndex(prev => Math.max(prev - 1, 0))}
+                      onClick={() => goToWeek(Math.max(currentWeekIndex - 1, 0))}
                       disabled={currentWeekIndex === 0}
                     >
                       <NavigateNextIcon className={`fs-2 ${currentWeekIndex === 0 ? 'text-muted' : ''}`} />
@@ -581,7 +591,7 @@ const saveDriveLink = async () => {
 
                   {currentWeekIndex !== 0 && (
                     <small className="d-block mt-1 mx-3 text-light">
-                      <span className="border rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. Tampoco podrás realizar ninguna edición.
+                      <span className="border rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. Tampoco podrás realizar ninguna edición en esta semana.
                     </small>
                   )}
                 </div>
@@ -1155,7 +1165,7 @@ const saveDriveLink = async () => {
                           className="input-dark"
                         >
                           <option value="">Seleccionar...</option>
-                          {['Muy mala', 'Mala', 'Regular', 'Buena', 'Muy buena'].map(opt => (
+                          {['Muy mal', 'Mal', 'Regular', 'Bien', 'Muy bien'].map(opt => (
                             <option key={opt} value={opt}>{opt}</option>
                           ))}
                         </select>

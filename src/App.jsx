@@ -372,6 +372,13 @@ async function onLogin(user, token) {
                 >
                 <div className="container-fluid">
                     <a className="navbar-brand text-light" href="/">TOM</a>
+                                    {isAdmin() && location.pathname != '/' && <button
+                                    type="button"
+                                    onClick={() => navigate(-1)}
+                                    className="btn btn-outline-light border "
+                                  >
+                                    <ArrowBackIcon className="me-2" /> Atrás
+                                  </button>}
                     <button className="navbar-toggler text-light " type="button" onClick={handleMenuSidebarOpen}>
                         <AlignJustify />
                     </button>

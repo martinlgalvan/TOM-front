@@ -62,35 +62,43 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
   const isExpired = timeLeft === 0 && !isRunning;
   const isStopped = !isRunning && timeLeft === baseSeconds;
   const isPaused = !isRunning && timeLeft > 0 && timeLeft < baseSeconds;
+  const initialSeconds = toSeconds(initialTime);
+  const startTimestampRef = useRef(null);
+  const remainingTimeRef = useRef(initialSeconds);
 
-  const handleStartPause = e => {
-  e.stopPropagation();
 
-  if (isExpired) {
-    // Si expiró: reinicio completo y arranco de nuevo
-    setTimeLeft(baseSeconds);
-    intervalRef.current = setInterval(tick, 1000);
-    setIsRunning(true);
-
-  } else if (isPaused || isStopped) {
-    // Si está pausado o detenido al inicio: reanudo sin tocar timeLeft
-    intervalRef.current = setInterval(tick, 1000);
-    setIsRunning(true);
-
-  } else if (isRunning) {
-    // Si está corriendo: pauso
-    clearInterval(intervalRef.current);
-    setIsRunning(false);
-  }
-};
+ const handleStartPause = e => {
+    e.stopPropagation();
+    if (isRunning) {
+      // Pausar
+      clearInterval(intervalRef.current);
+      setIsRunning(false);
+      remainingTimeRef.current = timeLeft;
+    } else {
+      // Si expiró o está detenido/pausado: arranco o reanudo
+      startTimestampRef.current = Date.now();
+      setIsRunning(true);
+      intervalRef.current = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTimestampRef.current) / 1000);
+        const updated = Math.max(remainingTimeRef.current - elapsed, 0);
+        setTimeLeft(updated);
+        if (updated === 0) {
+          clearInterval(intervalRef.current);
+          setIsRunning(false);
+        }
+      }, 1000);
+    }
+  };
 
   const handleReset = e => {
     e.stopPropagation();
     clearInterval(intervalRef.current);
     setIsRunning(false);
-    setTimeLeft(baseSeconds);
+    remainingTimeRef.current = initialSeconds;
+    setTimeLeft(initialSeconds);
   };
 
+  // Limpieza al desmontar
   useEffect(() => () => clearInterval(intervalRef.current), []);
 
     if (noRestSpecified) {
