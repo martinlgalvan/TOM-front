@@ -16,6 +16,7 @@ import PITBULL from '/src/assets/img/pitbull-logo.png';
 import CRISTIAN_QUIROGA from '/src/assets/img/cristian-logo.png';
 import FRANCO from '/src/assets/img/Franco.jpeg';
 import SOL from '/src/assets/img/SvStrong.jpeg';
+import MARTIN_CASANOVA from '/src/assets/img/MartinCasanova.png';
 
 function Logo({isHomePage}){
 
@@ -48,6 +49,8 @@ function Logo({isHomePage}){
         setUrlPath(FRANCO)
     }else if(localStorage.getItem('email') == "Svstrong.training@gmail.com" || localStorage.getItem('entrenador_id') == "6861636cdbfbe24db072ca58"){
         setUrlPath(SOL)
+    }else if(localStorage.getItem('email') == "martincasanova2001-trainer@gmail.com" || localStorage.getItem('entrenador_id') == "686976ccd5788ade7ad998bf"){
+        setUrlPath(MARTIN_CASANOVA)
     }else{
         setUrlPath(TOM)
     }
