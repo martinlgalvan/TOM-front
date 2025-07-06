@@ -49,10 +49,10 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, id }) {
       
 
   return (
-    <div className="row justify-content-start ">
-      <div className=' mb-3'>
+    <div className="row justify-content-center ">
+      <div className=' mb-3 '>
         <label  class="form-label">Nombre</label>
-        <InputText value={isEditMode && form.name} onChange={(e) => handleChange('name', e.target.value)} class="form-control text-dark" />
+        <input value={isEditMode && form.name} onChange={(e) => handleChange('name', e.target.value)} class="text-dark form-control  " />
       </div>
 
       <div className='text-start '>
@@ -61,8 +61,8 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, id }) {
       </div>
 
       <div className='row justify-content-center mt-4'>
-        <div className='col-4'><button className='btn btn-danger'  onClick={handleDelete} >Eliminar</button></div>
-        <div className='col-4'><button className='btn BlackBGtextWhite'  onClick={handleSubmit} >Guardar</button></div>
+        {isEditMode && <div className='col-6 text-center'><button className='btn btn-danger'  onClick={handleDelete} >Eliminar</button></div>}
+        <div className={`${isEditMode ? 'col-6 text-center' : 'col-10 text-center'}`}><button className='btn BlackBGtextWhite'  onClick={handleSubmit} >Guardar</button></div>
       </div>
 
     </div>

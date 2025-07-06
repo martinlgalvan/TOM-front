@@ -28,9 +28,17 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [trainer_id, setTrainer_id] = useState(localStorage.getItem("_id"));
 
-  useEffect(() => {
-    BlockService.getBlocks(trainer_id).then(setBlocks);
-  }, [id]);
+useEffect(() => {
+  BlockService.getBlocks(trainer_id)
+    .then(raw => {
+      // Normalizamos _id a string para usarlos como optionValue
+      const normalized = raw.map(b => ({
+        ...b,
+        _id: b._id.toString()
+      }));
+      setBlocks(normalized);
+    });
+}, [id]);
 
   useEffect(() => {
     const styleTag = document.createElement('style');
@@ -77,26 +85,31 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
 };
 
   const blockDropdownTemplate = (rowData) => {
-    const backgroundColor = rowData?.block?.color || '#ffffff';
-    const textColor = getContrastYIQ(backgroundColor);
-    return (
-      <Dropdown
-        value={rowData.block?._id || null}
-        className={`ms-1 borderDropdown rounded-3 ${textColor === 'white' ? 'colorDropdownBlocks' : 'colorDropdownBlocks2'}`}
-        options={extendedBlockOptions}
-        onChange={(e) => handleBlockDropdownChange(rowData._id, e.value)}
-        optionLabel="name"
-        optionValue="_id"
-        dataKey="_id"
-        itemTemplate={itemTemplate}
-        placeholder="Seleccionar bloque"
-        style={{
-          width: '100%',
-          backgroundColor: backgroundColor
-        }}
-      />
-    );
-  };
+  // si no hay rowData.block, lo buscamos por block_id
+  const currentBlock = rowData.block
+    || blocks.find(b => String(b._id) === String(rowData.block_id))
+    || null;
+
+  const backgroundColor = currentBlock?.color || '#ffffff';
+  const textColor = getContrastYIQ(backgroundColor);
+
+  return (
+<Dropdown
+  value={currentBlock?._id || null}
+  options={extendedBlockOptions}
+  dataKey="_id"                     // ← aquí
+  optionLabel="name"
+  optionValue="_id"
+  placeholder="Seleccionar bloque"
+  onChange={e => handleBlockDropdownChange(rowData._id, e.value)}
+  style={{ width: '100%', backgroundColor }}
+  className={`ms-1 borderDropdown rounded-3 ${
+    textColor === 'white' ? 'colorDropdownBlocks' : 'colorDropdownBlocks2'
+  }`}
+  itemTemplate={itemTemplate}
+/>
+  );
+};
 
   const getContrastYIQ = (hexcolor) => {
     if (!hexcolor) return 'black';

@@ -174,6 +174,13 @@ function UserRoutineEditPage() {
 
         WeekService.findRoutineByUserId(id)
             .then(data => {
+                    const normalized = data.map(w => ({
+                    ...w,
+                    block_id: w.block_id ? w.block_id.toString() : null,
+                    block: w.block?._id
+                      ? { ...w.block, _id: w.block._id.toString() }
+                      : null
+                  }));
                 setRoutine(data);
                 setWeekNumber(data.length + 1);
                 setLoading(false);

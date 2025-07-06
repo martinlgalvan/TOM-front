@@ -94,7 +94,7 @@ function BlocksListPage(id) {
         })}
 
         <button
-          className="btn btn-outline-dark col-8 mx-5 mt-4 text-center rounded shadow"
+          className="btn btn-outline-light col-8 mx-5 mt-4 text-center rounded shadow"
           onClick={() => setShowForm(true)}
         >
           <AddIcon /> <span>Añadir bloque</span>
