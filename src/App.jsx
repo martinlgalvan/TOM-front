@@ -373,8 +373,8 @@ async function onLogin(user, token) {
             <nav className={`navbar navbar-expand-lg colorMainAll text-light fixed-top `}
                 >
                 <div className="container-fluid">
-                    {isAdmin() && location.pathname == '/' || location.pathname == `/users/${id}` ?
-                    <a className="navbar-brand text-light btn btn-outline-light border me-2 ms-3 font1Em " href={`/users/${id}`}>TOM</a> :
+                    {isAdmin() && location.pathname == '/' || isAdmin() && location.pathname == `/users/${id}` || !isAdmin() ?
+                    <a className="navbar-brand text-light btn btn-outline-light border me-2 ms-3 font1Em " href={`/`}>TOM</a> :
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
