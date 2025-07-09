@@ -334,8 +334,9 @@ function DayEditDetailsPage() {
     }
   }
 
-    const ex = updated[indexDay].exercises[editingBackoffIndex];
-    const rawName = ex.name;
+  setBackoffData(currentBackoff);
+  backoffOverlayRef.current.toggle(e);
+};
 
 
  const saveBackoffInternally = (data) => {
@@ -1389,20 +1390,14 @@ const hasBackoff = exercise => (
   };
 
   return (
-    <>
-      {/**
+    <div className="container-fluid pe-0 ms-1">
+      {/**a
        * SIDEBAR: fijo a la izquierda 
        */}
        <div className='sidebarPro colorMainAll'>
                  <div className="d-flex flex-column justify-content-between colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh' }}>
                  <div className="p-3">
                    <h5 className="fw-bold text-center mb-4">TOM</h5>
-       
-                   <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
-                     <div className=' col-1'><User /></div>
-                     <div className='text-center col-10'><strong >{username}</strong></div>
-                   </div>
-
                     <div id={'nameWeek'} className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 stylePointer" onClick={openEditWeekNameDialog}>
                      <div className=' col-1'><EditIcon /></div>
                      <div className='text-center col-10'><strong >{weekName}</strong></div>
@@ -1478,9 +1473,6 @@ const hasBackoff = exercise => (
                     </div>
 
                    <div className="p-3 mb-3 text-center">
-                              <div className="small text-light mb-2">
-                                <strong>TOM</strong><br />Planificación digital
-                              </div>
                               <button className="btn btn-outline-light btn-sm" onClick={() => setTourVisible(true)}>
                                 <HelpCircle size={16} className="me-1" /> Ayuda
                               </button>
