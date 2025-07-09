@@ -280,7 +280,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
   const linksTemplate = (user, e) => {
     if (e.field === 'email') {
       return (
-        <Link to={`/user/routine/${user._id}/${user.name}`}>
+        <Link to={`/user/routine/${user._id}/${user.name}`} onClick={() => {localStorage.setItem('actualUsername', user.name)}}>
           {user.email}
         </Link>
       );
@@ -295,7 +295,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
       );
     } else {
       return (
-        <Link className='classNameStart' to={`/user/routine/${user._id}/${user.name}`}>
+        <Link className='classNameStart' to={`/user/routine/${user._id}/${user.name}`} onClick={() => {localStorage.setItem('actualUsername', user.name)}}>
           {user.name}
         </Link>
       );
@@ -311,7 +311,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
       >
         <PersonIcon className="text-dark" />
       </IconButton>
-      <Link className="LinkDays iconButtons" to={`/user/routine/${user._id}/${user.name}`}>
+      <Link className="LinkDays iconButtons" to={`/user/routine/${user._id}/${user.name}`} onClick={() => {localStorage.setItem('actualUsername', user.name)}}>
         <IconButton aria-label="edit" className="btn p-1 my-2">
           <EditIcon className="text-dark" />
         </IconButton>

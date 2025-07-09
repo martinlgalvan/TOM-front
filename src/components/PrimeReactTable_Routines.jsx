@@ -64,6 +64,19 @@ useEffect(() => {
     };
   }, [blocks.map(b => b._id).join(',')]);
 
+    const buildOptions = (currentBlock) => {
+    const base = [
+      { name: 'Añadir/editar bloques', _id: 'add-new-block' },
+      { name: 'Sin bloque',       _id: null },
+    ];
+    // Si el bloque actual no está aún en `blocks`, lo incluimos para que Dropdown
+    // pueda emparejar el value con alguna opción.
+    const extra = currentBlock && !blocks.find(b => b._id === currentBlock._id)
+      ? [currentBlock]
+      : [];
+    return [...base, ...blocks, ...extra];
+  };
+
   const handleAssignBlock = async (routineId, block) => {
   try {
     const payload = block === null ? { block: null } : block;
@@ -84,32 +97,41 @@ useEffect(() => {
   }
 };
 
-  const blockDropdownTemplate = (rowData) => {
-  // si no hay rowData.block, lo buscamos por block_id
-  const currentBlock = rowData.block
-    || blocks.find(b => String(b._id) === String(rowData.block_id))
-    || null;
+    const blockDropdownTemplate = (rowData) => {
+    // Normalizamos primero el ID de bloque
+    const blockId = rowData.block_id?.toString()
+      || rowData.block?._id?.toString();
+    // Buscamos siempre primero en nuestro array `blocks`
+    const fromList = blocks.find(b => b._id === blockId);
+    // Si no está (aún no cargado), caemos a rowData.block
+    const currentBlock = fromList
+      || (rowData.block ? { ...rowData.block, _id: blockId } : null);
 
-  const backgroundColor = currentBlock?.color || '#ffffff';
-  const textColor = getContrastYIQ(backgroundColor);
+    // Generamos las opciones para este Dropdown, incluyendo el bloque si hiciera falta
+    const options = buildOptions(currentBlock);
 
-  return (
-<Dropdown
-  value={currentBlock?._id || null}
-  options={extendedBlockOptions}
-  dataKey="_id"                     // ← aquí
-  optionLabel="name"
-  optionValue="_id"
-  placeholder="Seleccionar bloque"
-  onChange={e => handleBlockDropdownChange(rowData._id, e.value)}
-  style={{ width: '100%', backgroundColor }}
-  className={`ms-1 borderDropdown rounded-3 ${
-    textColor === 'white' ? 'colorDropdownBlocks' : 'colorDropdownBlocks2'
-  }`}
-  itemTemplate={itemTemplate}
-/>
-  );
-};
+    const backgroundColor = currentBlock?.color || '#ffffff';
+    const textColor = getContrastYIQ(backgroundColor);
+
+    return (
+      <Dropdown
+        value={currentBlock?._id || null}
+        options={options}
+        dataKey="_id"                     // clave única para emparejar correctamente
+        optionLabel="name"
+        optionValue="_id"
+        placeholder="Seleccionar bloque"
+        onChange={e => handleBlockDropdownChange(rowData._id, e.value)}
+        style={{ width: '100%', backgroundColor }}
+        className={`ms-1 borderDropdown rounded-3 ${
+          textColor === 'white'
+            ? 'colorDropdownBlocks'
+            : 'colorDropdownBlocks2'
+        }`}
+        itemTemplate={itemTemplate}
+      />
+    );
+  };
 
   const getContrastYIQ = (hexcolor) => {
     if (!hexcolor) return 'black';
@@ -161,12 +183,6 @@ useEffect(() => {
   const hideDialog = () => {
     setShowDeleteWeekDialog(false);
   };
-
-  const extendedBlockOptions = [
-    { name: 'Añadir/editar bloques', _id: 'add-new-block' },
-    { name: 'Sin bloque', _id: null },
-    ...blocks
-  ];
 
   const handleBlockDropdownChange = (weekId, value) => {
     if (value === 'add-new-block') {

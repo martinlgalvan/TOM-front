@@ -172,6 +172,8 @@ function DayEditDetailsPage() {
   const [editingBackoffIndex, setEditingBackoffIndex] = useState(null);
   const [backoffData, setBackoffData] = useState([{ sets: "", reps: "", peso: "" }]);
   const backoffOverlayRef = useRef(null);
+  const [useCustomTitle, setUseCustomTitle] = useState(false);
+  const [backoffTitleName, setBackoffTitleName] = useState("");
 
   const productRefsSimple = useRef([]);
   const productRefsCircuit = useRef([]);
@@ -223,14 +225,14 @@ function DayEditDetailsPage() {
         description: 'Ademas de ser el nombre, podés editarlo apretando el botón.',
         target: () => document.getElementById('nameWeek'),
         placement: 'right',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
+        nextButtonProps: { children: 'Siguiente »' }
       },
       {
         title: 'Días de la semana',
         description: 'Estos son los dias que contiene la semana. Podes navegar entre ellos apretando en el día correspondiente.',
         target: () => document.getElementById('dias'),
         placement: 'right',
+        prevButtonProps: { children: '« Anterior' },
         nextButtonProps: { children: 'Siguiente »' }
       },
       {
@@ -255,7 +257,7 @@ function DayEditDetailsPage() {
         target: () => document.getElementById('eliminarDia'),
         placement: 'right',
         prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
+        nextButtonProps: { children: 'Siguiente »' }
       },
         {
         title: 'Añadir ejercicio',
@@ -263,7 +265,7 @@ function DayEditDetailsPage() {
         target: () => document.getElementById('addEjercicio'),
         placement: 'right',
         prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
+        nextButtonProps: { children: 'Siguiente »' }
       },
       {
         title: 'Añadir circuito',
@@ -271,7 +273,7 @@ function DayEditDetailsPage() {
         target: () => document.getElementById('addCircuit'),
         placement: 'right',
         prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
+        nextButtonProps: { children: 'Siguiente »' }
       },
       {
         title: 'Bloque de movilidad/activación',
@@ -279,7 +281,7 @@ function DayEditDetailsPage() {
         target: () => document.getElementById('movility'),
         placement: 'bottom',
         prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
+        nextButtonProps: { children: 'Siguiente »' }
       },
       {
         title: 'Bloque de entrada en calor',
@@ -287,23 +289,7 @@ function DayEditDetailsPage() {
         target: () => document.getElementById('warmup'),
         placement: 'bottom',
         prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
-      },
-      {
-        title: 'Sumar 1 serie ( general )',
-        description: 'Podés sumar una serie a todos los ejercicios del día correspondiente.',
-        target: () => document.getElementById('addSets'),
-        placement: 'top',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
-      },
-      {
-        title: 'Sumar 1 repetición ( general )',
-        description: 'Podés sumar una repetición a todos los ejercicios del día correspondiente.',
-        target: () => document.getElementById('addReps'),
-        placement: 'top',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: '¡Finalizar!' }
+        nextButtonProps: { children: 'Finalizar' }
       }
     ]);
   }, []);
@@ -327,50 +313,74 @@ function DayEditDetailsPage() {
 
   // =================== FUNCIONES PARA BACK OFF ===================
   const handleOpenBackoffOverlay = (e, index) => {
-    setEditingBackoffIndex(index);
-    const currentExercise = day[indexDay].exercises[index];
-    let currentBackoff = [{ sets: "", reps: "", peso: "" }];
-    if (currentExercise && typeof currentExercise.name === 'object') {
-      // Si existe el campo backoff y es un array, lo usamos. Sino dejamos el valor por defecto.
-      currentBackoff = Array.isArray(currentExercise.name.backoff)
-        ? currentExercise.name.backoff
-        : currentBackoff;
-    }
-    setBackoffData(currentBackoff);
-    backoffOverlayRef.current.toggle(e);
-  };
-  
-  const saveBackoffInternally = (data) => {
-    if (editingBackoffIndex === null) return;
+  setEditingBackoffIndex(index);
+  console.log(e, index)
+  const currentExercise = day[indexDay].exercises[index];
+  let currentBackoff = [{ sets: "", reps: "", peso: "" }];
 
-    const updated = [...day];
+  if (currentExercise && typeof currentExercise.name === 'object') {
+    // Back-off existente
+    currentBackoff = Array.isArray(currentExercise.name.backoff)
+      ? currentExercise.name.backoff
+      : currentBackoff;
+
+    // Título personalizado existente?
+    if (currentExercise.name.titleName) {
+      setUseCustomTitle(true);
+      setBackoffTitleName(currentExercise.name.titleName);
+    } else {
+      setUseCustomTitle(false);
+      setBackoffTitleName("");
+    }
+  }
+
     const ex = updated[indexDay].exercises[editingBackoffIndex];
     const rawName = ex.name;
 
-    const cleaned = data.filter(b => b.sets || b.reps || b.peso);
 
-    if (cleaned.length === 0) {
-      ex.name = typeof rawName === 'object' ? { ...rawName } : { name: rawName };
-      delete ex.name.backoff;
-    } else {
-      ex.name = typeof rawName === 'object'
-        ? { ...rawName, backoff: cleaned }
-        : { name: rawName, backoff: cleaned };
-    }
+ const saveBackoffInternally = (data) => {
+  if (editingBackoffIndex === null) return;
+  console.log(data)
+  const updated = [...day];
+  const ex = updated[indexDay].exercises[editingBackoffIndex];
+  const rawName = ex.name;
 
-    updated[indexDay].exercises[editingBackoffIndex] = ex;
-    setDay(updated);
-    setModifiedDay(updated);
-    setCurrentDay({ ...updated[indexDay] });
-    setIsEditing(true);
-  };
+  // Filtramos líneas vacías
+  const cleaned = data.filter(b => b.sets || b.reps || b.peso);
 
-  const handleSaveBackoff = () => {
-    saveBackoffInternally(backoffData);
-    backoffOverlayRef.current.hide();
-    setEditingBackoffIndex(null);
-    setBackoffData([{ sets: "", reps: "", peso: "" }]);
-  };
+  // Reconstruimos el objeto name
+  let nameObj = typeof rawName === 'object'
+    ? { ...rawName }
+    : { name: rawName };
+
+  // Si hay líneas de back-off, las adjuntamos; sino las eliminamos
+  if (cleaned.length > 0) nameObj.backoff = cleaned;
+  else delete nameObj.backoff;
+
+  // Si está tildado el custom title y no está vacío, lo guardamos
+  if (useCustomTitle && backoffTitleName.trim()) {
+    nameObj.titleName = backoffTitleName.trim();
+  } else {
+    delete nameObj.titleName;
+  }
+
+  ex.name = nameObj;
+  updated[indexDay].exercises[editingBackoffIndex] = ex;
+
+  setDay(updated);
+  setModifiedDay(updated);
+  setCurrentDay({ ...updated[indexDay] });
+  setIsEditing(true);
+};
+
+const handleSaveBackoff = () => {
+  saveBackoffInternally(backoffData);
+  backoffOverlayRef.current.hide();
+  setEditingBackoffIndex(null);
+  setBackoffData([{ sets: "", reps: "", peso: "" }]);
+  setUseCustomTitle(false);
+  setBackoffTitleName("");
+};
 
   const removeBackoffLine = (index) => {
     const updated = [...backoffData];
@@ -2110,64 +2120,94 @@ const hasBackoff = exercise => (
           />
         </Dialog>
 
-      <OverlayPanel ref={backoffOverlayRef} className={firstWidth>992?'w-25':'w-75'}>
-        <div className="p-3">
-          {backoffData.map((line, idx) => (
-            <div key={idx} className="row mb-2 align-items-end">
-              {["sets", "reps", "peso"].map((f) => (
-                <div key={f} className="col-3">
-                  <label>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
-                  <input
-                    type={f === "peso" || f === "reps" ? "text" : "number"}
-                    className="form-control"
-                    value={line[f]}
-                    onChange={(e) => {
-                      const arr = [...backoffData];
-                      arr[idx][f] = e.target.value;
-                      setBackoffData(arr);
-                      saveBackoffInternally(arr);
-                    }}
-                  />
-                </div>
-              ))}
-              <div className="col-3">
-                <IconButton
-                  aria-label="delete"
-                  className="mt-4"
-                  onClick={() => removeBackoffLine(idx)}
-                >
-                  <CancelIcon className="text-danger" />
-                </IconButton>
-              </div>
-            </div>
-          ))}
+      <OverlayPanel ref={backoffOverlayRef} className={firstWidth > 992 ? 'w-25' : 'w-75'}>
+  <div className="p-3">
+    {/* NUESTRO CHECKBOX */}
+    <div className="form-check mb-3">
+      <input
+        type="checkbox"
+        id="customTitleCheckbox"
+        className="form-check-input"
+        checked={useCustomTitle}
+        onChange={(e) => setUseCustomTitle(e.target.checked)}
+      />
+      <label htmlFor="customTitleCheckbox" className="form-check-label fontSizeNotBack">
+        No es un back off? Personalizá el nombre de la sección.
+      </label>
+    </div>
 
-          <div className="text-center mb-3">
-            <button
-              className="btn btn-outline-dark"
-              onClick={() => setBackoffData([...backoffData, { sets: '', reps: '', peso: '' }])}
-            >
-              Añadir línea
-            </button>
+    {/* SI ESTÁ TILDADO, MOSTRAMOS EL INPUT */}
+    {useCustomTitle && (
+      <div className="mb-3">
+        <label htmlFor="backoffTitleInput" className="form-label fontSizeNotBack">Título personalizado</label>
+        <input
+          id="backoffTitleInput"
+          type="text"
+          className="form-control"
+          value={backoffTitleName}
+          onChange={(e) => setBackoffTitleName(e.target.value)}
+          placeholder="Ingresá el nombre"
+        />
+      </div>
+    )}
+
+    {/* AQUÍ TU MAP DE backoffData (igual que antes) */}
+    {backoffData.map((line, idx) => (
+      <div key={idx} className="row mb-2 align-items-end">
+        {["sets", "reps", "peso"].map((f) => (
+          <div key={f} className="col-3">
+            <label>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
+            <input
+              type={f === "peso" || f === "reps" ? "text" : "number"}
+              className="form-control"
+              value={line[f]}
+              onChange={(e) => {
+                const arr = [...backoffData];
+                arr[idx][f] = e.target.value;
+                setBackoffData(arr);
+                saveBackoffInternally(arr);
+              }}
+            />
           </div>
-          <div className="text-center">
-            <button
-              className="btn btn-secondary me-2"
-              onClick={() => backoffOverlayRef.current.hide()}
-            >
-              Cerrar
-            </button>
-            <button className="btn btn-dark" onClick={handleSaveBackoff}>
-              Seguir editando
-            </button>
-          </div>
+        ))}
+        <div className="col-3">
+          <IconButton
+            aria-label="delete"
+            className="mt-4"
+            onClick={() => removeBackoffLine(idx)}
+          >
+            <CancelIcon className="text-danger" />
+          </IconButton>
         </div>
-      </OverlayPanel>
+      </div>
+    ))}
 
+    {/* Botones de añadir línea, cerrar y guardar */}
+    <div className="text-center mb-3">
+      <button
+        className="btn btn-outline-dark"
+        onClick={() => setBackoffData([...backoffData, { sets: "", reps: "", peso: "" }])}
+      >
+        Añadir línea
+      </button>
+    </div>
+    <div className="text-center">
+      <button
+        className="btn btn-secondary me-2"
+        onClick={() => backoffOverlayRef.current.hide()}
+      >
+        Cerrar
+      </button>
+      <button className="btn btn-dark" onClick={handleSaveBackoff}>
+        Seguir editando
+      </button>
+    </div>
+  </div>
+</OverlayPanel>
 
         </section>
       </div>
-    </>
+    </div>
   );
 }
 

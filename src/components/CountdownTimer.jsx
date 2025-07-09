@@ -68,27 +68,34 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
 
 
  const handleStartPause = e => {
-    e.stopPropagation();
-    if (isRunning) {
-      // Pausar
-      clearInterval(intervalRef.current);
-      setIsRunning(false);
-      remainingTimeRef.current = timeLeft;
-    } else {
-      // Si expiró o está detenido/pausado: arranco o reanudo
-      startTimestampRef.current = Date.now();
-      setIsRunning(true);
-      intervalRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTimestampRef.current) / 1000);
-        const updated = Math.max(remainingTimeRef.current - elapsed, 0);
-        setTimeLeft(updated);
-        if (updated === 0) {
-          clearInterval(intervalRef.current);
-          setIsRunning(false);
-        }
-      }, 1000);
-    }
-  };
+  e.stopPropagation();
+
+  // Si estamos “expired”, lo reiniciamos antes de arrancar
+  if (timeLeft === 0) {
+    remainingTimeRef.current = baseSeconds;   // o initialSeconds, lo que uses
+    setTimeLeft(baseSeconds);
+  }
+
+  if (isRunning) {
+    // Pausar…
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+    remainingTimeRef.current = timeLeft;
+  } else {
+    // Arrancar o reanudar…
+    startTimestampRef.current = Date.now();
+    setIsRunning(true);
+    intervalRef.current = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTimestampRef.current) / 1000);
+      const updated = Math.max(remainingTimeRef.current - elapsed, 0);
+      setTimeLeft(updated);
+      if (updated === 0) {
+        clearInterval(intervalRef.current);
+        setIsRunning(false);
+      }
+    }, 1000);
+  }
+};
 
   const handleReset = e => {
     e.stopPropagation();

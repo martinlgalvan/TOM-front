@@ -240,21 +240,6 @@ const handleSaveAll = async () => {
           </div>
 
           <div className="mb-3">
-            <p className="text-light small mb-1">Objetivo</p>
-            {goalOptions.map(opt => (
-              <div key={opt.value} className="form-check text-light small">
-                <input
-                  type="checkbox"
-                  className="form-check-input me-1"
-                  checked={filters.selects.goal === opt.value}
-                  onChange={() => handleSelectFilter('goal', opt.value)}
-                />
-                <label className="form-check-label">{opt.label}</label>
-              </div>
-            ))}
-          </div>
-
-          <div className="mb-3">
             <p className="text-light small mb-1">Nutrición</p>
             {nutricionOptions.map(opt => (
               <div key={opt.value.toString()} className="form-check text-light small">

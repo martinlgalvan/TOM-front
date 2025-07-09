@@ -51,7 +51,8 @@ import UserAnnouncementsPage from './components/UserAnnouncementsPage.jsx'
 import PaymentsManagerPage from './pages/coach/PaymentsManagerPage.jsx'
 
 import {
-  AlignJustify
+  AlignJustify,
+  User
 } from 'lucide-react';
 
 
@@ -68,6 +69,7 @@ function App() {
     const navigate = useNavigate()
     const id = localStorage.getItem('_id')
     const [user, setUser] = useState()
+    const [actualUser, setActualUser] = useState()
     const { color } = useColor();
     const { textColor } = useColor();
     const [status, setStatus] = useState()
@@ -96,8 +98,8 @@ function App() {
     }, []);
 
     useEffect(() => {
-        // Cada vez que cambie la ruta, por ahora no hacemos nada extra
-    }, [location]);
+        setActualUser(localStorage.getItem('actualUsername'))
+    }, [location.pathname]);
 
     useEffect(() => {
         if (isAutenticated) {
@@ -371,8 +373,17 @@ async function onLogin(user, token) {
             <nav className={`navbar navbar-expand-lg colorMainAll text-light fixed-top `}
                 >
                 <div className="container-fluid">
-                    <a className="navbar-brand text-light" href="/">TOM</a>
-                                    {isAdmin() && location.pathname != '/' && <button
+                    {isAdmin() && location.pathname == '/' || location.pathname == `/users/${id}` ?
+                    <a className="navbar-brand text-light btn btn-outline-light border me-2 ms-3 font1Em " href={`/users/${id}`}>TOM</a> :
+                        <button
+                            type="button"
+                            onClick={() => navigate(-1)}
+                            className="btn btn-outline-light border me-2 ms-3"
+                            >
+                            <User className="me-2" /> {actualUser}
+                            </button>
+}
+                                    {isAdmin() && location.pathname != '/'  && <button
                                     type="button"
                                     onClick={() => navigate(-1)}
                                     className="btn btn-outline-light border "
@@ -405,13 +416,6 @@ async function onLogin(user, token) {
                                 <li className="nav-item">
                                     <Link className={`nav-link text-light ${location.pathname === `/planificator/${id}` && 'active'}`} to={`/planificator/${id}`}>
                                         Planificador
-                                    </Link>
-                                </li>
-                            )}
-                            {isAdmin() && (
-                                <li className="nav-item">
-                                    <Link className={`nav-link text-light ${location.pathname === `/novedades/` && 'active'}`} to={`/novedades/`}>
-                                        Novedades
                                     </Link>
                                 </li>
                             )}

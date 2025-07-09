@@ -99,45 +99,33 @@ function UserRoutineEditPage() {
     useEffect(() => {
         setTourSteps([
             {
-                title: 'Alumno actual',
-                description: `Este es el nombre del alumno en el que te encontrás. Las semanas pertecenen a ${username}`,
-                target: () => document.getElementById('alumno'),
-                placement: 'top',
-                nextButtonProps: { children: 'Siguiente »' }
-            },
-            {
                 title: 'Switch de semana',
                 description: 'Este switch permite que crees las semanas de manera numérica ( semana 1, semana 2, etc..) o, la creación de semanas a partir de la fecha actual.',
                 target: () => document.getElementById('switchWeek'),
-                placement: 'top',
-                nextButtonProps: { children: 'Siguiente »' }
-            },
-            {
-                title: 'Perfil del alumno',
-                description: 'En este apartado encontrarás información de tu alumno, cuando rellene su perfil.',
-                target: () => document.getElementById('perfil'),
-                placement: 'top',
+                placement: 'right',
                 nextButtonProps: { children: 'Siguiente »' }
             },
             {
                 title: 'Resumen semanal',
                 description: 'Estos datos son rellenados por el alumno. La idea es que los llene semana a semana para poder trabajar con más información.',
                 target: () => document.getElementById('resumen'),
-                placement: 'top',
+                placement: 'right',
+                prevButtonProps: { children: '« Anterior' },
                 nextButtonProps: { children: 'Siguiente »' }
             },
               {
                 title: 'Devolución',
                 description: 'Este botón sirve para poder cargar la corrección al alumno. El la verá cuando entre a la sección de "Ver Rutina"',
                 target: () => document.getElementById('correcciones'),
-                placement: 'top',
+                placement: 'right',
                 nextButtonProps: { children: 'Siguiente »' }
             },
               {
                 title: 'Drive',
                 description: 'Cuando el usuario suba su link de drive, podrás ingresar a su carpeta. La idea es manejar los videos mediante este sistema, para que tengas todo centralizado.',
                 target: () => document.getElementById('drive'),
-                placement: 'top',
+                placement: 'right',
+                prevButtonProps: { children: '« Anterior' },
                 nextButtonProps: { children: 'Siguiente »' }
             },
             {
@@ -334,11 +322,6 @@ function UserRoutineEditPage() {
           <div className="d-flex flex-column  colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh', paddingTop: '50px' }}>
 
           <div className="p-3">
-            <div id={'alumno'} onClick={() => setShowProfileDialog(true)} className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3">
-              <div className=' col-1'><User /></div>
-              <div className='text-center col-10'><strong >{username}</strong></div>
-            </div>
-
             <div id={'switchWeek'} className="d-flex justify-content-between text-light bgItemsDropdown align-items-center 3">
               <span className="text-light mx-2 small d-flex align-items-center">
                 {useDate ? "Modo fecha" : "Modo numérico"}
@@ -452,9 +435,6 @@ function UserRoutineEditPage() {
           )}
 
           <div className="p-3 mb-3 text-center">
-            <div className="small text-light mb-2">
-              <strong>TOM</strong><br />Planificación digital
-            </div>
             <button className="btn btn-outline-light btn-sm" onClick={() => setTourVisible(true)}>
               <HelpCircle size={16} className="me-1" /> Ayuda
             </button>

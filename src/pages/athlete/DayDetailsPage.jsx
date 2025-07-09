@@ -442,6 +442,7 @@ const saveDriveLink = async () => {
     const productTemplate = useCallback((exercise, idx, isWarmup) => {
         const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 450;
         const cardMaxWidth = isSmallScreen ? '380px' : '400px';
+
         return (
             <div cla>
                 <div 
@@ -683,6 +684,12 @@ const saveDriveLink = async () => {
                               const isExercise = element.type === 'exercise';
                               const number     = element.numberExercise || element.numberCircuit;
                               const name       = typeof element.name === 'object' ? element.name.name : element.name;
+                              const backoffLabel = (
+                                element.name?.titleName
+                                && element.name.titleName.trim() !== ""
+                              )
+                                ? element.name.titleName
+                                : "Back off";
 
                               return (
                                 <div
@@ -763,7 +770,7 @@ const saveDriveLink = async () => {
                                     {/* — BACKOFF y NOTAS (idéntico en ambos casos) — */}
                                     {element.name?.backoff?.length > 0 && (
                                       <>
-                                        <span className="styleInputsNote-back">Back off</span>
+                                        <span className="styleInputsNote-back">{backoffLabel}</span>
                                         <div className="colorNote2 py-2 rounded-1 col-11 mb-2">
                                           {element.name.backoff.map((line,i) => (
                                             <p key={i} className="mb-0 ms-1">

@@ -145,6 +145,20 @@ p {
     border-bottom: 1px solid rgb(233, 233, 233);
   }
 
+  .fontSizeNotBack{
+    font-size: 0.8em;
+  }
+
+  .font1Em{
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+
+  .styleTableExercises{
+    background-color: #3f92f125;
+    border-radius: 20px;
+  }
+
   .userListTable{
       overflow-y: visible !important;
   }
@@ -190,11 +204,15 @@ p {
   }
 
   .stylesIconPointer{
-    font-size: 1.3em !important;
+    font-size: 2em !important;
   }
 
   .btn-bottom-nav {
   min-width: 100px;
+}
+
+.unstyledButton{
+  cursor:default !important;
 }
 
 .p-dialog-header, .p-dialog-content, .p-dialog-footer{
@@ -289,10 +307,34 @@ p {
   color: white;
 }
 
+.styleOrange {
+
+    cursor: pointer;
+    color: white;
+    font-size: 0.8em;
+    margin: auto !important;
+
+}
+
+.cooolor{
+  background: linear-gradient(to right, #f97316, #ef4444);
+  color: white;
+}
+
+.cooolor:hover{
+  background: linear-gradient(to right,#ef5e44 , #f95e16);
+  transition: 2200ms;
+  color: white;
+}
+
 .colorCardsExercises{
   background: linear-gradient(to right, #334155, #224069);
     border-radius: 10px 10px 00px 0px;
 
+}
+
+.GeneralTrExercises{
+  font-size: 0.9em !important;
 }
 
 .shadowCardsDayDetails{
@@ -1183,6 +1225,12 @@ font-weight: 550;
 .nnn div{
   min-height: 200px !important;
   font-size: 0.8em;
+}
+
+.thStyles{
+  color: #383838 !important;
+  font-weight: 600;
+  font-size: 0.9em;
 }
 
 .td-0{

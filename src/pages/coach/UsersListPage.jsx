@@ -334,7 +334,7 @@ const handleConfirmDelete = async () => {
               target: () => document.getElementById('crearAlumno'),
               placement: 'right',
               prevButtonProps: { children: '« Anterior' },
-              nextButtonProps: { children: 'Siguiente »' }
+              nextButtonProps: { children: '¡Finalizar! ' }
           }
       ]);
   }, []);
