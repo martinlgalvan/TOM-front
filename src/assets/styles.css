@@ -115,19 +115,97 @@ p {
     font-size: 0.85em !important;
   }
 
+  .fontSizeWeeks{
+    font-size: 0.8em;
+    color: #6b6b6b;
+  }
+
 
   .usersListTable td{
     text-align: center !important;
+
   }
 
-    .usersListTable th{
-    font-size: 1em;
+  .usersListTable td{
+    text-align: center !important;
+    padding: 15px;
+    
+  }
+
+  .itemHover:hover{
+    background-color: #007bff54;
+    cursor: pointer;
+  }
+
+    .usersListTable2 th{
+    font-size: 0.9em;
+    color: #929291;
+    
+
+  }
+
+    .usersListTable2 td{
+    text-align: center !important;
+  }
+
+  .usersListTable2 td{
+    text-align: start !important;
+    padding: 2px;
+  }
+
+  .itemHover:hover{
+    background-color: #007bff54;
+    cursor: pointer;
+  }
+
+    .usersListTable2 th{
+    font-size: 0.9em;
     color: #929191;
-    background-color: rgba(255, 255, 255, 0) !important;
+
   }
 
   .stylesDate{
     font-size: 0.9em !important;
+  }
+
+  .badgeFechas{
+    background-color: #007bff ;
+    padding: 5px;
+    border-radius: 20px;
+    margin-bottom: 5px;
+    font-size: 0.8em !important;
+    color: white;
+  }
+
+  .badgeFechas2{
+        background-color: #018351 ;
+    padding: 5px;
+    border-radius: 20px;
+    margin-bottom: 5px;
+    font-size: 0.8em !important;
+    color: white;
+  }
+
+  .colorNuevaSemana{
+  background: linear-gradient(to right, #061f3b, #0f2c4d );
+  color: white;
+  }
+
+  .colorNuevaSemana:hover, .colorSeguirSemana:hover, .colorPegarSemana:hover{
+    background: linear-gradient(to right, #ffffff, #ffffff );
+    border: 1px solid #000;
+    background-color: white;
+    color: dark;
+  }
+
+  .colorSeguirSemana{
+  background: linear-gradient(to right, #f97316, #ef4444);
+  color: white;
+  }
+
+  .colorPegarSemana{
+      background: linear-gradient(to right, #4e0545, #741564);
+      color: white;
   }
 
   .stylesHour{
@@ -586,15 +664,34 @@ font-weight: 550;
     border-radius: 90px;
     color: white;
   }
+  
+    .usersListTable2 .p-column-header-content{
+      text-align: start !important;
+      display: flex !important;
+      justify-content: start !important;
+      padding-left: 20px ;
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+
+  }
+
 
   .usersListTable .p-column-header-content{
     padding-top: 10px !important;
     padding-bottom: 10px !important;
+    text-align: start !important;
+  }
+
+    .usersListTable .p-column-header-content{
+    text-align: start !important;
+      display: flex !important;
+      justify-content: start !important;
+      padding-left: 20px ;
 
   }
 
-  .usersListTable tbody{
-    padding: 10px !important;
+  .userListTable{
+        text-align: start !important;
   }
 
   .ClassBGHover:hover{

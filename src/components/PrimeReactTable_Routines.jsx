@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import * as RoutineService from "../services/week.services.js";
 import * as BlockService from "../services/blocks.services.js";
@@ -25,8 +25,10 @@ export default function PrimeReactTable_Routines({ id, username, routine, setRou
   const [week_id, setWeek_id] = useState("");
   const [firstWidth, setFirstWidth] = useState(window.innerWidth);
   const [blocks, setBlocks] = useState([]);
+  const navigate = useNavigate();
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [trainer_id, setTrainer_id] = useState(localStorage.getItem("_id"));
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
 useEffect(() => {
   BlockService.getBlocks(trainer_id)
@@ -144,16 +146,16 @@ useEffect(() => {
   };
 
   const actionsTemplate = (routine) => (
-    <div>
-      <Link className="LinkDays" to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}>
+    <div className="row justify-content-start">
+      <Link className="LinkDays col-3" to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}>
         <IconButton aria-label="edit" className="btn p-2 my-1">
           <SquarePen className="ms-1 text-dark" />
         </IconButton>
       </Link>
-      <IconButton aria-label="copy" onClick={() => saveToLocalStorage(routine)} className="btn p-2 my-1">
+      <IconButton aria-label="copy" onClick={() => saveToLocalStorage(routine)} className="btn col-3">
         <Copy className="ms-1 text-dark" />
       </IconButton>
-      <IconButton aria-label="delete" onClick={() => deleteWeek(routine._id, routine.name)} className="btn p-2 my-1">
+      <IconButton aria-label="delete" onClick={() => deleteWeek(routine._id, routine.name)} className="btn col-3">
         <CircleX className="ms-1 text-danger" />
       </IconButton>
     </div>
@@ -196,23 +198,15 @@ useEffect(() => {
   const linksTemplate = (routine, e) => {
     if (id && e.field === "name") {
       return (
-        <Link className="LinkDays p-2 my-1 w-100" to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}>
+        <div className="text-start ms-3 ">
+        <Link className="LinkDays my-1 text-start" to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}>
           <b>{routine.name}</b>
         </Link>
-      );
-    } else if (id && e.field === "date") {
-      return (
-        <Link className="LinkDays p-2 my-1 w-100 text-center" to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}>
-          <span className=" stylesDate text-center">{routine.created_at.fecha}</span>
-        </Link>
-      );
-    } else if (id && e.field === "days") {
-      return (
-        <Link className="LinkDays p-2 my-1 w-100" to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}>
-          <span className="styleBadgeDays">{routine.routine.length}</span>
-        </Link>
+        <span className="d-block fontSizeWeeks">Haz click para entrar</span>
+        </div>
       );
     }
+   
   };
 
   const itemTemplate = (option) => {
@@ -227,9 +221,39 @@ useEffect(() => {
     return option.name;
   };
 
+const modificationTemplate = (rowData) => {
+  // Formatea ISO o, si no existe, usa created_at.fecha y hora
+  const fmtEntrenador = () => {
+    if (rowData.updated_at) {
+      return new Date(rowData.updated_at).toLocaleString();
+    }
+    const fecha = rowData.created_at?.fecha || '—';
+    const hora  = rowData.created_at?.hora  || '';
+    return `${fecha} ${hora}`.trim();
+  };
+
+  // Para el alumno, mostramos updated_user_at o guión si no hay
+  const fmtAlumno = () =>
+    rowData.updated_user_at
+      ? new Date(rowData.updated_user_at).toLocaleString()
+      : '—';
+
   return (
-    <div className="row justify-content-center">
-      <div className="col-12 mb-5">
+    <div className="text-start">
+      <div className="stylesDate mb-2 d-block">
+        <strong className="small">Entrenador:</strong>
+        <span className="ms-1 badgeFechas">{fmtEntrenador()}</span>
+      </div>
+      <div className="stylesDate d-block">
+        <strong className="small">Alumno:</strong>
+        <span className="ms-4 badgeFechas2">{fmtAlumno()}</span>
+      </div>
+    </div>
+  );
+};
+
+  return (
+    <div className="text-start">
         <DataTable
           className="usersListTable"
           paginator
@@ -237,14 +261,21 @@ useEffect(() => {
           value={routine}
           emptyMessage=" "
           scrollable={false}
+          selectionMode="single" selection={selectedProduct}
+          onSelectionChange={(routine) => navigate(`/routine/user/${id}/week/${routine.value._id}/day/${routine.value.routine[0]._id}/${username}`)}
         >
-          {firstWidth > 568 && <Column body={blockDropdownTemplate} field="block" header="Bloque" />}
-          <Column body={linksTemplate} field="name" header="Nombre" />
-          {firstWidth > 568 && <Column body={linksTemplate} field="date" header="Fecha" />}
-          {firstWidth > 568 && <Column body={linksTemplate} field="days" header="Días" />}
-          <Column body={actionsTemplate} field="acciones" header="Acciones" />
+          {firstWidth > 568 && <Column body={blockDropdownTemplate} style={{ width: '200px' }}  field="block" header="Bloque" />}
+          <Column   body={linksTemplate} field="name" header="Nombre"  />
+          {firstWidth > 768 && (
+            <Column 
+              body={modificationTemplate} 
+              header="Últ. vez modificado" 
+              style={{ width: '230px', padding:'0' }} 
+            />
+          )}
+          <Column  body={actionsTemplate} field="acciones" header="Acciones" style={{ width: '250px' }}  />
         </DataTable>
-      </div>
+
 
       <DeleteWeek
         visible={showDeleteWeekDialog}

@@ -208,6 +208,7 @@ const redirectToPerfil = () => {
     useEffect(() => {
       if (allDays.length && currentDay !== null) {
         setDay_id(allDays[currentDay]._id);
+        console.log(allDays[currentDay]._id)
         setModifiedDay(allDays[currentDay].exercises);
         setFirstValue(allDays[currentDay].name);
       }
@@ -562,7 +563,7 @@ const saveDriveLink = async () => {
 
             <section className="container-fluid p-0">
         
-               <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'bg-danger rounded-1 text-light' : ''}`}>
+               <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'alert alert-warning rounded-1 text-dark' : ''}`}>
                   <div className="d-flex justify-content-center align-items-center">
                     <IconButton
                       className="me-2"
@@ -591,8 +592,8 @@ const saveDriveLink = async () => {
                   </div>
 
                   {currentWeekIndex !== 0 && (
-                    <small className="d-block mt-1 mx-3 text-light">
-                      <span className="border rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. Tampoco podrás realizar ninguna edición en esta semana.
+                    <small className="d-block mt-1 mx-3 text-">
+                      <span className=" shadow rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. 
                     </small>
                   )}
                 </div>
@@ -820,7 +821,6 @@ const saveDriveLink = async () => {
                                       <IconButton
                                         id={idx===0?'edicion':null}
                                         aria-label="editar"
-                                        disabled={!isCurrentWeek}
                                         className="p-0 col-3"
                                         onClick={() => handleEditMobileExercise(element,idx)}
                                       >
@@ -958,8 +958,8 @@ const saveDriveLink = async () => {
                   {completeExercise && (
                     <div className="container-fluid">
                       {!isCurrentWeek && (
-                        <div className="alert alert-warning text-center">
-                          No podés editar ejercicios de semanas anteriores. Ingresá a la semana correspondiente para hacerlo.
+                        <div className="alert alert-warning text-center shadow">
+                          Recordá que estás en una semana anterior. No estás en la última semana designada por tu entrenador.
                         </div>
                       )}
                       <div className="row">

@@ -5,7 +5,7 @@ import {
   Box, Chip, IconButton, Typography, Button, Divider, useMediaQuery, Checkbox
 } from '@mui/material';
 import {
-  Edit, Save, Cancel, FilterList
+  Edit, Save, Cancel, FilterList, SortByAlpha
 } from '@mui/icons-material';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
@@ -151,21 +151,39 @@ const handleSaveAll = async () => {
   const filteredRows = () => {
     let result = [...rows];
     const { name } = filters.text;
-    const { goal, method, isPaid } = filters.selects;
-    if (name) result = result.filter(r => r.name.toLowerCase().includes(name.toLowerCase()));
-    if (goal !== null) result = result.sort((a, b) => (a.payment_goal === goal ? -1 : b.payment_goal === goal ? 1 : 0));
-    if (method !== null) result = result.sort((a, b) => (a.payment_method === method ? -1 : b.payment_method === method ? 1 : 0));
-    if (isPaid !== null) result = result.sort((a, b) => (a.isPaid === isPaid ? -1 : b.isPaid === isPaid ? 1 : 0));
+    const { goal, method, isPaid, nutricion, plan } = filters.selects;
+
+    if (name) {
+      result = result.filter(r => r.name.toLowerCase().includes(name.toLowerCase()));
+    }
+    if (nutricion !== null) {
+      result = result.filter(r => r.nutricion === nutricion);
+    }
+    if (plan !== null) {
+      result = result.filter(r => r.plan === plan);
+    }
+    // Para selects que aplican ordering
+    if (goal !== null) {
+      result = result.sort((a, b) => (a.payment_goal === goal ? -1 : b.payment_goal === goal ? 1 : 0));
+    }
+    if (method !== null) {
+      result = result.sort((a, b) => (a.payment_method === method ? -1 : b.payment_method === method ? 1 : 0));
+    }
+    if (isPaid !== null) {
+      result = result.sort((a, b) => (a.isPaid === isPaid ? -1 : b.isPaid === isPaid ? 1 : 0));
+    }
+    // Orden por cualquier campo
     if (sortField) {
       result.sort((a, b) => {
         const x = a[sortField];
         const y = b[sortField];
-        return sortAsc ? String(x).localeCompare(String(y)) : String(y).localeCompare(String(x));
+        return sortAsc
+          ? String(x).localeCompare(String(y))
+          : String(y).localeCompare(String(x));
       });
     }
     return result;
   };
-
     const activeFilterChips = [];
   if (filters.text.name) activeFilterChips.push({ label: `Nombre: ${filters.text.name}` });
   if (filters.selects.isPaid !== null) {
@@ -316,7 +334,32 @@ const handleSaveAll = async () => {
           <table className='table align-middle table-bordered text-center'>
             <thead className='table-light'>
               <tr>
-                <th style={{ width: '10%' }}>Nombre</th>
+                <th style={{ width: '10%' }}>
+                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                    Nombre
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        // Si no está ordenado por nombre, iniciamos A→Z
+                        if (sortField !== 'name') {
+                          setSortField('name');
+                          setSortAsc(true);
+                        } else {
+                          // Si ya estaba en 'name', invertimos la dirección
+                          setSortAsc(prev => !prev);
+                        }
+                      }}
+                      // (Opcional) rotar el icono cuando esté Z→A
+                      sx={{
+                        transform: sortField === 'name' && !sortAsc
+                          ? 'rotate(180deg)'
+                          : 'none'
+                      }}
+                    >
+                      <SortByAlpha fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </th>
                 <th style={{ width: '0%' }}>Estado</th>
                 <th style={{ width: '0%' }}>Método</th>
                 <th style={{ width: '16%' }}>Fecha</th>

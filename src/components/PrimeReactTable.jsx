@@ -108,7 +108,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
       user.name.toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase())
     );
-  
+
     // Orden por categoría (si aplica)
     if (sortField === 'category' || !sortField) {
       filtered.sort((a, b) => {
@@ -144,14 +144,6 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
     setFilteredUsers(filtered);
   }, [searchText, users, sortField, sortOrder, categoryFilterIndex, categoryOrder]);
 
-  useEffect(() => {
-    setFirst(0);
-    try {
-      localStorage.setItem('userCurrentPage', '0');
-    } catch (err) {
-      console.warn('Error al resetear página en localStorage:', err);
-    }
-  }, [searchText, sortField, sortOrder, categoryFilterIndex]);
 
   useEffect(() => {
     const handleResize = () => setWidthPage(window.innerWidth);
@@ -260,19 +252,19 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
     let backgroundColor;
     switch (category) {
       case 'Alumno casual':
-        backgroundColor = '#C8E6C9';
+        backgroundColor = '#53b900';
         break;
       case 'Alumno dedicado':
-        backgroundColor = '#BBDEFB';
+        backgroundColor = '#006eff';
         break;
       case 'Atleta iniciante':
-        backgroundColor = '#FFECB3';
+        backgroundColor = '#ca7900';
         break;
       case 'Atleta avanzado':
-        backgroundColor = '#FFCDD2';
+        backgroundColor = '#a30000';
         break;
       default:
-        backgroundColor = '#f5f5f5';
+        backgroundColor = '#929191';
     }
     return { backgroundColor, borderRadius: '8px', padding: '2px 4px', fontSize: '0.8rem' };
   };
@@ -287,8 +279,9 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
     } else if (e.field === 'category') {
       return (
         <div 
+        className={'p-2'}
           onClick={() => openProfileDialog(user)}
-          style={{ cursor: 'pointer', ...getCategoryStyle(user.category) }}
+          style={{ cursor: 'pointer', ...getCategoryStyle(user.category), color:'white', width: '200px' }}
         >
           {user.category || '-'}
         </div>
@@ -445,7 +438,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
       <div className='col-12 col-sm-10 m-0 mb-5 fontUserList'>
         <DataTable 
           emptyMessage=" " 
-          className='usersListTable alignDatatable pt-0' 
+          className='usersListTable2 alignDatatable pt-0' 
           paginator 
           rows={10} 
           first={first}
@@ -495,6 +488,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
 <Column 
   body={linksTemplate}
   field="category"
+  style={{width:'200px'}}
   header={
     <div className="d-flex align-items-center justify-content-center">
       <span className='me-2'>Categoría</span>
@@ -505,10 +499,10 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
         style={{
           cursor: 'pointer',
           backgroundColor: headerCategoryStyle.backgroundColor,
-          color: headerCategoryStyle.color || '#000',
+          color: headerCategoryStyle.color || 'white',
           border: 'none',
           borderRadius: '8px',
-          padding: '2px 6px',
+          padding: '3px 6px',
           fontSize: '0.8rem'
         }}
       >

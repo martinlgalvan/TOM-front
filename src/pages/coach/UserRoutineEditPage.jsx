@@ -483,10 +483,10 @@ function UserRoutineEditPage() {
                             </>
                     
                     </div>) :
-                    <div className="row justify-content-around mb-5 mt-5 ">
-                      <button id={'week0'} onClick={createWeek} className="btn bgItemsDropdown btn-sm col-3"><CalendarPlus size={16} className="me-2" /> Nueva semana</button>
-                      <button id='continueWeek' onClick={createWeekCopyLastWeek} className="btn bgItemsDropdown btn-sm col-3"><Repeat size={16} className="me-2" /> Seguir semana</button>
-                      <button id='paste' onClick={loadFromLocalStorage} className="btn bgItemsDropdown btn-sm col-3"><ClipboardCopy size={16} className="me-2" /> Pegar semana</button>
+                    <div className="row justify-content-around mb-3 mt-2 ">
+                      <button id={'week0'} onClick={createWeek} className="btn colorNuevaSemana py-3 mx-1 col-3"><CalendarPlus size={16} className="me-2" /> Nueva semana</button>
+                      <button id='continueWeek' onClick={createWeekCopyLastWeek} className="btn colorSeguirSemana py-3 mx-1 col-3"><Repeat size={16} className="me-2" /> Seguir semana</button>
+                      <button id='paste' onClick={loadFromLocalStorage} className="btn colorPegarSemana py-3 mx-1 col-3"><ClipboardCopy size={16} className="me-2" /> Pegar semana</button>
                     </div>
             }
 
@@ -502,7 +502,7 @@ function UserRoutineEditPage() {
                     )}
 
 
-                    <div className='col-12 col-xl-10'>
+                    <div className='col-12'>
                         <div className='row justify-content-center'>
                             <PrimeReactTable_Routines
                                 id={id}
