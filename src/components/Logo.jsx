@@ -3,7 +3,7 @@ import {useState, useEffect} from 'react'
 import BackgroundLogo from '/src/assets/img/backgroundLogo.png'
 
 import TOM from '/src/assets/img/TOM.png';
-import JESUSOLIVA from '/src/assets/img/jesus-logo.jpeg';
+import JESUSOLIVA from '/src/assets/img/Jesusoliva-old.png';
 import POWERHOUSE from '/src/assets/img/Powerhouse.png';
 import RAMABELTRAME from '/src/assets/img/RB.png';
 import ARIELBRUNO from '/src/assets/img/ariel-logo.png';
