@@ -247,6 +247,20 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
       });
   };
 
+  const formatCategory = (category) => {
+  if (!category) return '-';
+
+  let displayText = category;
+
+  if (widthPage <= 600) {
+    const parts = category.split(' ');
+    displayText = parts.length > 1 ? parts[1] : parts[0];
+  }
+
+  // Capitalizar primera letra
+  return displayText.charAt(0).toUpperCase() + displayText.slice(1);
+};
+
   // Función para asignar estilos a la categoría (versión "chica")
   const getCategoryStyle = (category) => {
     let backgroundColor;
@@ -281,9 +295,9 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
         <div 
         className={'p-2'}
           onClick={() => openProfileDialog(user)}
-          style={{ cursor: 'pointer', ...getCategoryStyle(user.category), color:'white', width: '200px' }}
+          style={{ cursor: 'pointer', ...getCategoryStyle(user.category), color:'white', width: widthPage > 600 ? '200px' : '74px'}}
         >
-          {user.category || '-'}
+            {formatCategory(user.category)}
         </div>
       );
     } else {
@@ -485,7 +499,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
             />
           )}
 
-<Column 
+{widthPage > 600 && ( <Column 
   body={linksTemplate}
   field="category"
   style={{width:'200px'}}
@@ -511,7 +525,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
     </div>
   }
   className='columnEmail'
-/>
+/>)}
 
           <Column body={actionsTemplate} header="Acciones" className='columnActions' />
         </DataTable>

@@ -601,10 +601,18 @@ const saveDriveLink = async () => {
                   {allDays.length > 0 && (
                     <div className="text-center my-3">
                       <Segmented
-                        options={allDays.map((day) => ({
-                          label: day.name,
-                          value: day._id
-                        }))}
+                        options={allDays.map(day => {
+                          const name = day.name || '';
+                          const short = name.length > 6 ? `${name.slice(0, 5)}` : name;
+                          return {
+                            value: day._id,
+                            label: (
+                              <span title={name} style={{ display: 'inline-block', maxWidth: '8ch', maxHeight: '2.3ch', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {short}
+                              </span>
+                            )
+                          };
+                        })}
                         className="stylesSegmented"
                         value={day_id}
                         onChange={handleDayChange}
@@ -614,7 +622,7 @@ const saveDriveLink = async () => {
 
                 {currentDay !== null && (
                 <div className="row align-items-center text-center m-0 px-1 my-5">
-                    <h2 className="text-center mb-4">
+                    <h2 className="text-center mb-4 colorNameAlumno rounded-2 fs-5 py-2">
                         {allDays[currentDay]?.name}
                     </h2>
 

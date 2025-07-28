@@ -18,6 +18,7 @@ import FRANCO from '/src/assets/img/Franco.jpeg';
 import SOL from '/src/assets/img/SvStrong.jpeg';
 import MARTIN_CASANOVA from '/src/assets/img/MartinCasanova.png';
 import MACARENA from '/src/assets/img/Macarena.png';
+import LEO_BURGIO from '/src/assets/img/Leo_burgio.png';
 
 function Logo({isHomePage}){
 
@@ -54,6 +55,8 @@ function Logo({isHomePage}){
         setUrlPath(MARTIN_CASANOVA)
     } else if(localStorage.getItem('email') == "Macarena.entrenadora@gmail.com" || localStorage.getItem('entrenador_id') == "6862c3af1d409eaa2904b82a"){
         setUrlPath(MACARENA)
+    }else if(localStorage.getItem('email') == "Leoburgio98@gmail.com" || localStorage.getItem('entrenador_id') == "68817363470317ec333efe3d"){
+        setUrlPath(LEO_BURGIO)
     }else{
         setUrlPath(TOM)
     }

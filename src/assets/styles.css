@@ -137,6 +137,10 @@ p {
     cursor: pointer;
   }
 
+  .colorNameAlumno{
+    background-color: #e2e0e0;
+  }
+
     .usersListTable2 th{
     font-size: 0.9em;
     color: #929291;
@@ -683,7 +687,7 @@ font-weight: 550;
   }
 
     .usersListTable .p-column-header-content{
-    text-align: start !important;
+      text-align: start !important;
       display: flex !important;
       justify-content: start !important;
       padding-left: 20px ;

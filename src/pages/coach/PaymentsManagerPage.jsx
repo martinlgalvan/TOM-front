@@ -27,7 +27,7 @@ const methodOptions = ['Transferencia', 'Efectivo', 'Otro'].map(m => ({ label: m
 
 const goalOptions = [
   'Salud', 'Estetica', 'Powerlifting', 'BJJ', 'MMA',
-  'Basquet', 'Futbol', 'Boxeo', 'Danza'
+  'Basquet', 'Futbol', 'Boxeo', 'Danza', 'Bodybuilding'
 ].map(g => ({ label: g, value: g }));
 
 const goalsColors = {
@@ -147,6 +147,13 @@ const handleSaveAll = async () => {
       }
     }));
   };
+
+  const calculateTotalAmount = () => {
+  return filteredRows().reduce((acc, r) => {
+    const val = parseFloat(r.payment_amount);
+    return !isNaN(val) ? acc + val : acc;
+  }, 0);
+};
 
   const filteredRows = () => {
     let result = [...rows];
@@ -411,12 +418,20 @@ const handleSaveAll = async () => {
 </td>
                     <td style={{ width: '0%' }}>{isEditing ? <Dropdown className='w-100' value={edited.payment_method} options={methodOptions} onChange={(e) => handleEditChange(row._id, 'payment_method', e.value)} /> : row.payment_method}</td>
                     <td style={{ width: '16%' }}>{isEditing ? <Calendar className='w-100 text-center' value={edited.payment_date} onChange={(e) => handleEditChange(row._id, 'payment_date', e.value)} dateFormat="yy-mm-dd" showIcon /> : (row.payment_date ? new Date(row.payment_date).toLocaleDateString() : '')}</td>
-                    <td style={{ widt: '12%' }}>{isEditing ? (
-  <div className="">
-
-    <InputText className='form-control text-center' value={edited.payment_amount} onChange={(e) => handleEditChange(row._id, 'payment_amount', e.target.value)} />
-  </div>
-) : `$${row.payment_amount}`}</td>
+                    <td style={{ widt: '12%' }}>
+  {isEditing ? (
+    <div>
+      <InputText
+        className='form-control text-center'
+        value={edited.payment_amount}
+        onChange={(e) => {
+          const cleanedValue = e.target.value.replace(/[^0-9.]/g, '');
+          handleEditChange(row._id, 'payment_amount', cleanedValue);
+        }}
+      />
+    </div>
+  ) : `$${row.payment_amount}`}
+</td>
                     <td style={{ width: '8%' }}>{isEditing ? <Dropdown className='w-100' value={edited.payment_goal} options={goalOptions} onChange={(e) => handleEditChange(row._id, 'payment_goal', e.value)} /> : <Chip label={row.payment_goal} color={goalsColors[row.payment_goal] || 'default'} />}</td>
                   <td style={{ width: '8%' }}>
   {isEditing ? (
@@ -455,6 +470,15 @@ const handleSaveAll = async () => {
                 );
               })}
             </tbody>
+<tfoot>
+  <tr>
+    <td colSpan={4}></td>
+    <td className="fw-bold text-center">
+      Total: ${calculateTotalAmount().toFixed(2)}
+    </td>
+    <td colSpan={3}></td>
+  </tr>
+</tfoot>
           </table>
         </div>
       </Box>

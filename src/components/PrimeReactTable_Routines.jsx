@@ -145,17 +145,19 @@ useEffect(() => {
     return yiq >= 150 ? 'black' : 'white';
   };
 
+    const goToPage = (routine, day,) => {
+      navigate(`/routine/user/${id}/week/${routine}/day/${day}/${username}`)
+    };
+
   const actionsTemplate = (routine) => (
-    <div className="row justify-content-start">
-      <Link className="LinkDays col-3" to={`/routine/user/${id}/week/${routine._id}/day/${routine.routine[0]._id}/${username}`}>
-        <IconButton aria-label="edit" className="btn p-2 my-1">
+    <div className="row justify-content-center">
+        <IconButton aria-label="edit" className="btn col-4" onClick={() => goToPage(routine._id,routine.routine[0]._id)}>
           <SquarePen className="ms-1 text-dark" />
         </IconButton>
-      </Link>
-      <IconButton aria-label="copy" onClick={() => saveToLocalStorage(routine)} className="btn col-3">
+      <IconButton aria-label="copy" onClick={() => saveToLocalStorage(routine)} className="btn col-4">
         <Copy className="ms-1 text-dark" />
       </IconButton>
-      <IconButton aria-label="delete" onClick={() => deleteWeek(routine._id, routine.name)} className="btn col-3">
+      <IconButton aria-label="delete" onClick={() => deleteWeek(routine._id, routine.name)} className="btn col-4">
         <CircleX className="ms-1 text-danger" />
       </IconButton>
     </div>
@@ -265,7 +267,7 @@ const modificationTemplate = (rowData) => {
           onSelectionChange={(routine) => navigate(`/routine/user/${id}/week/${routine.value._id}/day/${routine.value.routine[0]._id}/${username}`)}
         >
           {firstWidth > 568 && <Column body={blockDropdownTemplate} style={{ width: '200px' }}  field="block" header="Bloque" />}
-          <Column   body={linksTemplate} field="name" header="Nombre"  />
+          <Column body={linksTemplate} field="name" header="Nombre" style={{ width: '180px' }}  />
           {firstWidth > 768 && (
             <Column 
               body={modificationTemplate} 
@@ -273,7 +275,7 @@ const modificationTemplate = (rowData) => {
               style={{ width: '230px', padding:'0' }} 
             />
           )}
-          <Column  body={actionsTemplate} field="acciones" header="Acciones" style={{ width: '250px' }}  />
+          <Column  body={actionsTemplate} field="acciones" header="Acciones"   />
         </DataTable>
 
 
