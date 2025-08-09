@@ -21,7 +21,7 @@ import MARTIN_CASANOVA from '/src/assets/img/MartinCasanova.png';
 import MACARENA from '/src/assets/img/Macarena.png';
 import LEO_BURGIO from '/src/assets/img/Leo_burgio.png';
 import VALU_MARCHE from '/src/assets/img/Valu_marche.png';
-import AGUSTIN_ARENAS from '/src/assets/img/Agustin_Arenas.png';
+import AGUSTIN_ARENAS from '/src/assets/img/Agustin_arenas.png';
 
 function LogoChico({isHomePage}){
 
@@ -43,8 +43,8 @@ function LogoChico({isHomePage}){
     } else if(localStorage.getItem('email') == "matuch_27@hotmail.com" || localStorage.getItem('entrenador_id') == "66156628e97c68ef705f451f"){
         setUrlPath(MATIAS_VILLALBA)
     } else if(localStorage.getItem('email') == "matiasvill83@gmail.com" || localStorage.getItem('entrenador_id') == "65285e48af829c334f96e695"){
-        setUrlPath(MATIAS_VILLALBA_PERSONAL)}
-    else if(localStorage.getItem('email') == "alexisdalessandrod@gmail.com" || localStorage.getItem('entrenador_id') == "67f84082c3514ac86837bddf"){
+        setUrlPath(MATIAS_VILLALBA_PERSONAL)
+    } else if(localStorage.getItem('email') == "alexisdalessandrod@gmail.com" || localStorage.getItem('entrenador_id') == "67f84082c3514ac86837bddf"){
         setUrlPath(PITBULL)}
     else if(localStorage.getItem('email') == "mauricioarraztoa@gmail.com" || localStorage.getItem('entrenador_id') == "672d05cd7fa16a4779fe6135"){
         setUrlPath(TORETTO_GYM)

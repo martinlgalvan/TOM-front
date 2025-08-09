@@ -21,7 +21,7 @@ import MARTIN_CASANOVA from '/src/assets/img/MartinCasanova.png';
 import MACARENA from '/src/assets/img/Macarena.png';
 import LEO_BURGIO from '/src/assets/img/Leo_burgio.png';
 import VALU_MARCHE from '/src/assets/img/Valu_marche.png';
-import AGUSTIN_ARENAS from '/src/assets/img/Agustin_Arenas.png';
+import AGUSTIN_ARENAS from '/src/assets/img/Agustin_arenas.png';
 
 function Logo({isHomePage}){
 
