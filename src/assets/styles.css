@@ -254,11 +254,75 @@ p {
   }
 
   .bgItemsDropdown{
-    background-color: #0d2744;
-    border: 1px solid #041324;
+    background-color: #111827;
     padding: 5px;
-    border-radius: 90px;
+    border-radius: 5px;
     color: white;
+        cursor: pointer;
+  }
+
+
+  .badgeMovility{
+    color: #007bff;
+    font-size: 0.6em !important;
+  }
+
+  .badgeWarmup{
+    color: #09a709;
+    font-size: 0.6em !important;
+  }
+
+  .stylesSpanBloqs{
+    margin-top: 3px;
+    margin-left: 2px;
+    font-size: 0.75em;
+    color: #e4e4e4;
+  }
+
+  .stylesSpanTitles{
+    font-size: 0.95em !important;
+  }
+
+  .style1Item{
+    font-size: 0.8em;
+    background-color: #f5f5f5;
+  }
+
+  .fontBadgePlus{
+    font-size: 1.5em !important;
+  }
+
+  .fontInfo{
+    font-size: 1.4em !important;
+    margin-left: 5px;
+  }
+
+  .colorAproximations{
+    font-size: 0.75em;
+    color: #01356d;
+    background-color: #007bff5d;
+  }
+
+  .colorBackOff{
+    font-size: 0.75em;
+    color: #0e4601;
+    background-color: #33ff0054;
+  }
+
+  .iconSuccess{
+    font-size: 1em !important;
+  }
+
+  .p-selectbutton{
+    display: flex !important;
+  }
+
+  .p-button-group{
+ display: flex !important;
+  }
+
+  .iconsAproximations{
+    font-size: 1.5em !important;
   }
 
   .stylePointer{
@@ -501,6 +565,13 @@ font-weight: 550;
   border: 1px;
   margin: 0 20px;
 }
+
+.colorNote3{
+  background: linear-gradient(to right, #b5acff7e, #a595ff3d);
+  border: 1px;
+  margin: 0 20px;
+}
+
 
 .textNotesA{
   font-size: 0.9em;
@@ -1073,17 +1144,6 @@ font-weight: 550;
 }
 
 
-
-.input-number-container input{
-  height: 100% ;
-  border-left: 0 ;
-  border-right: 0 ;
-  align-items: center ;
-  text-align: center ;
-  line-height: normal ;
-
-}
-
 .colorIconYoutube{
   color: rgb(221, 28, 28) !important;
 }
@@ -1170,8 +1230,7 @@ font-weight: 550;
 
 .input-number-container .buttonRight:hover,
 .input-number-container .buttonLeft:hover{
-  background-color: rgba(240, 240, 240, 0.356);
-  color: #000000;
+  background-color: rgb(9, 48, 99);
 }
 
 .input-number-container .buttonLeft[disabled],
@@ -1187,8 +1246,8 @@ font-weight: 550;
   color: #92969a;
 }
 
-.inputFontSize{
-  font-size: 2.9em;
+.fontInputCustomNumber{
+  font-size: 2.6em;
 }
 
 .colorDisabled{
@@ -1335,47 +1394,46 @@ font-weight: 550;
 }
 
 .td-0{
-  min-width: 50px !important;
+  max-width: 12px !important;
 }
 
 .td-1{
-  min-width: 10px !important;
+  max-width: 1% !important;
 
 }
 
 .td-2{
-  min-width: 170px !important;
-  max-width: 190px !important;
+  max-width: 20% !important;
 }
 
 .td-3{
-  min-width: 10px !important;
+  max-width: 0 !important;
 }
 
 .td-4{
-  min-width: 120px !important;
-  max-width: 150px !important;
+
+  max-width: 20% !important;
 }
 
 .td-5{
-  min-width: 75px !important;
-  max-width: 110px !important;
+
+  max-width: 10% !important;
 }
 
 .td-6{
-  min-width: 80px !important;
+  max-width: 15% !important;
 }
 
 .td-7{
-  min-width: 10px !important;
+  max-width: 5% !important;
 }
 
 .td-8{
-  min-width: 150px  !important;
+  max-width: 30%  !important;
 }
 
 .td-9{
-  min-width: 60px  !important;
+  max-width: 5%  !important;
 }
 
 .colorPencil{
@@ -1739,38 +1797,44 @@ input[type="number"] {
   flex-direction: row !important;
   font-size: 0.4em;
   justify-content: center !important;
-  height: 30px;
+  height: 24px;
 }
 
 .input-number-container input {
-width: 50px;
+width: 33px;
+padding: 0 5px;
 }
 
 
 .input-number-container .buttonRight {
   height: 100%;
-  width: 35px;
-  border-radius: 5px 0px 0px 5px;
+  width: 30px;
+  border-radius: 7px 0px 0px 7px;
   border-top: none;
   border-bottom: none;
   border-left: none;
   color: #fff;
-  background-color: black;
+  background-color: #081b33;
   border: none;
   cursor: pointer;
 }
 
 .input-number-container .buttonLeft {
   height: 100%;
-  width: 35px;
-  border-radius: 0px 5px 5px 0px;
+  width: 28px;
+  border-radius: 0px 7px 7px 0px;
   border-top: none;
   border-bottom: none;
   border-left: none;
   color: #fff;
-  background-color: black;
+  background-color: #081b33;
   border: none;
   cursor: pointer;
+}
+
+.fontIconsButtonsInputNumber{
+  font-size: 0.7em !important;
+  font-weight: 700;
 }
 
 .largoInput{
@@ -1784,14 +1848,35 @@ width: 50px;
 }
 
 .largoIconYt{
-  font-size: 32px !important;
+  font-size: 1em !important;
 }
 
 .marginDropDown{
   margin-left: 3px;
 }
 
+.fontThStyles{
+  font-size: 0.8em !important;
+  font-weight: 600;
+}
 
+.styleInputBackOffs{
+  padding: 2px 5px !important;
+  width: 55px !important;
+  font-size: 0.9em !important;
+}
+
+.fs09em{
+  font-size: 0.9em !important;
+}
+
+.fs08em{
+  font-size: 0.8em !important;
+}
+
+.fs07em{
+  font-size: 0.7em !important;
+}
 
 .largoo{
  
@@ -1995,6 +2080,10 @@ width: 50px;
   margin-left: 6px !important;
 }
 
+.shadow-personalized{
+  box-shadow: rgba(0, 0, 0, 0.205) 1px 1px 11px 1px;
+}
+
 
 
 .styleInputsParaph{
@@ -2088,13 +2177,53 @@ width: 50px;
   margin-left: 170px;
 }
 
+.p-autocomplete-input{
+  width: 200px !important;
+}
+
 .fontBackOff{
 font-size: 0.9em;
 }
 
-.styleSelectButton .p-button{
-  width: 100%;
+.fontAddIconMultiple{
+font-size: 0.9em !important;
 }
+
+.stylePesoInput{
+  height: 25px;
+  font-size: 0.95em;
+  width: 100px;
+}
+
+.stylePesoInputMobile{
+  height: 25px;
+}
+
+.styleNameInput{
+  height: 30px;
+  font-size: 1em;
+  width: 99%;
+}
+
+.styleSelectButton .p-button .p-button-label{
+  width: 1px !important;
+}
+
+.largoTextMode{
+  display: flex !important;
+  flex-direction: row !important;
+  font-size: 0.4em;
+  justify-content: center !important;
+  height: 24px;
+  width: 100px;
+}
+
+
+/*.styleSelectButton .p-button{
+  width: 100%;
+}*/
+
+/* ========================================================================= ACA CAMBIE ESTA PROP CHEQUEAR SI NO MODIFICO NADA */
 
 .paddingDialog{
   border: 0;
@@ -2412,7 +2541,7 @@ font-size: 0.9em;
 }
 
 .marginRepsNew{
-  margin-top: 37px;
+  margin-top: 7px;
 }
 
 
@@ -3384,6 +3513,12 @@ input:checked + .slider:before {
   display: none;
 }
 
+.rs-picker input{
+  height: 24px;
+  font-size: 0.95em;
+  border: 0;
+}
+
 .rs-btn-close{
   display: none;
 }
@@ -3509,49 +3644,12 @@ input:checked + .slider:before {
     display: none;
   }
 
-  .input-number-container {
-    font-size: 0.4em;
-    width: 140px;
-  }
 
-  .input-number-container {
-    display: flex !important;
-    flex-direction: row !important;
-    font-size: 0.4em;
-    justify-content: center !important;
-    height: 30px;
-  }
 
-  .input-number-container input {
-width: 50px;
-  }
 
-  .input-number-container .buttonRight {
-    height: 100%;
-    width: 40px;
-    border-radius: 15px 0px 0px 15px;
-    border-top: none;
-    border-bottom: none;
-    border-left: none;
-    color: #ffffff;
-    background-color: black;
-    border: none;
-    cursor: pointer;
-  }
+ 
   
-  .input-number-container .buttonLeft {
-    height: 100%;
-    width: 40px;
-    border-radius: 0px 15px 15px 0px;
-    border-top: none;
-    border-bottom: none;
-    border-left: none;
-    color: #fff;
-    background-color: black;
-    border: none;
-    cursor: pointer;
-  }
-  
+
 }
 
 .colorMain{
@@ -3559,7 +3657,7 @@ width: 50px;
 }
 
 .marginSidebarOpen{
-  margin-left: 200px !important;
+  margin-left: 220px !important;
 }
 
 .marginSidebarClosed{
@@ -3597,7 +3695,7 @@ width: 50px;
 
 @media screen and (min-width: 1700px ) {
   .td-6{
-    width: 60px !important;
+    width: 74px !important;
   }
 }
 
@@ -3785,10 +3883,6 @@ width: 50px;
   max-width: 45px;
 }
 
-.input-number-container{
-  display: block;
-
-}
 
 }
 

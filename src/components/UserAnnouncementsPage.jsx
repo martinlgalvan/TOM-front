@@ -71,17 +71,17 @@ function UserAnnouncementsPage() {
 
             {selected && (
                 <Dialog header={selected.title} visible={dialogVisible} onHide={() => setDialogVisible(false)}>
-                    <p style={{ whiteSpace: "pre-line" }}>{selected.message}</p>
+                    <p className="text-light border p-3 rounded-1" style={{ whiteSpace: "pre-line" }}>{selected.message}</p>
 
                     {selected.link_urls?.length > 0 && (
-                        <div className="mt-3 d-flex flex-column gap-2">
+                        <div className="mt-3 d-flex flex-column gap-2 text-light">
                             {selected.link_urls.map((link, idx, arr) => (
                                 <a
                                     key={idx}
                                     href={link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="btn btn-outline-primary"
+                                    className="btn btn-outline-primary "
                                 >
                                     {arr.length === 1 ? "Ver link" : `Ver link ${idx + 1}`}
                                 </a>

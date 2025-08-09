@@ -150,15 +150,15 @@ useEffect(() => {
     };
 
   const actionsTemplate = (routine) => (
-    <div className="row justify-content-center">
-        <IconButton aria-label="edit" className="btn col-4" onClick={() => goToPage(routine._id,routine.routine[0]._id)}>
-          <SquarePen className="ms-1 text-dark" />
+    <div className="row text-start">
+        <IconButton aria-label="edit" className="btn col-4  " onClick={() => goToPage(routine._id,routine.routine[0]._id)}>
+          <SquarePen className=" text-dark text-end" />
         </IconButton>
-      <IconButton aria-label="copy" onClick={() => saveToLocalStorage(routine)} className="btn col-4">
-        <Copy className="ms-1 text-dark" />
+      <IconButton aria-label="copy" onClick={() => saveToLocalStorage(routine)} className="btn col-4 ">
+        <Copy className=" text-dark" />
       </IconButton>
-      <IconButton aria-label="delete" onClick={() => deleteWeek(routine._id, routine.name)} className="btn col-4">
-        <CircleX className="ms-1 text-danger" />
+      <IconButton aria-label="delete" onClick={() => deleteWeek(routine._id, routine.name)} className="btn col-4 ">
+        <CircleX className=" text-danger" />
       </IconButton>
     </div>
   );
@@ -255,7 +255,8 @@ const modificationTemplate = (rowData) => {
 };
 
   return (
-    <div className="text-start">
+    <div className="row text-center justify-content-center">
+      <div className="col-12 col-xxl-10">
         <DataTable
           className="usersListTable"
           paginator
@@ -266,18 +267,18 @@ const modificationTemplate = (rowData) => {
           selectionMode="single" selection={selectedProduct}
           onSelectionChange={(routine) => navigate(`/routine/user/${id}/week/${routine.value._id}/day/${routine.value.routine[0]._id}/${username}`)}
         >
-          {firstWidth > 568 && <Column body={blockDropdownTemplate} style={{ width: '200px' }}  field="block" header="Bloque" />}
-          <Column body={linksTemplate} field="name" header="Nombre" style={{ width: '180px' }}  />
+          {firstWidth > 568 && <Column body={blockDropdownTemplate} style={{ width: '15%' }}  field="block" header="Bloque" />}
+          <Column body={linksTemplate} field="name" header="Nombre" style={{ width: '40%' }}  />
           {firstWidth > 768 && (
             <Column 
               body={modificationTemplate} 
               header="Últ. vez modificado" 
-              style={{ width: '230px', padding:'0' }} 
+              style={{ width: '30%' }} 
             />
           )}
-          <Column  body={actionsTemplate} field="acciones" header="Acciones"   />
+          <Column  body={actionsTemplate} field="acciones" style={{ width: '15%' }}  header="Acciones"   />
         </DataTable>
-
+</div>
 
       <DeleteWeek
         visible={showDeleteWeekDialog}

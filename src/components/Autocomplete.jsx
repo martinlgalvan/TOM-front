@@ -150,7 +150,7 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
         onClick={handleFocusOrClick}
         disabled={isProgression}
         onBlur={handleBlur}
-        className="form-control"
+        className="form-control styleNameInput"
         placeholder={`${isProgression ? 'Progresion' : 'Seleccioná un ejercicio...'}`}
         style={{ zIndex: 1 }}
       />

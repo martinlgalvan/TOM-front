@@ -127,13 +127,11 @@ useEffect(() => {
 }, [showAnnouncementsDialog]);
 
 const fetchViewsForAnnouncement = async (announcementId, title) => {
-  console.log(announcementId, title)
   try {
     const views = await UsersService.getAnnouncementViewsWithNames(announcementId);
     setViewsMap(prev => ({ ...prev, [announcementId]: views })); // Si querés seguir guardando
     setViewsDialogData(views.viewers);
     setShowViewsDialog(true);
-    console.log(views)
   } catch (err) {
     console.error("Error al obtener vistas del anuncio:", err);
     Notify.instantToast("Error al obtener vistas del anuncio");
@@ -239,7 +237,6 @@ const handleSubmit = async () => {
     }
   }
 
-  console.log("Payload enviado al editar:", payload);
 
   try {
     if (editMode) {

@@ -486,7 +486,7 @@ async function onLogin(user, token) {
             <main style={location.pathname !== `/` && 'stylesMain' ? {
                 marginTop: "70px",
                 minHeight: "calc(100vh - 70px - 150px)",
-                padding: "1rem"
+                padding: "0.4rem"
             } : { padding: "0" }}>
                 <Routes>
                     <Route path="/" element={<HomePage />} />

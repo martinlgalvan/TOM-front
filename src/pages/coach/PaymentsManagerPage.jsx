@@ -27,7 +27,7 @@ const methodOptions = ['Transferencia', 'Efectivo', 'Otro'].map(m => ({ label: m
 
 const goalOptions = [
   'Salud', 'Estetica', 'Powerlifting', 'BJJ', 'MMA',
-  'Basquet', 'Futbol', 'Boxeo', 'Danza', 'Bodybuilding'
+  'Basquet', 'Futbol', 'Boxeo', 'Danza', 'Bodybuilding', 'Golf'
 ].map(g => ({ label: g, value: g }));
 
 const goalsColors = {
@@ -62,7 +62,7 @@ useEffect(() => {
       isPaid: user.payment_info?.isPaid ?? null,
       payment_method: user.payment_info?.payment_method ?? '',
       payment_date: user.payment_info?.payment_date ? new Date(user.payment_info.payment_date) : '',
-      payment_amount: user.payment_info?.payment_amount ?? '',
+      payment_amount: user.payment_info?.payment_amount?.toString() ?? '',
       payment_goal: user.payment_info?.payment_goal ?? '',
       nutricion: user.payment_info?.nutricion ?? null,  // NUEVO
       plan: user.payment_info?.plan ?? '',              // NUEVO
@@ -99,7 +99,7 @@ const handleSaveAll = async () => {
           isPaid: data.isPaid,
           payment_method: data.payment_method,
           payment_date: data.payment_date ? new Date(data.payment_date).toISOString() : '',
-          payment_amount: parseFloat(data.payment_amount),
+          payment_amount: Number(data.payment_amount),
           payment_goal: data.payment_goal,
           nutricion: data.nutricion,
           plan: data.plan
@@ -148,12 +148,14 @@ const handleSaveAll = async () => {
     }));
   };
 
-  const calculateTotalAmount = () => {
-  return filteredRows().reduce((acc, r) => {
-    const val = parseFloat(r.payment_amount);
-    return !isNaN(val) ? acc + val : acc;
-  }, 0);
-};
+ const calculateTotalAmount = () => {
+   return filteredRows().reduce((acc, r) => {
+     // si en este row hay un valor editado, úsalo; si no, el valor original
+     const raw = editedRows[r._id]?.payment_amount ?? r.payment_amount;
+     const val = parseFloat(raw);
+     return !isNaN(val) ? acc + val : acc;
+   }, 0);
+ };
 
   const filteredRows = () => {
     let result = [...rows];
@@ -474,7 +476,7 @@ const handleSaveAll = async () => {
   <tr>
     <td colSpan={4}></td>
     <td className="fw-bold text-center">
-      Total: ${calculateTotalAmount().toFixed(2)}
+      Total: ${calculateTotalAmount()}
     </td>
     <td colSpan={3}></td>
   </tr>

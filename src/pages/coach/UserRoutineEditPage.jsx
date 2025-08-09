@@ -80,6 +80,8 @@ function UserRoutineEditPage() {
     const [showBlockForm, setShowBlockForm] = useState(false);
     const [blocks, setBlocks] = useState([]);
     
+    const [showCommentsDialog, setShowCommentsDialog] = useState(false);
+
 
     const [weekDate, setWeekDate] = useState(() => {
         return localStorage.getItem("weekDate") || "";
@@ -180,7 +182,6 @@ function UserRoutineEditPage() {
         UserServices.getProfileById(id)
           .then((data) => {
             setProfile(data);
-            console.log(data)
             // Si data.resumen_semanal existe, úsalo; si no, usamos el objeto por defecto.
             setWeeklySummary(data.resumen_semanal || {
               selection1: "",
@@ -377,29 +378,37 @@ function UserRoutineEditPage() {
                 </p>
               )}
 
-              {/* Comentario con vista expandible */}
-              <div id='comments' className="position-relative">
-                <label className='text-light small ms-2' htmlFor="">Comentarios</label>
+              <div id="comments" className="position-relative">
+                <label className="text-light small ms-2" htmlFor="">Comentarios</label>
                 <OverlayTrigger
                   placement="right"
                   delay={{ show: 200, hide: 150 }}
                   overlay={
-                    <Tooltip id="full-comment-tooltip">
-                      <div style={{ maxWidth: '250px', fontSize: '1rem', whiteSpace: 'normal' }}>
-                        {weeklySummary.comments}
-                      </div>
+                    <Tooltip
+                      id="full-comment-tooltip"
+                      // aquí metemos el nuevo estilo
+                      style={{
+                        backgroundColor: '#fff',
+                        color: '#212529',
+                        maxWidth: '300px',
+                        whiteSpace: 'normal',
+                        border: '1px solid rgba(0,0,0,0.2)',
+                        padding: '0.5rem',
+                      }}
+                    >
+                      {weeklySummary.comments || 'No hay comentarios'}
+                      <span className='d-block bg-primary mt-3'>Presioná para ver</span>
                     </Tooltip>
                   }
                 >
                   <p
                     className="small mx-2 rounded p-2 text-light bgItemsDropdown"
                     style={{ cursor: 'pointer' }}
+                    onClick={() => setShowCommentsDialog(true)}
                   >
-                    {
-                      weeklySummary.comments?.split(" ").length > 15
-                        ? weeklySummary.comments.split(" ").slice(0, 15).join(" ") + "..."
-                        : weeklySummary.comments || "No hay comentarios"
-                    }
+                    {weeklySummary.comments?.split(' ').length > 15
+                      ? weeklySummary.comments.split(' ').slice(0, 15).join(' ') + '...'
+                      : weeklySummary.comments || 'No hay comentarios'}
                   </p>
                 </OverlayTrigger>
               </div>
@@ -639,6 +648,21 @@ function UserRoutineEditPage() {
                 <div className="text-center mt-3">
                     <Button label="Cerrar" onClick={() => setShowProfileDialog(false)} />
                 </div>
+            </Dialog>
+
+            <Dialog
+              header="Comentarios completos"
+              visible={showCommentsDialog}
+              style={{ width: '60vw', maxWidth: '800px' }}
+              onHide={() => setShowCommentsDialog(false)}
+              draggable
+            >
+              <div style={{ whiteSpace: 'pre-wrap' }}>
+                {weeklySummary.comments || 'No hay comentarios'}
+              </div>
+              <div className="text-center mt-3">
+                <Button label="Cerrar" onClick={() => setShowCommentsDialog(false)} />
+              </div>
             </Dialog>
 
             </section>

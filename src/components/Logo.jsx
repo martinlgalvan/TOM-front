@@ -11,6 +11,7 @@ import MATHIAS_RAGO from '/src/assets/img/mathias-logo.png';
 import GERONIMO_BISANZIO from '/src/assets/img/geronimo-logo.jpeg';
 import JEREMIAS_OLMEDO from '/src/assets/img/jeremias-olmedo.jpeg';
 import MATIAS_VILLALBA from '/src/assets/img/matias-logo.jpeg';
+import MATIAS_VILLALBA_PERSONAL from '/src/assets/img/Matias_villalba_personal.png';
 import TORETTO_GYM from '/src/assets/img/mauri-logo.png';
 import PITBULL from '/src/assets/img/pitbull-logo.png';
 import CRISTIAN_QUIROGA from '/src/assets/img/cristian-logo.png';
@@ -19,6 +20,8 @@ import SOL from '/src/assets/img/SvStrong.jpeg';
 import MARTIN_CASANOVA from '/src/assets/img/MartinCasanova.png';
 import MACARENA from '/src/assets/img/Macarena.png';
 import LEO_BURGIO from '/src/assets/img/Leo_burgio.png';
+import VALU_MARCHE from '/src/assets/img/Valu_marche.png';
+import AGUSTIN_ARENAS from '/src/assets/img/Agustin_Arenas.png';
 
 function Logo({isHomePage}){
 
@@ -38,8 +41,10 @@ function Logo({isHomePage}){
     } else if(localStorage.getItem('email') == "jeremiasolmedo6@gmail.com" || localStorage.getItem('entrenador_id') == "660680376310dcb00ee20719"){
         setUrlPath(JEREMIAS_OLMEDO)
     } else if(localStorage.getItem('email') == "matuch_27@hotmail.com" || localStorage.getItem('entrenador_id') == "66156628e97c68ef705f451f"){
-        setUrlPath(MATIAS_VILLALBA)}
-    else if(localStorage.getItem('email') == "alexisdalessandrod@gmail.com" || localStorage.getItem('entrenador_id') == "67f84082c3514ac86837bddf"){
+        setUrlPath(MATIAS_VILLALBA)
+    } else if(localStorage.getItem('email') == "matiasvill83@gmail.com" || localStorage.getItem('entrenador_id') == "65285e48af829c334f96e695"){
+            setUrlPath(MATIAS_VILLALBA_PERSONAL)
+    } else if(localStorage.getItem('email') == "alexisdalessandrod@gmail.com" || localStorage.getItem('entrenador_id') == "67f84082c3514ac86837bddf"){
         setUrlPath(PITBULL)}
     else if(localStorage.getItem('email') == "mauricioarraztoa@gmail.com" || localStorage.getItem('entrenador_id') == "672d05cd7fa16a4779fe6135"){
         setUrlPath(TORETTO_GYM)
@@ -56,7 +61,11 @@ function Logo({isHomePage}){
     } else if(localStorage.getItem('email') == "Macarena.entrenadora@gmail.com" || localStorage.getItem('entrenador_id') == "6862c3af1d409eaa2904b82a"){
         setUrlPath(MACARENA)
     }else if(localStorage.getItem('email') == "Leoburgio98@gmail.com" || localStorage.getItem('entrenador_id') == "68817363470317ec333efe3d"){
-        setUrlPath(LEO_BURGIO)
+        setUrlPath(LEO_BURGIO )
+    } else if(localStorage.getItem('email') == "marchesoti465@est.derecho.uba.ar" || localStorage.getItem('entrenador_id') == "666dd193caf84a7b159941d2"){
+        setUrlPath(VALU_MARCHE )
+    }else if(localStorage.getItem('email') == "Agu.arenaspf@gmail.com" || localStorage.getItem('entrenador_id') == "6887d82d7e742d5bca1eada6"){
+        setUrlPath(AGUSTIN_ARENAS)
     }else{
         setUrlPath(TOM)
     }

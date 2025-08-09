@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Fragment } from 'react';
 import { Link, useParams, useNavigate } from "react-router-dom"; // Se agregó useNavigate
 import { Tour } from 'antd';
@@ -99,6 +99,8 @@ function DayDetailsPage() {
     // Nuevo estado para controlar el modal cuando no existe el perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
 
+    const [blockEditIndices, setBlockEditIndices] = useState({ blockIndex: null, exerciseIndex: null });
+
     const numberIconMap = {
       1: LooksOneIcon,
       2: LooksTwoIcon,
@@ -175,6 +177,11 @@ useEffect(() => {
   fetchWeeks();
 }, [id]);
 
+function handleEditMobileBlockExercise(exercise, blockIndex, exerciseIndex) {
+  setCompleteExercise(exercise);
+  setBlockEditIndices({ blockIndex, exerciseIndex });
+  setEditExerciseMobile(true);
+}
 
 const redirectToPerfil = () => {
     setShowProfileMissingModal(false);
@@ -200,7 +207,6 @@ const redirectToPerfil = () => {
         if (!data?.length) return;
         setAllDays(data[0].routine);
         setNameWeek(data[0].name);
-        console.log(data[0])
         setCurrentDay(prev => (prev === null ? 0 : prev));
       });
     }, [week_id, status]); 
@@ -208,7 +214,6 @@ const redirectToPerfil = () => {
     useEffect(() => {
       if (allDays.length && currentDay !== null) {
         setDay_id(allDays[currentDay]._id);
-        console.log(allDays[currentDay]._id)
         setModifiedDay(allDays[currentDay].exercises);
         setFirstValue(allDays[currentDay].name);
       }
@@ -424,21 +429,55 @@ const saveDriveLink = async () => {
       return <span>{nameData}</span>;
     };
 
+    const getCols = peso => {
+  // convierto array o valor en string
+ const text = peso != null ? String(peso) : '';
+  const largo = text.length;
+  const isLong = largo > 7;
+  return {
+    setsCol: isLong ? 'col-1' : 'col-2',
+    repsCol: isLong ? 'col-3' : 'col-3',
+    pesoCol: isLong ? 'col-4' : 'col-3',
+    restCol: isLong ? 'col-3' : 'col-3',
+  };
+};
+
     const handleUpdateExercise = () => {
-        const newExercises = [...modifiedDay];
-        newExercises[indexOfExercise] = completeExercise;
-        setModifiedDay(newExercises);
-        ExercisesService.editExercise(week_id, day_id, newExercises)
-          .then((data) => {
-            refreshEdit(newExercises);
-            setEditExerciseMobile(false);
-            Notify.instantToast('Rutina actualizada con éxito!')
-          })
-          .catch((err) => {
-            console.error('Error al actualizar rutina', err);
-            Notify.instantToast('Hubo un error al actualizar la rutina');
-          });
+  // clonamos el array de ejercicios del día
+  const newExercises = [...modifiedDay];
+
+  if (blockEditIndices.blockIndex !== null) {
+    // caso BLOQUE: metemos el completeExercise en newExercises[blockIndex].exercises[exerciseIndex]
+    const b = blockEditIndices.blockIndex;
+    const e = blockEditIndices.exerciseIndex;
+
+    // inmutabilidad: clonamos también el bloque y su array interno
+    newExercises[b] = {
+      ...newExercises[b],
+      exercises: [...newExercises[b].exercises]
     };
+    newExercises[b].exercises[e] = completeExercise;
+
+  } else {
+    // caso normal
+    newExercises[indexOfExercise] = completeExercise;
+  }
+
+  // actualizamos el estado y hacemos la llamada
+  setModifiedDay(newExercises);
+  ExercisesService
+    .editExercise(week_id, day_id, newExercises)
+    .then(() => {
+      Notify.instantToast('Rutina actualizada con éxito!');
+      setEditExerciseMobile(false);
+      // reseteamos los índices de bloque
+      setBlockEditIndices({ blockIndex: null, exerciseIndex: null });
+    })
+    .catch(err => {
+      console.error('Error al actualizar rutina', err);
+      Notify.instantToast('Hubo un error al actualizar la rutina');
+    });
+};
 
     const productTemplate = useCallback((exercise, idx, isWarmup) => {
         const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 450;
@@ -557,292 +596,472 @@ const saveDriveLink = async () => {
 
     return (
         <>
-            <div className="container-fluid p-0 ">
-                <Logo />
+    <div className="container-fluid p-0 ">
+        <Logo />
+    </div>
+
+    <section className="container-fluid p-0">
+
+        <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'alert alert-warning rounded-1 text-dark' : ''}`}>
+          <div className="d-flex justify-content-center align-items-center">
+            <IconButton
+              className="me-2"
+                onClick={() => goToWeek(Math.min(currentWeekIndex + 1, allWeeks.length - 1))}
+              disabled={currentWeekIndex === allWeeks.length - 1}
+            >
+              <NavigateBeforeIcon className={`fs-2 ${currentWeekIndex === allWeeks.length - 1 ? 'text-muted' : ''}`} />
+            </IconButton>
+
+            <div className="d-flex flex-column align-items-center">
+        <h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
+              <small className="text-muted">
+                {allWeeks[currentWeekIndex]?.createdAt 
+                  ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
+                  : ''}
+              </small>
             </div>
 
-            <section className="container-fluid p-0">
-        
-               <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'alert alert-warning rounded-1 text-dark' : ''}`}>
-                  <div className="d-flex justify-content-center align-items-center">
-                    <IconButton
-                      className="me-2"
-                       onClick={() => goToWeek(Math.min(currentWeekIndex + 1, allWeeks.length - 1))}
-                      disabled={currentWeekIndex === allWeeks.length - 1}
-                    >
-                      <NavigateBeforeIcon className={`fs-2 ${currentWeekIndex === allWeeks.length - 1 ? 'text-muted' : ''}`} />
-                    </IconButton>
+            <IconButton
+              className="ms-2"
+              onClick={() => goToWeek(Math.max(currentWeekIndex - 1, 0))}
+              disabled={currentWeekIndex === 0}
+            >
+              <NavigateNextIcon className={`fs-2 ${currentWeekIndex === 0 ? 'text-muted' : ''}`} />
+            </IconButton>
+          </div>
 
-                    <div className="d-flex flex-column align-items-center">
-                <h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
-                      <small className="text-muted">
-                        {allWeeks[currentWeekIndex]?.createdAt 
-                          ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
-                          : ''}
-                      </small>
-                    </div>
+          {currentWeekIndex !== 0 && (
+            <small className="d-block mt-1 mx-3 text-">
+              <span className=" shadow rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. 
+            </small>
+          )}
+        </div>
 
-                    <IconButton
-                      className="ms-2"
-                      onClick={() => goToWeek(Math.max(currentWeekIndex - 1, 0))}
-                      disabled={currentWeekIndex === 0}
-                    >
-                      <NavigateNextIcon className={`fs-2 ${currentWeekIndex === 0 ? 'text-muted' : ''}`} />
-                    </IconButton>
-                  </div>
+          {allDays.length > 0 && (
+            <div className="text-center my-3">
+              <Segmented
+                options={allDays.map(day => {
+                  const name = day.name || '';
+                  const short = name.length > 6 ? `${name.slice(0, 5)}` : name;
+                  return {
+                    value: day._id,
+                    label: (
+                      <span title={name} style={{ display: 'inline-block', maxWidth: '8ch', maxHeight: '2.3ch', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {short}
+                      </span>
+                    )
+                  };
+                })}
+                className="stylesSegmented"
+                value={day_id}
+                onChange={handleDayChange}
+              />
+            </div>
+          )}
 
-                  {currentWeekIndex !== 0 && (
-                    <small className="d-block mt-1 mx-3 text-">
-                      <span className=" shadow rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. 
-                    </small>
-                  )}
-                </div>
+        {currentDay !== null && (
+        <div className="row align-items-center text-center m-0 px-1 my-5">
+            <h2 className="text-center mb-4 colorNameAlumno rounded-2 fs-5 py-2">
+                {allDays[currentDay]?.name}
+            </h2>
 
-                  {allDays.length > 0 && (
-                    <div className="text-center my-3">
-                      <Segmented
-                        options={allDays.map(day => {
-                          const name = day.name || '';
-                          const short = name.length > 6 ? `${name.slice(0, 5)}` : name;
-                          return {
-                            value: day._id,
-                            label: (
-                              <span title={name} style={{ display: 'inline-block', maxWidth: '8ch', maxHeight: '2.3ch', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {short}
+            {allDays[currentDay]?.movility && (
+            <>
+              <div className="text-start"><span>Activación / movilidad</span></div>
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                loop
+                speed={600}
+                pagination={{ clickable: true }}
+                autoplay={false}
+                slidesPerView={1}
+                spaceBetween={20}
+                breakpoints={{
+                  575:  { slidesPerView: 1 },
+                  767:  { slidesPerView: 2 },
+                  1199: { slidesPerView: 3 },
+                  1400: { slidesPerView: 2 },
+                }}
+                onSwiper={swiper => (movilitySwiper.current = swiper)}
+                className="mx-0 px-0">
+                    {allDays[currentDay].movility.map((exercise, idx) => (
+                      <SwiperSlide key={idx}>
+                        {productTemplate(exercise, idx, true)}
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+            
+                  </>
+              )}
+
+            {allDays[currentDay]?.warmup && (
+            <>
+              <div className="text-start"><span>Entrada en calor</span></div>
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                loop
+                speed={600}
+                pagination={{ clickable: true }}
+                autoplay={false}
+                slidesPerView={1}
+                spaceBetween={20}
+                breakpoints={{
+                  575:  { slidesPerView: 1 },
+                  767:  { slidesPerView: 2 },
+                  1199: { slidesPerView: 3 },
+                  1400: { slidesPerView: 2 },
+                }}
+                onSwiper={swiper => (movilitySwiper.current = swiper)}
+                className="mx-0 px-0">
+                    {allDays[currentDay].warmup.map((exercise, idx) => (
+                      <SwiperSlide key={idx}>
+                        {productTemplate(exercise, idx, false)}
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+          
+              </>
+            )}
+
+            
+              <div className="row m-auto px-0 ">
+                
+                <h2 className=" p-2 mb-0 text-start ">Rutina del día</h2>
+              
+                    {modifiedDay.map((element, idx) => {
+                       const { setsCol, repsCol, pesoCol, restCol } = getCols(element.reps);
+                      const isExercise = element.type === 'exercise';
+                      const isBlock = element.type === 'block';
+                      const number     = element.numberExercise || element.numberCircuit;
+                      const name       = typeof element.name === 'object' ? element.name.name : element.name;
+                      const backoffLabel = (
+                        element.name?.titleName
+                        && element.name.titleName.trim() !== ""
+                      )
+                        ? element.name.titleName
+                        : "Back off";
+
+                      return (
+                        <div
+                          key={`${element.exercise_id}-${idx}`}
+                          ref={el => (cardRefs.current[idx] = el)}
+                          className="px-0 mb-3"
+                        >
+                          <div className="row justify-content-center bg-light border rounded-2 m-0 mb-3">
+                            {/* — CABECERA (número + nombre) — */}
+                            <div className={`col-12 ${element.type !== 'block' && 'widgetNumber' } py-2`} style={{backgroundColor: element.type == 'block' && element.color}}>
+                              <div className="row justify-content-center">
+                                <div className="col-1 m-auto text-light">
+                                  {renderNumberIcon(number)}
+                                </div>
+                                
+                                <div className="col-10 m-auto text-start">
+                                  <p
+                                    className="stylesNameExercise text-light mb-0"
+                                    id={idx === 0 ? 'nombre' : null}
+                                  >
+                                    {isExercise ? name : isBlock ? <span>{element.name}</span>: <span>{element.type} - {element.typeOfSets} </span> }
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* — CUERPO: sets/reps/peso + timer o tabla de circuito — */}
+                            {isExercise ? (
+                              <>
+                                 
+                                    <div className={`${setsCol} p-0 mt-4 pt-2 mb-2`}>
+                                      <span className="stylesBadgesItemsExerciseSpan d-block">
+                                        {element.sets}
+                                      </span>
+                                      <p className="fontStylesSpan">Sets</p>
+                                    </div>
+                                  
+                                <div className={`${repsCol} p-0 mt-4 pt-2 mb-2`}>
+                                  {Array.isArray(element.reps) ?
+                                    <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
+                                      {element.reps.map((r, i) => (
+                                        <React.Fragment key={i}>
+                                          <span
+                                            className="stylesBadgesItemsExerciseSpan arrayBadge"
+                                          >
+                                            {r}
+                                          </span>
+                                          {i < element.reps.length - 1 && (
+                                            <span>-</span>
+                                          )}
+                                        </React.Fragment>
+                                      ))}
+                                    </span>
+                                    : (
+                                    <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
+                                      {element.reps}
+                                    </span>
+                                  )}
+                                  <p className="fontStylesSpan">Reps</p>
+                                </div>
+                                <div className={`${pesoCol} p-0 mt-4 pt-2 mb-2`}>
+                                  <span className="stylesBadgesItemsExerciseSpan d-block">
+                                    {element.peso ? element.peso : '-'}
+                                  </span>
+                                  <p className="fontStylesSpan">Peso</p>
+                                </div>
+                                <div className={`${restCol} p-0 mt-3 mb-2`}>
+                                  <CountdownTimer initialTime={element.rest}/>
+                                  <p className="fontStylesSpan mt-2 mb-1">Descanso</p>
+                                </div>
+                              </>
+                      ) : isBlock ?
+                          element.exercises.map((ex, j) => {
+                          // 1) Desestructuras aquí, usando ex.peso
+                          const { setsCol, repsCol, pesoCol, restCol } = getCols(ex.peso);
+
+                          // 2) Haces return de tu JSX dentro de llaves
+                          return (
+                            <>
+                            <div key={ex.exercise_id} className="col-12 mb-2 mb-4  shadow-personalized">
+                              <div className="row justify-content-around rounded-2 p-2 align-items-center ">
+                              
+                                <div className="col-1 text-center">
+                                  {renderNumberIcon(ex.numberExercise)}
+                                </div>
+                            
+                                <div className="col-11 text-start">
+                                  {typeof ex.name === 'object' ? ex.name.name : ex.name}
+                                </div>
+                              
+                              <div className={`${setsCol} p-0 mt-4 mb-2`}>
+                                  <span className="stylesBadgesItemsExerciseSpan d-block">
+                                    {ex.sets}
+                                  </span>
+                                  <div className="fontStylesSpan">Sets</div>
+                                </div>
+                                
+                                <div className={`${repsCol} p-0 mt-4 mb-2`}>
+                                  {Array.isArray(ex.reps) ? (
+                                    ex.reps.map((r,k) => (
+                                      <React.Fragment key={k}>
+                                        <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
+                                        {k < ex.reps.length - 1 && <span className="">-</span>}
+                                      </React.Fragment>
+                                    ))
+                                  ) : (
+                                    <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>
+                                  )}
+                                  <div className="fontStylesSpan">
+                                    Reps
+                                    
+                                  </div>
+                                </div>
+                                {/* Peso */}
+                                <div className={`${pesoCol} p-0 mt-4 mb-2`}>
+                                  <span className="stylesBadgesItemsExerciseSpan d-block">
+                                    {ex.peso || '-'}
+                                  </span>
+                                  <div className="fontStylesSpan">Peso</div>
+                                </div>
+                                {/* Descanso */}
+                                <div className={`${restCol} p-0 mt-3 mb-2`}>
+                                  <CountdownTimer initialTime={ex.rest} />
+                                  <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
+                                </div>
+                              </div>
+
+                              {element.name?.approximations?.length > 0 && (
+                            <>
+                              <span className="styleInputsNote-back ">
+                                {element.name.approxTitle ?? 'Aproximaciones'}
                               </span>
-                            )
-                          };
-                        })}
-                        className="stylesSegmented"
-                        value={day_id}
-                        onChange={handleDayChange}
-                      />
-                    </div>
-                  )}
+                              <div className="colorNote3 py-2 rounded-1 ">
+                                {element.name.approximations.map((ap, i) => (
+                                  <div className="row my-1">
+                                    <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
+                                    <p key={i} className="mb-0  col-5 text-start">
+                                  
+                                      {ap.reps} reps / {ap.peso}
+                                    </p>
+                                  </div>
+                                ))}
+                            </div>
+                            </>
+                          )}
 
-                {currentDay !== null && (
-                <div className="row align-items-center text-center m-0 px-1 my-5">
-                    <h2 className="text-center mb-4 colorNameAlumno rounded-2 fs-5 py-2">
-                        {allDays[currentDay]?.name}
-                    </h2>
+                          {/* — BACKOFF y NOTAS (idéntico en ambos casos) — */}
+                          {ex.name?.backoff?.length > 0 && (
+                            <>
+                              <span className="styleInputsNote-back m-auto">{backoffLabel}</span>
+                              <div className="colorNote2 py-2 rounded-1  mb-2">
+                                {ex.name.backoff.map((line,i) => (
+                                  <p key={i} className="mb-0 ">
+                                    {line.sets}×{line.reps} / {line.peso}
+                                  </p>
+                                ))}
+                              </div>
+                            </>
+                              )}
+                              {ex.notas && (
+                                <>
+                                  <span className="styleInputsNote-back text-start">
+                                    Notas / otros
+                                  </span>
+                                  <div
+                                    className="colorNote py-2 rounded-1  "
+                                    style={{ whiteSpace: 'pre-wrap' }}
+                                  >
+                                    <p className="pb-0 mb-0">{ex.notas}</p>
+                                  </div>
+                                </>
+                              )}
 
-                   {allDays[currentDay]?.movility && (
-                    <>
-                      <div className="text-start"><span>Activación / movilidad</span></div>
-                      <Swiper
-                        modules={[Navigation, Pagination, Autoplay]}
-                        loop
-                        speed={600}
-                        pagination={{ clickable: true }}
-                        autoplay={false}
-                        slidesPerView={1}
-                        spaceBetween={20}
-                        breakpoints={{
-                          575:  { slidesPerView: 1 },
-                          767:  { slidesPerView: 2 },
-                          1199: { slidesPerView: 3 },
-                          1400: { slidesPerView: 2 },
-                        }}
-                        onSwiper={swiper => (movilitySwiper.current = swiper)}
-                        className="mx-0 px-0">
-                            {allDays[currentDay].movility.map((exercise, idx) => (
-                              <SwiperSlide key={idx}>
-                                {productTemplate(exercise, idx, true)}
-                              </SwiperSlide>
+                              <div className="row justify-content-between align-items-center mt-2 px-2">
+                                  {/* Contador */}
+                                  <div className="col-auto">
+                                    <Contador max={ex.sets} />
+                                  </div>
+
+                                  {/* Icono YouTube o Imagen */}
+                                  <div className="col-auto">
+                                    <IconButton
+                                      aria-label="video"
+                                      disabled={!ex.video}
+                                      onClick={() => handleButtonClick(ex)}
+                                    >
+                                      {ex.isImage
+                                        ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
+                                        : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />
+                                      }
+                                    </IconButton>
+                                  </div>
+
+                                  {/* Botón de editar móvil */}
+                                  <div className="col-auto">
+                                    <IconButton
+                                      aria-label="editar"
+                                      onClick={() => handleEditMobileBlockExercise(ex, idx, j)}
+                                    >
+                                      <EditNoteIcon />
+                                    </IconButton>
+                                  </div>
+                                </div>
+    
+                            </div>
+                        </>
+                            );
+                    })
+                    :
+                    (
+                        <>
+
+                          <div className="col-12 p-0 mt-4 mb-2">
+                            <table className="table border-0">
+                              <thead>
+                                <tr>
+                                  <th className="border-0 text-start">Nombre</th>
+                                  <th className="border-0">Reps</th>
+                                  <th className="border-0">Peso</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {element.circuit.map(c => (
+                                  <tr key={c.idRefresh}>
+                                    <td className="border-0 text-start">{c.name}</td>
+                                    <td className="border-0">{c.reps}</td>
+                                    <td className="border-0">{c.peso}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </>
+                      )
+                    }
+
+                      {element.name?.approximations?.length > 0 && (
+                        <>
+                          <span className="styleInputsNote-back">
+                            {element.name.approxTitle ?? 'Aproximaciones'}
+                          </span>
+                          <div className="colorNote3 py-2 rounded-1 col-11">
+                            {element.name.approximations.map((ap, i) => (
+                              <div className="row my-1">
+                                <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
+                                <p key={i} className="mb-0  col-5 text-start">
+                              
+                                  {ap.reps} reps / {ap.peso}
+                                </p>
+                              </div>
                             ))}
-                          </Swiper>
-                   
-                          </>
+                        </div>
+                        </>
                       )}
 
-                   {allDays[currentDay]?.warmup && (
-                    <>
-                      <div className="text-start"><span>Entrada en calor</span></div>
-                      <Swiper
-                        modules={[Navigation, Pagination, Autoplay]}
-                        loop
-                        speed={600}
-                        pagination={{ clickable: true }}
-                        autoplay={false}
-                        slidesPerView={1}
-                        spaceBetween={20}
-                        breakpoints={{
-                          575:  { slidesPerView: 1 },
-                          767:  { slidesPerView: 2 },
-                          1199: { slidesPerView: 3 },
-                          1400: { slidesPerView: 2 },
-                        }}
-                        onSwiper={swiper => (movilitySwiper.current = swiper)}
-                        className="mx-0 px-0">
-                            {allDays[currentDay].warmup.map((exercise, idx) => (
-                              <SwiperSlide key={idx}>
-                                {productTemplate(exercise, idx, false)}
-                              </SwiperSlide>
+                      {/* — BACKOFF y NOTAS (idéntico en ambos casos) — */}
+                      {element.name?.backoff?.length > 0 && (
+                        <>
+                          <span className="styleInputsNote-back">{backoffLabel}</span>
+                          <div className="colorNote2 py-2 rounded-1 col-11 mb-2">
+                            {element.name.backoff.map((line,i) => (
+                              <p key={i} className="mb-0 ms-1">
+                                {line.sets}×{line.reps} / {line.peso}
+                              </p>
                             ))}
-                          </Swiper>
-                 
-                      </>
-                    )}
+                          </div>
+                        </>
+                          )}
+                          {element.notas && (
+                            <>
+                              <span className="styleInputsNote-back text-start">
+                                Notas / otros
+                              </span>
+                              <div
+                                className="colorNote py-2 rounded-1 col-11 largoCarddds"
+                                style={{ whiteSpace: 'pre-wrap' }}
+                              >
+                                <p className="pb-0 mb-0">{element.notas}</p>
+                              </div>
+                            </>
+                          )}
 
+                          {/* — FOOTER: Contador + botones — */}
+                          {isExercise ? 
+                          <>
+                          <div className="row justify-content-between">
+                            
+                            <div className="col-6 text-start m-auto">
+                              <Contador max={element.sets}/>
+                            </div>
+                          
+                            
+                            <div className="col-3">
+                              <IconButton
+                                id={idx === 0 ? 'video' : null}
+                                aria-label="video"
+                                disabled={!element.video}
+                                onClick={() => handleButtonClick(element)}
+                              >
+                                {element.isImage
+                                  ? <ImageIcon className={!element.video ? 'imageIconDisabled' : 'imageIcon'}/>
+                                  : <YouTubeIcon className={element.video ? 'ytColor' : 'ytColor-disabled'}/>
+                                }
+                              </IconButton>
+                            </div>
+                            <IconButton
+                              id={idx===0?'edicion':null}
+                              aria-label="editar"
+                              className="p-0 col-3"
+                              onClick={() => handleEditMobileExercise(element,idx)}
+                            >
+                              <EditNoteIcon className="editStyle p-0"/>
+                            </IconButton>
+                          </div>
+                          </> : <div className={'mb-3'}></div> }
+                        </div>
                     
-                      <div className="row m-auto px-0 ">
-                        
-                        <h2 className=" p-2 mb-0 text-start  ">Rutina del día</h2>
-                      
-                            {allDays[currentDay]?.exercises.map((element, idx) => {
-                              const isExercise = element.type === 'exercise';
-                              const number     = element.numberExercise || element.numberCircuit;
-                              const name       = typeof element.name === 'object' ? element.name.name : element.name;
-                              const backoffLabel = (
-                                element.name?.titleName
-                                && element.name.titleName.trim() !== ""
-                              )
-                                ? element.name.titleName
-                                : "Back off";
-
-                              return (
-                                <div
-                                  key={`${element.exercise_id}-${idx}`}
-                                  ref={el => (cardRefs.current[idx] = el)}
-                                  className="px-1 mb-3"
-                                >
-                                  <div className="row justify-content-center bg-light shadow rounded-2 m-1 mb-3">
-                                    {/* — CABECERA (número + nombre) — */}
-                                    <div className="col-12 widgetNumber py-2">
-                                      <div className="row justify-content-center">
-                                        <div className="col-1 m-auto text-light">
-                                          {renderNumberIcon(number)}
-                                        </div>
-                                        <div className="col-10 m-auto text-start">
-                                          <p
-                                            className="stylesNameExercise text-light mb-0"
-                                            id={idx === 0 ? 'nombre' : null}
-                                          >
-                                            {isExercise ? name : <span>{element.type} - {element.typeOfSets} </span> }
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* — CUERPO: sets/reps/peso + timer o tabla de circuito — */}
-                                    {isExercise ? (
-                                      <>
-                                        <div className="col-2 p-0 mt-4 mb-2">
-                                          <span className="stylesBadgesItemsExerciseSpan d-block">
-                                            {element.sets}
-                                          </span>
-                                          <p className="fontStylesSpan">Sets</p>
-                                        </div>
-                                        <div className="col-2 p-0 mt-4 mb-2">
-                                          <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
-                                            {element.reps}
-                                          </span>
-                                          <p className="fontStylesSpan">Reps</p>
-                                        </div>
-                                        <div className="col-4 p-0 mt-4 mb-2">
-                                          <span className="stylesBadgesItemsExerciseSpan d-block">
-                                            {element.peso ? element.peso : '-'}
-                                          </span>
-                                          <p className="fontStylesSpan">Peso</p>
-                                        </div>
-                                        <div className="col-3 marginTimer mb-2">
-                                          <CountdownTimer initialTime={element.rest}/>
-                                          <p className="fontStylesSpan">Descanso</p>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <>
-
-                                        <div className="col-12 p-0 mt-4 mb-2">
-                                          <table className="table border-0">
-                                            <thead>
-                                              <tr>
-                                                <th className="border-0 text-start">Nombre</th>
-                                                <th className="border-0">Reps</th>
-                                                <th className="border-0">Peso</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              {element.circuit.map(c => (
-                                                <tr key={c.idRefresh}>
-                                                  <td className="border-0 text-start">{c.name}</td>
-                                                  <td className="border-0">{c.reps}</td>
-                                                  <td className="border-0">{c.peso}</td>
-                                                </tr>
-                                              ))}
-                                            </tbody>
-                                          </table>
-                                        </div>
-                                      </>
-                                    )}
-
-                                    {/* — BACKOFF y NOTAS (idéntico en ambos casos) — */}
-                                    {element.name?.backoff?.length > 0 && (
-                                      <>
-                                        <span className="styleInputsNote-back">{backoffLabel}</span>
-                                        <div className="colorNote2 py-2 rounded-1 col-11 mb-2">
-                                          {element.name.backoff.map((line,i) => (
-                                            <p key={i} className="mb-0 ms-1">
-                                              {line.sets}×{line.reps} / {line.peso}
-                                            </p>
-                                          ))}
-                                        </div>
-                                      </>
-                                    )}
-                                    {element.notas && (
-                                      <>
-                                        <span className="styleInputsNote-back text-start">
-                                          Notas / otros
-                                        </span>
-                                        <div
-                                          className="colorNote py-2 rounded-1 col-11 largoCarddds"
-                                          style={{ whiteSpace: 'pre-wrap' }}
-                                        >
-                                          <p className="pb-0 mb-0">{element.notas}</p>
-                                        </div>
-                                      </>
-                                    )}
-
-                                    {/* — FOOTER: Contador + botones — */}
-                                    {isExercise ? 
-                                    <>
-                                    <div className="row justify-content-between">
-                                      
-                                      <div className="col-6 text-start m-auto">
-                                        <Contador max={element.sets}/>
-                                      </div>
-                                    
-                                      
-                                      <div className="col-3">
-                                        <IconButton
-                                          id={idx === 0 ? 'video' : null}
-                                          aria-label="video"
-                                          disabled={!element.video}
-                                          onClick={() => handleButtonClick(element)}
-                                        >
-                                          {element.isImage
-                                            ? <ImageIcon className={!element.video ? 'imageIconDisabled' : 'imageIcon'}/>
-                                            : <YouTubeIcon className={element.video ? 'ytColor' : 'ytColor-disabled'}/>
-                                          }
-                                        </IconButton>
-                                      </div>
-                                      <IconButton
-                                        id={idx===0?'edicion':null}
-                                        aria-label="editar"
-                                        className="p-0 col-3"
-                                        onClick={() => handleEditMobileExercise(element,idx)}
-                                      >
-                                        <EditNoteIcon className="editStyle p-0"/>
-                                      </IconButton>
-                                    </div>
-                                    </> : <div className={'mb-3'}></div> }
-                                  </div>
-                              
-                                </div>
-                              );
-                            })}
-                    
-                </div>
+                      </div>
+                    );
+                  })}
+          
+                  </div>
                 </div>
                 
                 )}
@@ -993,12 +1212,21 @@ const saveDriveLink = async () => {
 
                         <div className="col-4 mb-3">
                           <label>Reps</label>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={completeExercise.reps || ''}
-                            disabled={true}
-                          />
+                          {Array.isArray(completeExercise.reps) ? (
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={completeExercise.reps.join(', ')}
+                              disabled
+                            />
+                          ) : (
+                            <input
+                              type="number"
+                              className="form-control"
+                              value={completeExercise.reps ?? ''}
+                              disabled
+                            />
+                          )}
                         </div>
 
                         <div className="col-4 mb-3">
@@ -1213,19 +1441,29 @@ const saveDriveLink = async () => {
                         className="input-dark"
                         placeholder="Escribí acá tus comentarios..."
                       />
+                      <div className="d-flex justify-content-center mt-3">
+                        <Button
+                          label="Vaciar comentarios"
+                          icon="pi pi-trash"
+                          className="btn btn-outline-light"
+                          onClick={() =>
+                            setWeeklySummary(prev => ({ ...prev, comments: "" }))
+                          }
+                        />
+                      </div>
                     </div>
 
 
 
                     <div className="row justify-content-end">
-                      <div className="col-4">
+                      <div className="col-5">
                         <Button
                           label="Cancelar"
                           className="btn btn-outline-light w-100"
                           onClick={() => setShowWeeklySummaryModal(false)}
                         />
                       </div>
-                      <div className="col-4">
+                      <div className="col-5">
                         <Button
                           label="Guardar"
                           className="btn text-light w-100"

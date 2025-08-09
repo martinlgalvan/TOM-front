@@ -642,7 +642,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
 
         <div className="col-md-3 mb-3">
           <div className="d-flex align-items-center border text-center rounded overflow-hidden">
-            <span className="p-2 bg-light border-end">Bloquear </span>
+            <span className="p-2 bg-light border-end text-dark">Bloquear edición</span>
             <Dropdown
               value={editedProfile.isEditable}
               options={isEditableOptions}
@@ -656,7 +656,7 @@ export default function PrimeReactTable({ user_id, id, users, refresh, collapsed
         
         <div className="col-md-5 mb-3">
             <div className="d-flex align-items-center border rounded overflow-hidden">
-              <span className="p-2 bg-light border-end">Categoría</span>
+              <span className="p-2 bg-light text-dark border-end">Categoría</span>
               <Dropdown
                 value={editedProfile.category}
                 options={nivelOptions}
