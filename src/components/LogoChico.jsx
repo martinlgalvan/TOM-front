@@ -22,6 +22,7 @@ import MACARENA from '/src/assets/img/Macarena.png';
 import LEO_BURGIO from '/src/assets/img/Leo_burgio.png';
 import VALU_MARCHE from '/src/assets/img/Valu_marche.png';
 import AGUSTIN_ARENAS from '/src/assets/img/Agustin_arenas.png';
+import LEONEL_ORTIZ from '/src/assets/img/Leonel_ortiz.png';
 
 function LogoChico({isHomePage}){
 
@@ -66,6 +67,8 @@ function LogoChico({isHomePage}){
         setUrlPath(VALU_MARCHE)
     }else if(localStorage.getItem('email') == "Agu.arenaspf@gmail.com" || localStorage.getItem('entrenador_id') == "6887d82d7e742d5bca1eada6"){
         setUrlPath(AGUSTIN_ARENAS)
+    } else if(localStorage.getItem('email') == "leonel.strength-trainer@gmail.com" || localStorage.getItem('entrenador_id') == "689cd44499809e2519de8333"){
+            setUrlPath(LEONEL_ORTIZ)
     }else{
         setUrlPath(TOM)
     }
@@ -76,7 +79,7 @@ function LogoChico({isHomePage}){
 
     return (
         <>
-        {urlPath === TOM || urlPath == MARTIN_CASANOVA || urlPath == MACARENA || urlPath == AGUSTIN_ARENAS ?
+        {urlPath === TOM || urlPath == MARTIN_CASANOVA || urlPath == MACARENA || urlPath == AGUSTIN_ARENAS || urlPath == LEONEL_ORTIZ ?
         <div className='row justify-content-center LargoLogo align-items-center '>
             <h1 className="visually-hidden">TOM</h1>
             <img className={`img-fluid LargoLogoChico text-center mt-5 ${urlPath == TOM && 'py-3'}  bg-white rounded-3`} src={urlPath} alt="TOM" />

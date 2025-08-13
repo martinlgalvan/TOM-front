@@ -22,6 +22,7 @@ import MACARENA from '/src/assets/img/Macarena.png';
 import LEO_BURGIO from '/src/assets/img/Leo_burgio.png';
 import VALU_MARCHE from '/src/assets/img/Valu_marche.png';
 import AGUSTIN_ARENAS from '/src/assets/img/Agustin_arenas.png';
+import LEONEL_ORTIZ from '/src/assets/img/Leonel_ortiz.png';
 
 function Logo({isHomePage}){
 
@@ -45,27 +46,29 @@ function Logo({isHomePage}){
     } else if(localStorage.getItem('email') == "matiasvill83@gmail.com" || localStorage.getItem('entrenador_id') == "65285e48af829c334f96e695"){
             setUrlPath(MATIAS_VILLALBA_PERSONAL)
     } else if(localStorage.getItem('email') == "alexisdalessandrod@gmail.com" || localStorage.getItem('entrenador_id') == "67f84082c3514ac86837bddf"){
-        setUrlPath(PITBULL)}
-    else if(localStorage.getItem('email') == "mauricioarraztoa@gmail.com" || localStorage.getItem('entrenador_id') == "672d05cd7fa16a4779fe6135"){
+        setUrlPath(PITBULL)
+    } else if(localStorage.getItem('email') == "mauricioarraztoa@gmail.com" || localStorage.getItem('entrenador_id') == "672d05cd7fa16a4779fe6135"){
         setUrlPath(TORETTO_GYM)
     } else if(localStorage.getItem('email') == "cristian_quiroga_08@hotmail.com" || localStorage.getItem('entrenador_id') == "6813162770c9257968a79fe0"){
         setUrlPath(CRISTIAN_QUIROGA)
     } else if(localStorage.getItem('email') == "beltrameramiro@gmail.com" || localStorage.getItem('entrenador_id') == "685372d397535c64dfc56d71"){
         setUrlPath(RAMABELTRAME)
-    }else if(localStorage.getItem('email') == "Francogonzalez.trainer@gmail.com" || localStorage.getItem('entrenador_id') == "686162e2dbfbe24db072ca57"){
+    } else if(localStorage.getItem('email') == "Francogonzalez.trainer@gmail.com" || localStorage.getItem('entrenador_id') == "686162e2dbfbe24db072ca57"){
         setUrlPath(FRANCO)
-    }else if(localStorage.getItem('email') == "Svstrong.training@gmail.com" || localStorage.getItem('entrenador_id') == "6861636cdbfbe24db072ca58"){
+    } else if(localStorage.getItem('email') == "Svstrong.training@gmail.com" || localStorage.getItem('entrenador_id') == "6861636cdbfbe24db072ca58"){
         setUrlPath(SOL)
-    }else if(localStorage.getItem('email') == "martincasanova2001-trainer@gmail.com" || localStorage.getItem('entrenador_id') == "686976ccd5788ade7ad998bf"){
+    } else if(localStorage.getItem('email') == "martincasanova2001-trainer@gmail.com" || localStorage.getItem('entrenador_id') == "686976ccd5788ade7ad998bf"){
         setUrlPath(MARTIN_CASANOVA)
     } else if(localStorage.getItem('email') == "Macarena.entrenadora@gmail.com" || localStorage.getItem('entrenador_id') == "6862c3af1d409eaa2904b82a"){
         setUrlPath(MACARENA)
-    }else if(localStorage.getItem('email') == "Leoburgio98@gmail.com" || localStorage.getItem('entrenador_id') == "68817363470317ec333efe3d"){
+    } else if(localStorage.getItem('email') == "Leoburgio98@gmail.com" || localStorage.getItem('entrenador_id') == "68817363470317ec333efe3d"){
         setUrlPath(LEO_BURGIO )
     } else if(localStorage.getItem('email') == "marchesoti465@est.derecho.uba.ar" || localStorage.getItem('entrenador_id') == "666dd193caf84a7b159941d2"){
         setUrlPath(VALU_MARCHE )
-    }else if(localStorage.getItem('email') == "Agu.arenaspf@gmail.com" || localStorage.getItem('entrenador_id') == "6887d82d7e742d5bca1eada6"){
+    } else if(localStorage.getItem('email') == "Agu.arenaspf@gmail.com" || localStorage.getItem('entrenador_id') == "6887d82d7e742d5bca1eada6"){
         setUrlPath(AGUSTIN_ARENAS)
+    } else if(localStorage.getItem('email') == "leonel.strength-trainer@gmail.com" || localStorage.getItem('entrenador_id') == "689cd44499809e2519de8333"){
+        setUrlPath(LEONEL_ORTIZ)
     }else{
         setUrlPath(TOM)
     }
