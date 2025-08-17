@@ -729,337 +729,383 @@ const saveDriveLink = async () => {
                 <h2 className=" p-2 mb-0 text-start ">Rutina del día</h2>
               
                     {modifiedDay.map((element, idx) => {
-                       const { setsCol, repsCol, pesoCol, restCol } = getCols(element.reps);
-                      const isExercise = element.type === 'exercise';
-                      const isBlock = element.type === 'block';
-                      const number     = element.numberExercise || element.numberCircuit;
-                      const name       = typeof element.name === 'object' ? element.name.name : element.name;
-                      const backoffLabel = (
-                        element.name?.titleName
-                        && element.name.titleName.trim() !== ""
-                      )
-                        ? element.name.titleName
-                        : "Back off";
+  // ⚠️ Usar el peso del elemento para calcular columnas (antes estaba element.reps)
+  const { setsCol, repsCol, pesoCol, restCol } = getCols(element.peso);
+  const isExercise = element.type === 'exercise';
+  const isBlock = element.type === 'block';
+  const number = element.numberExercise || element.numberCircuit;
+  const name = typeof element.name === 'object' ? element.name.name : element.name;
+  const backoffLabel =
+    (element.name?.titleName && element.name.titleName.trim() !== "")
+      ? element.name.titleName
+      : "Back off";
 
-                      return (
-                        <div
-                          key={`${element.exercise_id}-${idx}`}
-                          ref={el => (cardRefs.current[idx] = el)}
-                          className="px-0 mb-3"
-                        >
-                          <div className="row justify-content-center bg-light border rounded-2 m-0 mb-3">
-                            {/* — CABECERA (número + nombre) — */}
-                            <div className={`col-12 ${element.type !== 'block' && 'widgetNumber' } py-2`} style={{backgroundColor: element.type == 'block' && element.color}}>
-                              <div className="row justify-content-center">
-                                <div className="col-1 m-auto text-light">
-                                  {renderNumberIcon(number)}
-                                </div>
-                                
-                                <div className="col-10 m-auto text-start">
-                                  <p
-                                    className="stylesNameExercise text-light mb-0"
-                                    id={idx === 0 ? 'nombre' : null}
-                                  >
-                                    {isExercise ? name : isBlock ? <span>{element.name}</span>: <span>{element.type} - {element.typeOfSets} </span> }
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
+  return (
+    <div
+      key={`${element.exercise_id}-${idx}`}
+      ref={el => (cardRefs.current[idx] = el)}
+      className="px-0 mb-3"
+    >
+      <div className="row justify-content-center bg-light border rounded-2 m-0 mb-3">
+        {/* — CABECERA (número + nombre) — */}
+        <div
+          className={`col-12 ${element.type !== 'block' && 'widgetNumber'} py-2`}
+          style={{ backgroundColor: element.type == 'block' && element.color }}
+        >
+          <div className="row justify-content-center">
+            <div className="col-1 m-auto text-light">
+              {renderNumberIcon(number)}
+            </div>
 
-                            {/* — CUERPO: sets/reps/peso + timer o tabla de circuito — */}
-                            {isExercise ? (
-                              <>
-                                 
-                                    <div className={`${setsCol} p-0 mt-4 pt-2 mb-2`}>
-                                      <span className="stylesBadgesItemsExerciseSpan d-block">
-                                        {element.sets}
-                                      </span>
-                                      <p className="fontStylesSpan">Sets</p>
-                                    </div>
-                                  
-                                <div className={`${repsCol} p-0 mt-4 pt-2 mb-2`}>
-                                  {Array.isArray(element.reps) ?
-                                    <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
-                                      {element.reps.map((r, i) => (
-                                        <React.Fragment key={i}>
-                                          <span
-                                            className="stylesBadgesItemsExerciseSpan arrayBadge"
-                                          >
-                                            {r}
-                                          </span>
-                                          {i < element.reps.length - 1 && (
-                                            <span>-</span>
-                                          )}
-                                        </React.Fragment>
-                                      ))}
-                                    </span>
-                                    : (
-                                    <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
-                                      {element.reps}
-                                    </span>
-                                  )}
-                                  <p className="fontStylesSpan">Reps</p>
-                                </div>
-                                <div className={`${pesoCol} p-0 mt-4 pt-2 mb-2`}>
-                                  <span className="stylesBadgesItemsExerciseSpan d-block">
-                                    {element.peso ? element.peso : '-'}
-                                  </span>
-                                  <p className="fontStylesSpan">Peso</p>
-                                </div>
-                                <div className={`${restCol} p-0 mt-3 mb-2`}>
-                                  <CountdownTimer initialTime={element.rest}/>
-                                  <p className="fontStylesSpan mt-2 mb-1">Descanso</p>
-                                </div>
-                              </>
-                      ) : isBlock ?
-                          element.exercises.map((ex, j) => {
-                          // 1) Desestructuras aquí, usando ex.peso
-                          const { setsCol, repsCol, pesoCol, restCol } = getCols(ex.peso);
+            <div className="col-10 m-auto text-start">
+              <p
+                className="stylesNameExercise text-light mb-0"
+                id={idx === 0 ? 'nombre' : null}
+              >
+                {isExercise
+                  ? name
+                  : isBlock
+                    ? <span>{element.name}</span>
+                    : <span>{element.type} - {element.typeOfSets}</span>}
+              </p>
+            </div>
+          </div>
+        </div>
 
-                          // 2) Haces return de tu JSX dentro de llaves
-                          return (
-                            <>
-                            <div key={ex.exercise_id} className="col-12 mb-2 mb-4  shadow-personalized">
-                              <div className="row justify-content-around rounded-2 p-2 align-items-center ">
-                              
-                                <div className="col-1 text-center">
-                                  {renderNumberIcon(ex.numberExercise)}
-                                </div>
-                            
-                                <div className="col-11 text-start">
-                                  {typeof ex.name === 'object' ? ex.name.name : ex.name}
-                                </div>
-                              
-                              <div className={`${setsCol} p-0 mt-4 mb-2`}>
-                                  <span className="stylesBadgesItemsExerciseSpan d-block">
-                                    {ex.sets}
-                                  </span>
-                                  <div className="fontStylesSpan">Sets</div>
-                                </div>
-                                
-                                <div className={`${repsCol} p-0 mt-4 mb-2`}>
-                                  {Array.isArray(ex.reps) ? (
-                                    ex.reps.map((r,k) => (
-                                      <React.Fragment key={k}>
-                                        <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
-                                        {k < ex.reps.length - 1 && <span className="">-</span>}
-                                      </React.Fragment>
-                                    ))
-                                  ) : (
-                                    <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>
-                                  )}
-                                  <div className="fontStylesSpan">
-                                    Reps
-                                    
-                                  </div>
-                                </div>
-                                {/* Peso */}
-                                <div className={`${pesoCol} p-0 mt-4 mb-2`}>
-                                  <span className="stylesBadgesItemsExerciseSpan d-block">
-                                    {ex.peso || '-'}
-                                  </span>
-                                  <div className="fontStylesSpan">Peso</div>
-                                </div>
-                                {/* Descanso */}
-                                <div className={`${restCol} p-0 mt-3 mb-2`}>
-                                  <CountdownTimer initialTime={ex.rest} />
-                                  <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
-                                </div>
-                              </div>
+        {/* — CUERPO: sets/reps/peso + timer o tabla de circuito — */}
+        {isExercise ? (
+          <>
+            <div className={`${setsCol} p-0 mt-4 pt-2 mb-2`}>
+              <span className="stylesBadgesItemsExerciseSpan d-block">
+                {element.sets}
+              </span>
+              <p className="fontStylesSpan">Sets</p>
+            </div>
 
-                              {element.name?.approximations?.length > 0 && (
-                            <>
-                              <span className="styleInputsNote-back ">
-                                {element.name.approxTitle ?? 'Aproximaciones'}
-                              </span>
-                              <div className="colorNote3 py-2 rounded-1 ">
-                                {element.name.approximations.map((ap, i) => (
-                                  <div className="row my-1">
-                                    <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
-                                    <p key={i} className="mb-0  col-5 text-start">
-                                  
-                                      {ap.reps} reps / {ap.peso}
-                                    </p>
-                                  </div>
-                                ))}
-                            </div>
-                            </>
+            <div className={`${repsCol} p-0 mt-4 pt-2 mb-2`}>
+              {Array.isArray(element.reps) ? (
+                <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
+                  {element.reps.map((r, i) => (
+                    <React.Fragment key={i}>
+                      <span className="stylesBadgesItemsExerciseSpan arrayBadge">
+                        {r}
+                      </span>
+                      {i < element.reps.length - 1 && <span>-</span>}
+                    </React.Fragment>
+                  ))}
+                </span>
+              ) : (
+                <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
+                  {element.reps}
+                </span>
+              )}
+              <p className="fontStylesSpan">Reps</p>
+            </div>
+
+            <div className={`${pesoCol} p-0 mt-4 pt-2 mb-2`}>
+              <span className="stylesBadgesItemsExerciseSpan d-block">
+                {element.peso ? element.peso : '-'}
+              </span>
+              <p className="fontStylesSpan">Peso</p>
+            </div>
+
+            <div className={`${restCol} p-0 mt-3 mb-2`}>
+              <CountdownTimer initialTime={element.rest} />
+              <p className="fontStylesSpan mt-2 mb-1">Descanso</p>
+            </div>
+          </>
+        ) : isBlock ? (
+          element.exercises.map((ex, j) => {
+
+            const isInnerExercise = ex.type === 'exercise';
+            const isInnerCircuit  = !isInnerExercise;
+
+            const innerNumber = ex.numberExercise ?? ex.numberCircuit;
+
+            const innerName = isInnerExercise
+              ? (typeof ex.name === 'object' ? ex.name.name : ex.name)
+              : (ex.type || 'Circuito');
+
+            const cols = isInnerExercise ? getCols(ex.peso) : null;
+
+            const blockBackoffLabel =
+              (ex?.name?.titleName && ex.name.titleName.trim() !== "")
+                ? ex.name.titleName
+                : "Back off";
+
+                  // helper para mostrar "type - typeOfSet" en circuitos
+            const renderCircuitTitle = (type, typeOfSetLike) => (
+              <span>
+                {type || 'Circuito'}
+                {typeOfSetLike ? <> - {typeOfSetLike}</> : null}
+              </span>
+            );
+
+            return (
+              <React.Fragment key={ex.exercise_id || ex._id || j}>
+                <div className="col-12 mb-2 mb-4 shadow-personalized">
+                  <div className="row justify-content-around rounded-2 p-2 align-items-center">
+                    <div className="col-1 text-center">
+                      {renderNumberIcon(innerNumber)}
+                    </div>
+
+                    <div className="col-11 text-start">
+                      {isInnerExercise
+                        ? innerName
+                        : renderCircuitTitle(
+                            ex.type,
+                            ex.typeOfSet ?? ex.typeOfSets
                           )}
+                    </div>
 
-                          {/* — BACKOFF y NOTAS (idéntico en ambos casos) — */}
-                          {ex.name?.backoff?.length > 0 && (
-                            <>
-                              <span className="styleInputsNote-back m-auto">{backoffLabel}</span>
-                              <div className="colorNote2 py-2 rounded-1  mb-2">
-                                {ex.name.backoff.map((line,i) => (
-                                  <p key={i} className="mb-0 ">
-                                    {line.sets}×{line.reps} / {line.peso}
-                                  </p>
-                                ))}
-                              </div>
-                            </>
-                              )}
-                              {ex.notas && (
-                                <>
-                                  <span className="styleInputsNote-back text-start">
-                                    Notas / otros
-                                  </span>
-                                  <div
-                                    className="colorNote py-2 rounded-1  "
-                                    style={{ whiteSpace: 'pre-wrap' }}
-                                  >
-                                    <p className="pb-0 mb-0">{ex.notas}</p>
-                                  </div>
-                                </>
-                              )}
-
-                              <div className="row justify-content-between align-items-center mt-2 px-2">
-                                  {/* Contador */}
-                                  <div className="col-auto">
-                                    <Contador max={ex.sets} />
-                                  </div>
-
-                                  {/* Icono YouTube o Imagen */}
-                                  <div className="col-auto">
-                                    <IconButton
-                                      aria-label="video"
-                                      disabled={!ex.video}
-                                      onClick={() => handleButtonClick(ex)}
-                                    >
-                                      {ex.isImage
-                                        ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
-                                        : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />
-                                      }
-                                    </IconButton>
-                                  </div>
-
-                                  {/* Botón de editar móvil */}
-                                  <div className="col-auto">
-                                    <IconButton
-                                      aria-label="editar"
-                                      onClick={() => handleEditMobileBlockExercise(ex, idx, j)}
-                                    >
-                                      <EditNoteIcon />
-                                    </IconButton>
-                                  </div>
-                                </div>
-    
-                            </div>
-                        </>
-                            );
-                    })
-                    :
-                    (
-                        <>
-
-                          <div className="col-12 p-0 mt-4 mb-2">
-                            <table className="table border-0">
-                              <thead>
-                                <tr>
-                                  <th className="border-0 text-start">Nombre</th>
-                                  <th className="border-0">Reps</th>
-                                  <th className="border-0">Peso</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {element.circuit.map(c => (
-                                  <tr key={c.idRefresh}>
-                                    <td className="border-0 text-start">{c.name}</td>
-                                    <td className="border-0">{c.reps}</td>
-                                    <td className="border-0">{c.peso}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </>
-                      )
-                    }
-
-                      {element.name?.approximations?.length > 0 && (
-                        <>
-                          <span className="styleInputsNote-back">
-                            {element.name.approxTitle ?? 'Aproximaciones'}
+                    {isInnerExercise ? (
+                      <>
+                        <div className={`${cols.setsCol} p-0 mt-4 mb-2`}>
+                          <span className="stylesBadgesItemsExerciseSpan d-block">
+                            {ex.sets}
                           </span>
-                          <div className="colorNote3 py-2 rounded-1 col-11">
-                            {element.name.approximations.map((ap, i) => (
-                              <div className="row my-1">
-                                <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
-                                <p key={i} className="mb-0  col-5 text-start">
-                              
-                                  {ap.reps} reps / {ap.peso}
-                                </p>
-                              </div>
-                            ))}
+                          <div className="fontStylesSpan">Sets</div>
                         </div>
-                        </>
-                      )}
 
-                      {/* — BACKOFF y NOTAS (idéntico en ambos casos) — */}
-                      {element.name?.backoff?.length > 0 && (
-                        <>
-                          <span className="styleInputsNote-back">{backoffLabel}</span>
-                          <div className="colorNote2 py-2 rounded-1 col-11 mb-2">
-                            {element.name.backoff.map((line,i) => (
-                              <p key={i} className="mb-0 ms-1">
-                                {line.sets}×{line.reps} / {line.peso}
-                              </p>
-                            ))}
-                          </div>
-                        </>
+                        <div className={`${cols.repsCol} p-0 mt-4 mb-2`}>
+                          {Array.isArray(ex.reps) ? (
+                            ex.reps.map((r, k) => (
+                              <React.Fragment key={k}>
+                                <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
+                                {k < ex.reps.length - 1 && <span className="">-</span>}
+                              </React.Fragment>
+                            ))
+                          ) : (
+                            <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>
                           )}
-                          {element.notas && (
-                            <>
-                              <span className="styleInputsNote-back text-start">
-                                Notas / otros
-                              </span>
-                              <div
-                                className="colorNote py-2 rounded-1 col-11 largoCarddds"
-                                style={{ whiteSpace: 'pre-wrap' }}
-                              >
-                                <p className="pb-0 mb-0">{element.notas}</p>
-                              </div>
-                            </>
-                          )}
-
-                          {/* — FOOTER: Contador + botones — */}
-                          {isExercise ? 
-                          <>
-                          <div className="row justify-content-between">
-                            
-                            <div className="col-6 text-start m-auto">
-                              <Contador max={element.sets}/>
-                            </div>
-                          
-                            
-                            <div className="col-3">
-                              <IconButton
-                                id={idx === 0 ? 'video' : null}
-                                aria-label="video"
-                                disabled={!element.video}
-                                onClick={() => handleButtonClick(element)}
-                              >
-                                {element.isImage
-                                  ? <ImageIcon className={!element.video ? 'imageIconDisabled' : 'imageIcon'}/>
-                                  : <YouTubeIcon className={element.video ? 'ytColor' : 'ytColor-disabled'}/>
-                                }
-                              </IconButton>
-                            </div>
-                            <IconButton
-                              id={idx===0?'edicion':null}
-                              aria-label="editar"
-                              className="p-0 col-3"
-                              onClick={() => handleEditMobileExercise(element,idx)}
-                            >
-                              <EditNoteIcon className="editStyle p-0"/>
-                            </IconButton>
-                          </div>
-                          </> : <div className={'mb-3'}></div> }
+                          <div className="fontStylesSpan">Reps</div>
                         </div>
-                    
+
+                        <div className={`${cols.pesoCol} p-0 mt-4 mb-2`}>
+                          <span className="stylesBadgesItemsExerciseSpan d-block">
+                            {ex.peso || '-'}
+                          </span>
+                          <div className="fontStylesSpan">Peso</div>
+                        </div>
+
+                        <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
+                          <CountdownTimer initialTime={ex.rest} />
+                          <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
+                        </div>
+                      </>
+                    ) : (
+                      // CIRCUITO dentro del bloque (sin type === 'exercise')
+                      <div className="col-12 p-0 mt-4 mb-2 ">
+                        <table className="table border-0 ">
+                          <thead>
+                            <tr className="bg-light">
+                              <th className="border-0 text-start bg-light">Nombre</th>
+                              <th className="border-0 bg-light">Reps</th>
+                              <th className="border-0 bg-light">Peso</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-light">
+                            {ex.circuit?.map((c, k) => (
+                              <tr key={c.idRefresh || k}>
+                                <td className="border-0 text-start bg-light">{c.name}</td>
+                                <td className="border-0 bg-light">{c.reps}</td>
+                                <td className="border-0 bg-light">{c.peso}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
+
+                  {/* — Aproximaciones / Backoff / Notas SOLO para ejercicios internos — */}
+                  {isInnerExercise && ex.name?.approximations?.length > 0 && (
+                    <>
+                      <span className="styleInputsNote-back ">
+                        {ex.name.approxTitle ?? 'Aproximaciones'}
+                      </span>
+                      <div className="colorNote3 py-2 rounded-1 ">
+                        {ex.name.approximations.map((ap, i) => (
+                          <div className="row my-1" key={i}>
+                            <span className="fs07em text-muted col-6">
+                              <b>{i + 1}°</b> aproximación -
+                            </span>
+                            <p className="mb-0 col-5 text-start">
+                              {ap.reps} reps / {ap.peso}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {isInnerExercise && ex.name?.backoff?.length > 0 && (
+                    <>
+                      <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
+                      <div className="colorNote2 py-2 rounded-1 mb-2">
+                        {ex.name.backoff.map((line, i) => (
+                          <p key={i} className="mb-0 ">
+                            {line.sets}×{line.reps} / {line.peso}
+                          </p>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {isInnerExercise && ex.notas && (
+                    <>
+                      <span className="styleInputsNote-back text-start">Notas / otros</span>
+                      <div className="colorNote py-2 rounded-1" style={{ whiteSpace: 'pre-wrap' }}>
+                        <p className="pb-0 mb-0">{ex.notas}</p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Footer solo para ejercicio interno */}
+                  {isInnerExercise && (
+                    <div className="row justify-content-between align-items-center mt-2 px-2">
+                      <div className="col-auto">
+                        <Contador max={ex.sets} />
+                      </div>
+
+                      <div className="col-auto">
+                        <IconButton
+                          aria-label="video"
+                          disabled={!ex.video}
+                          onClick={() => handleButtonClick(ex)}
+                        >
+                          {ex.isImage
+                            ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
+                            : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />
+                          }
+                        </IconButton>
+                      </div>
+
+                      <div className="col-auto">
+                        <IconButton
+                          aria-label="editar"
+                          onClick={() => handleEditMobileBlockExercise(ex, idx, j)}
+                        >
+                          <EditNoteIcon />
+                        </IconButton>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </React.Fragment>
+            );
+          })
+        ) : (
+          <>
+            <div className="col-12 p-0 mt-4 mb-2">
+              <table className="table border-0">
+                <thead>
+                  <tr>
+                    <th className="border-0 text-start">Nombre</th>
+                    <th className="border-0">Reps</th>
+                    <th className="border-0">Peso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {element.circuit.map(c => (
+                    <tr key={c.idRefresh}>
+                      <td className="border-0 text-start">{c.name}</td>
+                      <td className="border-0">{c.reps}</td>
+                      <td className="border-0">{c.peso}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {element.name?.approximations?.length > 0 && (
+          <>
+            <span className="styleInputsNote-back">
+              {element.name.approxTitle ?? 'Aproximaciones'}
+            </span>
+            <div className="colorNote3 py-2 rounded-1 col-11">
+              {element.name.approximations.map((ap, i) => (
+                <div className="row my-1" key={i}>
+                  <span className="fs07em text-muted col-6">
+                    <b>{i + 1}°</b> aproximación -
+                  </span>
+                  <p className="mb-0 col-5 text-start">
+                    {ap.reps} reps / {ap.peso}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* — BACKOFF y NOTAS (idéntico en ambos casos top-level) — */}
+        {element.name?.backoff?.length > 0 && (
+          <>
+            <span className="styleInputsNote-back">{backoffLabel}</span>
+            <div className="colorNote2 py-2 rounded-1 col-11 mb-2">
+              {element.name.backoff.map((line, i) => (
+                <p key={i} className="mb-0 ms-1">
+                  {line.sets}×{line.reps} / {line.peso}
+                </p>
+              ))}
+            </div>
+          </>
+        )}
+
+        {element.notas && (
+          <>
+            <span className="styleInputsNote-back text-start">Notas / otros</span>
+            <div
+              className="colorNote py-2 rounded-1 col-11 largoCarddds"
+              style={{ whiteSpace: 'pre-wrap' }}
+            >
+              <p className="pb-0 mb-0">{element.notas}</p>
+            </div>
+          </>
+        )}
+
+        {/* — FOOTER: Contador + botones — */}
+        {isExercise ? (
+          <>
+            <div className="row justify-content-between">
+              <div className="col-6 text-start m-auto">
+                <Contador max={element.sets} />
+              </div>
+
+              <div className="col-3">
+                <IconButton
+                  id={idx === 0 ? 'video' : null}
+                  aria-label="video"
+                  disabled={!element.video}
+                  onClick={() => handleButtonClick(element)}
+                >
+                  {element.isImage
+                    ? <ImageIcon className={!element.video ? 'imageIconDisabled' : 'imageIcon'} />
+                    : <YouTubeIcon className={element.video ? 'ytColor' : 'ytColor-disabled'} />
+                  }
+                </IconButton>
+              </div>
+
+              <IconButton
+                id={idx === 0 ? 'edicion' : null}
+                aria-label="editar"
+                className="p-0 col-3"
+                onClick={() => handleEditMobileExercise(element, idx)}
+              >
+                <EditNoteIcon className="editStyle p-0" />
+              </IconButton>
+            </div>
+          </>
+        ) : (
+          <div className={'mb-3'}></div>
+        )}
+      </div>
+    </div>
+  );
+})}
+
           
                   </div>
                 </div>
