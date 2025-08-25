@@ -161,21 +161,40 @@ function DayDetailsPage() {
 const [allWeeks, setAllWeeks] = useState([]);
 const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
 const isCurrentWeek = currentWeekIndex === 0;
-useEffect(() => {
-  const fetchWeeks = async () => {
-    try {
-      const weeks = await WeekService.findRoutineByUserId(id);
-      const sortedWeeks = weeks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // última primero
-      setAllWeeks(sortedWeeks);
+
+  useEffect(() => {
+    const fetchWeeks = async () => {
+      try {
+        const weeks = await WeekService.findRoutineByUserId(id);
+        const sortedWeeks = (weeks || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        ); // última primero
+        // ⬇️ Mostrar solo semanas visibles (si no existe la prop, se considera visible)
+        const visibleWeeks = sortedWeeks.filter(
+          (w) => !w?.visibility || w.visibility === 'visible'
+        );
       
-      const selectedIndex = sortedWeeks.findIndex(w => w._id === week_id);
-      setCurrentWeekIndex(selectedIndex !== -1 ? selectedIndex : 0);
-    } catch (err) {
-      console.error("Error al cargar semanas", err);
-    }
-  };
-  fetchWeeks();
-}, [id]);
+        setAllWeeks(visibleWeeks);
+      
+        if (visibleWeeks.length === 0) {
+          setCurrentWeekIndex(0);
+          return;
+        }
+      
+        const selectedIndex = visibleWeeks.findIndex((w) => w._id === week_id);
+        if (selectedIndex !== -1) {
+          setCurrentWeekIndex(selectedIndex);
+        } else {
+          // Si la semana actual está oculta, redirigimos a la primera visible
+          setCurrentWeekIndex(0);
+          navigate(`/routine/${id}/day/0/${visibleWeeks[0]._id}/0`, { replace: true });
+        }
+      } catch (err) {
+        console.error("Error al cargar semanas", err);
+      }
+    };
+    fetchWeeks();
+  }, [id, week_id, navigate]);
 
 function handleEditMobileBlockExercise(exercise, blockIndex, exerciseIndex) {
   setCompleteExercise(exercise);
@@ -427,6 +446,13 @@ const saveDriveLink = async () => {
         );
       }
       return <span>{nameData}</span>;
+    };
+
+    const getPlainName = (nameData) => {
+      if (typeof nameData === 'object' && nameData !== null) {
+        return nameData.name ?? '';
+      }
+      return nameData ?? '';
     };
 
     const getCols = peso => {
@@ -1122,7 +1148,7 @@ const saveDriveLink = async () => {
                         {selectedObject && (
                             <div className="row justify-content-center">
                                 <h3 className="text-center border-top border-bottom py-2 mb-2">
-                                    {selectedObject.name}
+                                    {getPlainName(selectedObject.name)}
                                 </h3>
                                 <div className="col-12 col-md-6 text-center mt-5">
                                     {selectedObject.isImage === true ? (

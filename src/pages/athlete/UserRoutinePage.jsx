@@ -9,7 +9,11 @@ import * as NotifyHelper from './../../helpers/notify.js';
 
 import Logo from '../../components/Logo.jsx';
 import ActionAreaCard from '../../components/MUI/ActionAreaCard.jsx';
-import { UserLock} from 'lucide-react';
+import { UserLock, Dumbbell, Calendar, Bolt} from 'lucide-react';
+
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CircleIcon from '@mui/icons-material/Circle';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
 
 function UserRoutinePage() {
     const { id } = useParams();
@@ -31,11 +35,68 @@ function UserRoutinePage() {
 
     const handleCloseDialog = () => setVisibleEdit(false);
 
-    // useEffect para cargar las rutinas del usuario
+    // ==== Helpers de fecha para orden y display ====
+    const parseDDMMYYYY = (fechaStr = '', horaStr = '') => {
+        try {
+            const [d, m, y] = (fechaStr || '').split('/').map(n => parseInt(n, 10));
+            const [hh = 0, mm = 0] = (horaStr || '00:00').split(':').map(n => parseInt(n, 10));
+            if (!y || !m || !d) return null;
+            return new Date(y, m - 1, d, hh, mm, 0, 0);
+        } catch {
+            return null;
+        }
+    };
+
+    const toTimestampSafe = (value) => {
+        if (!value) return 0;
+        if (value instanceof Date) return value.getTime();
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+            const t = new Date(value).getTime();
+            return Number.isFinite(t) ? t : 0;
+        }
+        if (typeof value === 'object') {
+            // Soporta { fecha: 'dd/MM/yyyy', hora: 'HH:mm' }
+            const maybe = parseDDMMYYYY(value.fecha, value.hora);
+            return maybe ? maybe.getTime() : 0;
+        }
+        return 0;
+    };
+
+    // ⬇⬇⬇ CAMBIO: ordenar SIEMPRE por created_at (DESC)
+    const getSortTime = (week) => {
+        return toTimestampSafe(week?.created_at);
+    };
+    // ⬆⬆⬆
+
+    // Etiqueta a mostrar en la UI: visible_at (si existe) o created_at
+    const getWeekDateLabel = (week) => {
+        if (week?.visible_at) {
+            const ts = toTimestampSafe(week.visible_at);
+            if (ts) return new Date(ts).toLocaleDateString('es-AR');
+        }
+        const ca = week?.created_at;
+        if (ca && typeof ca === 'object' && 'fecha' in ca) {
+            return ca.fecha || '—';
+        }
+        const ts = toTimestampSafe(ca);
+        return ts ? new Date(ts).toLocaleDateString('es-AR') : '—';
+    };
+    // ===============================================
+
     useEffect(() => {
         WeekService.findRoutineByUserId(id)
             .then(data => {
-                setRoutine(data);
+                // Mostrar solo semanas visibles: si no existe la prop, se considera visible
+                const visibleWeeks = Array.isArray(data)
+                  ? data.filter(w => !w?.visibility || w.visibility === 'visible')
+                  : [];
+
+                // ⬇⬇⬇ CAMBIO: Ordenar SOLO por created_at; DESC (más reciente primero)
+                const sorted = [...visibleWeeks].sort((a, b) => getSortTime(b) - getSortTime(a));
+                // ⬆⬆⬆
+
+                setRoutine(sorted);
                 NotifyHelper.instantToast('Semanas cargadas con éxito');
             });
     }, [id]);
@@ -95,6 +156,10 @@ function UserRoutinePage() {
         navigate(`/perfil/${id}`)
     };
 
+    const navigateToPage = (week_id, index_week) => {
+        navigate(`/routine/${id}/day/0/${week_id}/${index_week}`)
+    };
+
     return (
         <>
             <section className='container-fluid p-0'>
@@ -105,13 +170,13 @@ function UserRoutinePage() {
                 <section className='container'>
             {puedeVerRutina ? ( <>
                 <div className='transition-rigth-to-medium'>
-                    <h2 className='text-center mt-4 mb-3'>Ver rutina</h2>
+                    <h2 className='text-center mt-4 mb-3'>Hola {username}!</h2>
                     <p className='my-3 text-center'>
-                        Acá vas a encontrar todas las semanas de tu planificación. Desplega la semana y accedé al día de entrenamiento que te corresponde!
+                        Debajo, verás todas las semanas que tu entrenador cargó.
                     </p>
                 </div>
 
-                {userProfile && (
+                {userProfile && userProfile.devolucion && (
                     <div className="card p-3 my-3">
                         <h5 className="card-title">Correcciones / Devolución</h5>
                         {userProfile.devolucionFecha && (
@@ -126,9 +191,9 @@ function UserRoutinePage() {
                 )}
 
 
-                <article className='row justify-content-center mb-4'>
-                    {routine != null && (
-                        <div className="accordion col-12 col-md-4" id="Routine">
+                {routine != null && (
+                    <article className='row justify-content-center mb-4 mt-4'>
+                    
                             {routine.map((week, indexWeek) => {
                                 // Alternar clases dinámicas para cada entrada según su posición
                                 const animationClass = indexWeek % 3 === 0
@@ -138,18 +203,45 @@ function UserRoutinePage() {
                                     : 'from-right';
 
                                 return (
-                                    <Link
+                                    <div
                                         ref={el => (weekRefs.current[indexWeek] = el)}  // Asignar ref dinámicamente a cada elemento
                                         key={indexWeek}
-                                        className={`list-group-item border-0 border-bottom text-center m-0 p-3 ClassBGHover box ${animationClass}`} // Clases dinámicas añadidas
-                                        to={`/routine/${id}/day/0/${week._id}/${indexWeek}`}>
-                                        <ActionAreaCard title={week.name} body={week.created_at.fecha} />
-                                    </Link>
+                                        className={`col-11 stylesBoxWeeks box pt-2 pb-1 mt-2 ${animationClass} mb-4 rounded-3`} // Clases dinámicas añadidas
+                                        onClick={() => navigateToPage(week._id, indexWeek)}
+                                        >
+                                        <div className='row'>
+                                            <div className='col-1'>
+                                                <CircleIcon className='fs07em text-primary' />
+                                            </div>
+                                            <div className='col-11'>
+                                                <p className='m-0'>{week.name}</p>
+                                            </div>
+
+                                            <div className='col-5 mt-3 mb-2'>
+                                                <div className='row badgeFecha rounded-2 py-1 m-auto'>
+                                                    <div className='col-3 ps-1 m-auto'><CalendarTodayIcon className='fs08em text-primary' /></div>
+                                                    {/* Muestra visible_at si existe; si no, created_at */}
+                                                    <div className='col-8 ps-0 fs07em m-auto'>
+                                                        {getWeekDateLabel(week)}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {week.block && week.block.name && <div className='col-7 mt-3 mb-2' >
+                                                <div className='row badgeFecha rounded-2 py-1 m-auto' style={{backgroundColor: `${week.block.color}`}}>
+                                                    <div className='col-2 ps-1 m-auto'><ViewStreamIcon className='fs07em'/></div>
+                                                    <div className='col-10 fs07em m-auto px-0'>{week.block.name}</div>
+                                                </div>
+                                            </div> }
+                                        
+                                            
+                                        </div>
+                                    </div>
                                 );
                             })}
-                        </div>
-                    )}
-                </article>
+                     
+                   
+                </article> )}
 
                 </> ) : 
                 (

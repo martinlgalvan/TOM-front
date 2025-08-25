@@ -18,22 +18,23 @@ async function findRoutineByUserId(user_id) {
 }
 
 
-//Crea un dia
-async function createWeek(name, user_id) {
+//Crea una semana
+async function createWeek(body, user_id) {
+    // body típicamente: { name: 'Semana X', visibility: 'visible' }
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'auth-token': localStorage.getItem('token')
         },
-        body: JSON.stringify(name)
+        body: JSON.stringify(body)
     })
     .then(response => {
         if (response.ok) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear la semana')
         }
     })
 }
@@ -52,7 +53,7 @@ async function createClonWeek(user_id, fecha) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear la semana clon')
         }
     })
 }
@@ -71,13 +72,12 @@ async function findByWeekId(week_id) {
                 return response.json()
             }
             else {
-                throw new Error('No se pudo obtener los dias')
+                throw new Error('No se pudo obtener la semana')
             }
         })
 }
 
-//Editar el nombre de una semana 
-
+//Editar rutina completa (array de días/ejercicios)
 async function editWeek(week_id, routine) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}`, {
         method: 'PATCH',
@@ -92,7 +92,7 @@ async function editWeek(week_id, routine) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo editar el dia')
+            throw new Error('No se pudo editar la rutina')
         }
     })
 }
@@ -113,8 +113,9 @@ async function assignBlockToRoutine(weekId, block) {
       if (!res.ok) throw new Error("Error actualizando bloque");
       return res.json();
     });
-  }
+}
 
+// Edita el nombre de una semana
 async function editNameWeek(week_id, name) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/`, {
         method: 'PATCH',
@@ -129,7 +130,7 @@ async function editNameWeek(week_id, name) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo editar el dia')
+            throw new Error('No se pudo editar el nombre de la semana')
         }
     })
 }
@@ -169,7 +170,25 @@ async function exportToExcel(data) {
     })
 }
 
-
+/**
+ * ✅ NUEVO: actualización genérica de propiedades de una semana
+ * Uso típico: updateWeekProperties(weekId, { visibility: 'hidden' })
+ * También te sirve a futuro: updateWeekProperties(weekId, { name: 'Semana 8', tags: [...] })
+ */
+async function updateWeekProperties(weekId, partial) {
+    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${weekId}/properties`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify(partial)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('No se pudieron actualizar las propiedades');
+        return res.json();
+    });
+}
 
 export {
     findRoutineByUserId,
@@ -180,6 +199,7 @@ export {
     editNameWeek,
     deleteWeek,
     assignBlockToRoutine,
-
-    exportToExcel
+    exportToExcel,
+    // NUEVO
+    updateWeekProperties
 }

@@ -64,6 +64,8 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CircleIcon from '@mui/icons-material/Circle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 
 
 import {
@@ -177,7 +179,7 @@ function DayEditDetailsPage() {
   const [useCustomTitle, setUseCustomTitle] = useState(false);
   const [backoffTitleName, setBackoffTitleName] = useState("");
 
-  const productRefsSimple = useRef([]);
+  const productRefsSimple = useRef({});
   const productRefsCircuit = useRef([]);
 
   const [circuitToDelete, setCircuitToDelete] = useState(null);
@@ -187,6 +189,9 @@ const [blockToDelete, setBlockToDelete] = useState({ index: null, name: "" });
 
 const [exerciseToDeleteInCircuit, setExerciseToDeleteInCircuit] = useState(null);
 const [showDeleteExerciseInCircuitDialog, setShowDeleteExerciseInCircuitDialog] = useState(false);
+
+const [dayClipboard, setDayClipboard] = useState(() => localStorage.getItem('copiedDay') || null);
+const hasDayClipboard = Boolean(dayClipboard || localStorage.getItem("copiedDay"));
 
 // Lista fija de nombres de bloque
 const BLOCK_NAME_OPTIONS = [
@@ -759,63 +764,75 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
         </>
       );}
        else if (field === "video") {
-      const shouldGlow = glowVideo[index];
-      // helper común
-      const applyChange = (value) =>
-        blockIndex != null
-          ? changeBlockExerciseData(blockIndex, index, field, value)
-          : changeModifiedData(index, value, field);
+  // clave única por bloque+ejercicio o por ejercicio simple
+  const refKey = blockIndex != null ? `b-${blockIndex}-e-${index}` : `s-${index}`;
 
-      return (
-        <>
-          <IconButton
-            aria-label="video"
-            className={`w-100 ${shouldGlow ? 'glowing-icon' : ''}`}
-            onClick={(e) => {
-              productRefsSimple.current[blockIndex ?? index].toggle(e);
-            }}
-          >
-            <YouTubeIcon className="colorIconYoutube largoIconYt" />
-          </IconButton>
-          <div>
-            <OverlayPanel
-              ref={(el) => (productRefsSimple.current[blockIndex ?? index] = el)}
-            >
-              <div className="mb-3">
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id={`checkbox-image-${blockIndex ?? index}`}
-                    checked={!!day[indexDay]?.exercises[blockIndex ?? index]?.isImage}
-                    onChange={(e) => applyChange(e.target.checked)}
-                  />
-                  <label
-                    className="form-check-label"
-                    htmlFor={`checkbox-image-${blockIndex ?? index}`}
-                  >
-                    ¿Es una imagen?
-                  </label>
-                  <span className="d-block textSpanVideo">
-                    Si tildás esta opción, e ingresas un link de una imagen, tu alumno la verá.
-                  </span>
-                </div>
-              </div>
+  // setter exclusivo para isImage
+  const setIsImage = (checked) => {
+    if (blockIndex != null) {
+      changeBlockExerciseData(blockIndex, index, "isImage", checked);
+    } else {
+      changeModifiedData(index, checked, "isImage");
+    }
+  };
 
-              <input
-                ref={(el) =>
-                  (inputRefs.current[`${blockIndex ?? index}-${field}`] = el)
-                }
-                className="form-control ellipsis-input text-center"
-                type="text"
-                defaultValue={data}
-                onChange={(e) => applyChange(e.target.value)}
-              />
-            </OverlayPanel>
+  // valor actual de isImage según sea bloque o ejercicio simple
+  const currentIsImage =
+    blockIndex != null
+      ? !!day[indexDay]?.exercises?.[blockIndex]?.exercises?.[index]?.isImage
+      : !!day[indexDay]?.exercises?.[index]?.isImage;
+
+  return (
+    <>
+      <IconButton
+        aria-label="video"
+        className={`w-100 ${glowVideo[refKey] ? "glowing-icon" : ""}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          productRefsSimple.current[refKey]?.toggle(e);
+        }}
+      >
+        <YouTubeIcon className="colorIconYoutube largoIconYt" />
+      </IconButton>
+
+      <OverlayPanel ref={(el) => (productRefsSimple.current[refKey] = el)}>
+        <div className="mb-3">
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id={`checkbox-image-${refKey}`}
+              checked={currentIsImage}
+              onChange={(e) => setIsImage(e.target.checked)}
+            />
+            <label className="form-check-label" htmlFor={`checkbox-image-${refKey}`}>
+              ¿Es una imagen?
+            </label>
+            <span className="d-block textSpanVideo">
+              Si tildás esta opción, e ingresas un link de una imagen, tu alumno la verá.
+            </span>
           </div>
-        </>
-      );
-    } else if (field === "notas") {
+        </div>
+
+        <input
+          ref={(el) => (inputRefs.current[`${refKey}-${field}`] = el)}
+          className="form-control ellipsis-input text-center"
+          type="text"
+          defaultValue={data}
+          onChange={(e) => {
+            if (blockIndex != null) {
+              // 🔧 dentro de bloque: actualiza SOLO ese ejercicio
+              changeBlockExerciseData(blockIndex, index, "video", e.target.value);
+            } else {
+              // ejercicio simple
+              changeModifiedData(index, e.target.value, "video");
+            }
+          }}
+        />
+      </OverlayPanel>
+    </>
+  );
+} else if (field === "notas") {
       return (
         <InputTextarea
           ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
@@ -942,6 +959,108 @@ const handleDeleteClick = (exercise) => {
   const confirmCancel = () => {
     setShowCancelDialog(true);
   };
+
+   // ======== COPY / PASTE DÍA ========
+ const copyDayToClipboard = () => {
+   const src = day?.[indexDay];
+   if (!src) {
+     Notify.instantToast("No hay día seleccionado");
+     return;
+   }
+   try {
+     const json = JSON.stringify(src);
+     localStorage.setItem("copiedDay", json);
+     setDayClipboard(json);
+     Notify.instantToast("Día copiado con éxito!");
+   } catch (e) {
+     console.error("Error al copiar día:", e);
+     Notify.instantToast("Error al copiar el día");
+   }
+ };
+
+ // Clona un ejercicio simple (suelto)
+ const cloneSimpleExercise = (ex) => {
+   const { exercise_id, ...rest } = ex || {};
+   return { ...rest, exercise_id: new ObjectId().toString() };
+ };
+
+ // Clona un objeto de circuito (raíz o dentro de bloque)
+ const cloneCircuit = (ex) => {
+   const { exercise_id, circuit = [], ...rest } = ex || {};
+   const newCircuit = Array.isArray(circuit)
+     ? circuit.map(item => ({ ...item, idRefresh: RefreshFunction.generateUUID() }))
+     : [];
+   return { ...rest, exercise_id: new ObjectId().toString(), circuit: newCircuit };
+ };
+
+ // Decide cómo clonar un elemento (bloque / ejercicio / circuito)
+ const cloneAnyExerciseOrStructure = (el) => {
+   if (!el) return el;
+   if (el.type === 'block') return cloneBlock(el);
+   if (Array.isArray(el.circuit)) return cloneCircuit(el);
+   return cloneSimpleExercise(el);
+ };
+
+ // Clona un bloque con todos sus ejercicios internos
+ const cloneBlock = (block) => {
+   const { block_id, exercises = [], ...rest } = block || {};
+   const clonedInner = exercises.map(inner => cloneAnyExerciseOrStructure(inner));
+   // re-enumerar internos
+clonedInner.forEach((it, idx) => {
+     if (it.numberExercise == null || it.numberExercise === '') {
+       it.numberExercise = `${idx + 1}`;
+     }
+   });
+   return {
+     ...rest,
+     type: 'block',
+     block_id: new ObjectId().toString(),
+     exercises: clonedInner
+   };
+ };
+
+ // Genera un nuevo día a partir de uno existente
+ const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
+   const { _id: _omit, exercises = [] } = srcDay || {};
+   const clonedExercises = exercises.map(el => cloneAnyExerciseOrStructure(el));
+   // re-enumerar raíz
+   clonedExercises.forEach((it, idx) => {
+     if (it.numberExercise == null || it.numberExercise === '') {
+        it.numberExercise = `${idx + 1}`;
+      }
+    });
+   return {
+     _id: new ObjectId().toString(),
+      name: `Día ${nextIndexNumber}`,
+     lastEdited: new Date().toISOString(),
+     exercises: clonedExercises
+   };
+ };
+
+ const pasteDayFromClipboard = () => {
+   const raw = dayClipboard || localStorage.getItem("copiedDay");
+   if (!raw) {
+     Notify.instantToast("No hay un día copiado");
+     return;
+   }
+   try {
+     const src = typeof raw === "string" ? JSON.parse(raw) : raw;
+     const updatedDays = [...modifiedDay];
+     const newDay = sanitizeDayForPaste(src, updatedDays.length + 1);
+     updatedDays.push(newDay);
+     setAllDays(updatedDays);
+     setDay(updatedDays);
+     setModifiedDay(updatedDays);
+     setCurrentDay(newDay);
+     setIndexDay(updatedDays.length - 1);
+     setIsEditing(true);
+     Notify.instantToast("Día pegado con éxito!");
+   } catch (e) {
+     console.error("Error al pegar día:", e);
+     Notify.instantToast("Contenido copiado inválido");
+   }
+ };
+ // ======== FIN COPY / PASTE DÍA ========
 
   const addNewDay = () => {
   // ⇨ Partimos de modifiedDay (no de allDays)
@@ -1643,6 +1762,9 @@ const BLOCK_COLOR_OPTIONS = [
   { label: '', value: '#0fcff1af' },
   { label: '', value: '#19269bcc' },
   { label: '', value: '#b935b9dc' },
+  { label: "Sunset", value: "linear-gradient(135deg, rgba(255,136,0,0.84) 0%, rgba(240,212,53,0.79) 100%)" },
+  { label: "Aqua Blend", value: "linear-gradient(135deg, rgba(15,207,241,0.69) 0%, rgba(25,38,155,0.8) 100%)" },
+  { label: "Uva", value: "linear-gradient(135deg, rgba(185,53,185,0.86) 0%, rgba(25,38,155,0.8) 100%)" },
 ];
 
 function colorItemTemplate(option) {
@@ -2215,6 +2337,26 @@ function colorItemTemplate(option) {
                       <span></span>
                          <div className=' col-1'><DeleteIcon /></div>
                       <div className='text-center col-10'><strong >Eliminar {`${currentDay && currentDay.name}`}</strong></div>
+                    </div>
+
+                    <div
+                      id="copiarDia"
+                      className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3"
+                      onClick={copyDayToClipboard}
+                    >
+                      <div className=' col-1'><ContentCopyIcon /></div>
+                      <div className='text-center col-10'><strong>Copiar día</strong></div>
+                    </div>
+                  
+                    {/* Pegar día */}
+                    <div
+                      id="pegarDia"
+                      className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3"
+                      onClick={pasteDayFromClipboard}
+                      style={{ opacity: hasDayClipboard ? 1 : 0.5, pointerEvents: hasDayClipboard ? 'auto' : 'none' }}
+                    >
+                      <div className=' col-1'><LibraryAddIcon /></div>
+                      <div className='text-center col-10'><strong>Pegar día</strong></div>
                     </div>
 
                   </div>

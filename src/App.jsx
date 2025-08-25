@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Link, useNavigate, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import React, { useState, useEffect } from 'react'
 
 import * as UserService from './services/users.services.js'
@@ -69,9 +69,7 @@ function App() {
     const navigate = useNavigate()
     const id = localStorage.getItem('_id')
     const [user, setUser] = useState()
-    const [actualUser, setActualUser] = useState()
-    const { color } = useColor();
-    const { textColor } = useColor();
+    const { color, textColor } = useColor();
     const [status, setStatus] = useState()
 
     const [menuSidebar, setMenuSidebar] = useState(null);
@@ -83,121 +81,127 @@ function App() {
 
     const [openDialogLogout, setOpenDialogLogout] = useState(false);
 
-    const location = useLocation(); // Obtén la ubicación actual
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(true);
 
     const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
     const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
     const [pendingAnnouncements, setPendingAnnouncements] = useState([]);
     const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
-  
 
+    // ---- Helpers de ruta ----
+    const normalizePath = (p) => (p || '/').replace(/\/+$/,''); // sin barra final
+
+    const hasUserContext = (pathname) => {
+      const p = normalizePath(pathname);
+      // Solo consideramos "con usuario" las rutas que terminan con :username
+      return /^\/user\/routine\/[^/]+\/[^/]+$/i.test(p)
+          || /^\/routine\/user\/[^/]+\/week\/[^/]+\/day\/[^/]+\/[^/]+$/i.test(p);
+    };
+
+    const getUsernameFromUrl = (pathname) => {
+      if (!hasUserContext(pathname)) return null;
+      const last = normalizePath(pathname).split('/').filter(Boolean).pop();
+      return last ? decodeURIComponent(last) : null;
+    };
+
+    const isExcludedForUserTitle = (pathname) => {
+      const p = normalizePath(pathname);
+      // Gestión de alumnos, Perfil (coach), Biblioteca, Planificador
+      if (p.startsWith(`/usuarios/${id}`)) return true;
+      if (p === '/personalize') return true;
+      if (p.startsWith('/exercises')) return true;
+      if (p.startsWith(`/planificator/${id}`)) return true;
+      return false;
+    };
+
+    const currentUsername = getUsernameFromUrl(location.pathname);
+    const inUserContext = hasUserContext(location.pathname);
+    const excludedForTitle = isExcludedForUserTitle(location.pathname);
 
     useEffect(() => {
         registerServiceWorker();
     }, []);
 
+    // Listener PWA correctamente limpiado
     useEffect(() => {
-        setActualUser(localStorage.getItem('actualUsername'))
-    }, [location.pathname]);
-
-    useEffect(() => {
-        if (isAutenticated) {
-            const isCheckboxChecked = localStorage.getItem('noShowPopup');
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                setDeferredPrompt(e);
-                if (isCheckboxChecked === 'false') {
-                    setShowInstallPopup(true); // Muestra el popup de instalación
-                }
-                setShowInstallButton(true); // Muestra el botón
-            });
-        }
-        return () => window.removeEventListener('beforeinstallprompt', () => { });
+        if (!isAutenticated) return;
+        const onBeforeInstall = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            const isCheckboxChecked = localStorage.getItem('noShowPopup') ?? 'false';
+            if (isCheckboxChecked === 'false') {
+                setShowInstallPopup(true);
+            }
+            setShowInstallButton(true);
+        };
+        window.addEventListener('beforeinstallprompt', onBeforeInstall);
+        return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall);
     }, [isAutenticated]);
 
-useEffect(() => {
-  const role   = localStorage.getItem('role');
-  const userId = localStorage.getItem('_id');
+    useEffect(() => {
+      const role   = localStorage.getItem('role');
+      const userId = localStorage.getItem('_id');
 
-  if (role !== 'admin' && userId && isAutenticated) {
-    UserService.getUnreadAnnouncements(userId)
-      .then(res => {
-        // 1) Convertimos cada anuncio y lo filtramos:
-        const pending = res.filter(anuncio => {
-          // A) Si es “once”, que sólo se muestre el día correspondiente:
-          if (anuncio.mode === 'once') {
-            const showDate   = new Date(anuncio.show_at_date);
-            const today      = new Date();
-            // comparamos sólo año-mes-día
-            if (
-              showDate.getUTCFullYear()  !== today.getUTCFullYear() ||
-              showDate.getUTCMonth()     !== today.getUTCMonth()    ||
-              showDate.getUTCDate()      !== today.getUTCDate()
-            ) {
-              return false;
+      if (role !== 'admin' && userId && isAutenticated) {
+        UserService.getUnreadAnnouncements(userId)
+          .then(res => {
+            const pending = res.filter(anuncio => {
+              if (anuncio.mode === 'once') {
+                const sameYMD = (a,b) => a.toDateString() === b.toDateString();
+                if (!sameYMD(new Date(anuncio.show_at_date), new Date())) return false;
+              }
+              const readByIds = anuncio.read_by.map(rb => {
+                if (typeof rb === 'object') {
+                  return rb.$oid || rb._id || '';
+                }
+                return String(rb);
+              });
+              return !readByIds.includes(userId);
+            });
+            setPendingAnnouncements(pending);
+
+            if (pending.length > 0) {
+              setCurrentAnnouncement(pending[0]);
+              setCurrentAnnouncementIndex(0);
+              setShowAnnouncementDialog(true);
+            } else {
+              setCurrentAnnouncement(null);
+              setCurrentAnnouncementIndex(0);
+              setShowAnnouncementDialog(false);
             }
-          }
+          })
+          .catch(err => console.error("Error buscando anuncios:", err));
+      }
+    }, [location.pathname,isAutenticated]);
 
-          // B) Extraemos sólo los IDs de `read_by`
-          const readByIds = anuncio.read_by.map(rb => {
-            // Si viene como { $oid: "..." }
-            if (typeof rb === 'object') {
-              return rb.$oid || rb._id || '';
-            }
-            // Si ya viene como string
-            return String(rb);
-          });
+    const handleDismissAnnouncement = async () => {
+        const isLast = currentAnnouncementIndex === pendingAnnouncements.length - 1;
 
-          // C) Si ya estoy en read_by, lo descartamos
-          return !readByIds.includes(userId);
-        });
-        // 2) Actualizamos el estado
-        setPendingAnnouncements(pending);
-
-        if (pending.length > 0) {
-          setCurrentAnnouncement(pending[0]);
-          setCurrentAnnouncementIndex(0);
-          setShowAnnouncementDialog(true);
+        if (isLast) {
+            await Promise.all(pendingAnnouncements.map(anuncio =>
+                UserService.markAnnouncementRead(anuncio._id, id)
+            ));
+            setShowAnnouncementDialog(false);
         } else {
-          // si no queda ninguno, cerramos
-          setCurrentAnnouncement(null);
-          setCurrentAnnouncementIndex(0);
-          setShowAnnouncementDialog(false);
+            const nextIndex = currentAnnouncementIndex + 1;
+            setCurrentAnnouncementIndex(nextIndex);
+            setCurrentAnnouncement(pendingAnnouncements[nextIndex]);
         }
-      })
-      .catch(err => console.error("Error buscando anuncios:", err));
-  }
-}, [location.pathname,isAutenticated]);
-
-const handleDismissAnnouncement = async () => {
-    const isLast = currentAnnouncementIndex === pendingAnnouncements.length - 1;
-
-    if (isLast) {
-        // Marca todos como leídos juntos
-        for (const anuncio of pendingAnnouncements) {
-            await UserService.markAnnouncementRead(anuncio._id, id);
-        }
-        setShowAnnouncementDialog(false);
-    } else {
-        const nextIndex = currentAnnouncementIndex + 1;
-        setCurrentAnnouncementIndex(nextIndex);
-        setCurrentAnnouncement(pendingAnnouncements[nextIndex]);
-    }
-};
+    };
 
     const handleInstallClick = async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
             setDeferredPrompt(null);
-            setShowInstallPopup(false); // Oculta el popup
+            setShowInstallPopup(false);
         }
     };
 
     const handleCheckboxChange = (event) => {
         const isChecked = event.target.checked;
         localStorage.setItem('noShowPopup', isChecked.toString());
-        setShowInstallPopup(!isChecked); // Ocultar popup si está marcado
+        setShowInstallPopup(!isChecked);
     };
 
     const showInstallToast = () => {
@@ -224,7 +228,7 @@ const handleDismissAnnouncement = async () => {
                 </div>
             </div>,
             {
-                autoClose: false, // Evita que se cierre automáticamente
+                autoClose: false,
                 position: "bottom-center"
             }
         );
@@ -236,7 +240,7 @@ const handleDismissAnnouncement = async () => {
         }
     }, [showInstallPopup]);
 
-    // Al arrancar, verificamos si hay token
+    // Auth init
     useEffect(() => {
         const token = localStorage.getItem('token')
         if (token) {
@@ -245,37 +249,44 @@ const handleDismissAnnouncement = async () => {
         } else {
             setIsAutenticated(false)
         }
-
         setIsLoading(false);
-    }, [user, status]);
+    }, []);
 
+    // ---- Title dinámico (solo en contexto de usuario y no excluido) ----
+    useEffect(() => {
+      const baseTitle = "TOM - Planificación digital";
+      if (inUserContext && currentUsername && !excludedForTitle) {
+        document.title = `TOM - ${currentUsername}`;
+      } else {
+        document.title = baseTitle;
+      }
+    }, [inUserContext, currentUsername, excludedForTitle]);
 
-async function onLogin(user, token) {
-    console.log(user)
-    setUser(user);
-    setIsAutenticated(true);
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', user.role);
-    localStorage.setItem('_id', user._id);
-    localStorage.setItem('name', user.name);
+    async function onLogin(user, token) {
+        console.log(user)
+        setUser(user);
+        setIsAutenticated(true);
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', user.role);
+        localStorage.setItem('_id', user._id);
+        localStorage.setItem('name', user.name);
 
+        localStorage.setItem('noShowPopup', 'false');
+        if (user.drive != undefined) {
+            localStorage.setItem('drive', user.drive);
+        }
 
-    localStorage.setItem('noShowPopup', 'false');
-    if (user.drive != undefined) {
-        localStorage.setItem('drive', user.drive);
+        localStorage.setItem('email', user.email);
+        localStorage.setItem('entrenador_id', user.entrenador_id);
+        localStorage.setItem('logo', user.logo);
+        localStorage.setItem('color', user.color || '#1a1a1a');
+        localStorage.setItem('textColor', user.textColor || false);
+
+        if(user.role !== 'admin'){
+          localStorage.setItem('state', user.payment_info.isPaid);
+        }
+        navigate(`/`);
     }
-
-    localStorage.setItem('email', user.email);
-    localStorage.setItem('entrenador_id', user.entrenador_id);
-    localStorage.setItem('logo', user.logo);
-    localStorage.setItem('color', user.color || '#1a1a1a');
-    localStorage.setItem('textColor', user.textColor || false);
-
-    if(user.role !== 'admin'){
-    localStorage.setItem('state', user.payment_info.isPaid);
-    }
-    navigate(`/`);
-}
 
     function onLogout() {
         setOpenDialogLogout(false)
@@ -299,7 +310,7 @@ async function onLogin(user, token) {
         setMenuSidebar(false);
     };
 
-    // Si la autenticación aún no se ha determinado, mostramos un layout de carga con navbar y footer vacíos.
+    // Layout de carga
     if (isLoading) {
         return (
             <>
@@ -308,7 +319,7 @@ async function onLogin(user, token) {
                     <nav className={`navbar navbar-expand-lg navbar-dark fixed-top `}
                 style={{ backgroundColor: color }}>
                 <div className="container-fluid">
-                    <a className="navbar-brand" href="/">TOM</a>
+                    <Link className="navbar-brand" to="/">TOM</Link>
                 <button className="navbar-toggler text-light " type="button" onClick={handleMenuSidebarOpen}>
                         <AlignJustify />
                     </button>
@@ -317,7 +328,7 @@ async function onLogin(user, token) {
                     </div>
                 </div>
             </nav>
-                    {/* Contenedor central que ocupa el espacio restante */}
+                    {/* Contenido central */}
                     <main style={{
                         flex: 1,
                         display: "flex",
@@ -370,26 +381,25 @@ async function onLogin(user, token) {
     return (
         <>
             {/* NAVBAR FIJA */}
-            <nav className={`navbar navbar-expand-lg colorMainAll text-light fixed-top `}
-                >
+            <nav className={`navbar navbar-expand-lg colorMainAll text-light fixed-top `}>
                 <div className="container-fluid">
-                    {isAdmin() && location.pathname == '/' || isAdmin() && location.pathname == `/users/${id}` || !isAdmin() ?
-                    <a className="navbar-brand text-light btn btn-outline-light border me-2 ms-3 font1Em " href={`/`}>TOM</a> :
+                    { ( (isAdmin() && (location.pathname == '/' || location.pathname == `/users/${id}`)) || !isAdmin() ) ?
+                      <a className="navbar-brand text-light btn btn-outline-light border me-2 ms-3 font1Em " href={`/`}>TOM</a> :
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
                             className="btn btn-outline-light border me-2 ms-3"
                             >
-                            <User className="me-2" /> {actualUser}
+                            <User className="me-2" /> {inUserContext && currentUsername ? currentUsername : 'Atrás'}
                             </button>
-}
-                                    {isAdmin() && location.pathname != '/'  && <button
-                                    type="button"
-                                    onClick={() => navigate(-1)}
-                                    className="btn btn-outline-light border "
-                                  >
-                                    <ArrowBackIcon className="me-2" /> Atrás
-                                  </button>}
+                    }
+                    {isAdmin() && location.pathname != '/'  && <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="btn btn-outline-light border "
+                    >
+                        <ArrowBackIcon className="me-2" /> Atrás
+                    </button>}
                     <button className="navbar-toggler text-light " type="button" onClick={handleMenuSidebarOpen}>
                         <AlignJustify />
                     </button>
@@ -449,7 +459,7 @@ async function onLogin(user, token) {
                             )}
                             {isAutenticated && !isAdmin() && (
                                 <li className="nav-item">
-                                    <Link className={`nav-link text-light ${location.pathname === `/anuncios/${id}` && 'active'}`} to={`/anuncios/`}>
+                                    <Link className={`nav-link text-light ${location.pathname === `/anuncios` && 'active'}`} to={`/anuncios`}>
                                         Ver anuncios
                                     </Link>
                                 </li>
@@ -462,10 +472,10 @@ async function onLogin(user, token) {
                                 </li>
                             )}
                             {isAutenticated && (
-                                <li className="nav-item">
-                                    <Link className="nav-link text-light" onClick={onLogout}>
+                                <li className="nav-item m-auto ">
+                                    <button className="nav-link text-light btn btn-link p-0" onClick={onLogout}>
                                         Cerrar sesión
-                                    </Link>
+                                    </button>
                                 </li>
                             )}
                             {isAutenticated && showInstallButton && (
@@ -485,7 +495,7 @@ async function onLogin(user, token) {
 
             <main style={location.pathname !== `/` && 'stylesMain' ? {
                 marginTop: "70px",
-                minHeight: "calc(100vh - 70px - 150px)",
+                minHeight: "calc(100vh - 70px - 96px)",
                 padding: "0.4rem"
             } : { padding: "0" }}>
                 <Routes>
@@ -672,7 +682,7 @@ async function onLogin(user, token) {
                     )}
                     {isAutenticated && !isAdmin() && (
                          <li className="list-group-item">
-                            <Link className={`nav-link ${location.pathname === `/anuncios/${id}` && 'active'}`} to={`/anuncios/`} onClick={() => setMenuSidebar(false)}>
+                            <Link className={`nav-link ${location.pathname === `/anuncios` && 'active'}`} to={`/anuncios`} onClick={() => setMenuSidebar(false)}>
                                 Ver anuncios
                             </Link>
                         </li>
@@ -687,9 +697,9 @@ async function onLogin(user, token) {
                     )}
                     {isAutenticated && (
                         <li className="list-group-item">
-                            <Link className='nav-link' onClick={onLogout}>
+                            <button className='nav-link btn btn-link p-0' onClick={onLogout}>
                                 Cerrar sesión
-                            </Link>
+                            </button>
                         </li>
                     )}
                     {isAutenticated && showInstallButton && (

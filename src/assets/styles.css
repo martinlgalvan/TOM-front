@@ -887,6 +887,49 @@ font-weight: 550;
     padding: 0 !important;
   }
 
+/* Segmented control chico y consistente para sets y reps */
+.seg {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(0,0,0,0.18);
+  border-radius: 10px;
+  overflow: hidden;
+  /* tamaño compacto */
+  height: 28px;
+}
+
+.seg-btn {
+  appearance: none;
+  background: #fff;
+  height: 100%;
+  font-size: 0.6rem;        /* más chico */
+  font-weight: 700;
+  padding: 0 8px;
+  color: #303030;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seg-btn + .seg-btn {
+  border-left: 1px solid rgba(0,0,0,0.18);
+}
+
+.seg-btn:hover {
+  background-color: #85858567;
+}
+
+.seg-btn.active {
+  background: #0d3b66;       /* adaptá a tu tema */
+  color: #fff;
+}
+
+.seg-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 
 
   .custom-fieldset {
@@ -2102,6 +2145,16 @@ padding: 0 5px;
 .backgroundCardsWarmMov{
 
   background-color: #cccccc3b;
+}
+
+.stylesBoxWeeks{
+  background-color: #ffffff65;
+  box-shadow: #dbdada 0 0 15px 0 ;
+}
+
+.badgeFecha{
+  background-color: #f3f3f336;
+  box-shadow: #dbdada 0 0 15px 0 ;
 }
 
 .largoCarddds{
