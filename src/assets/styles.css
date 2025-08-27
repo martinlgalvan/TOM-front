@@ -361,13 +361,14 @@ p {
   cursor:default !important;
 }
 
-.p-dialog-header, .p-dialog-content, .p-dialog-footer{
-  background-color: #0b213a ;
-  color: white;
-}
 
 .colorDialog .p-dialog-header-close{
   color: dark;
+}
+
+.colorBackGround{
+  background-color: #041324;
+  color: white;
 }
 
 .calc-container {

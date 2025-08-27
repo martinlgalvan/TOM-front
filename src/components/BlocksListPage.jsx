@@ -1,115 +1,113 @@
+// BlocksListPage.jsx
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import * as BlockService from '../services/blocks.services.js'
-import { Button } from 'primereact/button'
 import { Dialog } from 'primereact/dialog'
 import BloquesForm from './BloquesForm.jsx'
+import AddIcon from '@mui/icons-material/Add'
 
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from "@mui/material/IconButton";
-import AddIcon from '@mui/icons-material/Add';
-
-function BlocksListPage(id) {
+function BlocksListPage(props) {
   const navigate = useNavigate()
   const [blocks, setBlocks] = useState([])
   const [editData, setEditData] = useState(null)
   const [showForm, setShowForm] = useState(false)
-  const [firstWidth, setFirstWidth] = useState();
-  const [showBlockForm, setShowBlockForm] = useState();
+  const [firstWidth, setFirstWidth] = useState()
+
+  // Soportar que props.id sea string o { id: string }
+  const projectId = typeof props.id === 'string' ? props.id : props.id?.id
 
   useEffect(() => {
-
-    setFirstWidth(window.innerWidth);
-    BlockService.getBlocks(id.id).then((data) => {
-      setBlocks(data)
-    })
-  }, [id.id])
+    setFirstWidth(window.innerWidth)
+    if (!projectId) return
+    BlockService.getBlocks(projectId).then(setBlocks)
+  }, [projectId])
 
   const handleEdit = (block) => {
     setEditData(block)
     setShowForm(true)
   }
 
-  const handleSave = () => {
+  const handleAddNew = () => {
+    // 🔧 FIX: limpiar editData antes de abrir para entrar en modo "crear"
+    setEditData(null)
+    setShowForm(true)
+  }
+
+  const refreshAndClose = async () => {
     setShowForm(false)
     setEditData(null)
-
-    BlockService.getBlocks(id.id).then(setBlocks)
+    if (projectId) {
+      const data = await BlockService.getBlocks(projectId)
+      setBlocks(data)
+    }
   }
 
   const handleOnHide = () => {
     setShowForm(false)
     setEditData(null)
-
   }
-
-
-  const getContrastYIQ = (hexcolor) => {
-    if (!hexcolor || typeof hexcolor !== 'string') return 'black';
-  
-    hexcolor = hexcolor.replace('#', '');
-  
-    if (hexcolor.length !== 6) {
-      // Color inválido, devolvemos negro como fallback
-      return 'black';
-    }
-  
-    const r = parseInt(hexcolor.substr(0, 2), 16);
-    const g = parseInt(hexcolor.substr(2, 2), 16);
-    const b = parseInt(hexcolor.substr(4, 2), 16);
-  
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  
-    return yiq >= 150 ? 'black' : 'white'; // 🔥 Cambié el umbral a 150, que es más correcto visualmente
-  };
-
 
   return (
     <div className="">
-      <span className='styleInputsSpan ms-5 ps-1'>Bloques de entrenamiento</span>
-      <div className="row justify-content-center text-center">
-        {blocks.map((block) => {
-          const backgroundColor = block.color || '#eeeeee';
-          const textColor = getContrastYIQ(backgroundColor);
-        
-          return (
-            <button
-              key={block._id}
-              className="rounded shadow col-3 m-2 py-2 "
-              style={{
-                backgroundColor
-              }}
-              onClick={() => handleEdit(block)}
-            >
-              <p className='m-auto align-center align-middle align-self'>
-                <strong 
-                  style={{
-                  color: textColor
-                }}>
-                  {block.name}</strong>
-              </p>
-            </button>
-          );
-        })}
+      <span className="styleInputsSpan ms-1 ps-1">Bloques de entrenamiento</span>
 
-        <button
-          className="btn btn-outline-light col-8 mx-5 mt-4 text-center rounded shadow"
-          onClick={() => setShowForm(true)}
-        >
-          <AddIcon /> <span>Añadir bloque</span>
-        </button>
+      {/* CONTENEDOR CENTRADO */}
+      <div className="mx-auto" style={{ maxWidth: 780 }}>
+        <div className="row row-cols-1 row-cols-sm-2 g-3 justify-content-center px-2">
+          {blocks.map((block) => {
+            const accentColor = block.color || '#9aa0a6'
+            return (
+              <div key={block._id} className="col d-flex">
+                <button
+                  onClick={() => handleEdit(block)}
+                  className="w-100 p-0 border-0 bg-transparent text-start"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="shadow-sm border rounded-4">
+                    <div
+                      style={{
+                        height: 10,
+                        backgroundColor: accentColor,
+                        borderTopLeftRadius: '0.75rem',
+                        borderTopRightRadius: '0.75rem',
+                      }}
+                    />
+                    <div className="p-3">
+                      <strong className="text-dark">{block.name}</strong>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            )
+          })}
+
+          {/* AÑADIR BLOQUE */}
+          <div className="col-12">
+            <button
+              className="w-100 d-flex align-items-center justify-content-center py-3 border border-2 rounded-3"
+              style={{ borderStyle: 'dashed' }}
+              onClick={handleAddNew} // 🔧 FIX: usa helper que limpia editData
+            >
+              <AddIcon className="me-2" />
+              <span>Añadir bloque</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <Dialog header={`${editData ? 'Editar bloque' : 'Crear bloque'}`} visible={showForm} style={{ width: `${firstWidth > 992 ? '25vw' : '75vw'}` }} onHide={() => handleOnHide(false)}>
-
-            <BloquesForm
-              id={id.id}
-              isEditMode={editData}
-              initialData={editData}
-              onSaved={handleSave}
-            />
-
+      <Dialog
+        header={`${editData ? 'Editar bloque' : 'Crear bloque'}`}
+        visible={showForm}
+        style={{ width: `${firstWidth > 992 ? '25vw' : '75vw'}` }}
+        onHide={handleOnHide}
+      >
+        <BloquesForm
+          id={projectId}
+          isEditMode={!!editData}          // 🔧 Enviar booleano
+          initialData={editData || {}}     // 🔧 Evitar undefined
+          onSaved={refreshAndClose}        // 🔧 Refresca y cierra modal
+          onCancel={handleOnHide}          // 🔧 Cancelar = cerrar modal
+        />
       </Dialog>
     </div>
   )

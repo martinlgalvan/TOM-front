@@ -369,10 +369,9 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
 
   return (
     <>
-      <section className="row justify-content-center ">
+      <section className="row justify-content-start ">
         <article className="col-10">
-          <h2 className="text-center my-3">Entrada en calor - {warmupName}</h2>
-          <div className="text-center mb-3">
+          <div className=" mb-3">
             <IconButton
               aria-label="video"
               className="bgColor rounded-2 text-light me-2"

@@ -3182,7 +3182,12 @@ function colorItemTemplate(option) {
             className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
             contentClassName={"colorDialog"}
             headerClassName={"colorDialog"}
-            header="Entrada en calor"
+            header={
+              <div className="d-flex align-items-start justify-content-between  border-bottom">
+                <div><span className="fs-5">Bloque de entrada en calor</span> - <span className="fs-5">{currentDay && currentDay.name}</span></div>
+                
+              </div>
+            }
             visible={warmup}
             scrollable={"true"}
             modal={false}
@@ -3302,13 +3307,19 @@ function colorItemTemplate(option) {
                               scrollIntoViewOptions={true}
                             />)}
 
-        <Dialog
-          className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
-          blockScroll={window.innerWidth > 600 ? false : true}
-          header="Bloque de Activación"
-          visible={movilityVisible}
-          onHide={() => setMovilityVisible(false)}
-        >
+<Dialog
+  className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
+  blockScroll={window.innerWidth > 600 ? false : true}
+  /* Header custom para replicar el diseño (titulo izq + X der) */
+  header={
+    <div className="d-flex align-items-start justify-content-between  border-bottom">
+      <div><span className="fs-5">Bloque de activación / movilidad</span> - <span className="fs-5">{currentDay && currentDay.name}</span></div>
+      
+    </div>
+  }
+  visible={movilityVisible}
+  onHide={() => setMovilityVisible(false)}
+>
           <ModalCreateMovility
             week={modifiedDay}
             week_id={week_id}

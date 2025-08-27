@@ -11,16 +11,19 @@ import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
-import { ProgressSpinner } from "primereact/progressspinner"; // ⬅️ NUEVO: spinner de carga
+import { ProgressSpinner } from "primereact/progressspinner";
 import { Link } from "react-router-dom";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 
-// Íconos livianos (lucide)
 import { UserRound, Pencil, Trash2, QrCode, ArrowUpDown, Plus, Search } from "lucide-react";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
 
 export default function PrimeReactTable({ id, users, refresh, collapsed /* , usersLoading = false */ }) {
   const [qrDialogVisible, setQrDialogVisible] = useState(false);
@@ -38,13 +41,13 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
   const [first, setFirst] = useState(parseInt(localStorage.getItem("userCurrentPage") || "0", 10));
   const [dialogg, setDialogg] = useState(false);
 
-  // ⬇️ NUEVO: manejo de “cargando” propio de la tabla cuando este componente dispara refresh
+  // bandera de carga local cuando hacemos refresh desde la tabla
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Preferencias de orden/búsqueda
   let initSearchText = "";
-  let initSortField = null;
-  let initSortOrder = "asc";
+  let initSortField = null;           // 'name' | 'email' | 'category' | 'lastEdited' | null
+  let initSortOrder = "asc";          // 'asc' | 'desc'
   let initCategoryFilterIndex = 0;
   try {
     const st = localStorage.getItem("prTableSearchText");
@@ -83,7 +86,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     []
   );
 
-  // Colores por categoría (para la línea vertical y pills)
   const categoryPalette = {
     "Alumno casual": { bar: "#53b900", pillBg: "#ECFDF3", pillText: "#027A48", pillBorder: "#A6F4C5" },
     "Alumno dedicado": { bar: "#006eff", pillBg: "#EFF8FF", pillText: "#175CD3", pillBorder: "#B2DDFF" },
@@ -92,7 +94,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     default: { bar: "#929191", pillBg: "#F2F4F7", pillText: "#475467", pillBorder: "#E4E7EC" },
   };
 
-  // --------- Filtro + Orden
+  // --------- Filtro + Orden local
   useEffect(() => {
     let filtered = (users || []).filter(
       (user) =>
@@ -121,6 +123,19 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
       });
     }
 
+    if (sortField === "lastEdited") {
+      filtered.sort((a, b) => {
+        const aIso = a.last_week_updated_at || a.last_week_created_at;
+        const bIso = b.last_week_updated_at || b.last_week_created_at;
+        const aTime = aIso ? Date.parse(aIso) : 0;
+        const bTime = bIso ? Date.parse(bIso) : 0;
+        const cmp = sortOrder === "asc" ? aTime - bTime : bTime - aTime;
+        if (cmp !== 0) return cmp;
+        // tie-breakers
+        return a.name.localeCompare(b.name);
+      });
+    }
+
     setFilteredUsers(filtered);
   }, [searchText, users, sortField, sortOrder, categoryFilterIndex, categoryOrder]);
 
@@ -145,7 +160,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     }
   }, [profileData]);
 
-  // ⬇️ NUEVO: cuando cambian los usuarios tras un refresh, apagamos la bandera de carga local
   useEffect(() => {
     if (isRefreshing && Array.isArray(users)) {
       setIsRefreshing(false);
@@ -192,7 +206,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
 
   const handleProfileSave = () => {
     const updatedProfile = { ...editedProfile, isEditable: editedProfile.isEditable === "true" };
-    setIsRefreshing(true); // ⬅️ NUEVO: mostramos loading en la tabla mientras refresca
+    setIsRefreshing(true);
     UserServices.editProfile(selectedProfileId, updatedProfile)
       .then(() => ChangePropertyService.changeProperty(selectedProfileId, updatedProfile.category))
       .then(() => {
@@ -206,7 +220,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
       });
   };
 
-  // ----- Nombre con línea de color
   const nameWithBar = (user) => {
     const pal = categoryPalette[user.category] || categoryPalette.default;
     return (
@@ -235,7 +248,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     );
   };
 
-  // ----- Pills de categoría
   const categoryPill = (user) => {
     const pal = categoryPalette[user.category] || categoryPalette.default;
     const label = user.category || "Sin categoría";
@@ -261,7 +273,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     );
   };
 
-  // ----- Acciones
   const actionsTemplate = (user) => (
     <div className="d-flex justify-content-center align-items-center" style={{ gap: 10 }}>
       <button className="btn p-1" title="Perfil" onClick={() => openProfileDialog(user)}>
@@ -287,7 +298,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
   const handleAccept = () => {
     if (isInputValid) {
       Notify.notifyA("Eliminando usuario...");
-      setIsRefreshing(true); // ⬅️ NUEVO
+      setIsRefreshing(true);
       UserServices.deleteUser(id_user)
         .then(() => {
           refresh();
@@ -359,9 +370,18 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     } catch {}
   };
 
+  const sortByLastEdited = () => {
+    const newOrder = sortField === "lastEdited" && sortOrder === "asc" ? "desc" : "asc";
+    setSortField("lastEdited");
+    setSortOrder(newOrder);
+    try {
+      localStorage.setItem("prTableSortField", "lastEdited");
+      localStorage.setItem("prTableSortOrder", newOrder);
+    } catch {}
+  };
+
   const headerCategory = categoryOrder[categoryFilterIndex];
 
-  // ----- Header (buscador + crear alumno)
   const tableHeader = (
     <div className="d-flex  align-items-center p-3">
       <Search size={18} className="me-3" />
@@ -376,17 +396,12 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     </div>
   );
 
-  // ----- Reporte de paginación a la izquierda (como la maqueta)
   const rows = 10;
   const total = filteredUsers.length;
   const from = total === 0 ? 0 : first + 1;
   const to = Math.min(first + rows, total);
   const report = `Mostrando ${from} a ${to} de ${total} usuarios`;
 
-  // ⬇️ NUEVO: lógica de carga y mensajes vacíos
-  // - Si users es undefined/null => estamos cargando (ej: fetch inicial)
-  // - Si este componente dispara refresh => cargando
-  // - Si no hay alumnos => no mostramos mensaje (solo dejamos el espacio)
   const tableLoading = isRefreshing || users == null /* || usersLoading */;
 
   const emptyContent = tableLoading ? (
@@ -397,6 +412,15 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
   ) : (
     <div style={{ height: 670 }} />
   );
+
+  const lastEditedCell = (row) => {
+    const iso = row.last_week_updated_at || row.last_week_created_at;
+    if (!iso) return <span className="text-muted">—</span>;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return <span className="text-muted">—</span>;
+    const str = d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return <span>{str}</span>;
+  };
 
   return (
     <div className="row justify-content-around">
@@ -414,7 +438,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
           sortMode="single"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
           paginatorLeft={<span className="ms-2 ">{report}</span>}
-          // ⬇️ NUEVO: comportamiento de carga y altura constante
           loading={tableLoading}
           scrollable
           scrollHeight="670px"
@@ -436,7 +459,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
           {widthPage > 600 && (
             <Column
               field="email"
-              body={(row, e) => (
+              body={(row) => (
                 <Link
                   to={`/user/routine/${row._id}/${row.name}`}
                   onClick={() => localStorage.setItem("actualUsername", row.name)}
@@ -480,6 +503,23 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
                 </div>
               }
               style={{ width: "220px" }}
+            />
+          )}
+
+          {/* NUEVO: columna "Últ. vez editado" (lee del backend) */}
+          {widthPage > 600 && (
+            <Column
+              field="lastEdited"
+              header={
+                <div className="d-flex align-items-center justify-content-start">
+                  <span className="fw-semibold">Últ. vez editado</span>
+                  <button className="btn" onClick={sortByLastEdited} style={{ background: "none", border: "none" }} title="Ordenar por última edición">
+                    <ArrowUpDown size={16} />
+                  </button>
+                </div>
+              }
+              body={lastEditedCell}
+              style={{ width: "170px" }}
             />
           )}
 
@@ -543,138 +583,191 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
       </Dialog>
 
       <Dialog
-        header={`Perfil: ${selectedProfileName}`}
+        className={`col-11 col-lg-5  ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
         visible={profileDialogVisible}
         onHide={() => setProfileDialogVisible(false)}
-        className={`col-11 col-lg-10 col-xl-8 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
+        closable={false}
+        contentClassName="p-0"
+        header={
+          <div className="d-flex align-items-start justify-content-between w-100 p-3 pb-2 border-bottom">
+            <div className="d-flex align-items-center">
+              <div
+                className="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                style={{ width: 40, height: 40 }}
+              >
+                <AccountCircleOutlinedIcon />
+              </div>
+              <div className="ms-3">
+                <h5 className="m-0 fw-bold">Perfil</h5>
+                <small className="text-muted">{selectedProfileName || ''}</small>
+              </div>
+            </div>
+
+            <button
+              className="btn btn-link text-muted p-0 fs-4 lh-1"
+              aria-label="Cerrar"
+              onClick={() => setProfileDialogVisible(false)}
+            >
+              ×
+            </button>
+          </div>
+        }
       >
-        <div className="row justify-content-center">
-
+        <div className="px-3 py-3">
           {profileData !== undefined && (
-            <div className="col-10 col-lg-12">
+            <div className="mx-auto" style={{ maxWidth: 520 }}>
+              {/* ALTURA */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold d-flex align-items-center">
+                  <span className="me-2">#</span> Altura (cm)
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Ingresa tu altura"
+                  value={editedProfile.altura}
+                  onChange={(e) => setEditedProfile({ ...editedProfile, altura: e.target.value })}
+                  style={{ borderRadius: 12, height: 44 }}
+                />
+              </div>
 
-              <div className="row">
-                <div className="col-md-2 mb-3">
-                  <div className="input-group">
-                    <span className="input-group-text py-2 px-3">cm</span>
-                    <input
-                      type="text"
-                      className="form-control text-center"
-                      value={editedProfile.altura}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, altura: e.target.value })}
-                    />
-                  </div>
-                </div>
+              {/* EDAD */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold d-flex align-items-center">
+                  <PersonOutlineOutlinedIcon className="me-2" /> Edad
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Ingresa tu edad"
+                  value={editedProfile.edad}
+                  onChange={(e) => setEditedProfile({ ...editedProfile, edad: e.target.value })}
+                  style={{ borderRadius: 12, height: 44 }}
+                />
+              </div>
 
-                <div className="col-md-2 mb-3">
-                  <div className="input-group">
-                    <span className="input-group-text p-2">Edad</span>
-                    <input
-                      type="number"
-                      className="form-control text-center"
-                      value={editedProfile.edad}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, edad: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-
-              <div className="col-md-3 mb-3">
-                <div className="d-flex align-items-center border text-center rounded overflow-hidden">
-                  <span className="p-2 bg-light text-dark border-end">Bloquear </span>
+              {/* BLOQUEAR */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold d-flex align-items-center">
+                  <ShieldOutlinedIcon className="me-2" /> Bloquear
+                </label>
+                <div className="border rounded-4 p-1">
                   <Dropdown
                     value={editedProfile.isEditable}
                     options={isEditableOptions}
                     onChange={(e) => setEditedProfile({ ...editedProfile, isEditable: e.value })}
-                    placeholder="Seleccione opción"
-                    className="flex-grow-1 border-0"
-                    style={{ border: 'none', boxShadow: 'none' }}
+                    className="w-100 border-0"
+                    style={{ border: 'none' }}
                   />
                 </div>
               </div>
-              
-              <div className="col-md-5 mb-3">
-                  <div className="d-flex align-items-center border rounded overflow-hidden">
-                    <span className="p-2 bg-light text-dark border-end">Categoría</span>
-                    <Dropdown
-                      value={editedProfile.category}
-                      options={nivelOptions}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, category: e.value })}
-                      placeholder="Seleccione categoría"
-                      className="flex-grow-1 border-0"
-                      style={{ border: 'none', boxShadow: 'none' }}
-                    />
-                  </div>
+
+              {/* CATEGORÍA */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold d-flex align-items-center">
+                  <LocalOfferOutlinedIcon className="me-2" /> Categoría
+                </label>
+                <div className="border rounded-4 p-1">
+                  <Dropdown
+                    value={editedProfile.category}
+                    options={nivelOptions}
+                    onChange={(e) => setEditedProfile({ ...editedProfile, category: e.value })}
+                    className="w-100 border-0"
+                    style={{ border: 'none' }}
+                  />
                 </div>
-                
-                <div className="col-12 mb-3 text-center">
-                  <button
-                    className="btn btn-primary "
-                    onClick={() => {
-                      const newEvents = editedProfile.events ? [...editedProfile.events] : [];
-                      newEvents.push({ date: '', name: '' });
-                      setEditedProfile({ ...editedProfile, events: newEvents });
-                    }}
-                  >
-                  <CalendarMonthIcon />
-                    Agregar evento al calendario
-                  </button>
               </div>
 
-              {editedProfile.events && editedProfile.events.map((event, index) => (
-                      <div key={index} className="input-group mb-2">
-                        <span className="input-group-text me-2"><CalendarMonthIcon /></span>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <DatePicker
-                            format="DD/MM/YYYY"
-                            value={event.date ? dayjs(event.date) : null}
-                            onChange={(newDate) => {
-                              const newEvents = [...editedProfile.events];
-                              newEvents[index].date = newDate ? newDate.toISOString() : '';
-                              setEditedProfile({ ...editedProfile, events: newEvents });
-                            }}
-                            slotProps={{
-                              textField: {
-                                variant: 'outlined',
-                                className: 'form-control',
-                                size: 'small',
-                                fullWidth: true
-                              }
-                            }}
-                          />
-                        </LocalizationProvider>
-                        <input
-                          type="text"
-                          className="form-control ms-2"
-                          placeholder="Nombre del evento"
-                          value={event.name}
-                          onChange={(e) => {
-                            const newEvents = [...editedProfile.events];
-                            newEvents[index].name = e.target.value;
-                            setEditedProfile({ ...editedProfile, events: newEvents });
+              {/* CTA: Agregar evento */}
+              <div className="mb-3">
+                <button
+                  className="w-100 d-flex align-items-center justify-content-center"
+                  onClick={() => {
+                    const newEvents = editedProfile.events ? [...editedProfile.events] : []
+                    newEvents.push({ date: '', name: '' })
+                    setEditedProfile({ ...editedProfile, events: newEvents })
+                  }}
+                  style={{
+                    background: '#e9f1ff',
+                    color: '#1e5eff',
+                    border: '1px solid #cfe0ff',
+                    borderRadius: 12,
+                    height: 48,
+                    fontWeight: 600,
+                  }}
+                >
+                  <CalendarMonthIcon className="me-2" />
+                  Agregar evento al calendario
+                </button>
+              </div>
+
+              {/* LISTA DE EVENTOS */}
+              {editedProfile.events &&
+                editedProfile.events.map((event, index) => (
+                  <div key={index} className="d-flex align-items-center mb-2">
+                    <span className="me-2 text-primary">
+                      <CalendarMonthIcon />
+                    </span>
+
+                    <div className="flex-grow-1">
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          value={event.date ? dayjs(event.date) : null}
+                          onChange={(newDate) => {
+                            const newEvents = [...editedProfile.events]
+                            newEvents[index].date = newDate ? newDate.toISOString() : ''
+                            setEditedProfile({ ...editedProfile, events: newEvents })
+                          }}
+                          slotProps={{
+                            textField: {
+                              variant: 'outlined',
+                              className: 'form-control',
+                              size: 'small',
+                              fullWidth: true,
+                              sx: { '& .MuiOutlinedInput-root': { borderRadius: 2 } },
+                            },
                           }}
                         />
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => {
-                            const newEvents = [...editedProfile.events];
-                            newEvents.splice(index, 1);
-                            setEditedProfile({ ...editedProfile, events: newEvents });
-                          }}
-                        >
-                          X
-                        </button>
-                      </div>
-                      
-                    ))}
-              </div>
+                      </LocalizationProvider>
+                    </div>
 
+                    <input
+                      type="text"
+                      className="form-control ms-2"
+                      placeholder="Nombre del evento"
+                      value={event.name}
+                      onChange={(e) => {
+                        const newEvents = [...editedProfile.events]
+                        newEvents[index].name = e.target.value
+                        setEditedProfile({ ...editedProfile, events: newEvents })
+                      }}
+                      style={{ borderRadius: 8 }}
+                    />
 
-              <div className="d-flex justify-content-around mt-4">
-                <button className="btn btn-secondary px-4" onClick={() => setProfileDialogVisible(false)}>
+                    <button
+                      className="btn btn-link text-muted ms-2"
+                      onClick={() => {
+                        const newEvents = [...editedProfile.events]
+                        newEvents.splice(index, 1)
+                        setEditedProfile({ ...editedProfile, events: newEvents })
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+              {/* FOOTER */}
+              <div className="d-flex justify-content-between mt-4">
+                <button className="btn btn-link text-muted px-3" onClick={() => setProfileDialogVisible(false)}>
                   Cancelar
                 </button>
-                <button className="btn btn-primary px-4" onClick={handleProfileSave}>
+                <button
+                  className="btn btn-primary px-4"
+                  onClick={handleProfileSave}
+                  style={{ borderRadius: 12, minWidth: 140 }}
+                >
                   Guardar
                 </button>
               </div>

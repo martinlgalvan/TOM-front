@@ -1,29 +1,30 @@
 // PaymentsManagerPage.js
 // - Globales: payment_goal, nutricion, plan (iguales en todos los meses)
 // - Mes máximo: mes actual (no permite meses futuros)
-// - Día de vencimiento fijo = 10 (para cálculos y texto)
+// - Día de vencimiento fijo = 10 (para cálculos en Modo Fijo)
 // - Columna "Pago": en vista muestra botón "Renovar mes"; en modo Editar muestra Monto + Fecha (PrimeReact Calendar)
 // - KPIs: Activos (verde), Por vencer (naranja), Vencidos (rojo), Ingresos, Ingresos en USD (Blue)
 // - Selector de Mes estilo KPI (últimos 12 meses, clickeables)
 // - Compacto, responsive
 // - ✅ Cambios visibles al editar SIN guardar (merge de editedRows en la UI)
 // - ✅ Acciones como barra a la derecha del título
-// - ✅ Tooltip en "Renovar mes" con monto (y fecha si existe)
+// - ✅ Tooltip en "Renovar mes" con monto + fecha + vencimiento según modo + restantes vs HOY
 // - ✅ Nombres con línea de color por estado (estilo KPI)
-// - ✅ "Días" = (próximo vencimiento - fecha de pago); el color del estado mira HOY
+// - ✅ "Días" = (vencimiento segun modo y plan) - HOY (siempre). En meses pasados, si el lapso ya pasó, aparece vencido.
 // - ✅ Confirmar en "Renovar mes" guarda en backend y pone estado Activo
 // - ✅ Ingresos en USD (Blue) con cotización en vivo + botón refrescar; fallback al widget
+// - ✅ Dos modos con persistencia localStorage: fijo (día 10) / individual (mismo día del pago), respetando plan (1/3/6/12 meses)
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Box, Chip, IconButton, Typography, Button, Tooltip, Stack, Paper, Avatar
 } from '@mui/material';
 import {
-  Edit, Save, Cancel, FilterList, SortByAlpha, RestartAlt, GetApp,
+  Edit, Save, Cancel, FilterList, SortByAlpha, RestartAlt,
   AccessTime, PeopleAlt, EventAvailable, TrendingUp,
   FitnessCenter, SportsSoccer, SportsBasketball, SportsGolf, MusicNote,
   SportsMma, SportsKabaddi, StarBorder, FavoriteBorder, ChevronLeft, ChevronRight,
-  HighlightOff, CheckCircleOutline, Autorenew, HelpOutline, Paid, Refresh
+  HighlightOff, CheckCircleOutline, Autorenew, HelpOutline, Paid
 } from '@mui/icons-material';
 
 import { InputText } from 'primereact/inputtext';
@@ -38,6 +39,13 @@ import { useParams } from 'react-router-dom';
 
 // ---------- Constantes ----------
 const DUE_DAY = 10;
+
+const MODE_STORAGE_KEY = 'payments_days_mode';
+const modeOptions = [
+  { label: 'm. fijo', value: 'fijo' },
+  { label: 'm. ind.', value: 'individual' },
+];
+
 const paidOptions = [
   { label: 'Activo', value: true },
   { label: 'Inactivo - Bloquear acceso', value: 'bloquear' },
@@ -92,14 +100,43 @@ const monthsByPlan = (plan) => {
 };
 const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-const nextRenewalDate = (payment_date, plan) => {
+const clampDueDay = (y, m) => {
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  return Math.min(DUE_DAY, lastDay);
+};
+
+// Vencimiento "modo fijo" partiendo de fecha de pago (si existe)
+const nextRenewalDateFixed = (payment_date, plan) => {
+  if (!payment_date) return null;
+  const months = monthsByPlan(plan || 'Mensual');
+  const base = new Date(payment_date);
+  const y = base.getFullYear();
+  const m = base.getMonth() + months;
+  const day = clampDueDay(y, m);
+  return new Date(y, m, day);
+};
+
+// Vencimiento "modo individual" partiendo de fecha de pago (si existe)
+const nextRenewalDateIndividual = (payment_date, plan) => {
   if (!payment_date) return null;
   const months = monthsByPlan(plan || 'Mensual');
   const base = new Date(payment_date);
   const y = base.getFullYear();
   const m = base.getMonth() + months;
   const lastDay = new Date(y, m + 1, 0).getDate();
-  const day = Math.min(DUE_DAY, lastDay);
+  const day = Math.min(base.getDate(), lastDay);
+  return new Date(y, m, day);
+};
+
+// Due teórico cuando NO hay payment_date:
+// - Modo fijo: día 10 del mes (sumando meses según plan desde el mes seleccionado)
+// - Modo ind.: sin fecha, usamos fijo como fallback razonable
+const inferTheoreticalDue = (selectedMonth, plan = 'Mensual') => {
+  if (!selectedMonth) return null;
+  const months = monthsByPlan(plan);
+  const y = selectedMonth.getFullYear();
+  const m = selectedMonth.getMonth() + months;
+  const day = clampDueDay(y, m);
   return new Date(y, m, day);
 };
 
@@ -130,8 +167,18 @@ const initials = (name = '') => {
   return (a + b).toUpperCase() || '?';
 };
 
+// Texto amigable para "restantes vs HOY" (para tooltip Renovar)
+const formatRemainingVsToday = (daysVsToday) => {
+  if (daysVsToday === null || daysVsToday === undefined) return null;
+  if (daysVsToday === 0) return 'Vence hoy';
+  if (daysVsToday < 0) return `Vencido hace ${Math.abs(daysVsToday)} días`;
+  return `Restan ${daysVsToday} días`;
+};
+
+// Badge visual según días restantes (columna) y estado
 const daysBadge = (days, status) => {
   if (days === null || days === undefined) return { text: '-', color: 'text.secondary' };
+  if (days === 0) return { text: 'Hoy', color: status === 'vencida' ? 'error.main' : 'warning.main' };
   if (days < 0) return { text: `${Math.abs(days)} días venc.`, color: 'error.main' };
   if (status === 'por_vencer') return { text: `${days} días`, color: 'warning.main' };
   return { text: `${days} días`, color: 'success.main' };
@@ -186,6 +233,22 @@ export default function PaymentsManagerPage() {
   const selectedMonthKey = useMemo(() => monthKey(selectedMonth), [selectedMonth]);
   const atCurrentMonth = useMemo(() => selectedMonthKey === monthKey(currentMonthStart), [selectedMonthKey, currentMonthStart]);
 
+  // HOY (usado tanto para estado como para la columna “Días”)
+  const today = new Date();
+
+  // MODO DE CÁLCULO (persistido en localStorage)
+  const [daysMode, setDaysMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem(MODE_STORAGE_KEY);
+      return (saved === 'fijo' || saved === 'individual') ? saved : 'fijo';
+    } catch {
+      return 'fijo';
+    }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(MODE_STORAGE_KEY, daysMode); } catch {}
+  }, [daysMode]);
+
   const [filters, setFilters] = useState({
     text: { name: '' },
     selects: { goal: null, isPaid: null, nutricion: null, plan: null }
@@ -233,7 +296,6 @@ export default function PaymentsManagerPage() {
   // Fallback: si hay error, inserto el widget visual
   useEffect(() => {
     if (!blueError || widgetInjected) return;
-    // contenedor
     const container = document.getElementById('vdb-widget');
     if (!container) return;
     container.innerHTML = '';
@@ -429,22 +491,42 @@ export default function PaymentsManagerPage() {
   }, [usersRaw, selectedMonthKey, currentMonthStart]);
 
   // ---- Enriquecimiento + filtros/sort ----
-  const today = useMemo(() => new Date(), []);
   const enrichedRows = useMemo(() => {
     return visibleRows.map(r => {
-      const next = nextRenewalDate(r.payment_date, r.plan || 'Mensual');
-      const daysFromToday = next ? daysBetween(next, today) : null;   // para estado visual
-      const origin = r.payment_date ? new Date(r.payment_date) : null;
-      const daysFromPayment = next && origin ? daysBetween(next, origin) : null; // para "Días"
+      const plan = r.plan || 'Mensual';
+
+      // Vencimiento según MODO (si hay pago); si no, due teórico desde el mes seleccionado.
+      const dueFixedFromPayment = nextRenewalDateFixed(r.payment_date, plan);
+      const dueIndivFromPayment = nextRenewalDateIndividual(r.payment_date, plan);
+      const dueTheo = inferTheoreticalDue(selectedMonth, plan);
+
+      const due =
+        (daysMode === 'fijo')
+          ? (dueFixedFromPayment || dueTheo)
+          : (dueIndivFromPayment || dueTheo);
+
+      // Estado visual SIEMPRE contra HOY
+      const daysVsToday = due ? daysBetween(due, today) : null;
       let cuotaStatus = null;
-      if (next) {
-        if (daysFromToday < 0) cuotaStatus = 'vencida';
-        else if (daysFromToday <= 7) cuotaStatus = 'por_vencer';
+      if (due) {
+        if (daysVsToday < 0) cuotaStatus = 'vencida';
+        else if (daysVsToday <= 7) cuotaStatus = 'por_vencer';
         else cuotaStatus = 'al_dia';
       }
-      return { ...r, _nextRenewal: next, _daysLeft: daysFromPayment, _cuotaStatus: cuotaStatus };
+
+      // “Días” a mostrar en columna: SIEMPRE vs HOY (no se comparte entre meses)
+      const daysRemaining = due ? daysBetween(due, today) : null;
+
+      // Longitud del ciclo real (opcional para tooltip)
+      const origin = r.payment_date ? new Date(r.payment_date) : null;
+      const cycleLength =
+        (origin && ((daysMode === 'fijo' && dueFixedFromPayment) || (daysMode === 'individual' && dueIndivFromPayment)))
+          ? daysBetween((daysMode === 'fijo' ? dueFixedFromPayment : dueIndivFromPayment), origin)
+          : null;
+
+      return { ...r, _dueDate: due, _daysRemaining: daysRemaining, _daysVsToday: daysVsToday, _cycleLength: cycleLength, _cuotaStatus: cuotaStatus };
     });
-  }, [visibleRows, today]);
+  }, [visibleRows, selectedMonth, today, daysMode]);
 
   const filteredRows = useMemo(() => {
     let result = [...enrichedRows];
@@ -497,8 +579,6 @@ export default function PaymentsManagerPage() {
     const vencidos = enrichedRows.filter(r => r._cuotaStatus === 'vencida').length;
     return { activos, porVencer, vencidos, ingresosTotales: totalAmountAll };
   }, [enrichedRows, totalAmountAll]);
-
-  
 
   // ---- UI helpers ----
   const activeFilterChips = [];
@@ -636,19 +716,17 @@ export default function PaymentsManagerPage() {
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack spacing={0}>
               <div>
-              <Typography variant='caption'>Ingresos en USD (Dolar blue)</Typography>
-              <Tooltip title={`Esta estimación se realiza con el dolar blue (venta). Actualmente, 1 dolar = $${blueRate} pesos argentinos. El valor del dolar blue se actualiza en tiempo real.`}>
-                    <HelpOutline fontSize="inherit" className='ms-2' />
-                  </Tooltip>
-                  </div>
-                         <Typography variant='h6'>
-                      {blueRate ? currencyUSD(kpis.ingresosTotales / blueRate) : '—'}
-                    </Typography>
-  
+                <Typography variant='caption'>Ingresos en USD (Dolar blue)</Typography>
+                <Tooltip title={`Esta estimación se realiza con el dolar blue (venta). Actualmente, 1 dolar = $${blueRate} pesos argentinos. El valor del dolar blue se actualiza en tiempo real.`}>
+                  <HelpOutline fontSize="inherit" className='ms-2' />
+                </Tooltip>
+              </div>
+              <Typography variant='h6'>
+                {blueRate ? currencyUSD(kpis.ingresosTotales / blueRate) : '—'}
+              </Typography>
             </Stack>
             <Paid fontSize="small" />
           </Stack>
-          {/* Fallback visual del widget si la API falló */}
           {blueError && (
             <Box id="vdb-widget" sx={{ mt: 1 }} />
           )}
@@ -712,7 +790,6 @@ export default function PaymentsManagerPage() {
               </Button>
             </>
           )}
-
         </Stack>
       </Box>
 
@@ -811,10 +888,26 @@ export default function PaymentsManagerPage() {
               <th style={{ width: '10%' }}>Objetivo</th>
               <th style={{ width: '8%' }}>Nutrición</th>
               <th style={{ width: '8%' }}>Plan</th>
+
+              {/* DÍAS + selector de modo */}
               <th style={{ width: '12%' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.25 }}>
-                  Días
-                  <Tooltip title={`Fecha límite: todos los ${DUE_DAY} de todos los meses`}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 600 }}>
+                    {`Días`}
+                  </span>
+                  <Dropdown
+                    value={daysMode}
+                    options={modeOptions}
+                    onChange={(e)=> setDaysMode(e.value)}
+                    optionLabel="label"
+                    optionValue="value"
+                    className="px-1"
+                  />
+                  <Tooltip title={
+                    daysMode === 'fijo'
+                      ? 'Modo fijo: vencimiento el día 10; respeta plan (1/3/6/12 meses).'
+                      : 'Modo individual: vencimiento el mismo día del pago; respeta el plan designado (1/3/6/12 meses).'
+                  }>
                     <HelpOutline fontSize="inherit" />
                   </Tooltip>
                 </Box>
@@ -825,7 +918,7 @@ export default function PaymentsManagerPage() {
           <tbody>
             {filteredRows.map(row => {
               const isEditing = editMode;
-              const dInfo = daysBadge(row._daysLeft, row._cuotaStatus);
+              const dInfo = daysBadge(row._daysRemaining, row._cuotaStatus);
 
               return (
                 <tr
@@ -914,8 +1007,12 @@ export default function PaymentsManagerPage() {
                     ) : (
                       <Tooltip
                         title={
-                          `Monto: ${currencyARS(row.payment_amount)}`
-                          + (row.payment_date ? ` • Fecha: ${new Date(row.payment_date).toLocaleDateString()}` : '')
+                          [
+                            `Monto: ${currencyARS(row.payment_amount)}`,
+                            row.payment_date ? `Fecha: ${new Date(row.payment_date).toLocaleDateString()}` : null,
+                            row._dueDate ? `Vence (${daysMode === 'fijo' ? 'fijo' : 'ind.'}): ${row._dueDate.toLocaleDateString()}` : null,
+                            formatRemainingVsToday(row._daysVsToday)
+                          ].filter(Boolean).join(' • ')
                         }
                       >
                         <span>
@@ -991,7 +1088,7 @@ export default function PaymentsManagerPage() {
                     )}
                   </td>
 
-                  {/* Días (desde fecha de pago) */}
+                  {/* Días (restantes vs HOY) */}
                   <td>
                     <Typography variant='body2' sx={{ fontWeight: 600, color: dInfo.color }}>
                       {dInfo.text}
