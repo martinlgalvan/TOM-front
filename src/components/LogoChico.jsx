@@ -22,6 +22,7 @@ import VALU_MARCHE from "/src/assets/img/Valu_marche.png";
 import AGUSTIN_ARENAS from "/src/assets/img/Agustin_arenas.png";
 import LEONEL_ORTIZ from "/src/assets/img/Leonel_ortiz.png";
 import GABRIEL_BELLEZA from "/src/assets/img/Gabriel_belleza.png";
+import NICOLAS_ECHAZZA from "/src/assets/img/Nicolas_echazza.png";
 
 /** Logo por defecto */
 const DEFAULT_LOGO = TOM;
@@ -107,6 +108,10 @@ const LOGO_MAP = {
   // GABRIEL BELLEZA
     "email:gbelleza2@gmail.com": GABRIEL_BELLEZA,
     "id:6898d5261dbf3b2af33fa555": GABRIEL_BELLEZA,
+
+    // NICOLAS ECHAZZARRETA
+    "email:echazzarreta-trainer@gmail.com": NICOLAS_ECHAZZA,
+    "id:68b08162ad67fcd9c69c31a2": NICOLAS_ECHAZZA,
 };
 
 /** Logos que llevan fondo blanco/rounded en su variante “chica” */
