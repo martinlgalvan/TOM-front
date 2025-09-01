@@ -761,7 +761,7 @@ function App() {
                 </button>
             }
             >
-            <p className='text-light' style={{ whiteSpace: 'pre-line' }}>
+            <p className='text-dark' style={{ whiteSpace: 'pre-line' }}>
                 {pendingAnnouncements[currentAnnouncementIndex]?.message}
             </p>
 

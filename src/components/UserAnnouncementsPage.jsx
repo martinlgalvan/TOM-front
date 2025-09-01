@@ -71,7 +71,7 @@ function UserAnnouncementsPage() {
 
             {selected && (
                 <Dialog header={selected.title} visible={dialogVisible} onHide={() => setDialogVisible(false)}>
-                    <p className="text-light border p-3 rounded-1" style={{ whiteSpace: "pre-line" }}>{selected.message}</p>
+                    <p className="text-dark border p-3 rounded-1" style={{ whiteSpace: "pre-line" }}>{selected.message}</p>
 
                     {selected.link_urls?.length > 0 && (
                         <div className="mt-3 d-flex flex-column gap-2 text-light">
