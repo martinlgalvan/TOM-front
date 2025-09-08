@@ -523,6 +523,10 @@ font-weight: 550;
   background: linear-gradient(to right, #051229, #0b2b5e);
 }
 
+.widgetNumberSuperSet{
+    background: linear-gradient(to right, #ef4444, #f97316);
+}
+
 .colorWarmup{
   background: linear-gradient(to right, #720303, #270202);
 }
@@ -977,6 +981,24 @@ font-weight: 550;
     margin-right: 0.5rem;
   }
   
+  .timerHdr {
+  background: linear-gradient(135deg,#2f57eb,#7b4fe6);
+  color: #fff;
+}
+.timerHdr .p-dialog-header-icons .p-dialog-header-icon {
+  color: #fff !important;
+}
+/* evita que el contenido del dialog quede muy pegado al header */
+.timerDialog .p-dialog-content { padding-top: 0.5rem; }
+
+.timerDialog .p-dialog-header { padding: 0; }
+
+.timerDialog .p-dialog-title { border-radius: 100px; }
+
+
+/* si querés un rojo un poco más suave en el área de descanso */
+.bg-danger-soft { background: rgba(239,68,68,.08); }
+
   .item-enter {
     opacity: 0;
   }
@@ -1028,7 +1050,42 @@ font-weight: 550;
     font-size: 0.7em;
   }
 
-  
+  .ex-card{
+  background:#fff;
+  border:1px solid #eef0f3;
+  border-radius:16px;
+  padding:16px;
+}
+
+.ex-badge{
+  width:28px;height:28px;
+  border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:0.9rem;
+  color:#fff;background:#3b82f6; /* azul */
+}
+
+.ex-meta-label{
+  font-size:.72rem;
+  letter-spacing:.08em;
+  color:#6b7280;
+  text-transform:uppercase;
+}
+
+.ex-meta-value{
+  font-weight:700;
+  font-size:1.25rem;
+}
+
+@media(min-width:768px){
+  .ex-meta-value{ font-size:1.5rem; }
+}
+
+.ex-note{
+  background:#f3f7ff;
+  border:1px dashed #e2e8f0;
+}
+
 
   .BlackBGtextWhite:hover{
     background-color: black;

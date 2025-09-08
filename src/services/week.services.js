@@ -135,9 +135,7 @@ async function editNameWeek(week_id, name) {
     })
 }
 
-
-
-//Eliminar un día por su ID
+//Eliminar una semana por su ID
 async function deleteWeek(week_id) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}`, {
         method: 'DELETE',
@@ -148,8 +146,6 @@ async function deleteWeek(week_id) {
     })
         .then(response => response.json())
 }
-
-
 
 async function exportToExcel(data) {
     return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/excel`, {
@@ -165,7 +161,7 @@ async function exportToExcel(data) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo exportar')
         }
     })
 }

@@ -25,6 +25,7 @@ import AGUSTIN_ARENAS from "/src/assets/img/Agustin_arenas.png";
 import LEONEL_ORTIZ from "/src/assets/img/Leonel_ortiz.png";
 import GABRIEL_BELLEZA from "/src/assets/img/Gabriel_belleza.png";
 import NICOLAS_ECHAZZA from "/src/assets/img/Nicolas_echazza.png";
+import CAMILA_BENEITEZ from "/src/assets/img/camila-beneitez.png";
 
 const DEFAULT_LOGO = TOM;
 
@@ -112,6 +113,10 @@ const LOGO_MAP = {
     // NICOLAS ECHAZZARRETA
    "email:echazzarreta-trainer@gmail.com": NICOLAS_ECHAZZA,
    "id:68b08162ad67fcd9c69c31a2": NICOLAS_ECHAZZA,
+   
+    // CAMILA BENEITEZ
+   "email:camibeneitez.fitness@gmail.com": CAMILA_BENEITEZ,
+   "id:68b720931a6600c8359c6cf3": CAMILA_BENEITEZ,
 
 
 };

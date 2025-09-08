@@ -66,6 +66,7 @@ import CircleIcon from '@mui/icons-material/Circle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
+import ImageIcon from '@mui/icons-material/Image';
 
 
 import {
@@ -207,19 +208,23 @@ const [blockNameSuggestions, setBlockNameSuggestions] = useState(BLOCK_NAME_OPTI
   const [tempColor, setTempColor] = useState();
 
   useEffect(() => {
-    setLoading(true);
-    Notify.notifyA("Cargando");
+  setLoading(true);
+  Notify.notifyA("Cargando");
 
-    WeekService.findByWeekId(week_id).then((data) => {
-      setRoutine(data[0]);
-      setWeekName(data[0].name);
-      setModifiedDay(data[0].routine);
-      setAllDays(data[0].routine);
-      setDay(data[0].routine);
-      setCurrentDay(data[0].routine[0]);
-      Notify.updateToast();
-    });
-  }, [statusCancel]);
+  WeekService.findByWeekId(week_id).then((data) => {
+    const w = data[0];
+    const upgraded = upgradeWeekShape(w.routine || []);
+    setRoutine(w);
+    setWeekName(w.name);
+    console.log(upgraded)
+    setModifiedDay(upgraded);
+    setAllDays(upgraded);
+    setDay(upgraded);
+    setCurrentDay(upgraded[0] || null);
+    Notify.updateToast();
+  });
+}, [statusCancel]);
+
 
   useEffect(() => {
     setCurrentDay(null);
@@ -907,6 +912,27 @@ const handleDeleteClick = (exercise) => {
     Notify.instantToast("Ejercicio eliminado con éxito");
   }
 
+  const BLOCK_PALETTE = [
+  '#e74c3c', '#9b0101ff', '#8f0b84ff', '#1d8122ff',
+  '#007585ff', '#3f51b5', '#673ab7', '#3e5058ff'
+];
+
+const BlockColorDot = ({ color, active, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="border-0 p-0 me-2"
+    style={{
+      width: 18, height: 18, borderRadius: '50%',
+      background: color,
+      outline: active ? '2px solid #fff' : '2px solid rgba(255,255,255,.7)',
+      boxShadow: active ? '0 0 0 2px rgba(0,0,0,.15)' : 'none',
+      cursor: 'pointer'
+    }}
+    aria-label={`Color ${color}`}
+  />
+);
+
   const handleDeleteConfirm = () => {
     if (exerciseToDelete) {
       acceptDeleteExercise(exerciseToDelete.exercise_id);
@@ -1002,40 +1028,45 @@ const handleDeleteClick = (exercise) => {
  };
 
  // Clona un bloque con todos sus ejercicios internos
- const cloneBlock = (block) => {
-   const { block_id, exercises = [], ...rest } = block || {};
-   const clonedInner = exercises.map(inner => cloneAnyExerciseOrStructure(inner));
-   // re-enumerar internos
-clonedInner.forEach((it, idx) => {
-     if (it.numberExercise == null || it.numberExercise === '') {
-       it.numberExercise = `${idx + 1}`;
-     }
-   });
-   return {
-     ...rest,
-     type: 'block',
-     block_id: new ObjectId().toString(),
-     exercises: clonedInner
-   };
- };
+const cloneBlock = (block) => {
+  const { block_id, numberExercise, exercises = [], ...rest } = block || {};
+  const clonedInner = exercises.map(inner => cloneAnyExerciseOrStructure(inner));
 
- // Genera un nuevo día a partir de uno existente
- const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
-   const { _id: _omit, exercises = [] } = srcDay || {};
-   const clonedExercises = exercises.map(el => cloneAnyExerciseOrStructure(el));
-   // re-enumerar raíz
-   clonedExercises.forEach((it, idx) => {
-     if (it.numberExercise == null || it.numberExercise === '') {
-        it.numberExercise = `${idx + 1}`;
-      }
-    });
-   return {
-     _id: new ObjectId().toString(),
-      name: `Día ${nextIndexNumber}`,
-     lastEdited: new Date().toISOString(),
-     exercises: clonedExercises
-   };
- };
+  // Re-enumerar sólo los hijos del bloque, no el bloque en sí
+  clonedInner.forEach((it, idx) => {
+    if (it.numberExercise == null || it.numberExercise === '') {
+      it.numberExercise = `${idx + 1}`;
+    }
+  });
+
+  return {
+    ...rest,                 // conserva color, nombre, etc.
+    type: 'block',           // asegura el tipo
+    block_id: new ObjectId().toString(),
+    exercises: clonedInner
+  };
+};
+
+const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
+  const { _id: _omit, exercises = [] } = srcDay || {};
+  const clonedExercises = exercises.map(el => cloneAnyExerciseOrStructure(el));
+
+  // 👉 No numerar bloques
+  clonedExercises.forEach((it, idx) => {
+    if (it?.type === 'block') {
+      delete it.numberExercise;      // por si venía con número
+    } else if (!it?.numberExercise) {
+      it.numberExercise = `${idx + 1}`;
+    }
+  });
+
+  return {
+    _id: new ObjectId().toString(),
+    name: `Día ${nextIndexNumber}`,
+    lastEdited: new Date().toISOString(),
+    exercises: clonedExercises
+  };
+};
 
  const pasteDayFromClipboard = () => {
    const raw = dayClipboard || localStorage.getItem("copiedDay");
@@ -1128,15 +1159,6 @@ clonedInner.forEach((it, idx) => {
     setIsEditingName(false);
   };
 
-const deleteCircuitInBlock = (blockIndex, circuitIndex) => {
-  setIsEditing(true);
-  const updated = [...day];
-  const block = updated[indexDay].exercises[blockIndex];
-  block.exercises.splice(circuitIndex, 1);
-  updated[indexDay].lastEdited = new Date().toISOString();
-  setDay(updated);
-  setModifiedDay(updated);
-};
 
 // Borra un ejercicio particular dentro de un circuito en un bloque
 const removeExerciseFromBlockCircuit = (blockIndex, circuitIndex, exIndex) => {
@@ -1194,61 +1216,33 @@ const confirmDeleteBlock = () => {
   setBlockToDelete({ index: null, name: "" });
 };
 
-  const AddNewCircuit = (blockIndex = null) => {
+const AddNewCircuit = (blockIndex = null, kind = 'Libre') => {
   setIsEditing(true);
-
-  // Clonamos estado
+  const base = circuitDefaults(kind);
   const updated = [...day];
+  const newCircuit = {
+    exercise_id: new ObjectId().toString(),
+    numberExercise: 0, // se setea abajo
+    circuitKind: kind,
+    type: '',          // sigue disponible para "Libre" (título)
+    typeOfSets: '',
+    notas: '',
+    circuit: [{ name: "", reps: 1, peso: "0", video: "", idRefresh: RefreshFunction.generateUUID() }],
+    ...base
+  };
 
   if (blockIndex == null) {
-    // === raíz ===
     const nextNumber = updated[indexDay].exercises.length + 1;
-    updated[indexDay].exercises.push({
-      type: '',
-      exercise_id: new ObjectId().toString(),
-      numberExercise: nextNumber,
-      name: '',
-      typeOfSets: '',
-      notas: '',
-      circuit: [{
-        name: "",
-        reps: 1,
-        peso: "0",
-        video: "",
-        idRefresh: RefreshFunction.generateUUID(),
-      }],
-    });
+    updated[indexDay].exercises.push({ ...newCircuit, numberExercise: nextNumber });
   } else {
-    // === dentro de bloque ===
     const block = updated[indexDay].exercises[blockIndex];
-    const nextNumber = block.exercises.length + 1;
-    block.exercises.push({
-      type: '',
-      exercise_id: new ObjectId().toString(),
-      numberExercise: nextNumber,
-      name: '',
-      typeOfSets: '',
-      notas: '',
-      circuit: [{
-        name: "",
-        reps: 1,
-        peso: "0",
-        video: "",
-        idRefresh: RefreshFunction.generateUUID(),
-      }],
-    });
+    const nextNumber = (block.exercises?.length || 0) + 1;
+    block.exercises.push({ ...newCircuit, numberExercise: nextNumber });
   }
 
   updated[indexDay].lastEdited = new Date().toISOString();
-  setDay(updated);
-  setModifiedDay(updated);
-  setCurrentDay(updated[indexDay]);
-
-  Notify.instantToast(
-    blockIndex == null
-      ? "Circuito añadido con éxito!"
-      : "Circuito añadido al bloque!"
-  );
+  setDay(updated); setModifiedDay(updated); setCurrentDay(updated[indexDay]);
+  Notify.instantToast(kind === 'Libre' ? "Circuito (Libre) añadido" : `Circuito ${kind} añadido`);
 };
 
 function handleDeleteExerciseInCircuit(blockIndex, circuitIndex, exerciseIndex, exerciseName) {
@@ -1268,6 +1262,289 @@ Notify.instantToast(`${exerciseToDeleteInCircuit.exerciseName} eliminado con éx
 setShowDeleteExerciseInCircuitDialog(false);
 setExerciseToDeleteInCircuit(null);
 }
+
+const CircuitHeaderEditor = ({
+  circuit,
+  onField,
+  showNumber = false,
+  numberValue,
+  onNumberChange,
+  numberOptions = []
+}) => {
+  const kind = circuit?.circuitKind ?? 'Libre';
+  const set = (k, v) => onField(k, v);
+
+  // Compacta mm:ss
+  const MMSS = ({ valueSec = 0, onChange }) => (
+    <CustomProvider locale={customLocale}>
+      <TimePicker
+        format="mm:ss"
+        defaultValue={parseToDateForTimePicker(fmtMMSS(valueSec))}
+        ranges={[]}
+        editable
+        hideSeconds={() => false}
+        className="form-control form-control-sm p-0 border-0"
+        onChange={(date) => {
+          if (!date) return onChange(0);
+          onChange(toSec(date.getMinutes(), date.getSeconds()));
+        }}
+      />
+    </CustomProvider>
+  );
+
+  // ============= Inline editors (compactos) =============
+  const DesktopInline = () => {
+    // inputs cortos reutilizables
+    const SmallNum = ({ value, onChange, min = 1, title }) => (
+      <input
+        type="number"
+        min={min}
+        className="form-control form-control-sm text-center"
+        style={{ width: 64 }}
+        value={value}
+        title={title}
+        onChange={(e) => onChange(Math.max(min, parseInt(e.target.value || `${min}`, 10)))}
+      />
+    );
+
+    switch (kind) {
+      case 'AMRAP':
+        return (
+                    <div>
+            <div>
+            <span className="small fs07em text-muted">Mins</span>
+            <MMSS valueSec={circuit.durationSec || 0} onChange={(v) => set('durationSec', v)} />
+          </div></div>
+        )
+
+      case 'EMOM':
+      case 'E2MOM':
+      case 'E3MOM': {
+        // Mostramos “Total (min)” como en el mockup
+        const interval =
+          kind === 'EMOM' ? (circuit.intervalMin || 1) : (kind === 'E2MOM' ? 2 : 3);
+        return (
+          <div className="d-flex align-items-center gap-2">
+            {kind === 'EMOM' && (
+              <>
+            <div>
+              <span className="small text-muted fs07em">Intervalo</span>
+                  <SmallNum
+                    value={interval}
+                    onChange={(v) => set('intervalMin', v)}
+                    min={1}
+                    title="Intervalo (min)"
+                  />
+              </div>
+              <span className="small text-muted fs07em mt-3">x</span>
+              </>
+            )}
+            <div>
+              <span className="small text-muted fs07em">Mins</span>
+              <SmallNum
+                value={circuit.totalMinutes || interval * (circuit.totalRounds || 1)}
+                onChange={(tot) => {
+                  set('totalMinutes', tot);
+                  set('totalRounds', Math.max(1, Math.round(tot / interval)));
+                }}
+                min={1}
+                title="Total (min)"
+              />
+            </div>
+          </div>
+        );
+      }
+
+      case 'Intermitentes':
+        return (
+          <div className="d-flex align-items-center gap-2 m-auto">
+            <div className="m-auto">
+              
+            <span className="small fs07em text-muted">Work</span>
+            <SmallNum
+              value={circuit.workSec || 30}
+              onChange={(v) => set('workSec', v)}
+              title="Trabajo (s)"
+            />
+            
+            </div>
+            <span className="mt-3">/</span>
+            <div>
+              <span className="small fs07em text-muted">Rest</span>
+              <SmallNum
+                value={circuit.restSec || 30}
+                onChange={(v) => set('restSec', v)}
+                title="Descanso (s)"
+              />
+               </div>
+            <span className="small text-muted mt-3">×</span>
+            <div>
+              <span className="small fs07em text-muted">Rounds</span>
+              <SmallNum
+                value={circuit.totalRounds || 10}
+                onChange={(v) => set('totalRounds', v)}
+                title="Rondas"
+              />
+             </div>
+          </div>
+        );
+
+      case 'Por tiempo':
+        return (
+          <div>
+            <div>
+            <span className="small fs07em text-muted">Mins</span>
+            <MMSS valueSec={circuit.timeCapSec || 0} onChange={(v) => set('timeCapSec', v)} />
+          </div></div>
+        )
+
+      case 'Tabata':
+        return (
+          <div className="d-flex align-items-center gap-2">
+           <div>
+            <span className="small text-muted fs07em">Work</span>
+              <SmallNum
+                value={circuit.workSec ?? 20}
+                onChange={(v) => set('workSec', v)}
+                title="Trabajo (s)"
+              />
+            </div>
+            <span className="mt-3">/</span>
+            <div>
+            <span className="small text-muted fs07em">Rest</span>
+              <SmallNum
+                value={circuit.restSec ?? 10}
+                onChange={(v) => set('restSec', v)}
+                title="Descanso (s)"
+              />
+            </div>
+            <span className="small text-muted mt-3">×</span>
+            <div>
+            <span className="small text-muted fs07em">Rounds</span>
+              <SmallNum
+                value={circuit.totalRounds ?? 8}
+                onChange={(v) => set('totalRounds', v)}
+                title="Rondas"
+              />
+            </div>
+          </div>
+        );
+
+      default: // Libre
+        return (
+          <div>
+            <span className="small text-muted fs07em">Mins / vueltas</span>
+          <input
+            className="form-control form-control-sm"
+            defaultValue={circuit.typeOfSets || ''}
+            onBlur={(e) => set('typeOfSets', e.target.value)}
+            style={{ width: 160 }}
+          />
+          </div>
+        );
+    }
+  };
+
+  const MobileInline = () => (
+    <div className="d-flex align-items-center gap-2">
+      <span>–</span>
+      <DesktopInline />
+    </div>
+  );
+
+  // ============= Render =============
+  return (
+    <>
+      {/* DESKTOP (>= md):  número + select modo + “–” + inline + Notas a la derecha */}
+      <div className="d-none d-md-flex align-items-center gap-3">
+     
+          <div style={{ minWidth: 72 }}>
+            <Dropdown
+              value={numberValue}
+              options={numberOptions}
+              optionLabel="label"
+              onChange={(e) => onNumberChange(e.value)}
+              className="p-dropdown-group w-100"
+            />
+          </div>
+        
+       
+        <div>
+          <span className="small text-muted fs07em">Tipo de circuito</span>
+            <select
+            className="form-select form-select-sm w-auto"
+            value={kind}
+            onChange={(e) => set('circuitKind', e.target.value)}
+          >
+            {CIRCUIT_KINDS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+
+        <div className="d-flex align-items-center gap-2">
+          <span className="mt-3">–</span>
+          <DesktopInline />
+        </div>
+
+        <div className="ms-auto mt-3" style={{ minWidth: 280 }}>
+          <input
+            className="form-control form-control-sm"
+            placeholder="Notas"
+            defaultValue={circuit.notas || ''}
+            onBlur={(e) => onField('notas', e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* MOBILE (< md): mismo orden, en bloques */}
+      <div className="d-md-none">
+  <div className="d-flex align-items-center gap-2 mb-2">
+    {showNumber && (
+      <div style={{ minWidth: 72 }}>
+        <Dropdown
+          value={numberValue}
+          options={numberOptions}
+          optionLabel="label"
+          onChange={(e) => onNumberChange(e.value)}
+          className="p-dropdown-group w-100"
+          appendTo={document.body}
+        />
+      </div>
+    )}
+
+    {/* ⬇️ ANTES: dropdown de ejercicios del circuito
+        AHORA: dropdown de KIND del circuito */}
+    <div style={{ minWidth: 200 }}>
+      <Dropdown
+        value={kind}                                   // <- usa el kind actual
+        options={CIRCUIT_KINDS}                        // <- AMRAP, EMOM, E2MOM, etc
+        optionLabel="label"
+        optionValue="value"
+        onChange={(e) => onField('circuitKind', e.value)} // <- dispara el cambio
+        appendTo={document.body}
+        className="p-dropdown-group w-100"
+        placeholder="Tipo de circuito"
+      />
+    </div>
+  </div>
+
+  <MobileInline />
+
+  <div className="mt-2">
+    <InputTextarea
+      autoResize
+      placeholder="Notas"
+      defaultValue={circuit.notas || ''}
+      onChange={(e) => onField('notas', e.target.value)}
+      className="w-100"
+    />
+  </div>
+</div>
+    </>
+  );
+};
 
 
 const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
@@ -1290,21 +1567,6 @@ const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
   Notify.instantToast("Ejercicio añadido al circuito!");
 };
 
-
-const changeBlockCircuitData = (blockIndex, circuitIndex, field, value) => {
-  setIsEditing(true);
-  const updated = [...day];
-  const dayCopy = updated[indexDay];
-
-  // buscamos el bloque
-  const block = dayCopy.exercises[blockIndex];
-  // actualizamos el campo directamente sobre ese circuito
-  block.exercises[circuitIndex][field] = value;
-
-  dayCopy.lastEdited = new Date().toISOString();
-  setDay(updated);
-  setModifiedDay(updated);
-};
 
   const customInputEditCircuit = (data, circuitIndex, field, blockIndex = null) => {
   const onChange = (e) => {
@@ -1358,23 +1620,86 @@ const changeBlockCircuitData = (blockIndex, circuitIndex, field, value) => {
 };
 
 
-const changeCircuitData = (circuitIndex, field, value, blockIndex = null) => {
+const changeCircuitData = (circuitIndex, field, value) => {
   setIsEditing(true);
-  const updated = [...day];
-  const dayCopy = updated[indexDay];
 
-  if (blockIndex != null) {
-    // circuito anidado dentro de un bloque
-    const block = dayCopy.exercises[blockIndex];
-    block.exercises[circuitIndex][field] = value;
+  const updated = [...day];
+  const dayCopy = { ...updated[indexDay] };
+  const exs = [...dayCopy.exercises];
+  const circuit = { ...exs[circuitIndex] };
+
+  let next = circuit;
+
+  if (field === 'circuitKind') {
+    next = applyCircuitKindChange(circuit, value);
   } else {
-    // circuito a nivel raíz
-    dayCopy.exercises[circuitIndex][field] = value;
+    next = { ...circuit, [field]: value };
   }
 
-  dayCopy.lastEdited = new Date().toISOString();
+  exs[circuitIndex] = next;
+  updated[indexDay] = { ...dayCopy, exercises: exs, lastEdited: new Date().toISOString() };
+
   setDay(updated);
   setModifiedDay(updated);
+  setCurrentDay(updated[indexDay]);
+};
+
+const changeBlockCircuitData = (blockIndex, circuitIndex, field, value) => {
+  setIsEditing(true);
+
+  const updated = [...day];
+  const dayCopy = { ...updated[indexDay] };
+  const blocks = [...dayCopy.exercises];
+  const block = { ...blocks[blockIndex] };
+  const inner = [...block.exercises];
+  const circuit = { ...inner[circuitIndex] };
+
+  let next = circuit;
+
+  if (field === 'circuitKind') {
+    next = applyCircuitKindChange(circuit, value);
+  } else {
+    next = { ...circuit, [field]: value };
+  }
+
+  inner[circuitIndex] = next;
+  block.exercises = inner;
+  blocks[blockIndex] = block;
+
+  updated[indexDay] = { ...dayCopy, exercises: blocks, lastEdited: new Date().toISOString() };
+
+  setDay(updated);
+  setModifiedDay(updated);
+  setCurrentDay(updated[indexDay]);
+};
+
+// === CAMPOS ESPECÍFICOS POR MODO ===
+const KIND_FIELDS = [
+  'durationSec',        // AMRAP
+  'intervalMin',        // EMOMs
+  'totalRounds',
+  'totalMinutes',
+  'workSec',            // Intermitentes/Tabata
+  'restSec',
+  'timeCapSec',         // Por tiempo
+  'typeOfSets'          // Libre
+];
+
+// Limpia todos los campos específicos antes de aplicar defaults del nuevo modo
+const stripKindSpecificFields = (obj = {}) => {
+  const clone = { ...obj };
+  KIND_FIELDS.forEach(k => { delete clone[k]; });
+  return clone;
+};
+
+// Aplica cambio de modo: limpia campos + setea defaults del modo nuevo
+const applyCircuitKindChange = (circuit = {}, nextKind = 'Libre') => {
+  const base = stripKindSpecificFields(circuit);
+  return {
+    ...base,
+    circuitKind: nextKind,
+    ...(circuitDefaults(nextKind) || {})
+  };
 };
 
   const changeExerciseInBlockCircuit = (blockIndex, circuitIndex, exIndex, field, value) => {
@@ -1481,15 +1806,95 @@ const changeExerciseInCircuit = (circuitIndex, exIndex, field, value) => {
 };
   
 
-  const deleteCircuit = (name, circuitIndex) => {
-    setIsEditing(true);
-    const updatedDays = [...day];
-    updatedDays[indexDay].exercises.splice(circuitIndex, 1);
+const deleteCircuit = (circuitIndex) => {
+  setIsEditing(true);
+  const updatedDays = [...day];
+  const removed = updatedDays[indexDay].exercises.splice(circuitIndex, 1)[0];
 
-    setDay(updatedDays);
-    setModifiedDay(updatedDays);
-    Notify.instantToast(`${name} Eliminado con éxito`);
-  };
+  setDay(updatedDays);
+  setModifiedDay(updatedDays);
+
+  const label = circuitSubtitle(removed || {});
+  Notify.instantToast(`${label} eliminado con éxito`);
+};
+
+// === NUEVO: tipos de circuito ===
+const CIRCUIT_KINDS = [
+  { label: 'Libre', value: 'Libre' },
+  { label: 'AMRAP', value: 'AMRAP' },
+  { label: 'EMOM', value: 'EMOM' },
+  { label: 'E2MOM', value: 'E2MOM' },
+  { label: 'E3MOM', value: 'E3MOM' },
+  { label: 'Intermitentes', value: 'Intermitentes' },
+  { label: 'Por tiempo', value: 'Por tiempo' },
+  { label: 'Tabata', value: 'Tabata' },
+];
+
+const toSec = (mm = 0, ss = 0) => mm * 60 + ss;
+const fromSec = (sec = 0) => {
+  const m = Math.floor((+sec || 0) / 60);
+  const s = (+sec || 0) % 60;
+  return { m, s };
+};
+const fmtMMSS = (sec = 0) => {
+  const { m, s } = fromSec(sec);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+};
+
+// defaults por tipo
+const circuitDefaults = kind => {
+  switch (kind) {
+    case 'AMRAP':         return { durationSec: toSec(12,0) };
+    case 'EMOM':          return { intervalMin: 1, totalRounds: 12, totalMinutes: 12 };
+    case 'E2MOM':         return { intervalMin: 2, totalRounds: 8,  totalMinutes: 16 };
+    case 'E3MOM':         return { intervalMin: 3, totalRounds: 6,  totalMinutes: 18 };
+    case 'Intermitentes': return { workSec: 30, restSec: 30, totalRounds: 10 };
+    case 'Por tiempo':    return { timeCapSec: toSec(20,0) };
+    case 'Tabata':        return { workSec: 20, restSec: 10, totalRounds: 8 };
+    default:              return {}; // Libre
+  }
+};
+
+// Subtítulo UX (se muestra al usuario)
+const circuitSubtitle = c => {
+  const kind = c?.circuitKind || 'Libre';
+  switch (kind) {
+    case 'AMRAP':         return `AMRAP – ${fmtMMSS(c.durationSec||0)}`;
+    case 'EMOM':          return `EMOM – ${String(c.intervalMin||1)}:00 × ${c.totalRounds||0}`;
+    case 'E2MOM':         return `E2MOM – 2:00 × ${c.totalRounds||0}`;
+    case 'E3MOM':         return `E3MOM – 3:00 × ${c.totalRounds||0}`;
+    case 'Intermitentes': return `Intermitentes – ${(c.workSec||0)}:${String(c.restSec||0).padStart(2,'0')} × ${c.totalRounds||0}`;
+    case 'Por tiempo':    return `For time – CAP ${fmtMMSS(c.timeCapSec||0)}`;
+    case 'Tabata':        return `Tabata – ${(c.workSec||20)}:${String(c.restSec||10).padStart(2,'0')} × ${c.totalRounds||8}`;
+    default:              return `Libre${c.typeOfSets ? ' – ' + c.typeOfSets : ''}`;
+  }
+};
+
+// Upgrader: deja cualquier circuito viejo en "Libre" y agrega campos faltantes
+const upgradeCircuitShape = (c) => {
+  if (!Array.isArray(c?.circuit)) return c;
+  const upgraded = { circuitKind: 'Libre', ...c };
+  return upgraded;
+};
+const upgradeWeekShape = (days) =>
+  (days||[]).map(d => ({
+    ...d,
+    exercises: (d.exercises||[]).map(el => {
+      if (el?.type === 'block') {
+        return {
+          ...el,
+          exercises: (el.exercises||[]).map(x => upgradeCircuitShape(x))
+        };
+      }
+      return upgradeCircuitShape(el);
+    })
+  }));
+
+
+
+
+
+
 
   const incrementAllSeries = () => {
       const updatedDays = day.map((dayItem, idx) => {
@@ -1857,15 +2262,16 @@ function colorItemTemplate(option) {
                           {exercise.exercises.map((ex, j) =>
                             Array.isArray(ex.circuit) ? (
                             <div key={ex.exercise_id} className="row justify-content-center">
-                              {/* Nombre / Min-vueltas */}
-                              <div className="col-8 text-start">
-                                <span className="styleInputsSpan">Nombre</span>
-                                {customInputEditCircuit(ex.type, j, 'type', i)}
-                              </div>
-                              <div className="col-4 text-start">
-                                <span className="styleInputsSpan">Min / vueltas</span>
-                                {customInputEditCircuit(ex.typeOfSets, j, 'typeOfSets', i)}
-                              </div>
+<div className="col-12">
+<CircuitHeaderEditor
+  circuit={ex}
+  onField={(field, value) => changeBlockCircuitData(i, j, field, value)}
+  showNumber
+  numberValue={ex.numberExercise}
+  numberOptions={options}
+  onNumberChange={(v) => changeBlockCircuitData(i, j, 'numberExercise', v)}
+/>
+</div>
 
                               {/* Lista de ejercicios del circuito */}
                               <div className="notStyle">
@@ -2150,14 +2556,17 @@ function colorItemTemplate(option) {
                       ) : (
                             <>
                                 <div className="row justify-content-center">
-                                  <div className="col-8 text-start" >
-                                  <span className="styleInputsSpan">Nombre</span>
-                                    {customInputEditCircuit(exercise.type, i, 'type')}
-                                  </div>
-                                  <div className="col-4 text-start" >
-                                    <span className="styleInputsSpan">Min / vueltas</span>
-                                    {customInputEditCircuit(exercise.typeOfSets, i, 'typeOfSets')}
-                                  </div>
+                                        <div className="col-12">
+                                          <CircuitHeaderEditor
+                                            circuit={exercise}
+                                            onField={(field, value) => changeCircuitData(i, field, value)}
+                                            showNumber
+                                            numberValue={exercise.numberExercise}
+                                            numberOptions={options}
+                                            onNumberChange={(v) => changeCircuitData(i, 'numberExercise', v)}
+                                          />
+
+                                      </div>
                                   <div className="notStyle">
                                     {exercise.circuit.map((item, j) => (
                                       <div key={item.idRefresh} className="row justify-content-center text-center">
@@ -2242,7 +2651,7 @@ function colorItemTemplate(option) {
                                           <IconButton
                                             aria-label="video"
                                             className="bg-danger col-7 fontDeleteCircuit rounded-2 text-light"
-                                            onClick={() => deleteCircuit(exercise.name, i)}
+                                            onClick={() => deleteCircuit(i)}
                                           >
                                             <DeleteIcon />
                                             Eliminar 
@@ -2569,57 +2978,81 @@ function colorItemTemplate(option) {
                                   {exercise.type === 'block' ? (
                                     <React.Fragment key={exercise.block_id}>
                                       {/* Fila encabezado bloque */}
-                                      <tr
-                                        ref={providedDrag.innerRef}
-                                        {...providedDrag.draggableProps}
-                                        className="block-header"
-                                        
-                                      >
-                                        <td colSpan={1} style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}>
-                                       
-                                            <IconButton
-                                                {...providedDrag.dragHandleProps}
-                                              >
-                                                <DragIndicatorIcon />
-                                              </IconButton>
-                                          </td>
-                                          <td colSpan={5} style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}>
-                                          <PrimeAutoComplete
-                                            value={exercise.name}
-                                            suggestions={blockNameSuggestions}
-                                            dropdown
-                                            placeholder="Nombre del bloque"
-                                            className="form-control d-inline-block w-auto bg-transparent border-0 pb-5"
-                                            completeMethod={(e) => {
-                                              const q = e.query.toLowerCase();
-                                              setBlockNameSuggestions(
-                                                BLOCK_NAME_OPTIONS.filter(opt =>
-                                                  opt.toLowerCase().includes(q)
-                                                )
-                                              );
-                                            }}
-                                            onChange={(e) => changeBlockData(i, 'name', e.value)}
-                                          />
-                                           </td>
-                                           <td colSpan={3}>
-                                            <div className=" row justify-content-center text-center m-auto">
-                                              
-                                            <SelectButton
-                                              className="m-auto text-center"
-                                              value={exercise.color}
-                                              options={BLOCK_COLOR_OPTIONS}
-                                              onChange={e => changeBlockData(i, 'color', e.value)}
-                                              itemTemplate={colorItemTemplate}
-                                            />
-                                          
-                                            </div>
-                                          </td>
-                                          <td colSpan={1}>
-                                          <IconButton onClick={() => handleDeleteBlockClick(i, exercise.name)}>
-                                            <CancelIcon />
-                                          </IconButton>
-                                        </td>
-                                      </tr>
+                                      <tr ref={providedDrag.innerRef} {...providedDrag.draggableProps}>
+  <td colSpan={propiedades.length} className="p-0 border-0">
+    <div
+      className="rounded-3 shadow-sm"
+      style={{ overflow: 'hidden', border: '1px solid #ececec' }}
+    >
+      {/* HEADER ROJO */}
+      <div
+        className="d-flex align-items-center justify-content-between px-3 py-2"
+        style={{ background: exercise.color || '#e74c3c', color: '#fff' }}
+      >
+        <div className="d-flex align-items-center gap-2">
+          <span {...providedDrag.dragHandleProps}>
+            <IconButton size="small" className="text-white">
+              <DragIndicatorIcon />
+            </IconButton>
+          </span>
+
+          <span className="fw-semibold">Bloque</span>
+
+          <PrimeAutoComplete
+            value={exercise.name}
+            suggestions={blockNameSuggestions}
+            dropdown
+            placeholder="Nombre del bloque"
+            className="form-control form-control-sm bg-transparent border-0 text-dark"
+            completeMethod={(e) => {
+              const q = e.query.toLowerCase();
+              setBlockNameSuggestions(
+                BLOCK_NAME_OPTIONS.filter(opt =>
+                  opt.toLowerCase().includes(q)
+                )
+              );
+            }}
+            onChange={(e) => changeBlockData(i, 'name', e.value)}
+          />
+        </div>
+
+        <div className="d-flex align-items-center">
+          {BLOCK_PALETTE.map((c) => (
+            <BlockColorDot
+              key={c}
+              color={c}
+              active={exercise.color === c}
+              onClick={() => changeBlockData(i, 'color', c)}
+            />
+          ))}
+
+          <IconButton
+            size="small"
+            className="text-white"
+            onClick={() => handleDeleteBlockClick(i, exercise.name)}
+            title="Eliminar bloque"
+          >
+            <CancelIcon />
+          </IconButton>
+        </div>
+      </div>
+
+      {/* SUB-ENCABEZADO DE COLUMNAS (fondo claro) */}
+      <div className="px-3 py-2 small text-muted " style={{ background: '#fffef7' }}>
+        <div className="row g-0 fw-semibold">
+          <div className="col-1">#</div>
+          <div className="col-3 text-start">Ejercicio</div>
+          <div className="col-1">Series</div>
+          <div className="col-1">Reps</div>
+          <div className="col-2">Peso</div>
+          <div className="col-1">Rest</div>
+          <div className="col-1">Video</div>
+          <div className="col-2">Notas</div>
+        </div>
+      </div>
+    </div>
+  </td>
+</tr>
 
                              
                               <React.Fragment   
@@ -2628,7 +3061,7 @@ function colorItemTemplate(option) {
                                     // EJERCICIOS SUELTOS
                                     if (ex.type === 'exercise') {
                                       return ( <tr 
-                                      className="text-danger border shadow "
+                                      className="text-danger  shadow "
                                         key={ex.exercise_id}
                                         
                                           >
@@ -2724,28 +3157,24 @@ function colorItemTemplate(option) {
                                                         </td>
                                                       </tr>
                                 )}
-                                if (ex.type !== 'block' || ex.type !== 'exercise') {
+                                if (ex.type !== 'block' && ex.type !== 'exercise') {
+
                                   return (
                                     <React.Fragment key={ex.exercise_id}>
                                       {/* --- Fila de encabezado del circuito dentro del bloque --- */}
                                       <tr style={{ backgroundColor: exercise.color }}>
-                                        <td colSpan={1} className="text-start">
-                                          {customInputEditCircuit(ex.numberExercise, j, 'numberExercise', i)}
-                                        </td>
-                                        <td colSpan={3} className="text-start">
-                                          <span className="fs08em text-start">Nombre</span>
-                                          {customInputEditCircuit(ex.type, j, 'type', i)}
-                                        </td>
-                                        <td colSpan={2} className="text-start">
-                                          <span className="fs08em text-start">Sets</span>
-                                          {customInputEditCircuit(ex.typeOfSets, j, 'typeOfSets', i)}
-                                        </td>
-                                        <td colSpan={3} className="text-start">
-                                          <span className="fs08em d-block">Notas</span>
-                                          {customInputEditCircuit(ex.notas, j, 'notas', i)}
+                                        <td colSpan={8} className="text-start">
+                                          <CircuitHeaderEditor
+                                            circuit={ex}
+                                            onField={(field, value) => changeBlockCircuitData(i, j, field, value)}
+                                            showNumber
+                                            numberValue={ex.numberExercise}
+                                            numberOptions={options}
+                                            onNumberChange={(v) => changeBlockCircuitData(i, j, 'numberExercise', v)}
+                                          />
                                         </td>
                                         <td>
-                                          <IconButton onClick={() => handleDeleteCircuitInBlock(i, j, ex.type )}>
+                                      <IconButton onClick={() => handleDeleteCircuitInBlock(i, j, circuitSubtitle(ex))}>
                                             <CancelIcon />
                                           </IconButton>
                                         </td>
@@ -2803,7 +3232,7 @@ function colorItemTemplate(option) {
 
                                       {/* Fila para añadir ejercicio al bloque */}
                                       <tr>
-                                        <td colSpan={propiedades.length} className="text-center" style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}>
+                                        <td colSpan={propiedades.length} className="text-center rounded-bottom-3" style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}>
                                           <button
                                             className="btn btn-light mx-3"
                                             onClick={() => addExerciseToBlock(i)}
@@ -2968,50 +3397,53 @@ function colorItemTemplate(option) {
                                                         <td colSpan={9}>
                                                           <table className="table text-center align-middle">
                                                             <thead>
-                                                              <tr >
-                                                                <th colSpan={2}>Nombre</th>
-                                                                <th>Sets/mins</th>
-                                                                <th colSpan={2}>Notas</th>
-                                                                <th>#</th>
-                                                              </tr>
                                                               <tr>
-                                                                <td colSpan={2}>{customInputEditCircuit(exercise.type, i, 'type')}</td>
-                                                                <td>{customInputEditCircuit(exercise.typeOfSets, i, 'typeOfSets')}</td>
-                                                                <td colSpan={2}>{customInputEditCircuit(exercise.notas, i, 'notas')}</td>
+
+                                                                <td colSpan={8} className="text-start">
+                                                               <CircuitHeaderEditor
+                                                                  circuit={exercise}
+                                                                  onField={(field, value) => changeCircuitData(i, field, value)}
+                                                                  showNumber
+                                                                  numberValue={exercise.numberExercise}
+                                                                  numberOptions={options}
+                                                                  onNumberChange={(v) => changeCircuitData(i, 'numberExercise', v)}
+                                                                />
+                                                                </td>
                                                                 <td>
                                                                   <IconButton
-                                                                    aria-label="video"
-                                                                    className="text-center"
-                                                                    onClick={() => deleteCircuit(exercise.name, i)}
+                                                                    aria-label="delete"
+                                                                    onClick={() => deleteCircuit(i)}
+
                                                                   >
-                                                                    <CancelIcon className="colorIconDeleteExercise" />
+                                                                    <CancelIcon />
                                                                   </IconButton>
                                                                 </td>
                                                               </tr>
+
                                                               <tr></tr>
-                                                              <tr colSpan={7}>
-                                                                <th>Nombre</th>
-                                                                <th colSpan={2}>Reps</th>
-                                                                <th>Peso</th>
-                                                                <th>Video</th>
-                                                                <th></th>
+                                                              <tr >
+                                                                <th colSpan={3}>Nombre</th>
+                                                                <th colSpan={2} >Reps</th>
+                                                                <th colSpan={2}>Peso</th>
+                                                                <th colSpan={1}>Video</th>
+                                                                
                                                               </tr>
                                                             </thead>
                                                             <tbody>
                                                               {exercise.circuit.map((circuitExercise, j) => (
                                                                 <tr key={circuitExercise.idRefresh}>
-                                                                  <td className="" >
+                                                                  <td colSpan={3} className="" >
                                                                     {customInputEditExerciseInCircuit(circuitExercise.name, i, j, 'name')}
                                                                   </td>
-                                                                  <td className="td-3" colSpan={2}>
+                                                                  <td colSpan={2} className="td-3" >
                                                                     <div className="marginRepsNew">
                                                                     {customInputEditExerciseInCircuit(circuitExercise.reps, i, j, 'reps')}
                                                                     </div>
                                                                   </td>
-                                                                  <td className="">
+                                                                  <td colSpan={2} className="" >
                                                                     {customInputEditExerciseInCircuit(circuitExercise.peso, i, j, 'peso')}
                                                                   </td>
-                                                                  <td className="">
+                                                                  <td colSpan={1} className="">
                                                                     {customInputEditExerciseInCircuit(circuitExercise.video, i, j, 'video')}
                                                                   </td>
                                                                   <td>
@@ -3172,7 +3604,7 @@ function colorItemTemplate(option) {
             }
             onHide={handleDeleteCancel}
           >
-            <p className="p-4 text-light">
+            <p className="p-4 text-dark">
               ¡Cuidado! Estás por eliminar{" "}
               <b>"{exerciseToDelete?.name}"</b>. ¿Estás seguro?
             </p>

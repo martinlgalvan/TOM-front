@@ -12,10 +12,13 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
+import { Button } from "primereact/button";
 
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import { CircleX, Copy } from "lucide-react";
+import { CircleX, Copy, MessageSquarePlus, MessageSquareText } from "lucide-react";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -35,7 +38,21 @@ export default function PrimeReactTable_Routines({
   const [blocks, setBlocks] = useState([]);
   const navigate = useNavigate();
   const [showBlockDialog, setShowBlockDialog] = useState(false);
-  const [trainer_id, setTrainer_id] = useState(localStorage.getItem("_id"));
+  const [trainer_id] = useState(localStorage.getItem("_id"));
+
+  // === Comentarios ===
+  const [showCommentsDialog, setShowCommentsDialog] = useState(false);
+  const [commentsWeekId, setCommentsWeekId] = useState(null);
+  const [commentsTitle, setCommentsTitle] = useState("Comentarios semanales");
+  const [commentsDescription, setCommentsDescription] = useState("");
+  const [commentsMode, setCommentsMode] = useState("free"); // "free" | "days"
+  const [commentsDaysMeta, setCommentsDaysMeta] = useState([]); // [{_id,label}]
+  const [commentsByDay, setCommentsByDay] = useState({}); // { [dayId]: text }
+
+  const modeOptions = [
+    { label: "Modo libre", value: "free" },
+    { label: "Modo días", value: "days" },
+  ];
 
   useEffect(() => {
     BlockService.getBlocks(trainer_id).then((raw) => {
@@ -45,7 +62,7 @@ export default function PrimeReactTable_Routines({
       }));
       setBlocks(normalized);
     });
-  }, [id]);
+  }, [trainer_id]);
 
   // estilos: colores de bloque + hover de celdas navegables
   useEffect(() => {
@@ -101,7 +118,7 @@ export default function PrimeReactTable_Routines({
     return [...base, ...blocks, ...extra];
   };
 
-  // ⬇⬇⬇ FALTABAAAA: celda con el Dropdown de bloques
+  // Celda con el Dropdown de bloques
   const blockDropdownTemplate = (rowData) => {
     const blockId =
       rowData.block_id?.toString() || rowData.block?._id?.toString();
@@ -141,7 +158,6 @@ export default function PrimeReactTable_Routines({
       </div>
     );
   };
-  // ⬆⬆⬆
 
   const handleAssignBlock = async (routineId, block) => {
     try {
@@ -217,6 +233,113 @@ export default function PrimeReactTable_Routines({
     navigate(`/routine/user/${id}/week/${routineId}/day/${dayId}/${username}`);
   };
 
+  // === Abrir diálogo de comentarios ===
+  const handleOpenComments = (row) => {
+    setCommentsWeekId(row._id);
+    setCommentsTitle(row.comments?.title || "Comentarios semanales");
+    setCommentsDescription(row.comments?.description || "");
+
+    // modo
+    const initialMode = row.comments?.mode === "days" ? "days" : "free";
+    setCommentsMode(initialMode);
+
+    // meta de días (label por día)
+    const daysMeta = (row.routine || []).map((d, idx) => ({
+      _id: String(d._id),
+      label: d?.name || d?.title || `Día ${idx + 1}`,
+    }));
+    setCommentsDaysMeta(daysMeta);
+
+    // valores por día (si vienen del server)
+    let initialByDay = {};
+    // admite array (nuevo), objeto plano (viejo) y daysMap (compatible)
+    const fromServer =
+      row.comments?.days ||
+      row.comments?.daysMap ||
+      (row.comments?.days && typeof row.comments.days === "object"
+        ? row.comments.days
+        : null);
+
+    if (fromServer && typeof fromServer === "object") {
+      if (Array.isArray(fromServer)) {
+        fromServer.forEach((it) => {
+          if (it && it.dayId != null) {
+            initialByDay[String(it.dayId)] = String(it.text ?? "");
+          }
+        });
+      } else {
+        initialByDay = Object.keys(fromServer).reduce((acc, k) => {
+          acc[String(k)] = String(fromServer[k] ?? "");
+          return acc;
+        }, {});
+      }
+    }
+    setCommentsByDay(initialByDay);
+
+    setShowCommentsDialog(true);
+  };
+
+  // --- Helper: construir payload compatible (array + objeto)
+  const buildCommentsPayload = () => {
+    const base = {
+      title: commentsTitle?.trim() || "Comentarios semanales",
+    };
+
+    if (commentsMode === "days") {
+      // Array de objetos [{dayId,label,text}]
+      const daysArr = commentsDaysMeta.map((d) => ({
+        dayId: String(d._id),
+        label: d.label,
+        text: String(commentsByDay[d._id] || "").trim(),
+      }));
+
+      // Objeto { [dayId]: text }
+      const daysMap = commentsDaysMeta.reduce((acc, d) => {
+        acc[String(d._id)] = String(commentsByDay[d._id] || "").trim();
+        return acc;
+      }, {});
+
+      return {
+        comments: {
+          ...base,
+          mode: "days",
+          days: daysArr,
+          daysMap, // compatibilidad con back/lectores que esperen objeto
+        },
+      };
+    }
+
+    // Modo libre
+    return {
+      comments: {
+        ...base,
+        mode: "free",
+        description: commentsDescription || "",
+      },
+    };
+  };
+
+  // === Guardar comentarios ===
+  const handleSaveComments = async () => {
+    try {
+      const payload = buildCommentsPayload();
+      await RoutineService.updateWeekProperties(commentsWeekId, payload);
+
+      // update optimista (asignamos comments explícitamente)
+      setRoutine((prev) =>
+        prev.map((w) =>
+          w._id === commentsWeekId ? { ...w, comments: payload.comments } : w
+        )
+      );
+
+      setShowCommentsDialog(false);
+      NotifyHelper.instantToast("Comentarios guardados con éxito");
+    } catch (err) {
+      console.error("Error guardando comentarios", err);
+      NotifyHelper.instantToast("Error al guardar los comentarios");
+    }
+  };
+
   const actionsTemplate = (row) => {
     const currentVis = row.visibility || "visible";
     const isHidden = currentVis === "hidden";
@@ -224,7 +347,7 @@ export default function PrimeReactTable_Routines({
     return (
       <div className="row text-start" onClick={(e) => e.stopPropagation()}>
         {/* Visibilidad */}
-        <div className="btn col-10 col-lg-4">
+        <div className="col-10 col-lg-3 d-flex">
           <Tooltip title={getVisibilityTooltip(isHidden)} arrow placement="top">
             <IconButton
               aria-label="toggle-visibility"
@@ -243,32 +366,63 @@ export default function PrimeReactTable_Routines({
           </Tooltip>
         </div>
 
+        {/* Agregar comentarios */}
+        <div className="col-10 col-lg-3 d-flex">
+          <Tooltip
+            arrow
+            placement="top"
+            title={
+              <div style={{ maxWidth: 260, lineHeight: 1.2 }}>
+                <strong>Agregar comentarios</strong>
+                <div className="mt-1">
+                  Esta sección permite agregar comentarios sobre la semana. Podés
+                  usar modo libre o por día. Tu alumno lo verá antes de entrar a
+                  la semana.
+                </div>
+              </div>
+            }
+          >
+            <IconButton
+              aria-label="add-comments"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenComments(row);
+              }}
+              size="small"
+            >
+              <MessageSquareText  fill={row.comments ? '#0e5e39ff' : ''} color="white" strokeWidth={2} />
+            </IconButton>
+          </Tooltip>
+        </div>
+
         {/* Copiar */}
-        <IconButton
-          aria-label="copy"
-          onClick={(e) => {
-            e.stopPropagation();
-            saveToLocalStorage(row);
-          }}
-          className="btn col-10 col-lg-4"
-        >
-          <Copy className="text-dark" />
-        </IconButton>
+        <div className="col-10 col-lg-3 d-flex">
+          <IconButton
+            aria-label="copy"
+            onClick={(e) => {
+              e.stopPropagation();
+              saveToLocalStorage(row);
+            }}
+          >
+            <Copy className="text-dark" />
+          </IconButton>
+        </div>
 
         {/* Eliminar */}
-        <IconButton
-          aria-label="delete"
-          onClick={(e) => {
-                e.stopPropagation();
-                deleteWeek(row._id, row.name);
-              }}
-              className="btn col-10 col-lg-4"
-            >
-              <CircleX className="text-danger" />
-            </IconButton>
-          </div>
-        );
-      };
+        <div className="col-10 col-lg-3 d-flex">
+          <IconButton
+            aria-label="delete"
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteWeek(row._id, row.name);
+            }}
+          >
+            <CircleX className="text-danger" />
+          </IconButton>
+        </div>
+      </div>
+    );
+  };
 
   const saveToLocalStorage = (data) => {
     try {
@@ -348,9 +502,6 @@ export default function PrimeReactTable_Routines({
         ? new Date(rowData.updated_user_at).toLocaleString()
         : "—";
 
-    const fmtVisible = () =>
-      rowData.visible_at ? new Date(rowData.visible_at).toLocaleString() : "—";
-
     return (
       <div className="text-start">
         <div className="stylesDate mb-2 d-block">
@@ -377,9 +528,7 @@ export default function PrimeReactTable_Routines({
           scrollable={false}
           onRowClick={(e) => {
             const target = e.originalEvent.target;
-            // si clickeó un link, dejamos que el <Link> maneje
             if (target.closest("a")) return;
-            // solo navegamos si la celda es una de las "navegables"
             const cell = target.closest("td");
             if (!cell || !cell.classList.contains("js-nav-cell")) return;
             const row = e.data;
@@ -438,6 +587,99 @@ export default function PrimeReactTable_Routines({
         onHide={() => setShowBlockDialog(false)}
       >
         <BlocksListPage id={trainer_id} />
+      </Dialog>
+
+      {/* Diálogo de comentarios */}
+      <Dialog
+        header="Comentarios de la semana"
+        visible={showCommentsDialog}
+        style={{ width: "760px", maxWidth: "95vw" }}
+        onHide={() => setShowCommentsDialog(false)}
+        footer={
+          <div className="d-flex gap-2 justify-content-end">
+            <Button
+              label="Cancelar"
+              className="p-button-text"
+              onClick={() => setShowCommentsDialog(false)}
+            />
+            <Button label="Guardar" onClick={handleSaveComments} />
+          </div>
+        }
+      >
+        {/* Título + Modo (select al lado) */}
+        <div className="row g-3 align-items-end mb-3">
+          <div className="col-12 col-md">
+            <label htmlFor="comments-title" className="form-label d-block mb-2">
+              Título
+            </label>
+            <InputText
+              id="comments-title"
+              value={commentsTitle}
+              onChange={(e) => setCommentsTitle(e.target.value)}
+              className="w-100 text-dark"
+              placeholder="Comentarios semanales"
+            />
+          </div>
+          <div className="col-12 col-md-4">
+            <label htmlFor="comments-mode" className="form-label d-block mb-2">
+              Modo
+            </label>
+            <Dropdown
+              id="comments-mode"
+              value={commentsMode}
+              options={modeOptions}
+              optionLabel="label"
+              optionValue="value"
+              className="w-100"
+              onChange={(e) => setCommentsMode(e.value)}
+            />
+          </div>
+        </div>
+
+        {/* Contenido según modo */}
+        {commentsMode === "free" ? (
+          <div>
+            <label htmlFor="comments-body" className="form-label d-block mb-2">
+              Comentarios
+            </label>
+            <InputTextarea
+              id="comments-body"
+              value={commentsDescription}
+              onChange={(e) => setCommentsDescription(e.target.value)}
+              className="w-100 text-dark"
+              rows={5}
+              autoResize
+              placeholder="Escribí aquí los comentarios para tu alumno…"
+            />
+          </div>
+        ) : (
+          <div className="d-grid gap-1">
+            {commentsDaysMeta.length ? (
+              commentsDaysMeta.map((d) => (
+                <div key={d._id} className="shadow-1">
+                  <div className="mb-2 fw-semibold">{d.label}</div>
+                  <InputTextarea
+                    value={commentsByDay[d._id] || ""}
+                    onChange={(e) =>
+                      setCommentsByDay((prev) => ({
+                        ...prev,
+                        [d._id]: e.target.value,
+                      }))
+                    }
+                    className="w-100 text-dark"
+                    rows={1}
+                    autoResize
+                    placeholder={`Comentario para ${d.label}…`}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="text-muted">
+                Esta semana no tiene días cargados todavía.
+              </div>
+            )}
+          </div>
+        )}
       </Dialog>
     </div>
   );

@@ -33,7 +33,7 @@ function DeleteWeek({ visible, onHide, week_id, name, onDelete }) {
       <div className='row justify-content-center'>
 
         <div className='col-10 mb-3 text-center '>
-          <p className='text-light'>¿Estás seguro de eliminar <b>"{name}"</b>?</p>
+          <p className='text-dark'>¿Estás seguro de eliminar <b>"{name}"</b>?</p>
         </div>
 
         <div className='col-12 text-center'>

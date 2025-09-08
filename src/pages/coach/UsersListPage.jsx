@@ -33,7 +33,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 //.............................. LUCIDE ..............................//
-import { HelpCircle } from "lucide-react";
+import { Megaphone, Plus, Pencil, Trash2,HelpCircle ,Calendar1, Eye } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Circle, CircleDot } from "lucide-react";
 
 function UsersListPage() {
   const { id } = useParams();
@@ -124,6 +125,7 @@ function UsersListPage() {
         const dateB = b.show_at_date || new Date(0);
         return new Date(dateB) - new Date(dateA);
       });
+          console.log(sorted)
       setAnnouncements(sorted);
     } catch (err) {
       Notify.instantToast("Error al obtener anuncios");
@@ -136,6 +138,7 @@ function UsersListPage() {
     try {
       const users = await UsersService.find(id);
       setUsersList(users.map((u) => ({ label: u.name, value: u._id })));
+
     } catch (err) {
       Notify.instantToast("Error al obtener usuarios");
     }
@@ -194,18 +197,21 @@ function UsersListPage() {
     ]);
   }, []);
 
-  // ---------- Usuarios (lista principal)
-  useEffect(() => {
-    setFirstWidth(window.innerWidth);
+useEffect(() => {
+  setFirstWidth(window.innerWidth);
 
-    Notify.notifyA("Cargando usuarios...");
-    UsersService.find(id).then((data) => {
-      setUsers(data);
-      setTotalUsers(data.length);
-      sessionStorage.setItem("U4S3R", JSON.stringify(data));
-      Notify.updateToast();
-    });
-  }, [status]);
+  Notify.notifyA("Cargando usuarios...");
+  UsersService.findWithLastWeek(id).then((data) => {
+    console.log(data)
+    setUsers(data); // cada user ahora puede traer last_week_created_at / last_week_updated_at
+    setTotalUsers(data.length);
+    sessionStorage.setItem("U4S3R", JSON.stringify(data));
+    Notify.updateToast();
+  }).catch(() => {
+    Notify.instantToast("Error al obtener usuarios");
+  });
+}, [status, id]);
+
 
   useEffect(() => {
     UsersService.findUserById(id).then((data) => {
@@ -408,190 +414,444 @@ function UsersListPage() {
         )}
       </section>
 
-      {/* ====== DIALOGS ANUNCIOS (sin tocar lógica, sólo mantenido) ====== */}
-      <Dialog header="Administrar anuncios" visible={showAnnouncementsDialog} onHide={() => setShowAnnouncementsDialog(false)} className="col-10 col-sm-9 col-lg-8 col-xl-6">
-        <button className="btn btn-primary mb-3" onClick={openNewForm}>
-          Nuevo anuncio
-        </button>
-
-        {loadingAnnouncements ? (
-          <p className="ms-1 my-3 text-light">Cargando...</p>
-        ) : announcements.length === 0 ? (
-          <p className="ms-1 my-3 text-light">No hay anuncios creados aún.</p>
-        ) : (
-          <ul className="list-group">
-            {announcements.map((a) => (
-              <li key={a._id} className="list-group-item">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{a.title}</strong>
-                    <p className="mb-0">{a.message}</p>
-                  </div>
-                  <div>
-                    <button className="btn btn-link p-1" onClick={() => openEditForm(a)}>
-                      <EditIcon />
-                    </button>
-                    <button className="btn btn-link p-1" onClick={() => confirmDeleteAnnouncement(a._id)}>
-                      <DeleteIcon />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-2 border-top pt-2 d-flex justify-content-between align-items-center small text-muted">
-                  <span>Visto por {viewCounts[a._id] ?? 0} usuario(s)</span>
-                  <Button className="p-button-text p-button-sm" icon="pi pi-eye" label="Ver quién lo vio" onClick={() => fetchViewsForAnnouncement(a._id)} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Dialog>
-
-      <Dialog header={editMode ? "Editar anuncio" : "Nuevo anuncio"} visible={formVisible} onHide={() => setFormVisible(false)} className="col-10 col-sm-9 col-lg-8 col-xl-6 ">
-        {/* --- tu formulario original (sin cambios de UI de la tabla) --- */}
-        <div className="p-fluid text-dark">
-          <div className="mb-3 ">
-            <label className="styleInputsSpan text-light">Nombre</label>
-            <InputText value={announcementForm.title} onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })} />
-          </div>
-          <div className="mb-3">
-            <label className="styleInputsSpan text-light">Mensaje</label>
-            <InputTextarea rows={3} value={announcementForm.message} onChange={(e) => setAnnouncementForm({ ...announcementForm, message: e.target.value })} />
-          </div>
-
-          <div className="mb-3">
-            <label className="styleInputsSpan d-block text-light">Links</label>
-            {announcementForm.link_urls?.length > 0 && (
-              <ul className="list-group mb-2">
-                {announcementForm.link_urls.map((link, index) => (
-                  <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                    <InputText
-                      className="flex-grow-1 me-2"
-                      value={link}
-                      onChange={(e) => {
-                        const updated = [...announcementForm.link_urls];
-                        updated[index] = e.target.value;
-                        setAnnouncementForm({ ...announcementForm, link_urls: updated });
-                      }}
-                    />
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => {
-                        const updated = [...announcementForm.link_urls];
-                        updated.splice(index, 1);
-                        setAnnouncementForm({ ...announcementForm, link_urls: updated });
-                      }}
-                    >
-                      Borrar
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <button
-              onClick={() => setAnnouncementForm({ ...announcementForm, link_urls: [...(announcementForm.link_urls || []), ""] })}
-              className="btn btn-primary text-center mt-2"
-            >
-              Agregar link
-            </button>
-          </div>
-
-          <div className="mb-3">
-            <label className="styleInputsSpan text-light">Modo</label>
-            <SelectButton
-              value={announcementForm.mode}
-              options={MODE_OPTIONS}
-              onChange={(e) => setAnnouncementForm({ ...announcementForm, mode: e.value, show_at_date: null, repeat_day: null, day_of_month: null })}
-              disabled={editMode && isModeLocked()}
-            />
-            {editMode && isModeLocked() && <small className="text-danger d-block mt-1">No se puede modificar el modo una vez definido.</small>}
-          </div>
-
-          {announcementForm.mode === "once" && (
-            <div className="mb-3">
-              <label className="styleInputsSpan text-light">Anuncio único</label>
-              <p className="styleInputsParaph text-light">Por ejemplo, si selecciona el 17/05, unicamente esa fecha, se mostrará el anuncio.</p>
-              <Calendar
-                value={announcementForm.show_at_date ? new Date(announcementForm.show_at_date) : null}
-                onChange={(e) => setAnnouncementForm({ ...announcementForm, show_at_date: e.value })}
-                showIcon
-                disabled={editMode && isModeLocked()}
-                minDate={new Date()}
-              />
-            </div>
-          )}
-
-          {announcementForm.mode === "repeat" && (
-            <div className="mb-3">
-              <label className="styleInputsSpanLarge text-light">Una vez por semana</label>
-              <p className="styleInputsParaph text-light">Por ejemplo, si selecciona el viernes, todos los viernes, se mostrará este anuncio.</p>
-              <Dropdown
-                value={announcementForm.repeat_day}
-                options={DAYS}
-                onChange={(e) => setAnnouncementForm({ ...announcementForm, repeat_day: e.value })}
-                placeholder="Seleccionar día"
-                disabled={editMode && isModeLocked()}
-              />
-            </div>
-          )}
-
-          {announcementForm.mode === "monthly" && (
-            <div className="mb-3">
-              <label className="styleInputsSpan text-light">Día del mes</label>
-              <p className="styleInputsParaph text-light">Por ejemplo, si selecciona el 1, todos los 1 de todos los meses, se mostrará este mensaje.</p>
-              <Dropdown
-                value={announcementForm.day_of_month}
-                options={Array.from({ length: 31 }, (_, i) => ({ label: `${i + 1}`, value: i + 1 }))}
-                onChange={(e) => setAnnouncementForm({ ...announcementForm, day_of_month: e.value })}
-                placeholder="Seleccionar día"
-                disabled={editMode && isModeLocked()}
-              />
-            </div>
-          )}
-
-          <div className="row justify-content-center">
-            <div className="col-6">
-              <label className="styleInputsSpan text-light">Categorías</label>
-              <MultiSelect
-                value={announcementForm.target_categories}
-                options={CATEGORIES}
-                onChange={(e) => setAnnouncementForm({ ...announcementForm, target_categories: e.value })}
-                placeholder="Seleccionar categorías"
-              />
-            </div>
-
-            <div className="col-6">
-              <label className="styleInputsParaph text-light">Usuarios específicos</label>
-              <MultiSelect
-                value={announcementForm.target_users}
-                options={usersList}
-                onChange={(e) => setAnnouncementForm({ ...announcementForm, target_users: e.value })}
-                placeholder="Seleccionar usuarios"
-                filter
-              />
-            </div>
-          </div>
-
-          <div className="mt-4 text-end text-light">
-            <Button label={editMode ? "Actualizar" : "Crear"} icon="pi pi-check" onClick={handleSubmit} autoFocus />
-          </div>
+     <Dialog
+  header={
+    <div className="d-flex justify-content-between align-items-center w-100">
+      <div className="d-flex align-items-center">
+        <span
+          className="bg-light rounded-2 d-inline-flex align-items-center justify-content-center me-3"
+          style={{ width: 32, height: 32 }}
+        >
+          <Megaphone size={18} />
+        </span>
+        <div>
+          <div className="fw-semibold">Administrar anuncios</div>
+          <small className="text-muted">
+            {(announcements?.length ?? 0)} anuncios totales
+          </small>
         </div>
-      </Dialog>
+      </div>
 
-      <Dialog header={`Alumnos que vieron:`} visible={showViewsDialog} onHide={() => setShowViewsDialog(false)} className="col-10 col-sm-9 col-lg-6 col-xl-5">
-        {Array.isArray(viewsDialogData) && viewsDialogData.length === 0 ? (
-          <p>Aún nadie ha visto este anuncio.</p>
-        ) : (
-          <ul className="list-group">
-            {Array.isArray(viewsDialogData) &&
-              viewsDialogData.map((user) => (
-                <li key={user._id} className="list-group-item py-1 px-2">
-                  <strong>{user.name}</strong> — <span className="text-muted small">{user.email}</span>
-                </li>
-              ))}
-          </ul>
-        )}
-      </Dialog>
+      <button className="btn btn-primary btn-sm d-inline-flex align-items-center me-3"
+        onClick={openNewForm}
+      >
+        <Plus size={16} className="me-2" />
+        Nuevo anuncio
+      </button>
+    </div>
+  }
+  visible={showAnnouncementsDialog}
+  onHide={() => setShowAnnouncementsDialog(false)}
+  className="col-10 col-sm-9 col-lg-8 col-xl-6"
+>
+  {loadingAnnouncements ? (
+    <p className="ms-1 my-3 text-muted">Cargando...</p>
+  ) : announcements.length === 0 ? (
+    <p className="ms-1 my-3 text-muted">No hay anuncios creados aún.</p>
+  ) : (
+    <div>
+      {announcements.map((a) => {
+        const vc = viewCounts[a._id] ?? 0;
+        const dateIso = a.created_at || a.createdAt; // fallback por si viene en camelCase
+        const fecha =
+          dateIso
+            ? new Date(dateIso)
+                .toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+                .replace(/\./g, "") // algunos locales agregan punto al mes abreviado
+            : "";
+
+        return (
+          <div
+            key={a._id}
+            className="bg-light rounded-3 p-3 mb-3 border"
+            style={{ borderColor: "#e9ecef" }}
+          >
+            {/* Fila superior: título + acciones */}
+            <div className="d-flex justify-content-between align-items-start">
+              <div className="pe-3">
+                <div className="fw-semibold">{a.title}</div>
+                <div className="text-muted mb-0">{a.message}</div>
+              </div>
+
+              <div className="d-flex align-items-center">
+                <button
+                  className="btn btn-link p-1 text-secondary me-2"
+                  aria-label="Editar"
+                  onClick={() => openEditForm(a)}
+                  title="Editar"
+                >
+                  <Pencil size={18} />
+                </button>
+                <button
+                  className="btn btn-link p-1 text-secondary"
+                  aria-label="Eliminar"
+                  onClick={() => confirmDeleteAnnouncement(a._id)}
+                  title="Eliminar"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Fila inferior: métricas + link */}
+            <div className="mt-2 border-top pt-2 d-flex justify-content-between align-items-center small">
+              <div className="text-muted d-flex align-items-center">
+                <span className="me-3 d-inline-flex align-items-center">
+                  <Eye size={14} className="me-1" />
+                  Visto por {vc} {vc === 1 ? "usuario" : "usuarios"}
+                </span>
+
+                {fecha && (
+                  <span className="d-inline-flex align-items-center">
+                    <Calendar1 size={14} className="me-1" />
+                    {fecha}
+                  </span>
+                )}
+              </div>
+              <div>
+                <button
+                  className="btn btn-primary py-1 px-2 small"
+                  onClick={() => fetchViewsForAnnouncement(a._id)}
+                >
+                  
+                  Ver quién lo vio
+                </button>
+              </div>
+
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</Dialog>
+
+
+<Dialog
+  visible={formVisible}
+  onHide={() => setFormVisible(false)}
+  className="col-10 col-sm-9 col-lg-8 col-xl-6"
+  header={
+    <div className="d-flex align-items-start justify-content-between w-100">
+      <div className="d-flex align-items-start">
+        <span
+          className="bg-light rounded-2 d-inline-flex align-items-center justify-content-center me-3"
+          style={{ width: 32, height: 32 }}
+        >
+          <MessageSquare size={18} />
+        </span>
+        <div>
+          <div className="fw-semibold">{editMode ? "Editar anuncio" : "Nuevo anuncio"}</div>
+          <small className="text-muted">Modifique los detalles del anuncio</small>
+        </div>
+      </div>
+    </div>
+  }
+>
+  {/* -------- Formulario -------- */}
+  <div className="p-fluid text-dark">
+    {/* Título */}
+    <div className="mb-3">
+      <label className="form-label fw-semibold">Título del anuncio *</label>
+      <InputText
+        placeholder="Ingrese el título del anuncio"
+        value={announcementForm.title}
+        onChange={(e) =>
+          setAnnouncementForm({ ...announcementForm, title: e.target.value })
+        }
+      />
+    </div>
+
+    {/* Descripción */}
+    <div className="mb-3">
+      <label className="form-label fw-semibold">Descripción *</label>
+      <InputTextarea
+        rows={3}
+        placeholder="Escriba el contenido del anuncio..."
+        value={announcementForm.message}
+        onChange={(e) =>
+          setAnnouncementForm({ ...announcementForm, message: e.target.value })
+        }
+      />
+    </div>
+
+    {/* Links */}
+    <div className="mb-4">
+      <button
+        type="button"
+        onClick={() =>
+          setAnnouncementForm({
+            ...announcementForm,
+            link_urls: [...(announcementForm.link_urls || []), ""],
+          })
+        }
+        className="btn btn-primary btn-sm d-inline-flex align-items-center"
+      >
+        <LinkIcon size={16} className="me-2" />
+        Agregar link
+      </button>
+
+      {announcementForm.link_urls?.length > 0 && (
+        <ul className="list-group mt-2">
+          {announcementForm.link_urls.map((link, index) => (
+            <li
+              key={index}
+              className="list-group-item d-flex align-items-center"
+            >
+              <InputText
+                className="flex-grow-1 me-2"
+                value={link}
+                placeholder="https://…"
+                onChange={(e) => {
+                  const updated = [...announcementForm.link_urls];
+                  updated[index] = e.target.value;
+                  setAnnouncementForm({
+                    ...announcementForm,
+                    link_urls: updated,
+                  });
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-outline-danger btn-sm"
+                onClick={() => {
+                  const updated = [...announcementForm.link_urls];
+                  updated.splice(index, 1);
+                  setAnnouncementForm({ ...announcementForm, link_urls: updated });
+                }}
+              >
+                Borrar
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+    {/* Tipo de anuncio (tarjetas radiales) */}
+    <div className="mb-3">
+      <label className="form-label fw-semibold mb-2">Tipo de anuncio</label>
+
+      {(() => {
+        const isLocked = editMode && isModeLocked();
+        const sel = announcementForm.mode;
+        const Card = ({ value, title, subtitle }) => (
+          <div
+            role="button"
+            tabIndex={0}
+            className={
+              "d-flex justify-content-between align-items-center rounded-3 p-3 mb-2 " +
+              (sel === value ? "border border-primary shadow-sm" : "border") +
+              (isLocked ? " opacity-75" : "")
+            }
+            onClick={() =>
+              !isLocked &&
+              setAnnouncementForm({
+                ...announcementForm,
+                mode: value,
+                show_at_date: null,
+                repeat_day: null,
+                day_of_month: null,
+              })
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                !isLocked &&
+                  setAnnouncementForm({
+                    ...announcementForm,
+                    mode: value,
+                    show_at_date: null,
+                    repeat_day: null,
+                    day_of_month: null,
+                  });
+              }
+            }}
+          >
+            <div>
+              <div className="fw-semibold">{title}</div>
+              <small className="text-muted">{subtitle}</small>
+            </div>
+            <div className="ms-3 text-primary">
+              {sel === value ? <CircleDot size={18} /> : <Circle size={18} />}
+            </div>
+          </div>
+        );
+
+        return (
+          <>
+            <Card
+              value="once"
+              title="Anuncio único"
+              subtitle="Enviar inmediatamente"
+            />
+            <Card
+              value="repeat"
+              title="Programar días"
+              subtitle="Repetir cada X días"
+            />
+            <Card
+              value="monthly"
+              title="Cada X del mes"
+              subtitle="Repetir mensualmente"
+            />
+            {isLocked && (
+              <small className="text-danger d-block mt-1">
+                No se puede modificar el modo una vez definido.
+              </small>
+            )}
+          </>
+        );
+      })()}
+    </div>
+
+    {/* Campos condicionales por modo */}
+    {announcementForm.mode === "once" && (
+      <div className="mb-3">
+        <label className="form-label fw-semibold">Fecha de envío</label>
+        <p className="text-muted small mb-2">
+          Por ejemplo, si selecciona el 17/05, solo ese día se mostrará el
+          anuncio.
+        </p>
+        <Calendar
+          value={
+            announcementForm.show_at_date
+              ? new Date(announcementForm.show_at_date)
+              : null
+          }
+          onChange={(e) =>
+            setAnnouncementForm({ ...announcementForm, show_at_date: e.value })
+          }
+          showIcon
+          disabled={editMode && isModeLocked()}
+          minDate={new Date()}
+        />
+      </div>
+    )}
+
+    {announcementForm.mode === "repeat" && (
+      <div className="mb-3">
+        <label className="form-label fw-semibold">Día de la semana</label>
+        <p className="text-muted small mb-2">
+          Por ejemplo, si selecciona el viernes, todos los viernes se mostrará
+          este anuncio.
+        </p>
+        <Dropdown
+          value={announcementForm.repeat_day}
+          options={DAYS}
+          onChange={(e) =>
+            setAnnouncementForm({ ...announcementForm, repeat_day: e.value })
+          }
+          placeholder="Seleccionar día"
+          disabled={editMode && isModeLocked()}
+          className="w-100"
+        />
+      </div>
+    )}
+
+    {announcementForm.mode === "monthly" && (
+      <div className="mb-3">
+        <label className="form-label fw-semibold">Día del mes</label>
+        <p className="text-muted small mb-2">
+          Por ejemplo, si selecciona el 1, todos los meses en el día 1 se
+          mostrará este anuncio.
+        </p>
+        <Dropdown
+          value={announcementForm.day_of_month}
+          options={Array.from({ length: 31 }, (_, i) => ({
+            label: `${i + 1}`,
+            value: i + 1,
+          }))}
+          onChange={(e) =>
+            setAnnouncementForm({ ...announcementForm, day_of_month: e.value })
+          }
+          placeholder="Seleccionar día"
+          disabled={editMode && isModeLocked()}
+          className="w-100"
+        />
+      </div>
+    )}
+
+    {/* Categoría / Destinatarios */}
+    <div className="mb-3">
+      <label className="form-label fw-semibold">Categoría </label>
+      <MultiSelect
+        value={announcementForm.target_categories}
+        options={CATEGORIES}
+        onChange={(e) =>
+            setAnnouncementForm({ ...announcementForm, target_categories: e.value })
+        }
+        placeholder="Seleccionar categoría"
+        className="w-100"
+      />
+    </div>
+
+    <div className="mb-3">
+      <label className="form-label fw-semibold">Destinatarios </label>
+      <MultiSelect
+        value={announcementForm.target_users}
+        options={usersList}
+        onChange={(e) =>
+          setAnnouncementForm({ ...announcementForm, target_users: e.value })
+        }
+        placeholder="Seleccionar destinatarios"
+        filter
+        className="w-100"
+      />
+    </div>
+
+    {/* Pie: switch informativo + botón acción */}
+    <div className="d-flex align-items-center justify-content-between mt-4">
+      <div className="form-check form-switch">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          role="switch"
+          id="scheduledSwitch"
+          checked={announcementForm.mode !== "once"}
+          readOnly
+          disabled
+        />
+        <label className="form-check-label ms-1" htmlFor="scheduledSwitch">
+          Este anuncio será programado
+        </label>
+      </div>
+
+      <Button
+        label={editMode ? "Actualizar anuncio" : "Crear anuncio"}
+        onClick={handleSubmit}
+        className="p-button-primary"
+        autoFocus
+      />
+    </div>
+  </div>
+</Dialog>
+
+{/* ---- Diálogo de vistas (sin cambios funcionales, estilos limpios) ---- */}
+<Dialog
+  header={`Alumnos que vieron:`}
+  visible={showViewsDialog}
+  onHide={() => setShowViewsDialog(false)}
+  className="col-10 col-sm-9 col-lg-6 col-xl-5"
+>
+  {Array.isArray(viewsDialogData) && viewsDialogData.length === 0 ? (
+    <p className="text-muted mb-0">Aún nadie ha visto este anuncio.</p>
+  ) : (
+    <ul className="list-group">
+      {Array.isArray(viewsDialogData) &&
+        viewsDialogData.map((user) => (
+          <li key={user._id} className="list-group-item py-2 px-3">
+            <strong>{user.name}</strong>{" "}
+            <span className="text-muted small ms-1">— {user.email}</span>
+          </li>
+        ))}
+    </ul>
+  )}
+</Dialog>
 
       <ConfirmDialog
         visible={!!announcementToDelete}

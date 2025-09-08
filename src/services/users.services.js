@@ -19,36 +19,40 @@ async function find(id) {
 
 //Crea alumnos
 async function createAlumno(id, user) {
+  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/${id}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    },
+    body: JSON.stringify(user)
+  });
 
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/${id}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'auth-token': localStorage.getItem('token')
-        },
-        body: JSON.stringify(user)
-    })
-    .then(async response => {
-        const data = await response.json();
-        if (response.ok) {
-            return data; // Devuelve los datos si la creación es exitosa
-        } else {
-            console.error('createAlumno -> Error response:', data);
-            // Manejo específico de algunos códigos de error
-            if (response.status === 403) {
-                throw new Error(data.message || 'Límite de usuarios alcanzado. No puedes crear más usuarios.');
-            } else if (response.status === 400) {
-                if (data.message && data.message.includes('email')) {
-                    throw new Error('El email que ingresaste ya existe. Por favor, ingresá otro.');
-                }
-                throw new Error(data.message || 'Error de validación en los datos proporcionados.');
-            } else {
-                throw new Error('Ocurrió un error inesperado. Por favor, intentá de nuevo.');
-            }
-        }
-    });
+  const text = await response.text();           // 1) leo siempre como texto
+  if (!response.ok) {                           // 2) si no está OK, propago el texto
+    // puedes inspeccionar aquí text para logs:
+    console.error('createAlumno -> Error response:', text);
+    throw new Error(
+      response.status === 403
+        ? (JSON.parseSafe(text)?.message || 'Límite de usuarios alcanzado.')
+        : response.status === 400
+          ? (JSON.parseSafe(text)?.message.includes('email')
+              ? 'El email ya existe. Usá otro.'
+              : (JSON.parseSafe(text)?.message || 'Error de validación.'))
+          : (JSON.parseSafe(text)?.message || 'Ocurrió un error inesperado.')
+    );
+  }
+
+  // 3) si está OK, parseo JSON con control de errores
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('El servidor devolvió una respuesta no-JSON.');
+  }
 }
 
+// helper opcional para parsear sin lanzar
+JSON.parseSafe = s => { try { return JSON.parse(s) } catch { return {} } };
 
 //Elimino alumnos
 async function deleteUser(id) {
@@ -61,6 +65,26 @@ async function deleteUser(id) {
     })
         .then(response => response.json())
 }
+
+ async function findWithLastWeek(id) {
+  const url = `https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/${id}?withLastWeek=true`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    }
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    console.error('findWithLastWeek -> Error response:', text);
+    throw new Error('No se pudo obtener los usuarios (withLastWeek)');
+  }
+
+  return response.json();
+}
+
 
 //Busca a un alumno
 async function findUserById(id) {
@@ -359,7 +383,6 @@ async function editProfile(user_id, data) {
 
 
   async function getUnreadAnnouncements(id) {
-    console.log(id)
     const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/user/${id}`, {
       method: 'GET',
       headers: {
@@ -465,6 +488,7 @@ async function updatePaymentInfo(userId, paymentInfo) {
 
 export {
     find,
+    findWithLastWeek,
     findUserById,
     createAlumno,
     deleteUser,

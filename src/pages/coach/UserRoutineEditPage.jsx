@@ -148,7 +148,7 @@ function UserRoutineEditPage() {
 
     WeekService.findRoutineByUserId(id)
       .then(data => {
-        // --- NUEVO: normalización de fechas visibles/creadas + ordenamiento ---
+        console.log(data)
         const normalized = data.map(w => {
           const visibleMs = w?.visible_at ? Date.parse(w.visible_at) : null;
           const createdMs = w?.created_at ? Date.parse(w.created_at) : null;

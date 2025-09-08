@@ -61,6 +61,69 @@ import LooksFourIcon from '@mui/icons-material/Looks4';
 import LooksFiveIcon from '@mui/icons-material/Looks5';
 import LooksSixIcon from '@mui/icons-material/Looks6';
 
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import SettingsIcon from '@mui/icons-material/Settings';
+
+
+
+// Mantener pantalla despierta mientras el timer esté abierto
+function useScreenWakeLock(enabled = true) {
+  const lockRef = React.useRef(null);
+
+  const request = React.useCallback(async () => {
+    if (!enabled) return;
+    if (!('wakeLock' in navigator)) {
+      try { Notify?.instantToast?.('Tu dispositivo no soporta mantener la pantalla activa.'); } catch {}
+      return;
+    }
+    try {
+      if (!lockRef.current) {
+        const lock = await navigator.wakeLock.request('screen');
+        lockRef.current = lock;
+        lock.addEventListener?.('release', () => { lockRef.current = null; });
+      }
+    } catch (err) {
+      // Puede fallar sin gesto del usuario o si el doc no está visible: reintentamos en los listeners de abajo
+      // console.warn('WakeLock error', err);
+    }
+  }, [enabled]);
+
+  React.useEffect(() => {
+    if (!enabled) return;
+
+    // 1) Intento inmediato
+    request();
+
+    // 2) Tras PRIMER gesto del usuario (requisito de iOS/Safari/Chrome)
+    const onUserGesture = () => request();
+    window.addEventListener('pointerdown', onUserGesture, { once: true, capture: true });
+    window.addEventListener('keydown', onUserGesture, { once: true, capture: true });
+    window.addEventListener('touchstart', onUserGesture, { once: true, capture: true });
+
+    // 3) Re-adquirir al volver a ser visible o al recuperar foco
+    const onVis = () => { if (document.visibilityState === 'visible') request(); };
+    const onFocus = () => request();
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('pointerdown', onUserGesture, { capture: true });
+      window.removeEventListener('keydown', onUserGesture, { capture: true });
+      window.removeEventListener('touchstart', onUserGesture, { capture: true });
+      if (lockRef.current) {
+        try { lockRef.current.release(); } catch {}
+        lockRef.current = null;
+      }
+    };
+  }, [enabled, request]);
+}
+
 
 function DayDetailsPage() {
     const { id, week_id, index } = useParams();
@@ -98,7 +161,137 @@ function DayDetailsPage() {
     const [showDriveDialog, setShowDriveDialog] = useState(false);
     // Nuevo estado para controlar el modal cuando no existe el perfil
     const [showProfileMissingModal, setShowProfileMissingModal] = useState(false);
+    const [showTimerDialog, setShowTimerDialog] = useState(false);
+    const [activeCircuit, setActiveCircuit] = useState(null);
+    const [prepSeconds, setPrepSeconds] = useState(10);
+    const [showPrepSettings, setShowPrepSettings] = useState(false);
+    const lastWorkExRef = React.useRef(-1);
+    const openTimerForCircuit = (c) => { setActiveCircuit(normalizeCircuit(c)); setShowTimerDialog(true); };
+      useScreenWakeLock(true);
 
+    // ⬇︎ NUEVO: diálogo informativo de circuitos
+    const [showCircuitInfo, setShowCircuitInfo] = useState(false);
+    const [circuitInfoTitle, setCircuitInfoTitle] = useState('');
+    const [circuitInfoText, setCircuitInfoText] = useState('');
+
+     // Config de circuito libre (ajustable por el alumno)
+  const [freeTimerConfig, setFreeTimerConfig] = useState({
+    mode: 'timer',          // 'timer' (cuenta regresiva) | 'chrono' (cuenta ascendente)
+    schema: 'intermitente', // 'intermitente' (work/rest × rondas) | 'amrap' (duración continua)
+    workSec: 30,
+    restSec: 30,
+    totalRounds: 10,
+    totalMinutes: 12
+  });
+  const [showFreeTimerSetup, setShowFreeTimerSetup] = useState(false);
+
+const CIRCUIT_EXPLANATIONS = {
+  Libre: (
+    <div>
+      <div className="mb-2">
+        <span className="badge text-bg-dark me-2">LIBRE</span>
+        Trabajo <b>libre</b> sin estructura fija de intervalos.
+      </div>
+      <ul className="mb-2 ps-3">
+        <li>Seguí las indicaciones del entrenador sobre <b>series</b>, <b>reps</b> y <b>descansos</b>.</li>
+      </ul>
+    </div>
+  ),
+
+  AMRAP: (
+    <div>
+      <div className="mb-2 text-center">
+        <b className="d-block">As Many Rounds/Reps As Possible</b> 
+        <b className="d-block">Tantas rondas/reps como sea posible</b>.
+      </div>
+      <ul className="mb-2 ps-3">
+        <li><b>Objetivo:</b> completar la mayor cantidad de trabajo dentro del tiempo indicado.</li>
+        <li><b>Ejemplo:</b> En caso de que tengas 3 ejercicios, completá el ejercicio A, B, C, y luego, vuelve a empezar hasta cumplir el tiempo.</li>
+      </ul>
+    </div>
+  ),
+
+  EMOM: (
+    <div>
+      <div className="mb-2 text-center">
+        <b className="d-block">Every Minute On the Minute</b><b>Cada minuto en el minuto</b>.
+      </div>
+      <ul className="mb-2 ps-3">
+        <li>Al inicio de <b>cada minuto</b> hacés lo indicado; <b>descansás</b> con el tiempo restante.</li>
+        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 30s, por lo tanto te quedan 30s de descanso.</li>
+      </ul>
+    </div>
+  ),
+
+  E2MOM: (
+        <div>
+      <div className="mb-2 text-center">
+        <b className="d-block">Every 2 Minutes On the Minute</b><b>Cada 2 minutos en el minuto</b>.
+      </div>
+      <ul className="mb-2 ps-3">
+        <li>Al inicio de <b>cada 2 minutos</b> hacés lo indicado; <b>descansás</b> con el tiempo restante.</li>
+        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 1min, por lo tanto te queda 1min de descanso.</li>
+      </ul>
+    </div>
+  ),
+
+  E3MOM: (
+        <div>
+      <div className="mb-2 text-center">
+        <b className="d-block">Every 3 Minutes On the Minute</b><b>Cada 3 minutos en el minuto</b>.
+      </div>
+      <ul className="mb-2 ps-3">
+        <li>Al inicio de <b>cada 3 minutos</b> hacés lo indicado; <b>descansás</b> con el tiempo restante.</li>
+        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 2min, por lo tanto te queda 1min de descanso.</li>
+      </ul>
+    </div>
+  ),
+
+  Intermitentes: (
+    <div>
+      <div className="mb-2 text-center">
+        Alternancia de <b>trabajo</b> (<b>WORK</b>) y <b>descanso</b> (<b>REST</b>) por tiempo.
+      </div>
+      <ul className="mb-2 ps-3">
+        <li>En <b>WORK</b> ejecutás; en <b>REST</b> recuperás y te preparás para el siguiente bloque.</li>
+                <li className="mt-2"><b>Ejemplo:</b> En el caso de tener 30s de trabajo x 30s de descanso en 8 rondas, y tener 2 ejercicios, <b>debes realizar el ejercicio A durante 30s</b>, luego, <b>descansar 30s.</b> Al terminar el descanso, <b>continuas con el ejercicio B, hasta completar 8 rondas.</b></li>
+      </ul>
+    </div>
+  ),
+
+  'Por tiempo': (
+    <div>
+      <div className="mb-2">
+        <span className="badge text-bg-dark me-2">FOR TIME</span>
+        Trabajo <b>contra reloj</b> hasta completar un objetivo, con posible <b>time cap</b> (límite).
+      </div>
+      <ul className="mb-2 ps-3">
+        <li><b>Objetivo:</b> terminar todas las reps/metros en el menor tiempo posible.</li>
+        <li>Si hay <b>time cap</b>, debés completar antes del límite; si no, el tiempo final es tu <b>marca</b>.</li>
+      </ul>
+    </div>
+  ),
+
+  Tabata: (
+    <div>
+      <div className="mb-2 text-center">
+        Entrenamiento de intervalos de alta intensidad.
+      </div>
+      <ul className="mb-2 ps-3">
+        <li><b>Ejemplo:</b> En el caso de tener 20s de trabajo x 10s de descanso en 8 rondas, y tener 2 ejercicios, <b>debes realizar el ejercicio A durante 20s</b>, luego, <b>descansar 10s.</b> Al terminar el descanso, <b>continuas con el ejercicio B, hasta completar 8 rondas.</b></li>
+      </ul>
+    </div>
+  ),
+};
+
+
+const openCircuitInfo = (c) => {
+  const kind = normalizeCircuit(c).circuitKind || 'Libre';
+  const title = kind === 'Por tiempo' ? 'For time' : kind;
+  setCircuitInfoTitle(title);
+  setCircuitInfoText(CIRCUIT_EXPLANATIONS[kind] || CIRCUIT_EXPLANATIONS['Libre']);
+  setShowCircuitInfo(true);
+};
     const [blockEditIndices, setBlockEditIndices] = useState({ blockIndex: null, exerciseIndex: null });
 
     const numberIconMap = {
@@ -111,6 +304,39 @@ function DayDetailsPage() {
 
     };
 
+    const SAFE_PREP_KEY = 'timerPrepSec';
+const safeHasLS = () => (typeof window !== 'undefined' && !!window.localStorage);
+
+const readPrepSeconds = () => {
+  try {
+    if (!safeHasLS()) return 10;
+    const raw = window.localStorage.getItem(SAFE_PREP_KEY);
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return 10;
+    // Evitá valores ridículos; dejá configurable, pero con límites sanos
+    return Math.max(1, Math.min(300, Math.floor(n)));
+  } catch {
+    return 10;
+  }
+};
+
+const writePrepSeconds = (val) => {
+  try {
+    if (!safeHasLS()) return;
+    const n = Math.max(1, Math.min(300, Math.floor(Number(val))));
+    window.localStorage.setItem(SAFE_PREP_KEY, String(n));
+  } catch {
+    // noop
+  }
+};
+
+
+
+// Inicializar desde localStorage
+useEffect(() => {
+  setPrepSeconds(readPrepSeconds());
+}, []);
+
     const goToWeek = (newIndex) => {
         setCurrentWeekIndex(newIndex);
         const newWeek = allWeeks[newIndex];
@@ -119,6 +345,91 @@ function DayDetailsPage() {
             navigate(`/routine/${id}/day/0/${newWeek._id}/${newIndex}`);
         }
     };
+
+  // === Superseries (parsing robusto) ===
+// Acepta: "12.1" (→ 12-A), "12-a", "12A", "12 a", "12,a", "12-A)", y "12" solo
+const parseSupersetTag = (val) => {
+  if (val == null) return null;
+  const str = String(val).trim();
+
+  // 1) Formato decimal puro: "12.1", "4.2", "3.10"
+  let m = str.match(/^(\d+)\.(\d+)$/);
+  if (m) {
+    const base = parseInt(m[1], 10);
+    const dec  = parseInt(m[2], 10); // 1→A, 2→B, 3→C...
+    const letter = dec > 0 && dec <= 26 ? String.fromCharCode(64 + dec) : null;
+    return { base, suffix: letter };
+  }
+
+  // 2) Formato alfabético / separadores: "12-a", "12A", "12 a", "12,a", "12-A)"
+  m = str.match(/^(\d+)\s*[-–.,\s]?\s*([A-Za-z])?\)?$/);
+  if (!m) return null;
+  const base = parseInt(m[1], 10);
+  const suffix = m[2] ? m[2].toUpperCase() : null; // puede ser null (solo "12")
+  return { base, suffix };
+};
+
+/**
+ * Agrupa ejercicios consecutivos con el mismo número base.
+ * - Acepta decimales (1.1→A, 1.2→B...) y letras (1-a, 1b, 1,c...)
+ * - Si el primero no trae letra/decimal y hay más con el mismo base, asigna A/B/C...
+ * - No crea "superserie" si queda un único ejercicio.
+ * - Guarda _origIndex / _origIndexInBlock para editar correctamente.
+ */
+const groupSupersets = (items = [], { forBlock = false } = {}) => {
+  const out = [];
+  let i = 0;
+
+  while (i < items.length) {
+    const el = items[i];
+
+    if (el?.type !== 'exercise') { out.push(el); i++; continue; }
+
+    const tag = parseSupersetTag(el.numberExercise ?? el.number ?? el.numberCircuit);
+    if (!tag) { out.push(el); i++; continue; }
+
+    const group = { type: 'superset', baseNumber: tag.base, exercises: [] };
+
+    while (i < items.length) {
+      const cur = items[i];
+      if (cur?.type !== 'exercise') break;
+
+      const t = parseSupersetTag(cur.numberExercise ?? cur.number ?? cur.numberCircuit);
+      if (!t || t.base !== tag.base) break;
+
+      // fallback A/B/C... si no vino sufijo
+      const fallbackLetter = String.fromCharCode(65 + group.exercises.length);
+      const supSuffix = t.suffix || fallbackLetter;
+
+      group.exercises.push({
+        ...cur,
+        supSuffix,
+        ...(forBlock ? { _origIndexInBlock: i } : { _origIndex: i }),
+      });
+
+      i++;
+    }
+
+    if (group.exercises.length < 2) {
+      out.push(group.exercises[0] ?? el); // si fue único, no mostrar como superserie
+    } else {
+      out.push(group);
+    }
+  }
+
+  return out;
+};
+
+
+
+const renderLetterIcon = (letter) => (
+  <Avatar
+    variant="rounded"
+    sx={{ width: 26, height: 26, fontSize: 14, bgcolor: 'primary.main' }}
+  >
+    {letter}
+  </Avatar>
+);
 
 
     function renderNumberIcon(n) {
@@ -173,7 +484,7 @@ const isCurrentWeek = currentWeekIndex === 0;
         const visibleWeeks = sortedWeeks.filter(
           (w) => !w?.visibility || w.visibility === 'visible'
         );
-      
+        console.log(visibleWeeks)
         setAllWeeks(visibleWeeks);
       
         if (visibleWeeks.length === 0) {
@@ -591,6 +902,712 @@ const saveDriveLink = async () => {
         );
     }, []);
 
+    // Devuelve { title, meta } para el header del timer
+const headerInfo = (c0 = {}) => {
+  const c = normalizeCircuit(c0);
+  const k = c.circuitKind;
+
+  switch (k) {
+    case 'AMRAP': {
+      const d = fmtMMSS(c.durationSec || 0);
+      return { title: 'AMRAP', meta: `${d} min` };
+    }
+    case 'EMOM': {
+      const rounds = c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0)/(c.intervalMin || 1)));
+      return { title: 'EMOM', meta: `${c.intervalMin || 1}:00 × ${rounds} min` };
+    }
+    case 'E2MOM': return { title: 'E2MOM', meta: `2:00 × ${(c.totalRounds || 0)} min` };
+    case 'E3MOM': return { title: 'E3MOM', meta: `3:00 × ${(c.totalRounds || 0)} min` };
+    case 'Por tiempo': {
+      const cap = fmtMMSS(c.timeCapSec || 0);
+      return { title: 'For time', meta: `CAP ${cap} min` };
+    }
+    case 'Intermitentes': {
+      const work = c.workSec ?? 30, rest = c.restSec ?? 30, r = c.totalRounds ?? 10;
+      return { title: 'Intermitente', meta: `${work}s / ${rest}s × ${r} rondas` };
+    }
+    case 'Tabata': {
+      const work = c.workSec ?? 20, rest = c.restSec ?? 10, r = c.totalRounds ?? 8;
+      return { title: 'Tabata', meta: `${work}s / ${rest}s × ${r} rondas` };
+    }
+    default: {
+      // Libre
+      return { title: c.typeOfSets ? c.typeOfSets : 'Libre', meta: '' };
+        // Libre
+        if (c.freeConfig) {
+          const fc = c.freeConfig;
+          if (fc.mode === 'chrono') return { title: 'Libre', meta: 'Cronómetro' };
+          if (fc.schema === 'amrap') return { title: 'Libre', meta: `AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00` };
+          return { title: 'Libre', meta: `${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}` };
+        }
+        return { title: c.typeOfSets ? c.typeOfSets : 'Libre', meta: '' };
+   }
+  }
+};
+
+
+const TimerHeader = ({ circuit, onClose, onOpenSettings }) => {
+  const { title, meta } = headerInfo(circuit || {});
+  return (
+    <div
+      className="d-flex align-items-start justify-content-between rounded-top-1"
+      style={{
+        background: 'linear-gradient(135deg,rgb(11, 18, 32),rgba(4, 18, 46, 1))',
+        color: '#fff', padding: '12px 16px'
+      }}
+    >
+      <div>
+        <div className="fw-bold">{title}</div>
+        {meta ? <small className="opacity-90">{meta}</small> : null}
+      </div>
+      <div className="d-flex align-items-center gap-1">
+        <button
+          className="btn btn-sm text-white border-0"
+          style={{ lineHeight: 1, opacity: .9 }}
+          onClick={onOpenSettings}
+          aria-label="Ajustes"
+          title="Ajustes"
+        >
+          <SettingsIcon />
+        </button>
+        <button
+          className="btn btn-sm text-white border-0"
+          style={{ lineHeight: 1, opacity: .9, fontSize: '2em' }}
+          onClick={onClose}
+          aria-label="Cerrar"
+          title="Cerrar"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const renderExerciseHeader = () => (
+  <div className="row justify-content-center text-uppercase text-muted small fw-semibold mb-2">
+    <div className="col-8">Nombre</div>
+    <div className="col-2 text-center">Reps</div>
+    <div className="col-2 text-center">Peso</div>
+  </div>
+);
+
+
+const renderExerciseRow = (ex, i) => {
+  const repsText = Array.isArray(ex?.reps) ? ex.reps.join(' - ') : (ex?.reps ?? '-');
+  const pesoText = ex?.peso ?? '-';
+
+  return (
+    <div key={i} className="row justify-content-center align-items-center bg-white rounded-3 mb-2 py-2">
+      <div className="col-8 d-flex align-items-center">
+        <span className="badge rounded-pill text-bg-dark me-3 px-2 py-2">{i + 1}</span>
+        <span className="fw-semibold">{ex?.name || '-'}</span>
+      </div>
+      <div className="col-2 text-center fw-bold">{repsText}</div>
+      <div className="col-2 text-center fw-bold">{pesoText}</div>
+    </div>
+  );
+};
+
+
+
+
+const toSec = (m = 0, s = 0) => (m || 0) * 60 + (s || 0);
+const fmtMMSS = (sec = 0) => {
+  const v = Math.max(0, Math.floor(sec));
+  const m = Math.floor(v / 60);
+  const s = v % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+};
+
+// ==== Normalizador de circuito ====
+const normalizeCircuit = (c = {}) => {
+  const known = ['Libre','AMRAP','EMOM','E2MOM','E3MOM','Intermitentes','Por tiempo','Tabata'];
+  const kind = c.circuitKind || (known.includes(c.type) ? c.type : 'Libre');
+  return { ...c, circuitKind: kind };
+};
+
+// ==== Subtítulo corto ====
+const circuitSubtitle = (c = {}) => {
+  const k = c?.circuitKind || c?.type || 'Libre';
+  switch (k) {
+    case 'AMRAP':         return `AMRAP · ${fmtMMSS(c.durationSec || 0)}`;
+    case 'EMOM':          return `EMOM · ${(c.intervalMin || 1)}:00 × ${(c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0)/(c.intervalMin || 1))))}`;
+    case 'E2MOM':         return `E2MOM · 2:00 × ${(c.totalRounds || 0)}`;
+    case 'E3MOM':         return `E3MOM · 3:00 × ${(c.totalRounds || 0)}`;
+    case 'Intermitentes': return `Intermitente · ${(c.workSec || 30)}s / ${(c.restSec || 30)}s × ${(c.totalRounds || 10)}`;
+    case 'Por tiempo':    return `For time · CAP ${fmtMMSS(c.timeCapSec || 0)}`;
+    case 'Tabata':        return `Tabata · ${(c.workSec ?? 20)}s / ${(c.restSec ?? 10)}s × ${(c.totalRounds ?? 8)}`;
+    default: {
+     // Libre: si trae freeConfig, mostramos el esquema
+     const fc = c.freeConfig;
+     if (fc) {
+       if (fc.mode === 'chrono') return 'Libre · Cronómetro';
+       if (fc.schema === 'amrap') return `Libre · AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00`;
+       return `Libre · ${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}`;
+     }
+     return `Libre${c.typeOfSets ? ` · ${c.typeOfSets}` : ''}`;
+   }
+  }
+};
+
+const CircuitHeader = ({ circuit, onStart, onAdjust }) => {
+  const isLibre = (circuit?.circuitKind || circuit?.type) === 'Libre';
+  return (
+  <div className="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-2 px-3 py-2 mb-3">
+    <div className="me-3">
+      <div className="fw-semibold">{circuitSubtitle(circuit)}</div>
+    </div>
+    {!isLibre && ( <div>
+      <button className="btn btn-sm btn-dark" onClick={() => onStart(normalizeCircuit(circuit))}>
+        Iniciar
+      </button>
+    </div>)}
+  </div>
+)};
+
+
+
+
+const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
+  const c = normalizeCircuit(circuit);
+  const kind = c.circuitKind;
+  const list = Array.isArray(c.circuit) ? c.circuit : [];
+
+  const free = c.freeConfig || {};
+  const isLibre = kind === 'Libre';
+  const isChrono = isLibre && free.mode === 'chrono';
+
+  const isEMOMLike = kind === 'EMOM' || kind === 'E2MOM' || kind === 'E3MOM';
+  const isInterTab = kind === 'Intermitentes' || kind === 'Tabata';
+
+  // ---------- PLAN ----------
+  const buildPlan = () => {
+    switch (kind) {
+      case 'AMRAP': {
+        const d = c.durationSec || toSec(12, 0);
+        return [{ phase: 'work', duration: d, label: 'AMRAP' }];
+      }
+      case 'EMOM':
+      case 'E2MOM':
+      case 'E3MOM': {
+        const intervalMin =
+          kind === 'EMOM' ? (c.intervalMin || 1) : (kind === 'E2MOM' ? 2 : 3);
+        const rounds =
+          c.totalRounds ||
+          Math.max(1, Math.round((c.totalMinutes || intervalMin * 12) / intervalMin));
+        const segs = [];
+        for (let r = 0; r < rounds; r++) {
+          // ⬇️ NO rotamos ejercicios: cada minuto muestra la lista completa
+          segs.push({
+            phase: 'interval',
+            duration: intervalMin * 60,
+            label: `Min ${r + 1}/${rounds}`,
+            round: r + 1, total: rounds
+          });
+        }
+        return segs;
+      }
+      case 'Intermitentes':
+      case 'Tabata': {
+        const rounds = c.totalRounds ?? (kind === 'Tabata' ? 8 : 10);
+        const work   = c.workSec   ?? (kind === 'Tabata' ? 20 : 30);
+        const rest   = c.restSec   ?? (kind === 'Tabata' ? 10 : 30);
+        const n = Math.max(1, list.length);
+        const segs = [];
+        for (let i = 0; i < rounds; i++) {
+          segs.push({ phase: 'work', duration: work, label: `Work ${i + 1}/${rounds}`, exerciseIndex: i % n, round: i + 1, total: rounds });
+          segs.push({ phase: 'rest', duration: rest, label: `Rest ${i + 1}/${rounds}`, round: i + 1, total: rounds });
+        }
+        return segs;
+      }
+      case 'Por tiempo': {
+        const cap = c.timeCapSec || toSec(20, 0);
+        return [{ phase: 'work', duration: cap, label: 'Time cap' }];
+      }
+      default: {
+        // LIBRE
+        if (!isLibre) return [];
+        if (isChrono) {
+          // Cronómetro: sin plan de cuenta regresiva
+          return [{ phase: 'chrono', duration: 0, label: 'Cronómetro' }];
+        }
+        // Temporizador configurable
+        if (free.schema === 'amrap') {
+          const d = Math.max(1, Number(free.totalMinutes || 12)) * 60;
+          return [{ phase: 'work', duration: d, label: 'AMRAP' }];
+        }
+        // Intermitente por defecto
+        const rounds = Math.max(1, Number(free.totalRounds || 10));
+        const work   = Math.max(1, Number(free.workSec || 30));
+        const rest   = Math.max(1, Number(free.restSec || 30));
+        const segs = [];
+       for (let i = 0; i < rounds; i++) {
+         segs.push({ phase: 'work', duration: work, label: `Work ${i + 1}/${rounds}`, round: i + 1, total: rounds });
+         segs.push({ phase: 'rest', duration: rest, label: `Rest ${i + 1}/${rounds}`, round: i + 1, total: rounds });
+       }
+      return segs;
+     }
+    }
+  };
+
+  const [plan, setPlan]     = React.useState(buildPlan);
+  const [idx, setIdx]       = React.useState(0);
+  const [phase, setPhase]   = React.useState(plan[0]?.phase || 'idle');
+  const [timeLeft, setLeft] = React.useState(plan[0]?.duration || 0);
+  const segDurationRef      = React.useRef(plan[0]?.duration || 60);
+
+  const [chronoElapsed, setChronoElapsed] = React.useState(0);
+
+  // ---------- ARRANQUE CONTROLADO + PREP 10s ----------
+  const [running, setRunning]   = React.useState(false);
+  const [isPreparing, setPrep]  = React.useState(false);
+  const [prepLeft, setPrepLeft] = React.useState(prepSeconds);
+
+  // ---------- AUDIO (habilita en el toque de “Iniciar”) ----------
+  const audioRef = React.useRef(null);
+  const lastBeepRef = React.useRef({ key: '', val: -1 });
+
+   React.useEffect(() => {
+   if (!isInterTab) return;
+   const seg = plan[idx];
+   if (seg?.phase === 'work' && Number.isInteger(seg.exerciseIndex)) {
+     lastWorkExRef.current = seg.exerciseIndex;
+   }
+ }, [idx, plan, isInterTab]);
+
+  const ensureAudio = React.useCallback(async () => {
+    if (!audioRef.current) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      audioRef.current = new Ctx();
+    }
+    if (audioRef.current.state === 'suspended') {
+      await audioRef.current.resume();
+    }
+    return audioRef.current;
+  }, []);
+
+ const metronomeClick = React.useCallback(async (type = 'tick', long = false) => {
+   const ctx = await ensureAudio();
+   if (!ctx) return;
+
+   // Master
+   const master = ctx.createGain();
+   master.gain.value = 4;                  // volumen general (alto)
+   master.connect(ctx.destination);
+
+   const now = ctx.currentTime;
+   const dur = long ? 5 : 0.5;           // el último suena el doble de largo
+
+   // 1) Ataque: "click" de ruido filtrado (como madera)
+   const noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate);
+   const ch = noiseBuf.getChannelData(0);
+   for (let i = 0; i < ch.length; i++) {
+     // decaimiento exponencial para que sea percusivo
+     ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (type === 'tock' ? 65 : 50));
+   }
+   const noise = ctx.createBufferSource();
+   noise.buffer = noiseBuf;
+   const hp = ctx.createBiquadFilter();
+   hp.type = 'highpass';
+   hp.frequency.value = type === 'tock' ? 3333 : 2200; // tock más grave
+   noise.connect(hp);
+   hp.connect(master);
+   noise.start(now);
+   noise.stop(now + 0.04);
+
+   // 2) Cuerpo: oscilador con envolvente corta
+   const osc = ctx.createOscillator();
+   osc.type = 'triangle';
+   osc.frequency.value = type === 'tock' ? 1000 : 800; // tock más bajo; tick más agudo
+
+   const og = ctx.createGain();
+   og.gain.setValueAtTime(0.0001, now);
+   og.gain.exponentialRampToValueAtTime(type === 'tock' ? 0.7 : 0.6, now + 0.012); // pico alto
+   og.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+   osc.connect(og);
+   og.connect(master);
+   osc.start(now);
+   osc.stop(now + dur);
+ }, [ensureAudio]);
+
+  // ⬆️ volumen (más fuerte): mayor gain y dos tonos leves para “cuerpo”
+  const beep = React.useCallback(async (freq = 880, duration = 140, long = false) => {
+    const ctx = await ensureAudio();
+    if (!ctx) return;
+    const main = ctx.createOscillator();
+    const overtone = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    main.type = 'sine';
+    main.frequency.value = freq;
+    overtone.type = 'sine';
+    overtone.frequency.value = Math.round(freq * 1.5);
+
+    // volumen más alto (antes ~0.15)
+    const peak = long ? 0.4 : 0.3;
+
+    gain.gain.value = 0.0001;
+    main.connect(gain);
+    overtone.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(peak, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration / 1000);
+
+    main.start(now);
+    overtone.start(now);
+    main.stop(now + duration / 1000 + 0.02);
+    overtone.stop(now + duration / 1000 + 0.02);
+  }, [ensureAudio]);
+
+  // ---------- REBUILD ----------
+  React.useEffect(() => {
+    const p = buildPlan();
+    setPlan(p);
+    setIdx(0);
+    setPhase(p[0]?.phase || 'idle');
+    setLeft(p[0]?.duration || 0);
+    segDurationRef.current = p[0]?.duration || 60;
+    setChronoElapsed(0);
+    setRunning(false);
+    setPrep(false);
+    setPrepLeft(prepSeconds);
+    lastBeepRef.current = { key: '', val: -1 };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(c), prepSeconds]);
+
+  // ---------- TICKS ----------
+  // PREP: beep en 3/2 corto y 1 largo
+  React.useEffect(() => {
+    if (!isPreparing) return;
+       if (prepLeft <= 5 && prepLeft > 1) {
+       const key = 'prep-tick';
+       if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === prepLeft)) {
+         metronomeClick('tick');                 // tick (agudo)
+         lastBeepRef.current = { key, val: prepLeft };
+       }
+     } else if (prepLeft === 1) {
+       const key = 'prep-tock';
+       if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === prepLeft)) {
+         metronomeClick('tock', true);           // tock (grave) y doble de largo
+         lastBeepRef.current = { key, val: prepLeft };
+       }
+     }
+      if (prepLeft <= 0) { setPrep(false); setRunning(true); return; }
+      const t = setTimeout(() => setPrepLeft(v => v - 1), 1000);
+      return () => clearTimeout(t);
+    }, [isPreparing, prepLeft]);
+
+  // SEGMENTOS: beep en 3/2 corto y 1 largo
+  React.useEffect(() => {
+    if (!running || isPreparing) return;
+    if (isChrono) return;
+    if (timeLeft <= 5 && timeLeft > 1) {
+      const key = `seg-${idx}-tick`;
+      if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === timeLeft)) {
+        metronomeClick('tick');
+        lastBeepRef.current = { key, val: timeLeft };
+      }
+    } else if (timeLeft === 1) {
+      const key = `seg-${idx}-tock`;
+      if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === timeLeft)) {
+        metronomeClick('tock', true);
+        lastBeepRef.current = { key, val: timeLeft };
+      }
+    }
+
+    if (timeLeft <= 0) {
+      const next = idx + 1;
+      if (next >= plan.length) { setRunning(false); setPhase('done'); setLeft(0); return; }
+      setIdx(next);
+      setPhase(plan[next].phase);
+      setLeft(plan[next].duration);
+      segDurationRef.current = plan[next].duration;
+      return;
+    }
+    const t = setTimeout(() => setLeft(v => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [running, isPreparing, timeLeft, idx, plan]);
+
+  // ---------- TIEMPO / PRESENTACIÓN ----------
+  const totalSeconds = isPreparing ? prepLeft : (isChrono ? chronoElapsed : timeLeft);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const segTotal = isPreparing ? prepSeconds : (isChrono ? Math.max(1, totalSeconds) : (segDurationRef.current || 60));
+  const secProgress = isChrono ? 0 : ((segTotal - totalSeconds) / segTotal) * 100;
+  const currentSeg  = plan[idx] || {};
+  const totalRounds = currentSeg.total ?? c.totalRounds ?? 0;
+  const roundText   = totalRounds ? `Ronda ${currentSeg.round || 1} de ${totalRounds}` : null;
+
+  // Para Intermitentes/Tabata: ejercicio actual (rota por ronda)
+ const showCurrent = isInterTab && phase === 'work' && list.length > 0;
+ // En work uso el índice del segmento; en rest uso el último índice de work
+ const currExIndex = showCurrent
+   ? (currentSeg.exerciseIndex ?? 0)
+   : lastWorkExRef.current;
+ const currEx = showCurrent ? list[currExIndex] : null;
+
+ // “Próximo”: si estoy en rest, parte desde el último work; si estoy en work, desde el actual
+ const nextEx = (isInterTab && list.length && currExIndex >= 0)
+   ? list[(currExIndex + 1) % list.length]
+   : null;
+
+  // Tema visual
+  const restBG = (isInterTab && !isPreparing && phase === 'rest');
+  const isPrepTheme = isPreparing;
+
+  const timeCardBase = 'card rounded-4 shadow-sm text-white';
+  const timeCardStyle = isPrepTheme
+    ? { background: 'linear-gradient(135deg,#1e3a8a,#6366f1)' }
+    : (restBG ? { background: 'linear-gradient(135deg,#ef4444,#dc2626)' }
+              : { background: '#0b1220' });
+
+  const progressBarClass = isPrepTheme ? 'bg-info' : (restBG ? 'bg-light' : 'bg-success');
+  const timeAreaStyle = isPrepTheme
+    ? { background: 'rgba(99, 101, 241, 0.26)', borderRadius: 16}
+    : (restBG ? { background: 'rgba(239, 68, 68, 0.25)', borderRadius: 16 } : {});
+
+  // ---------- CONTROLES ----------
+  const handleStartPause = async () => {
+    await ensureAudio();
+
+    // Si el circuito terminó, Iniciar = reset + PREP 10s
+    if (phase === 'done') {
+      setIdx(0);
+      setPhase(plan[0]?.phase || 'idle');
+      setLeft(plan[0]?.duration || 0);
+      segDurationRef.current = plan[0]?.duration || 60;
+      setRunning(false);
+      setPrepLeft(prepSeconds);
+      setPrep(true);
+      lastBeepRef.current = { key: '', val: -1 };
+      return;
+    }
+
+    // Pausa/Cancelar prep
+    if (running) { setRunning(false); return; }
+    if (isPreparing) { setPrep(false); setPrepLeft(prepSeconds); return; }
+
+
+    // Si estamos al inicio del todo -> PREP; si no, resume sin prep
+    const atStart = idx === 0 && (isChrono ? chronoElapsed === 0 : timeLeft === (plan[0]?.duration || 0));
+    if (!isChrono && atStart) { setPrepLeft(prepSeconds); setPrep(true); }
+    else { setRunning(true); }
+  };
+
+  const reset = () => {
+    setIdx(0);
+    setPhase(plan[0]?.phase || 'idle');
+    setLeft(plan[0]?.duration || 0);
+    segDurationRef.current = plan[0]?.duration || 60;
+    setRunning(false);
+    setPrep(false);
+    setChronoElapsed(0);
+    setPrepLeft(prepSeconds);
+    lastBeepRef.current = { key: '', val: -1 };
+  };
+
+
+  return (
+    <div className="container-fluid px-0">
+      {/* TIMER (Min / Sec) */}
+      <div className="d-flex justify-content-center align-items-end gap-3 my-2" style={timeAreaStyle}>
+        {/* MIN */}
+        <div className={timeCardBase} style={{ width: 128, ...timeCardStyle }}>
+          <div className="card-body text-center py-3">
+            <div className="display-6 fw-bold lh-1">{String(minutes).padStart(2, '0')}</div>
+            <div className="small text-uppercase opacity-75 mt-1">MIN</div>
+            <div className="progress bg-secondary-subtle mt-2" style={{ height: 6 }}>
+              <div className="progress-bar" style={{ width: '100%' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* ":" */}
+        <div className="d-flex flex-column align-items-center justify-content-center my-auto" style={{ gap: 8 }}>
+          <span className="rounded-circle bg-dark" style={{ width: 8, height: 8 }} />
+          <span className="rounded-circle bg-dark" style={{ width: 8, height: 8 }} />
+        </div>
+
+        {/* SEC */}
+        <div className={timeCardBase} style={{ width: 128, ...timeCardStyle }}>
+          <div className="card-body text-center py-3">
+            <div className="display-6 fw-bold lh-1">{String(seconds).padStart(2, '0')}</div>
+            <div className="small text-uppercase opacity-75 mt-1">{isPreparing ? 'PREP' : 'SEC'}</div>
+            <div className="progress bg-secondary-subtle mt-2" style={{ height: 6 }}>
+              <div className={`progress-bar ${progressBarClass}`} style={{ width: `${secProgress}%` }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RONDA */}
+      {roundText && (
+        <div className="d-flex justify-content-center my-2">
+          <span className="badge rounded-pill bg-light border text-dark fw-semibold shadow-sm d-inline-flex align-items-center gap-2 px-3 py-2 mt-1">
+            <span className="rounded-circle " style={{ width: 8, height: 8,background: 'rgb(11, 18, 32)' }} />
+            {roundText}
+          </span>
+        </div>
+      )}
+
+      {/* CONTROLES */}
+      <div className="d-flex justify-content-center gap-3 my-3">
+        <button
+          className="btn btn-success btn-lg rounded-4 d-flex align-items-center justify-content-center shadow"
+          style={{ width: 64, height: 64 }}
+          onClick={handleStartPause}
+          title="Iniciar / Pausa"
+        >
+          {(running || isPreparing) ? <PauseIcon /> : <PlayArrowIcon />}
+        </button>
+        <button
+          className="btn btn-light btn-lg rounded-4 d-flex align-items-center justify-content-center shadow-sm border"
+          style={{ width: 64, height: 64 }}
+          onClick={reset}
+          title="Reiniciar"
+        >
+          <RestartAltIcon />
+        </button>
+      </div>
+
+      {/* ===== CONTENIDO SEGÚN TIPO ===== */}
+
+      {kind === 'AMRAP' && (
+        <>
+          <div className="d-flex align-items-center mb-2">
+            <span className="rounded-circle bg-primary me-2" style={{ width: 8, height: 8 }} />
+            <div className="fw-bold text-uppercase small">Ejercicios </div>
+          </div>
+          <div className="mb-3">
+            {renderExerciseHeader()}
+            {list.length ? list.map((ex, i) => renderExerciseRow(ex, i)) : (
+              <div className="text-muted small">—</div>
+            )}
+          </div>
+        </>
+      )}
+
+      {isLibre && (
+         <>
+           <div className="d-flex align-items-center mb-2">
+             <span className="rounded-circle bg-primary me-2" style={{ width: 8, height: 8 }} />
+             <div className="fw-bold text-uppercase small">Ejercicios</div>
+           </div>
+           <div className="mb-3">
+             {renderExerciseHeader()}
+             {list.length ? list.map((ex, i) => renderExerciseRow(ex, i)) : (
+               <div className="text-muted small">—</div>
+             )}
+           </div>
+         </>
+       )}
+
+      {isEMOMLike && (
+        <>
+          <div className="d-flex align-items-center mb-2">
+            <span className="rounded-circle bg-primary me-2" style={{ width: 8, height: 8 }} />
+            <div className="fw-bold text-uppercase small">Ejercicios a realizar</div>
+          </div>
+          <div className="mb-3">
+             {renderExerciseHeader()}
+            {list.length ? list.map((ex, i) => renderExerciseRow(ex, i)) : (
+              <div className="text-muted small">—</div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Intermitentes / Tabata: EJERCICIO ACTUAL + PRÓXIMO */}
+      {isInterTab && (
+        <>
+          <div className="d-flex align-items-center mb-2">
+            <span className="rounded-circle me-2" style={{ width: 8, height: 8,background: 'rgb(11, 18, 32)' }} />
+            <div className="fw-bold text-uppercase small me-auto">Ejercicio actual</div>
+             
+            {showCurrent && list.length ? (
+              <div className="text-muted small fw-semibold">{(currExIndex + 1)}/{list.length}</div>
+            ) : null}
+          </div>
+
+          <div className="card rounded-4 shadow-sm mb-3" style={{ border: '1px solid rgba(0,0,0,.05)' }}>
+           <div className="card-body">
+             {showCurrent ? (
+               <>
+                 <div className="d-flex align-items-center justify-content-between">
+                   <div className="fw-bold fs-5">{currEx?.name}</div>
+                   <span className={`badge rounded-pill ${phase === 'work' ? 'text-bg-success' : 'text-bg-secondary'}`}>
+                     {phase === 'work' ? 'WORK' : 'REST'}
+                   </span>
+                 </div>
+            
+                 <div className="d-flex flex-wrap gap-2 mt-3">
+                   <span className="badge text-bg-dark px-3 py-2">
+                     Reps: {Array.isArray(currEx?.reps) ? currEx.reps.join(' - ') : (currEx?.reps ?? '-')}
+                   </span>
+                   <span className="badge text-bg-dark px-3 py-2">
+                     Peso: {currEx?.peso ?? '-'}
+                   </span>
+                 </div>
+            
+                 {currEx?.notas ? (
+                   <div className="text-muted small mt-2" style={{ whiteSpace: 'pre-wrap' }}>
+                     {currEx.notas}
+                   </div>
+                 ) : null}
+               </>
+             ) : (
+               <div className="text-muted d-flex align-items-center justify-content-center" style={{ minHeight: 74 }}>
+                 {phase === 'rest' ? 'Descanso' : '—'}
+               </div>
+             )}
+           </div>
+         </div>
+
+          {nextEx && (
+            <>
+              <div className="card rounded-4 shadow-sm" style={{ border: '1px solid rgba(0,0,0,.05)' }}>
+               <div className="card-body">
+                 <div className="d-flex align-items-center justify-content-between">
+                   <div className="fw-semibold">{nextEx.name}</div>
+                   <span className="badge" style={{background: 'rgb(11, 18, 32)'}}>Siguiente</span>
+                 </div>
+                 <div className="text-muted small d-flex gap-3 mt-2">
+                   <span>Reps: {Array.isArray(nextEx.reps) ? nextEx.reps.join(' - ') : (nextEx.reps ?? '-')}</span>
+                   <span>Peso: {nextEx.peso ?? '-'}</span>
+                 </div>
+               </div>
+             </div>
+            </>
+          )}
+        </>
+      )}
+
+      <div className="d-flex justify-content-between mt-3">
+          <button
+          className="btn btn-outline-secondary rounded-3 "
+          style={{ lineHeight: 1, opacity: .95 }}
+          onClick={() => onOpenInfo()}
+          aria-label="¿Qué es este formato?"
+          title={`¿Qué es un ${kind}?`}
+        >
+          <HelpOutlineIcon className="me-1" />
+          ¿Qué es un {kind}?
+        </button>
+        <button className="btn btn-outline-secondary rounded-3" onClick={onClose}>Cerrar</button>
+      </div>
+    </div>
+  );
+};
+
+
+
+
 
 
     const handleDayChange = (value) => {
@@ -754,12 +1771,15 @@ const saveDriveLink = async () => {
                 
                 <h2 className=" p-2 mb-0 text-start ">Rutina del día</h2>
               
-                    {modifiedDay.map((element, idx) => {
+                    {groupSupersets(modifiedDay).map((element, idx) => {
   // ⚠️ Usar el peso del elemento para calcular columnas (antes estaba element.reps)
   const { setsCol, repsCol, pesoCol, restCol } = getCols(element.peso);
   const isExercise = element.type === 'exercise';
   const isBlock = element.type === 'block';
-  const number = element.numberExercise || element.numberCircuit;
+  const isSuperset = element.type === 'superset';
+const number = isSuperset
+  ? element.baseNumber
+  : (element.numberExercise || element.numberCircuit);
   const name = typeof element.name === 'object' ? element.name.name : element.name;
   const backoffLabel =
     (element.name?.titleName && element.name.titleName.trim() !== "")
@@ -768,14 +1788,14 @@ const saveDriveLink = async () => {
 
   return (
     <div
-      key={`${element.exercise_id}-${idx}`}
+      key={isSuperset ? `sup-${element.baseNumber}-${idx}` : `${element.exercise_id || element._id || idx}-${idx}`}
       ref={el => (cardRefs.current[idx] = el)}
       className="px-0 mb-3"
     >
       <div className="row justify-content-center bg-light border rounded-2 m-0 mb-3">
         {/* — CABECERA (número + nombre) — */}
         <div
-          className={`col-12 ${element.type !== 'block' && 'widgetNumber'} py-2`}
+          className={`col-12 ${element.type !== 'block' && element.type !== 'superset' ? 'widgetNumber' : 'widgetNumberSuperSet'} py-2`}
           style={{ backgroundColor: element.type == 'block' && element.color }}
         >
           <div className="row justify-content-center">
@@ -784,267 +1804,407 @@ const saveDriveLink = async () => {
             </div>
 
             <div className="col-10 m-auto text-start">
-              <p
-                className="stylesNameExercise text-light mb-0"
-                id={idx === 0 ? 'nombre' : null}
-              >
+              <p className="stylesNameExercise text-light mb-0" id={idx === 0 ? 'nombre' : null}>
                 {isExercise
                   ? name
                   : isBlock
                     ? <span>{element.name}</span>
-                    : <span>{element.type} - {element.typeOfSets}</span>}
+                    : isSuperset
+                      ? (
+                        <span>
+                          Superserie
+                          <small className="ms-2">
+                            ({element.exercises.map(e => e.supSuffix).join(' · ')})
+                          </small>
+                        </span>
+                      )
+                      : <span>Circuito</span>}
               </p>
             </div>
           </div>
         </div>
 
-        {/* — CUERPO: sets/reps/peso + timer o tabla de circuito — */}
-        {isExercise ? (
-          <>
-            <div className={`${setsCol} p-0 mt-4 pt-2 mb-2`}>
-              <span className="stylesBadgesItemsExerciseSpan d-block">
-                {element.sets}
-              </span>
-              <p className="fontStylesSpan">Sets</p>
+{isExercise ? (
+  /* ====== EJERCICIO NORMAL (igual que lo tenías) ====== */
+  <>
+    <div className={`${setsCol} p-0 mt-4 pt-2 mb-2`}>
+      <span className="stylesBadgesItemsExerciseSpan d-block">{element.sets}</span>
+      <p className="fontStylesSpan">Sets</p>
+    </div>
+
+    <div className={`${repsCol} p-0 mt-4 pt-2 mb-2`}>
+      {Array.isArray(element.reps) ? (
+        <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
+          {element.reps.map((r, i) => (
+            <React.Fragment key={i}>
+              <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
+              {i < element.reps.length - 1 && <span>-</span>}
+            </React.Fragment>
+          ))}
+        </span>
+      ) : (
+        <span className="stylesBadgesItemsExerciseSpan border-1 d-block">{element.reps}</span>
+      )}
+      <p className="fontStylesSpan">Reps</p>
+    </div>
+
+    <div className={`${pesoCol} p-0 mt-4 pt-2 mb-2`}>
+      <span className="stylesBadgesItemsExerciseSpan d-block">{element.peso ? element.peso : '-'}</span>
+      <p className="fontStylesSpan">Peso</p>
+    </div>
+
+    <div className={`${restCol} p-0 mt-3 mb-2`}>
+      <CountdownTimer initialTime={element.rest} />
+      <p className="fontStylesSpan mt-2 mb-1">Descanso</p>
+    </div>
+  </>
+) : isSuperset ? (
+  /* ====== SUPERSERIE A NIVEL TOPE ====== */
+  <>
+    {element.exercises.map((ex, j) => {
+      const innerName = typeof ex.name === 'object' ? ex.name.name : ex.name;
+      const cols = getCols(ex.peso);
+      const blockBackoffLabel =
+        (ex?.name?.titleName && ex.name.titleName.trim() !== "") ? ex.name.titleName : "Back off";
+
+      return (
+        <React.Fragment key={`sup-${element.baseNumber}-${j}`}>
+          <div className="col-12 mb-2 mb-3 shadow-personalized">
+            <div className="row justify-content-around rounded-2 p-2 align-items-center">
+              <div className="col-1 text-center">
+                <span className="badge text-light border bg-dark">{ex.supSuffix}</span>
+              </div>
+              <div className="col-11 text-start">{innerName}</div>
+
+              <div className={`${cols.setsCol} p-0 mt-3 mb-2`}>
+                <span className="stylesBadgesItemsExerciseSpan d-block">{ex.sets}</span>
+                <div className="fontStylesSpan">Sets</div>
+              </div>
+
+              <div className={`${cols.repsCol} p-0 mt-3 mb-2`}>
+                {Array.isArray(ex.reps)
+                  ? ex.reps.map((r, k) => (
+                      <React.Fragment key={k}>
+                        <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
+                        {k < ex.reps.length - 1 && <span className="">-</span>}
+                      </React.Fragment>
+                    ))
+                  : <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>}
+                <div className="fontStylesSpan">Reps</div>
+              </div>
+
+              <div className={`${cols.pesoCol} p-0 mt-3 mb-2`}>
+                <span className="stylesBadgesItemsExerciseSpan d-block">{ex.peso || '-'}</span>
+                <div className="fontStylesSpan">Peso</div>
+              </div>
+
+              <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
+                <CountdownTimer initialTime={ex.rest} />
+                <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
+              </div>
             </div>
 
-            <div className={`${repsCol} p-0 mt-4 pt-2 mb-2`}>
-              {Array.isArray(element.reps) ? (
-                <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
-                  {element.reps.map((r, i) => (
-                    <React.Fragment key={i}>
-                      <span className="stylesBadgesItemsExerciseSpan arrayBadge">
-                        {r}
-                      </span>
-                      {i < element.reps.length - 1 && <span>-</span>}
-                    </React.Fragment>
+            {ex.name?.approximations?.length > 0 && (
+              <>
+                <span className="styleInputsNote-back ">{ex.name.approxTitle ?? 'Aproximaciones'}</span>
+                <div className="colorNote3 py-2 rounded-1">
+                  {ex.name.approximations.map((ap, i) => (
+                    <div className="row my-1" key={i}>
+                      <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
+                      <p className="mb-0 col-5 text-start">{ap.reps} reps / {ap.peso}</p>
+                    </div>
                   ))}
-                </span>
-              ) : (
-                <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
-                  {element.reps}
-                </span>
-              )}
-              <p className="fontStylesSpan">Reps</p>
-            </div>
-
-            <div className={`${pesoCol} p-0 mt-4 pt-2 mb-2`}>
-              <span className="stylesBadgesItemsExerciseSpan d-block">
-                {element.peso ? element.peso : '-'}
-              </span>
-              <p className="fontStylesSpan">Peso</p>
-            </div>
-
-            <div className={`${restCol} p-0 mt-3 mb-2`}>
-              <CountdownTimer initialTime={element.rest} />
-              <p className="fontStylesSpan mt-2 mb-1">Descanso</p>
-            </div>
-          </>
-        ) : isBlock ? (
-          element.exercises.map((ex, j) => {
-
-            const isInnerExercise = ex.type === 'exercise';
-            const isInnerCircuit  = !isInnerExercise;
-
-            const innerNumber = ex.numberExercise ?? ex.numberCircuit;
-
-            const innerName = isInnerExercise
-              ? (typeof ex.name === 'object' ? ex.name.name : ex.name)
-              : (ex.type || 'Circuito');
-
-            const cols = isInnerExercise ? getCols(ex.peso) : null;
-
-            const blockBackoffLabel =
-              (ex?.name?.titleName && ex.name.titleName.trim() !== "")
-                ? ex.name.titleName
-                : "Back off";
-
-                  // helper para mostrar "type - typeOfSet" en circuitos
-            const renderCircuitTitle = (type, typeOfSetLike) => (
-              <span>
-                {type || 'Circuito'}
-                {typeOfSetLike ? <> - {typeOfSetLike}</> : null}
-              </span>
-            );
-
-            return (
-              <React.Fragment key={ex.exercise_id || ex._id || j}>
-                <div className="col-12 mb-2 mb-4 shadow-personalized">
-                  <div className="row justify-content-around rounded-2 p-2 align-items-center">
-                    <div className="col-1 text-center">
-                      {renderNumberIcon(innerNumber)}
-                    </div>
-
-                    <div className="col-11 text-start">
-                      {isInnerExercise
-                        ? innerName
-                        : renderCircuitTitle(
-                            ex.type,
-                            ex.typeOfSet ?? ex.typeOfSets
-                          )}
-                    </div>
-
-                    {isInnerExercise ? (
-                      <>
-                        <div className={`${cols.setsCol} p-0 mt-4 mb-2`}>
-                          <span className="stylesBadgesItemsExerciseSpan d-block">
-                            {ex.sets}
-                          </span>
-                          <div className="fontStylesSpan">Sets</div>
-                        </div>
-
-                        <div className={`${cols.repsCol} p-0 mt-4 mb-2`}>
-                          {Array.isArray(ex.reps) ? (
-                            ex.reps.map((r, k) => (
-                              <React.Fragment key={k}>
-                                <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
-                                {k < ex.reps.length - 1 && <span className="">-</span>}
-                              </React.Fragment>
-                            ))
-                          ) : (
-                            <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>
-                          )}
-                          <div className="fontStylesSpan">Reps</div>
-                        </div>
-
-                        <div className={`${cols.pesoCol} p-0 mt-4 mb-2`}>
-                          <span className="stylesBadgesItemsExerciseSpan d-block">
-                            {ex.peso || '-'}
-                          </span>
-                          <div className="fontStylesSpan">Peso</div>
-                        </div>
-
-                        <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
-                          <CountdownTimer initialTime={ex.rest} />
-                          <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
-                        </div>
-                      </>
-                    ) : (
-                      // CIRCUITO dentro del bloque (sin type === 'exercise')
-                      <div className="col-12 p-0 mt-4 mb-2 ">
-                        <table className="table border-0 ">
-                          <thead>
-                            <tr className="bg-light">
-                              <th className="border-0 text-start bg-light">Nombre</th>
-                              <th className="border-0 bg-light">Reps</th>
-                              <th className="border-0 bg-light">Peso</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-light">
-                            {ex.circuit?.map((c, k) => (
-                              <tr key={c.idRefresh || k}>
-                                <td className="border-0 text-start bg-light">{c.name}</td>
-                                <td className="border-0 bg-light">{c.reps}</td>
-                                <td className="border-0 bg-light">{c.peso}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* — Aproximaciones / Backoff / Notas SOLO para ejercicios internos — */}
-                  {isInnerExercise && ex.name?.approximations?.length > 0 && (
-                    <>
-                      <span className="styleInputsNote-back ">
-                        {ex.name.approxTitle ?? 'Aproximaciones'}
-                      </span>
-                      <div className="colorNote3 py-2 rounded-1 ">
-                        {ex.name.approximations.map((ap, i) => (
-                          <div className="row my-1" key={i}>
-                            <span className="fs07em text-muted col-6">
-                              <b>{i + 1}°</b> aproximación -
-                            </span>
-                            <p className="mb-0 col-5 text-start">
-                              {ap.reps} reps / {ap.peso}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {isInnerExercise && ex.name?.backoff?.length > 0 && (
-                    <>
-                      <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
-                      <div className="colorNote2 py-2 rounded-1 mb-2">
-                        {ex.name.backoff.map((line, i) => (
-                          <p key={i} className="mb-0 ">
-                            {line.sets}×{line.reps} / {line.peso}
-                          </p>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {isInnerExercise && ex.notas && (
-                    <>
-                      <span className="styleInputsNote-back text-start">Notas / otros</span>
-                      <div className="colorNote py-2 rounded-1" style={{ whiteSpace: 'pre-wrap' }}>
-                        <p className="pb-0 mb-0">{ex.notas}</p>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Footer solo para ejercicio interno */}
-                  {isInnerExercise && (
-                    <div className="row justify-content-between align-items-center mt-2 px-2">
-                      <div className="col-auto">
-                        <Contador max={ex.sets} />
-                      </div>
-
-                      <div className="col-auto">
-                        <IconButton
-                          aria-label="video"
-                          disabled={!ex.video}
-                          onClick={() => handleButtonClick(ex)}
-                        >
-                          {ex.isImage
-                            ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
-                            : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />
-                          }
-                        </IconButton>
-                      </div>
-
-                      <div className="col-auto">
-                        <IconButton
-                          aria-label="editar"
-                          onClick={() => handleEditMobileBlockExercise(ex, idx, j)}
-                        >
-                          <EditNoteIcon />
-                        </IconButton>
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </React.Fragment>
-            );
-          })
-        ) : (
-          <>
-            <div className="col-12 p-0 mt-4 mb-2">
-              <table className="table border-0">
-                <thead>
-                  <tr>
-                    <th className="border-0 text-start">Nombre</th>
-                    <th className="border-0">Reps</th>
-                    <th className="border-0">Peso</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {element.circuit.map(c => (
-                    <tr key={c.idRefresh}>
-                      <td className="border-0 text-start">{c.name}</td>
-                      <td className="border-0">{c.reps}</td>
-                      <td className="border-0">{c.peso}</td>
-                    </tr>
+              </>
+            )}
+
+            {ex.name?.backoff?.length > 0 && (
+              <>
+                <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
+                <div className="colorNote2 py-2 rounded-1 mb-2">
+                  {ex.name.backoff.map((line, i) => (
+                    <p key={i} className="mb-0 ">{line.sets}×{line.reps} / {line.peso}</p>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </>
+            )}
+
+            {ex.notas && (
+              <>
+                <span className="styleInputsNote-back text-start">Notas / otros</span>
+                <div className="colorNote py-2 rounded-1" style={{ whiteSpace: 'pre-wrap' }}>
+                  <p className="pb-0 mb-0">{ex.notas}</p>
+                </div>
+              </>
+            )}
+
+            {/* Edita usando índice real del array original */}
+            <div className="row justify-content-between align-items-center mt-2 px-2">
+              <div className="col-auto"><Contador max={ex.sets} /></div>
+              <div className="col-auto">
+                <IconButton aria-label="video" disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
+                  {ex.isImage
+                    ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
+                    : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />}
+                </IconButton>
+              </div>
+              <div className="col-auto">
+                <IconButton aria-label="editar" onClick={() => handleEditMobileExercise(ex, ex._origIndex)}>
+                  <EditNoteIcon />
+                </IconButton>
+              </div>
             </div>
-          </>
-        )}
+          </div>
+        </React.Fragment>
+      );
+    })}
+  </>
+) : isBlock ? (
+  /* ====== BLOQUE: soporta superseries internas ====== */
+  groupSupersets(element.exercises, { forBlock: true }).map((ex, j) => {
+    const isInnerExercise = ex.type === 'exercise';
+    const isInnerSuperset = ex.type === 'superset';
+    const innerNumber = ex.numberExercise ?? ex.numberCircuit;
+    const innerName = isInnerExercise
+      ? (typeof ex.name === 'object' ? ex.name.name : ex.name)
+      : (ex.type || 'Circuito');
+
+    if (isInnerSuperset) {
+      // --- Superserie dentro de bloque ---
+      return (
+        <div key={`blksup-${idx}-${j}`} className="col-12 mb-2 mb-4 shadow-personalized">
+          <div className="row justify-content-between align-items-center mb-2 px-2">
+            <div className="col text-start fw-semibold mt-2 widgetNumberSuperSet py-1 text-light rounded-1">
+              Superserie
+              <small className="ms-2">({ex.exercises.map(s => s.supSuffix).join(' · ')})</small>
+            </div>
+          </div>
+
+          {ex.exercises.map((s, k) => {
+            const cols = getCols(s.peso);
+            const blockBackoffLabel =
+              (s?.name?.titleName && s.name.titleName.trim() !== "") ? s.name.titleName : "Back off";
+            return (
+              <div key={`blksup-${idx}-${j}-${k}`} className="row justify-content-center rounded-2 py-2 align-items-center mb-2">
+                <div className="col-1 text-center">
+                  <span className="badge rounded-1 bg-dark">{s.supSuffix}</span>
+                </div>
+
+                <div className="col-11  text-start">
+                  {typeof s.name === 'object' ? s.name.name : s.name}
+                </div>
+
+                <div className={`${cols.setsCol} p-0 mt-3 mb-2`}>
+                  <span className="stylesBadgesItemsExerciseSpan d-block">{s.sets}</span>
+                  <div className="fontStylesSpan">Sets</div>
+                </div>
+
+                <div className={`${cols.repsCol} p-0 mt-3 mb-2`}>
+                  {Array.isArray(s.reps)
+                    ? s.reps.map((r, kk) => (
+                        <React.Fragment key={kk}>
+                          <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
+                          {kk < s.reps.length - 1 && <span className="">-</span>}
+                        </React.Fragment>
+                      ))
+                    : <span className="stylesBadgesItemsExerciseSpan">{s.reps}</span>}
+                  <div className="fontStylesSpan">Reps</div>
+                </div>
+
+                <div className={`${cols.pesoCol} p-0 mt-3 mb-2`}>
+                  <span className="stylesBadgesItemsExerciseSpan d-block">{s.peso || '-'}</span>
+                  <div className="fontStylesSpan">Peso</div>
+                </div>
+
+                <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
+                  <CountdownTimer initialTime={s.rest} />
+                  <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
+                </div>
+
+                {/* Notas / backoff / aprox */}
+                {s.name?.approximations?.length > 0 && (
+                  <>
+                    <span className="styleInputsNote-back ">{s.name.approxTitle ?? 'Aproximaciones'}</span>
+                    <div className="colorNote3 py-2 rounded-1">
+                      {s.name.approximations.map((ap, i) => (
+                        <div className="row my-1" key={i}>
+                          <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
+                          <p className="mb-0 col-5 text-start">{ap.reps} reps / {ap.peso}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {s.name?.backoff?.length > 0 && (
+                  <>
+                    <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
+                    <div className="colorNote2 py-2 rounded-1 mb-2">
+                      {s.name.backoff.map((line, i) => (
+                        <p key={i} className="mb-0 ">{line.sets}×{line.reps} / {line.peso}</p>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {s.notas && (
+                  <>
+                    <span className="styleInputsNote-back text-start">Notas / otros</span>
+                    <div className="colorNote py-2 rounded-1" style={{ whiteSpace: 'pre-wrap' }}>
+                      <p className="pb-0 mb-0">{s.notas}</p>
+                    </div>
+                  </>
+                )}
+
+                {/* Edita usando índice real dentro del bloque */}
+                <div className="row justify-content-between align-items-center mt-2 px-2">
+                  <div className="col-auto"><Contador max={s.sets} /></div>
+                  <div className="col-auto">
+                    <IconButton aria-label="video" disabled={!s.video} onClick={() => handleButtonClick(s)}>
+                      {s.isImage
+                        ? <ImageIcon className={s.video ? 'imageIcon' : 'imageIconDisabled'} />
+                        : <YouTubeIcon className={s.video ? 'ytColor' : 'ytColor-disabled'} />}
+                    </IconButton>
+                  </div>
+                  <div className="col-auto">
+                    <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(s, idx, s._origIndexInBlock)}>
+                      <EditNoteIcon />
+                    </IconButton>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // --- Caso ejercicio normal dentro del bloque (lo tuyo de antes) ---
+    const cols = isInnerExercise ? getCols(ex.peso) : null;
+    const blockBackoffLabel =
+      (ex?.name?.titleName && ex.name.titleName.trim() !== "") ? ex.name.titleName : "Back off";
+
+    return (
+      <React.Fragment key={ex.exercise_id || ex._id || j}>
+        <div className="col-12 mb-2 mb-4 shadow-personalized">
+          <div className="row justify-content-around rounded-2 p-2 align-items-center">
+            <div className="col-1 text-center">{renderNumberIcon(innerNumber)}</div>
+            <div className="col-11 text-start">{innerName}</div>
+
+            {/* métricas */}
+            {isInnerExercise && (
+              <>
+                <div className={`${cols.setsCol} p-0 mt-4 mb-2`}>
+                  <span className="stylesBadgesItemsExerciseSpan d-block">{ex.sets}</span>
+                  <div className="fontStylesSpan">Sets</div>
+                </div>
+                <div className={`${cols.repsCol} p-0 mt-4 mb-2`}>
+                  {Array.isArray(ex.reps)
+                    ? ex.reps.map((r, k) => (
+                        <React.Fragment key={k}>
+                          <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
+                          {k < ex.reps.length - 1 && <span className="">-</span>}
+                        </React.Fragment>
+                      ))
+                    : <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>}
+                  <div className="fontStylesSpan">Reps</div>
+                </div>
+                <div className={`${cols.pesoCol} p-0 mt-4 mb-2`}>
+                  <span className="stylesBadgesItemsExerciseSpan d-block">{ex.peso || '-'}</span>
+                  <div className="fontStylesSpan">Peso</div>
+                </div>
+                <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
+                  <CountdownTimer initialTime={ex.rest} />
+                  <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Aproximaciones / Backoff / Notas */}
+          {isInnerExercise && ex.name?.approximations?.length > 0 && (
+            <>
+              <span className="styleInputsNote-back ">{ex.name.approxTitle ?? 'Aproximaciones'}</span>
+              <div className="colorNote3 py-2 rounded-1 ">
+                {ex.name.approximations.map((ap, i) => (
+                  <div className="row my-1" key={i}>
+                    <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
+                    <p className="mb-0 col-5 text-start">{ap.reps} reps / {ap.peso}</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {isInnerExercise && ex.name?.backoff?.length > 0 && (
+            <>
+              <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
+              <div className="colorNote2 py-2 rounded-1 mb-2">
+                {ex.name.backoff.map((line, i) => (
+                  <p key={i} className="mb-0 ">{line.sets}×{line.reps} / {line.peso}</p>
+                ))}
+              </div>
+            </>
+          )}
+
+          {isInnerExercise && ex.notas && (
+            <>
+              <span className="styleInputsNote-back text-start">Notas / otros</span>
+              <div className="colorNote py-2 rounded-1" style={{ whiteSpace: 'pre-wrap' }}>
+                <p className="pb-0 mb-0">{ex.notas}</p>
+              </div>
+            </>
+          )}
+
+          {isInnerExercise && (
+            <div className="row justify-content-between align-items-center mt-2 px-2">
+              <div className="col-auto"><Contador max={ex.sets} /></div>
+              <div className="col-auto">
+                <IconButton aria-label="video" disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
+                  {ex.isImage
+                    ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
+                    : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />}
+                </IconButton>
+              </div>
+              <div className="col-auto">
+                <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(ex, idx, j)}>
+                  <EditNoteIcon />
+                </IconButton>
+              </div>
+            </div>
+          )}
+        </div>
+      </React.Fragment>
+    );
+  })
+) : (
+  /* ====== CIRCUITO SUELTO ====== */
+  <div className="col-12 p-0 mt-4 mb-2">
+    <CircuitHeader
+     circuit={normalizeCircuit(element)}
+     onAdjust={() => setShowFreeTimerSetup(true)}
+     onStart={(c) => openTimerForCircuit({ ...c, freeConfig: { ...freeTimerConfig } })} />
+    <table className="table border-0">
+      <thead>
+        <tr>
+          <th className="border-0 text-start">Nombre</th>
+          <th className="border-0">Reps</th>
+          <th className="border-0">Peso</th>
+        </tr>
+      </thead>
+      <tbody>
+        {element.circuit.map(c => (
+          <tr key={c.idRefresh}>
+            <td className="border-0 text-start">{c.name}</td>
+            <td className="border-0">{c.reps}</td>
+            <td className="border-0">{c.peso}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
 
         {element.name?.approximations?.length > 0 && (
           <>
@@ -1558,6 +2718,268 @@ const saveDriveLink = async () => {
                     </div>
                   </div>
                 </Dialog>
+
+                   <Dialog
+                      visible={showTimerDialog}
+                      onHide={() => setShowTimerDialog(false)}
+                      style={{ width: '95vw', maxWidth: '820px' }}
+                      className="timerDialog "
+                      closable={false}   // ocultamos la X por defecto: usamos la de TimerHeader
+                      draggable
+                      header={
+                         activeCircuit ? (
+                           <TimerHeader
+                             circuit={activeCircuit}
+                             onClose={() => setShowTimerDialog(false)}
+                             onOpenSettings={() => setShowPrepSettings(true)}
+                           />
+                         ) : null
+                       }
+                    >
+  {activeCircuit && (
+    <div className="p-0">
+      <TimerDialog
+         circuit={activeCircuit}
+         prepSeconds={prepSeconds}
+         onOpenInfo={() => openCircuitInfo(activeCircuit)}
+         onClose={() => setShowTimerDialog(false)}
+       />
+    </div>
+  )}
+</Dialog>
+
+<Dialog
+  header="Ajustes del temporizador"
+  visible={showPrepSettings}
+  style={{ width: '90vw', maxWidth: 420 }}
+  modal
+  onHide={() => setShowPrepSettings(false)}
+  draggable
+>
+  <div className="mb-3">
+    <label className="form-label">Segundos de preparación</label>
+    <input
+      type="number"
+      min={1}
+      max={300}
+      className="form-control"
+      defaultValue={prepSeconds}
+      onChange={(e) => {
+        const v = Math.max(1, Math.min(300, Math.floor(Number(e.target.value))));
+        // Actualizo solo el control local; el guardado efectivo va con "Guardar"
+        e.target.dataset.pending = String(v);
+      }}
+      onFocus={(e) => { e.target.dataset.pending = String(prepSeconds); }}
+    />
+    <small className="text-muted d-block mt-1">Por defecto: 10s. Rango permitido: 1–300s.</small>
+  </div>
+
+  { (activeCircuit?.circuitKind === 'Libre') && (
+      <>
+        <hr />
+        <div className="mb-2 fw-semibold">Libre · Ajustar valores</div>
+
+        <div className="mb-3">
+          <label className="form-label d-block">Modo</label>
+          <div className="d-flex gap-2">
+            <button
+              type="button"
+              className={`btn btn-sm ${freeTimerConfig.mode === 'timer' ? 'btn-dark' : 'btn-outline-secondary'}`}
+              onClick={() => setFreeTimerConfig(v => ({ ...v, mode: 'timer' }))}
+            >Temporizador</button>
+            <button
+              type="button"
+              className={`btn btn-sm ${freeTimerConfig.mode === 'chrono' ? 'btn-dark' : 'btn-outline-secondary'}`}
+              onClick={() => setFreeTimerConfig(v => ({ ...v, mode: 'chrono' }))}
+            >Cronómetro</button>
+          </div>
+        </div>
+
+        {freeTimerConfig.mode === 'timer' && (
+          <>
+            <div className="mb-3">
+              <label className="form-label d-block">Esquema</label>
+              <div className="d-flex gap-2">
+                <button
+                  type="button"
+                  className={`btn btn-sm ${freeTimerConfig.schema === 'intermitente' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                  onClick={() => setFreeTimerConfig(v => ({ ...v, schema: 'intermitente' }))}
+                >Intermitente (Work/Rest)</button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${freeTimerConfig.schema === 'amrap' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                  onClick={() => setFreeTimerConfig(v => ({ ...v, schema: 'amrap' }))}
+                >AMRAP (duración)</button>
+              </div>
+            </div>
+
+            {freeTimerConfig.schema === 'intermitente' ? (
+              <div className="row g-2">
+                <div className="col-4">
+                  <label className="form-label">Work (s)</label>
+                  <input type="number" min={1} className="form-control"
+                    value={freeTimerConfig.workSec}
+                    onChange={e => setFreeTimerConfig(v => ({ ...v, workSec: Math.max(1, Number(e.target.value||1)) }))}/>
+                </div>
+                <div className="col-4">
+                  <label className="form-label">Rest (s)</label>
+                  <input type="number" min={1} className="form-control"
+                    value={freeTimerConfig.restSec}
+                    onChange={e => setFreeTimerConfig(v => ({ ...v, restSec: Math.max(1, Number(e.target.value||1)) }))}/>
+                </div>
+                <div className="col-4">
+                  <label className="form-label">Rondas</label>
+                  <input type="number" min={1} className="form-control"
+                    value={freeTimerConfig.totalRounds}
+                    onChange={e => setFreeTimerConfig(v => ({ ...v, totalRounds: Math.max(1, Number(e.target.value||1)) }))}/>
+                </div>
+              </div>
+            ) : (
+              <div className="row g-2">
+                <div className="col-6">
+                  <label className="form-label">Minutos</label>
+                  <input type="number" min={1} className="form-control"
+                    value={freeTimerConfig.totalMinutes}
+                    onChange={e => setFreeTimerConfig(v => ({ ...v, totalMinutes: Math.max(1, Number(e.target.value||1)) }))}/>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </>
+    )}
+
+  <div className="d-flex justify-content-end gap-2">
+    <button className="btn btn-outline-light" onClick={() => setShowPrepSettings(false)}>Cancelar</button>
+    <button
+      className="btn text-light"
+      style={{ background: 'linear-gradient(to right, #f97316, #ef4444)' }}
+      onClick={(e) => {
+        const input = e.currentTarget.closest('.p-dialog').querySelector('input[type="number"]');
+        const pending = Number(input?.dataset?.pending ?? prepSeconds);
+        writePrepSeconds(pending);
+        if (activeCircuit?.circuitKind === 'Libre') {
+          setActiveCircuit(prev => prev ? ({ ...prev, freeConfig: { ...freeTimerConfig } }) : prev);
+        }
+        setPrepSeconds(readPrepSeconds()); // relee para robustez
+        setShowPrepSettings(false);
+        try { Notify?.instantToast?.('Ajuste guardado'); } catch {}
+      }}
+    >
+      Guardar
+    </button>
+  </div>
+</Dialog>
+
+<Dialog
+  header={`¿Qué es un ${circuitInfoTitle}?`}
+  visible={showCircuitInfo}
+  style={{ width: '90vw', maxWidth: 520 }}
+  modal
+  onHide={() => setShowCircuitInfo(false)}
+  draggable
+>
+  <div className="text-body">
+    <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>{circuitInfoText}</p>
+  </div>
+
+  <div className="d-flex justify-content-end mt-3">
+    <button className="btn btn-outline-light" onClick={() => setShowCircuitInfo(false)}>Entendido</button>
+  </div>
+</Dialog>
+
+
+<Dialog
+    header="Ajustar valores (Libre)"
+    visible={showFreeTimerSetup}
+    style={{ width: '90vw', maxWidth: 520 }}
+    modal
+    onHide={() => setShowFreeTimerSetup(false)}
+    draggable
+  >
+    <div className="mb-3">
+      <label className="form-label d-block">Modo</label>
+      <div className="d-flex gap-2">
+        <button
+          className={`btn btn-sm ${freeTimerConfig.mode === 'timer' ? 'btn-dark' : 'btn-outline-secondary'}`}
+          onClick={() => setFreeTimerConfig(v => ({ ...v, mode: 'timer' }))}
+        >
+          Temporizador
+        </button>
+        <button
+          className={`btn btn-sm ${freeTimerConfig.mode === 'chrono' ? 'btn-dark' : 'btn-outline-secondary'}`}
+          onClick={() => setFreeTimerConfig(v => ({ ...v, mode: 'chrono' }))}
+        >
+          Cronómetro
+        </button>
+      </div>
+    </div>
+
+    {freeTimerConfig.mode === 'timer' && (
+      <>
+        <div className="mb-3">
+          <label className="form-label d-block">Esquema</label>
+          <div className="d-flex gap-2">
+            <button
+              className={`btn btn-sm ${freeTimerConfig.schema === 'intermitente' ? 'btn-dark' : 'btn-outline-secondary'}`}
+              onClick={() => setFreeTimerConfig(v => ({ ...v, schema: 'intermitente' }))}
+            >
+              Intermitente (Work/Rest)
+            </button>
+            <button
+              className={`btn btn-sm ${freeTimerConfig.schema === 'amrap' ? 'btn-dark' : 'btn-outline-secondary'}`}
+              onClick={() => setFreeTimerConfig(v => ({ ...v, schema: 'amrap' }))}
+            >
+              AMRAP (duración)
+            </button>
+          </div>
+        </div>
+
+        {freeTimerConfig.schema === 'intermitente' ? (
+          <div className="row g-2">
+            <div className="col-4">
+              <label className="form-label">Work (s)</label>
+              <input type="number" min={1} className="form-control"
+                value={freeTimerConfig.workSec}
+                onChange={e => setFreeTimerConfig(v => ({ ...v, workSec: Math.max(1, Number(e.target.value||1)) }))}/>
+            </div>
+            <div className="col-4">
+              <label className="form-label">Rest (s)</label>
+              <input type="number" min={1} className="form-control"
+                value={freeTimerConfig.restSec}
+                onChange={e => setFreeTimerConfig(v => ({ ...v, restSec: Math.max(1, Number(e.target.value||1)) }))}/>
+            </div>
+            <div className="col-4">
+              <label className="form-label">Rondas</label>
+              <input type="number" min={1} className="form-control"
+                value={freeTimerConfig.totalRounds}
+                onChange={e => setFreeTimerConfig(v => ({ ...v, totalRounds: Math.max(1, Number(e.target.value||1)) }))}/>
+            </div>
+          </div>
+        ) : (
+          <div className="row g-2">
+            <div className="col-6">
+              <label className="form-label">Minutos</label>
+              <input type="number" min={1} className="form-control"
+                value={freeTimerConfig.totalMinutes}
+                onChange={e => setFreeTimerConfig(v => ({ ...v, totalMinutes: Math.max(1, Number(e.target.value||1)) }))}/>
+            </div>
+          </div>
+        )}
+      </>
+    )}
+
+    <div className="d-flex justify-content-end gap-2 mt-3">
+      <button className="btn btn-outline-light" onClick={() => setShowFreeTimerSetup(false)}>Cancelar</button>
+      <button
+        className="btn text-light"
+        style={{ background: 'linear-gradient(to right, #f97316, #ef4444)' }}
+        onClick={() => setShowFreeTimerSetup(false)}
+      >
+        Guardar
+      </button>
+    </div>
+  </Dialog>
 
             </section>
         </>

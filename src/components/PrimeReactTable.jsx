@@ -13,11 +13,14 @@ import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Link } from "react-router-dom";
+
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
+import Tooltip from "@mui/material/Tooltip"; // ✅ MUI Tooltip
 
+import dayjs from "dayjs";
+import { CheckCircle2, AlertTriangle, AlertOctagon, Info } from "lucide-react";
 import { UserRound, Pencil, Trash2, QrCode, ArrowUpDown, Plus, Search } from "lucide-react";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
@@ -125,14 +128,10 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
 
     if (sortField === "lastEdited") {
       filtered.sort((a, b) => {
-        const aIso = a.last_week_updated_at || a.last_week_created_at;
-        const bIso = b.last_week_updated_at || b.last_week_created_at;
-        const aTime = aIso ? Date.parse(aIso) : 0;
-        const bTime = bIso ? Date.parse(bIso) : 0;
-        const cmp = sortOrder === "asc" ? aTime - bTime : bTime - aTime;
-        if (cmp !== 0) return cmp;
-        // tie-breakers
-        return a.name.localeCompare(b.name);
+        const at = Date.parse(getFreshness(a).iso || 0);
+        const bt = Date.parse(getFreshness(b).iso || 0);
+        const cmp = sortOrder === "asc" ? at - bt : bt - at;
+        return cmp !== 0 ? cmp : a.name.localeCompare(b.name);
       });
     }
 
@@ -316,6 +315,50 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     hideDialog();
   };
 
+  // ---------- Semáforo de frescura ----------
+  const freshnessPalette = {
+    good: { // 0–5 días
+      cellBg: "#ECFDF3", cellBorder: "#A6F4C5", text: "#027A48",
+      badgeBg: "#D1FADF", badgeText: "#026C3E", badgeBorder: "#ABEFC6",
+      icon: "#12B76A"
+    },
+    warn: { // 6 días
+      cellBg: "#FFFAEB", cellBorder: "#FEDF89", text: "#B54708",
+      badgeBg: "#FEEFC6", badgeText: "#B54708", badgeBorder: "#FCD34D",
+      icon: "#F59E0B"
+    },
+    bad: { // ≥7 días
+      cellBg: "#FEE2E2", cellBorder: "#FECDD3", text: "#B42318",
+      badgeBg: "#FECACA", badgeText: "#991B1B", badgeBorder: "#FCA5A5",
+      icon: "#EF4444"
+    },
+    none: { // sin datos
+      cellBg: "#F2F4F7", cellBorder: "#E4E7EC", text: "#475467",
+      badgeBg: "#E4E7EC", badgeText: "#475467", badgeBorder: "#D0D5DD",
+      icon: "#9CA3AF"
+    }
+  };
+
+  function daysSince(iso) {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const today = new Date();
+    const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startThat  = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return Math.max(0, Math.floor((startToday - startThat) / 86400000));
+  }
+
+  function getFreshness(row) {
+    const iso = row.last_week_updated_at || row.last_week_created_at;
+    const d = daysSince(iso);
+    if (d == null) return { level: "none", days: null, iso: null, ui: freshnessPalette.none };
+
+    if (d <= 5) return { level: "good", days: d, iso, ui: freshnessPalette.good };
+    if (d === 6) return { level: "warn", days: d, iso, ui: freshnessPalette.warn };
+    return { level: "bad", days: d, iso, ui: freshnessPalette.bad };
+  }
+
   const showQrDialog = async (user) => {
     setLoading(true);
     setError(null);
@@ -413,13 +456,55 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     <div style={{ height: 670 }} />
   );
 
+  // ===== Celda "Últ. vez editado" (solo fecha + icono + tooltip MUI con delay) =====
   const lastEditedCell = (row) => {
-    const iso = row.last_week_updated_at || row.last_week_created_at;
-    if (!iso) return <span className="text-muted">—</span>;
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return <span className="text-muted">—</span>;
-    const str = d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
-    return <span>{str}</span>;
+    const f = getFreshness(row);
+
+    const Icon =
+      f.level === "good" ? CheckCircle2 :
+      f.level === "warn" ? AlertTriangle :
+      f.level === "bad"  ? AlertOctagon :
+                           Info;
+
+    const dateStr = f.iso
+      ? new Date(f.iso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
+      : "—";
+
+    const ageStr = f.days == null ? "" : (f.days === 0 ? "hoy" : `hace ${f.days} día${f.days > 1 ? "s" : ""}`);
+    const tooltip = f.iso ? `Última edición: ${dateStr} • ${ageStr}` : "Sin planificación registrada";
+
+    return (
+      <Tooltip title={tooltip} arrow placement="top" enterDelay={200} enterNextDelay={200}>
+        <div
+          className="d-flex align-items-center justify-content-between"
+          style={{
+            width: "100%",
+            background: f.ui.cellBg,
+            border: `1px solid ${f.ui.cellBorder}`,
+            borderRadius: 12,
+            padding: "6px 10px",
+            minHeight: 36
+            // ❌ sin cursor: "help" para evitar el ícono de "?"
+          }}
+        >
+          <Icon size={16} color={f.ui.icon} strokeWidth={2} />
+          <span
+            style={{
+              display: "inline-block",
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: f.ui.badgeBg,
+              color: f.ui.badgeText,
+              border: `1px solid ${f.ui.badgeBorder}`,
+              fontSize: "0.75rem",
+              lineHeight: 1
+            }}
+          >
+            {dateStr}
+          </span>
+        </div>
+      </Tooltip>
+    );
   };
 
   return (
@@ -519,7 +604,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
                 </div>
               }
               body={lastEditedCell}
-              style={{ width: "170px" }}
+              style={{ width: "190px" }}
             />
           )}
 
