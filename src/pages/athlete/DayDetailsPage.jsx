@@ -933,7 +933,7 @@ const headerInfo = (c0 = {}) => {
     }
     default: {
      // Libre: priorizar 'type' como título; si no, usar typeOfSets; si no, "Libre"
-     const title = (c.type && String(c.type).trim()) || c.typeOfSets || 'Libre';
+     const title = (c.type && String(c.type).trim()) || c.typeOfSets || 'Circuito';
      const fc = c.freeConfig;
      if (fc) {
        if (fc.mode === 'chrono') return { title, meta: 'Cronómetro' };
@@ -1020,12 +1020,45 @@ const fmtMMSS = (sec = 0) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-// ==== Normalizador de circuito ====
-const normalizeCircuit = (c = {}) => {
-  const known = ['Libre','AMRAP','EMOM','E2MOM','E3MOM','Intermitentes','Por tiempo','Tabata'];
-  const kind = c.circuitKind || (known.includes(c.type) ? c.type : 'Libre');
-  return { ...c, circuitKind: kind };
+const parseMinutesFromTypeOfSets = (v) => {
+  if (v == null) return null;
+  const s = String(v).trim();
+  // soporta: 14' | 14´ | 14m | 14 min | 14.5' | 14,5'
+  const m = s.match(/^(\d+(?:[.,]\d+)?)\s*(?:['´m]|min(?:utos)?)?$/i);
+  if (!m) return null;
+  const num = parseFloat(m[1].replace(',', '.'));
+  return Number.isFinite(num) ? num : null; // minutos
 };
+
+const normalizeCircuit = (c = {}) => {
+  const kind =
+    (typeof c.type === 'string' && c.type.trim()) ||
+    c.circuitKind ||
+    'Libre'; // ⚠️ mantener 'Libre' para que el timer funcione
+
+  const out = { ...c, circuitKind: kind };
+
+  // Si viene "14'", "14m", "14 min", etc. y no hay duración seteada, derivarla:
+  if (out.typeOfSets) {
+    const mins = parseMinutesFromTypeOfSets(out.typeOfSets);
+    if (mins != null) {
+      if (kind === 'AMRAP' && !out.durationSec) {
+        out.durationSec = Math.round(mins * 60);
+      }
+      if (kind === 'Por tiempo' && !out.timeCapSec) {
+        out.timeCapSec = Math.round(mins * 60);
+      }
+      // Si querés que EMOM/E2MOM/E3MOM tomen los minutos desde typeOfSets cuando no hay totalMinutes:
+      // if ((kind === 'EMOM' || kind === 'E2MOM' || kind === 'E3MOM') && !out.totalMinutes) {
+      //   out.totalMinutes = Math.round(mins);
+      // }
+    }
+  }
+
+  return out;
+};
+
+
 
 // ==== Subtítulo corto ====
 const circuitSubtitle = (c = {}) => {
@@ -1040,7 +1073,7 @@ const circuitSubtitle = (c = {}) => {
     case 'Tabata':        return `Tabata · ${(c.workSec ?? 20)}s / ${(c.restSec ?? 10)}s × ${(c.totalRounds ?? 8)}`;
     default: {
     // Libre: si trae 'type', usarlo como etiqueta en lugar de "Libre"
-    const libreLabel = c?.type?.trim() ? c.type : 'Libre';
+    const libreLabel = c?.type?.trim() ? c.type : 'Circuito';
     const fc = c.freeConfig;
     if (fc) {
       if (fc.mode === 'chrono') return `${libreLabel} · Cronómetro`;
@@ -1053,19 +1086,38 @@ const circuitSubtitle = (c = {}) => {
 };
 
 const CircuitHeader = ({ circuit, onStart, onAdjust }) => {
-  const isLibre = normalizeCircuit(circuit).circuitKind === 'Libre';
+  const nc = normalizeCircuit(circuit);
+
+  // ✅ habilitado solo si el TYPE coincide con un circuito conocido
+  const t = (nc.type || '').trim().toLowerCase();
+  const startable = [
+    'amrap',
+    'emom',
+    'e2mom',
+    'e3mom',
+    'intermitentes',
+    'tabata',
+    'por tiempo'
+  ].includes(t);
+
   return (
-  <div className="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-2 px-3 py-2 mb-3">
-    <div className="me-3">
-      <div className="fw-semibold">{circuitSubtitle(circuit)}</div>
+    <div className="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-2 px-3 py-2 mb-3">
+      <div className="me-3">
+        <div className="fw-semibold">{circuitSubtitle(nc)}</div>
+      </div>
+
+      {startable && (
+        <div>
+          <button className="btn btn-sm btn-dark" onClick={() => onStart(nc)}>
+            Iniciar
+          </button>
+        </div>
+      )}
     </div>
-    {!isLibre && ( <div>
-      <button className="btn btn-sm btn-dark" onClick={() => onStart(normalizeCircuit(circuit))}>
-        Iniciar
-      </button>
-    </div>)}
-  </div>
-)};
+  );
+};
+
+
 
 
 
