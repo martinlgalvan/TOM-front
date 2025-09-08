@@ -535,6 +535,7 @@ const redirectToPerfil = () => {
       if (!week_id) return;
       WeekService.findByWeekId(week_id).then((data) => {
         if (!data?.length) return;
+        console.log(data)
         setAllDays(data[0].routine);
         setNameWeek(data[0].name);
         setCurrentDay(prev => (prev === null ? 0 : prev));
@@ -931,16 +932,15 @@ const headerInfo = (c0 = {}) => {
       return { title: 'Tabata', meta: `${work}s / ${rest}s × ${r} rondas` };
     }
     default: {
-      // Libre
-      return { title: c.typeOfSets ? c.typeOfSets : 'Libre', meta: '' };
-        // Libre
-        if (c.freeConfig) {
-          const fc = c.freeConfig;
-          if (fc.mode === 'chrono') return { title: 'Libre', meta: 'Cronómetro' };
-          if (fc.schema === 'amrap') return { title: 'Libre', meta: `AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00` };
-          return { title: 'Libre', meta: `${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}` };
-        }
-        return { title: c.typeOfSets ? c.typeOfSets : 'Libre', meta: '' };
+     // Libre: priorizar 'type' como título; si no, usar typeOfSets; si no, "Libre"
+     const title = (c.type && String(c.type).trim()) || c.typeOfSets || 'Libre';
+     const fc = c.freeConfig;
+     if (fc) {
+       if (fc.mode === 'chrono') return { title, meta: 'Cronómetro' };
+       if (fc.schema === 'amrap') return { title, meta: `AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00` };
+       return { title, meta: `${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}` };
+     }
+     return { title, meta: '' };
    }
   }
 };
@@ -1039,20 +1039,21 @@ const circuitSubtitle = (c = {}) => {
     case 'Por tiempo':    return `For time · CAP ${fmtMMSS(c.timeCapSec || 0)}`;
     case 'Tabata':        return `Tabata · ${(c.workSec ?? 20)}s / ${(c.restSec ?? 10)}s × ${(c.totalRounds ?? 8)}`;
     default: {
-     // Libre: si trae freeConfig, mostramos el esquema
-     const fc = c.freeConfig;
-     if (fc) {
-       if (fc.mode === 'chrono') return 'Libre · Cronómetro';
-       if (fc.schema === 'amrap') return `Libre · AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00`;
-       return `Libre · ${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}`;
-     }
-     return `Libre${c.typeOfSets ? ` · ${c.typeOfSets}` : ''}`;
-   }
+    // Libre: si trae 'type', usarlo como etiqueta en lugar de "Libre"
+    const libreLabel = c?.type?.trim() ? c.type : 'Libre';
+    const fc = c.freeConfig;
+    if (fc) {
+      if (fc.mode === 'chrono') return `${libreLabel} · Cronómetro`;
+      if (fc.schema === 'amrap') return `${libreLabel} · AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00`;
+      return `${libreLabel} · ${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}`;
+    }
+    return `${libreLabel}${c.typeOfSets ? ` · ${c.typeOfSets}` : ''}`;
+  }
   }
 };
 
 const CircuitHeader = ({ circuit, onStart, onAdjust }) => {
-  const isLibre = (circuit?.circuitKind || circuit?.type) === 'Libre';
+  const isLibre = normalizeCircuit(circuit).circuitKind === 'Libre';
   return (
   <div className="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-2 px-3 py-2 mb-3">
     <div className="me-3">

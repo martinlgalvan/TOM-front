@@ -1432,14 +1432,26 @@ const CircuitHeaderEditor = ({
 
       default: // Libre
         return (
-          <div>
-            <span className="small text-muted fs07em">Mins / vueltas</span>
-          <input
-            className="form-control form-control-sm"
-            defaultValue={circuit.typeOfSets || ''}
-            onBlur={(e) => set('typeOfSets', e.target.value)}
-            style={{ width: 160 }}
-          />
+          <div className="d-flex align-items-end gap-3">
+            <div>
+              <span className="small text-muted fs07em">Nombre</span>
+              <input
+                className="form-control form-control-sm"
+                defaultValue={circuit.type || ''}
+                placeholder="Nombre del circuito"
+                onBlur={(e) => set('type', e.target.value)}
+                style={{ width: 200 }}
+              />
+            </div>
+            <div>
+              <span className="small text-muted fs07em">Mins / vueltas</span>
+              <input
+                className="form-control form-control-sm"
+                defaultValue={circuit.typeOfSets || ''}
+                onBlur={(e) => set('typeOfSets', e.target.value)}
+                style={{ width: 160 }}
+              />
+            </div>
           </div>
         );
     }
@@ -1866,7 +1878,7 @@ const circuitSubtitle = c => {
     case 'Intermitentes': return `Intermitentes – ${(c.workSec||0)}:${String(c.restSec||0).padStart(2,'0')} × ${c.totalRounds||0}`;
     case 'Por tiempo':    return `For time – CAP ${fmtMMSS(c.timeCapSec||0)}`;
     case 'Tabata':        return `Tabata – ${(c.workSec||20)}:${String(c.restSec||10).padStart(2,'0')} × ${c.totalRounds||8}`;
-    default:              return `Libre${c.typeOfSets ? ' – ' + c.typeOfSets : ''}`;
+    return `${c.type?.trim() ? c.type : 'Libre'}${c.typeOfSets ? ' – ' + c.typeOfSets : ''}`;
   }
 };
 
