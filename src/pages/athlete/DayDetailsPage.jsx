@@ -311,10 +311,17 @@ const readPrepSeconds = () => {
   try {
     if (!safeHasLS()) return 10;
     const raw = window.localStorage.getItem(SAFE_PREP_KEY);
-    const n = Number(raw);
-    if (!Number.isFinite(n)) return 10;
-    // Evitá valores ridículos; dejá configurable, pero con límites sanos
-    return Math.max(1, Math.min(300, Math.floor(n)));
+
+    // Si no hay valor guardado (null/""), usar 10 por defecto
+    if (raw == null || String(raw).trim() === '') return 10;
+
+    const n = Math.floor(Number(raw));
+
+    // Si no es válido o es menor a 1, volver a 10 (default)
+    if (!Number.isFinite(n) || n < 1) return 10;
+
+    // Limitar entre 1 y 300
+    return Math.min(300, n);
   } catch {
     return 10;
   }
@@ -909,10 +916,10 @@ const headerInfo = (c0 = {}) => {
   const k = c.circuitKind;
 
   switch (k) {
-    case 'AMRAP': {
-      const d = fmtMMSS(c.durationSec || 0);
-      return { title: 'AMRAP', meta: `${d} min` };
-    }
+case 'AMRAP': {
+  const d = fmtMMSS(getDurationSec(c) || 0);
+  return { title: 'AMRAP', meta: d };
+}
     case 'EMOM': {
       const rounds = c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0)/(c.intervalMin || 1)));
       return { title: 'EMOM', meta: `${c.intervalMin || 1}:00 × ${rounds} min` };
@@ -920,8 +927,8 @@ const headerInfo = (c0 = {}) => {
     case 'E2MOM': return { title: 'E2MOM', meta: `2:00 × ${(c.totalRounds || 0)} min` };
     case 'E3MOM': return { title: 'E3MOM', meta: `3:00 × ${(c.totalRounds || 0)} min` };
     case 'Por tiempo': {
-      const cap = fmtMMSS(c.timeCapSec || 0);
-      return { title: 'For time', meta: `CAP ${cap} min` };
+      const cap = fmtMMSS(getDurationSec(c) || 0);
+      return { title: 'For time', meta: `CAP ${cap}` };
     }
     case 'Intermitentes': {
       const work = c.workSec ?? 30, rest = c.restSec ?? 30, r = c.totalRounds ?? 10;
@@ -933,7 +940,7 @@ const headerInfo = (c0 = {}) => {
     }
     default: {
      // Libre: priorizar 'type' como título; si no, usar typeOfSets; si no, "Libre"
-     const title = (c.type && String(c.type).trim()) || c.typeOfSets || 'Circuito';
+     const title = (c.type && String(c.type).trim()) || c.typeOfSets || 'Libre';
      const fc = c.freeConfig;
      if (fc) {
        if (fc.mode === 'chrono') return { title, meta: 'Cronómetro' };
@@ -1009,7 +1016,15 @@ const renderExerciseRow = (ex, i) => {
   );
 };
 
-
+const parseMinutesFromTypeOfSets = (v) => {
+  if (v == null) return null;
+  const s = String(v).trim();
+  // Soporta: 14' | 14" | 14´ | 14m | 14 min | 14.5' | 14,5' | 14MIN
+  const m = s.match(/^(\d+(?:[.,]\d+)?)\s*(?:['"´m]|min(?:utos)?)?$/i);
+  if (!m) return null;
+  const num = parseFloat(m[1].replace(',', '.'));
+  return Number.isFinite(num) ? num : null; // minutos
+};
 
 
 const toSec = (m = 0, s = 0) => (m || 0) * 60 + (s || 0);
@@ -1020,60 +1035,56 @@ const fmtMMSS = (sec = 0) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-const parseMinutesFromTypeOfSets = (v) => {
-  if (v == null) return null;
-  const s = String(v).trim();
-  // soporta: 14' | 14´ | 14m | 14 min | 14.5' | 14,5'
-  const m = s.match(/^(\d+(?:[.,]\d+)?)\s*(?:['´m]|min(?:utos)?)?$/i);
-  if (!m) return null;
-  const num = parseFloat(m[1].replace(',', '.'));
-  return Number.isFinite(num) ? num : null; // minutos
+const getDurationSec = (c = {}) => {
+  // 1) Si ya viene duration/timeCap en segundos, usarlo.
+  if (Number.isFinite(c.durationSec) && c.durationSec > 0) return c.durationSec;
+  if (Number.isFinite(c.timeCapSec) && c.timeCapSec > 0) return c.timeCapSec;
+
+  // 2) Si viene "14'", "14min", etc. en typeOfSets (o incluso en type), convertir a segundos.
+  const mins = parseMinutesFromTypeOfSets(c.typeOfSets ?? c.type);
+  return mins != null && mins > 0 ? Math.round(mins * 60) : 0;
 };
 
+// ==== Normalizador de circuito ====
 const normalizeCircuit = (c = {}) => {
-  const kind =
-    (typeof c.type === 'string' && c.type.trim()) ||
-    c.circuitKind ||
-    'Libre'; // ⚠️ mantener 'Libre' para que el timer funcione
+  const rawType = (typeof c.type === 'string' ? c.type.trim() : '');
+  const rawKind = (typeof c.circuitKind === 'string' ? c.circuitKind.trim() : '');
 
-  const out = { ...c, circuitKind: kind };
+  const pick = (v) => {
+    const k = v.toLowerCase();
+    if (k === 'amrap') return 'AMRAP';
+    if (k === 'emom') return 'EMOM';
+    if (k === 'e2mom') return 'E2MOM';
+    if (k === 'e3mom') return 'E3MOM';
+    if (k === 'intermitente' || k === 'intermitentes') return 'Intermitentes';
+    if (k === 'tabata') return 'Tabata';
+    if (k === 'por tiempo') return 'Por tiempo';
+    if (k === 'circuito' || k === 'libre') return 'Libre';
+    return null;
+  };
 
-  // Si viene "14'", "14m", "14 min", etc. y no hay duración seteada, derivarla:
-  if (out.typeOfSets) {
-    const mins = parseMinutesFromTypeOfSets(out.typeOfSets);
-    if (mins != null) {
-      if (kind === 'AMRAP' && !out.durationSec) {
-        out.durationSec = Math.round(mins * 60);
-      }
-      if (kind === 'Por tiempo' && !out.timeCapSec) {
-        out.timeCapSec = Math.round(mins * 60);
-      }
-      // Si querés que EMOM/E2MOM/E3MOM tomen los minutos desde typeOfSets cuando no hay totalMinutes:
-      // if ((kind === 'EMOM' || kind === 'E2MOM' || kind === 'E3MOM') && !out.totalMinutes) {
-      //   out.totalMinutes = Math.round(mins);
-      // }
-    }
-  }
+  // PRIORIDAD: si `type` nombra un circuito conocido, usarlo aunque circuitKind diga "Libre".
+  const fromType = pick(rawType);
+  const fromKind = pick(rawKind);
 
-  return out;
+  const kind = fromType || fromKind || 'Libre';
+  return { ...c, circuitKind: kind };
 };
-
-
 
 // ==== Subtítulo corto ====
 const circuitSubtitle = (c = {}) => {
   const k = c?.circuitKind || c?.type || 'Libre';
   switch (k) {
-    case 'AMRAP':         return `AMRAP · ${fmtMMSS(c.durationSec || 0)}`;
+    case 'AMRAP':         return `AMRAP · ${fmtMMSS(getDurationSec(c) || 0)}`;
     case 'EMOM':          return `EMOM · ${(c.intervalMin || 1)}:00 × ${(c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0)/(c.intervalMin || 1))))}`;
     case 'E2MOM':         return `E2MOM · 2:00 × ${(c.totalRounds || 0)}`;
     case 'E3MOM':         return `E3MOM · 3:00 × ${(c.totalRounds || 0)}`;
     case 'Intermitentes': return `Intermitente · ${(c.workSec || 30)}s / ${(c.restSec || 30)}s × ${(c.totalRounds || 10)}`;
-    case 'Por tiempo':    return `For time · CAP ${fmtMMSS(c.timeCapSec || 0)}`;
+    case 'Por tiempo':    return `For time · CAP ${fmtMMSS(getDurationSec(c) || 0)}`;
     case 'Tabata':        return `Tabata · ${(c.workSec ?? 20)}s / ${(c.restSec ?? 10)}s × ${(c.totalRounds ?? 8)}`;
     default: {
     // Libre: si trae 'type', usarlo como etiqueta en lugar de "Libre"
-    const libreLabel = c?.type?.trim() ? c.type : 'Circuito';
+    const libreLabel = c?.type?.trim() ? c.type : 'Libre';
     const fc = c.freeConfig;
     if (fc) {
       if (fc.mode === 'chrono') return `${libreLabel} · Cronómetro`;
@@ -1086,38 +1097,19 @@ const circuitSubtitle = (c = {}) => {
 };
 
 const CircuitHeader = ({ circuit, onStart, onAdjust }) => {
-  const nc = normalizeCircuit(circuit);
-
-  // ✅ habilitado solo si el TYPE coincide con un circuito conocido
-  const t = (nc.type || '').trim().toLowerCase();
-  const startable = [
-    'amrap',
-    'emom',
-    'e2mom',
-    'e3mom',
-    'intermitentes',
-    'tabata',
-    'por tiempo'
-  ].includes(t);
-
+  const isLibre = normalizeCircuit(circuit).circuitKind === 'Libre';
   return (
-    <div className="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-2 px-3 py-2 mb-3">
-      <div className="me-3">
-        <div className="fw-semibold">{circuitSubtitle(nc)}</div>
-      </div>
-
-      {startable && (
-        <div>
-          <button className="btn btn-sm btn-dark" onClick={() => onStart(nc)}>
-            Iniciar
-          </button>
-        </div>
-      )}
+  <div className="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-2 px-3 py-2 mb-3">
+    <div className="me-3">
+      <div className="fw-semibold">{circuitSubtitle(circuit)}</div>
     </div>
-  );
-};
-
-
+    {!isLibre && ( <div>
+      <button className="btn btn-sm btn-dark" onClick={() => onStart(normalizeCircuit(circuit))}>
+        Iniciar
+      </button>
+    </div>)}
+  </div>
+)};
 
 
 
@@ -1134,11 +1126,13 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
   const isEMOMLike = kind === 'EMOM' || kind === 'E2MOM' || kind === 'E3MOM';
   const isInterTab = kind === 'Intermitentes' || kind === 'Tabata';
 
+  const safePrep = (Number.isFinite(prepSeconds) && prepSeconds >= 1) ? prepSeconds : 10;
+
   // ---------- PLAN ----------
   const buildPlan = () => {
     switch (kind) {
       case 'AMRAP': {
-        const d = c.durationSec || toSec(12, 0);
+        const d = getDurationSec(c) || toSec(12, 0);
         return [{ phase: 'work', duration: d, label: 'AMRAP' }];
       }
       case 'EMOM':
@@ -1175,7 +1169,7 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
         return segs;
       }
       case 'Por tiempo': {
-        const cap = c.timeCapSec || toSec(20, 0);
+        const cap = getDurationSec(c) || toSec(20, 0);
         return [{ phase: 'work', duration: cap, label: 'Time cap' }];
       }
       default: {
@@ -1215,7 +1209,8 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
   // ---------- ARRANQUE CONTROLADO + PREP 10s ----------
   const [running, setRunning]   = React.useState(false);
   const [isPreparing, setPrep]  = React.useState(false);
-  const [prepLeft, setPrepLeft] = React.useState(prepSeconds);
+  const [prepLeft, setPrepLeft] = React.useState(safePrep);
+
 
   // ---------- AUDIO (habilita en el toque de “Iniciar”) ----------
   const audioRef = React.useRef(null);
@@ -1329,7 +1324,7 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
     setChronoElapsed(0);
     setRunning(false);
     setPrep(false);
-    setPrepLeft(prepSeconds);
+    setPrepLeft(safePrep);
     lastBeepRef.current = { key: '', val: -1 };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(c), prepSeconds]);
@@ -1449,7 +1444,7 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
 
     // Si estamos al inicio del todo -> PREP; si no, resume sin prep
     const atStart = idx === 0 && (isChrono ? chronoElapsed === 0 : timeLeft === (plan[0]?.duration || 0));
-    if (!isChrono && atStart) { setPrepLeft(prepSeconds); setPrep(true); }
+    if (!isChrono && atStart) { setPrepLeft(safePrep); setPrep(true); }
     else { setRunning(true); }
   };
 
