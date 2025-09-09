@@ -993,25 +993,34 @@ const TimerHeader = ({ circuit, onClose, onOpenSettings }) => {
 
 const renderExerciseHeader = () => (
   <div className="row justify-content-center text-uppercase text-muted small fw-semibold mb-2">
-    <div className="col-8">Nombre</div>
+    <div className="col-6">Nombre</div>
     <div className="col-2 text-center">Reps</div>
     <div className="col-2 text-center">Peso</div>
+    <div className="col-2 text-center">Notas</div>
   </div>
 );
 
-
+// REEMPLAZAR COMPLETO
 const renderExerciseRow = (ex, i) => {
-  const repsText = Array.isArray(ex?.reps) ? ex.reps.join(' - ') : (ex?.reps ?? '-');
-  const pesoText = ex?.peso ?? '-';
+  const repsText  = Array.isArray(ex?.reps) ? ex.reps.join(' - ') : (ex?.reps ?? '-');
+  const pesoText  = ex?.peso ?? '-';
+  const notesText = (ex?.notas && String(ex.notas).trim()) || '-';
 
   return (
     <div key={i} className="row justify-content-center align-items-center bg-white rounded-3 mb-2 py-2">
-      <div className="col-8 d-flex align-items-center">
+      <div className="col-6 d-flex align-items-center">
         <span className="badge rounded-pill text-bg-dark me-3 px-2 py-2">{i + 1}</span>
         <span className="fw-semibold">{ex?.name || '-'}</span>
       </div>
       <div className="col-2 text-center fw-bold">{repsText}</div>
       <div className="col-2 text-center fw-bold">{pesoText}</div>
+      <div
+        className="col-2 text-center small text-muted"
+        style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+        title={notesText}
+      >
+        {notesText}
+      </div>
     </div>
   );
 };
@@ -1215,6 +1224,14 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
   // ---------- AUDIO (habilita en el toque de “Iniciar”) ----------
   const audioRef = React.useRef(null);
   const lastBeepRef = React.useRef({ key: '', val: -1 });
+  // NUEVO: referencias para tiempos absolutos (no dependen del tick del navegador)
+const prepEndAtRef = React.useRef(0);        // ms absolutos fin de preparación
+const segEndAtRef = React.useRef(0);         // ms absolutos fin del segmento actual
+const chronoStartAtRef = React.useRef(0);    // ms cuando arrancó el cronómetro
+const pauseStartedAtRef = React.useRef(0);   // ms cuando pausaste
+const pausedAccumRef = React.useRef(0);      // ms acumulados en pausa
+const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilitychange
+
 
    React.useEffect(() => {
    if (!isInterTab) return;
@@ -1329,58 +1346,126 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(c), prepSeconds]);
 
-  // ---------- TICKS ----------
-  // PREP: beep en 3/2 corto y 1 largo
-  React.useEffect(() => {
-    if (!isPreparing) return;
-       if (prepLeft <= 5 && prepLeft > 1) {
-       const key = 'prep-tick';
-       if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === prepLeft)) {
-         metronomeClick('tick');                 // tick (agudo)
-         lastBeepRef.current = { key, val: prepLeft };
-       }
-     } else if (prepLeft === 1) {
-       const key = 'prep-tock';
-       if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === prepLeft)) {
-         metronomeClick('tock', true);           // tock (grave) y doble de largo
-         lastBeepRef.current = { key, val: prepLeft };
-       }
-     }
-      if (prepLeft <= 0) { setPrep(false); setRunning(true); return; }
-      const t = setTimeout(() => setPrepLeft(v => v - 1), 1000);
-      return () => clearTimeout(t);
-    }, [isPreparing, prepLeft]);
 
-  // SEGMENTOS: beep en 3/2 corto y 1 largo
-  React.useEffect(() => {
-    if (!running || isPreparing) return;
-    if (isChrono) return;
-    if (timeLeft <= 5 && timeLeft > 1) {
-      const key = `seg-${idx}-tick`;
-      if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === timeLeft)) {
-        metronomeClick('tick');
-        lastBeepRef.current = { key, val: timeLeft };
-      }
-    } else if (timeLeft === 1) {
-      const key = `seg-${idx}-tock`;
-      if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === timeLeft)) {
-        metronomeClick('tock', true);
-        lastBeepRef.current = { key, val: timeLeft };
-      }
-    }
+// NUEVO: heartbeat anti-atrasos (250ms), usa Date.now()
+React.useEffect(() => {
+  let intId;
+  const TICK_MS = 250;
 
-    if (timeLeft <= 0) {
-      const next = idx + 1;
-      if (next >= plan.length) { setRunning(false); setPhase('done'); setLeft(0); return; }
-      setIdx(next);
-      setPhase(plan[next].phase);
-      setLeft(plan[next].duration);
-      segDurationRef.current = plan[next].duration;
+  const tick = () => {
+    const now = Date.now();
+
+    // === PREPARACIÓN (respeta prepSeconds) ===
+    if (isPreparing) {
+      const left = Math.ceil((prepEndAtRef.current - now) / 1000);
+      const safeLeft = Math.max(0, left);
+      setPrepLeft(safeLeft);
+
+      // beeps 5-2 cortos, 1 largo (misma lógica que tenías)
+      if (safeLeft <= 5 && safeLeft > 1) {
+        const key = 'prep-tick';
+        if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === safeLeft)) {
+          metronomeClick('tick'); lastBeepRef.current = { key, val: safeLeft };
+        }
+      } else if (safeLeft === 1) {
+        const key = 'prep-tock';
+        if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === safeLeft)) {
+          metronomeClick('tock', true); lastBeepRef.current = { key, val: safeLeft };
+        }
+      }
+
+      // Fin de preparación → arranca primer segmento
+      if (safeLeft <= 0) {
+        setPrep(false);
+        setRunning(true);
+        const dur = segDurationRef.current || (plan[0]?.duration || 60);
+        segEndAtRef.current = now + dur * 1000;
+        setIdx(0);
+        setPhase(plan[0]?.phase || 'idle');
+        setLeft(dur);
+        lastBeepRef.current = { key: '', val: -1 };
+      }
       return;
     }
-    const t = setTimeout(() => setLeft(v => v - 1), 1000);
-    return () => clearTimeout(t);
-  }, [running, isPreparing, timeLeft, idx, plan]);
+
+    // Si no está corriendo, no hacemos nada
+    if (!running) return;
+
+    // === CRONÓMETRO (Libre/chrono) ===
+    if (isChrono) {
+      const ms = now - chronoStartAtRef.current - pausedAccumRef.current;
+      setChronoElapsed(Math.max(0, Math.floor(ms / 1000)));
+      return;
+    }
+
+    // === SEGMENTOS (AMRAP, EMOM/E2MOM/E3MOM, Intermitentes, Tabata, Por tiempo, Libre/timer) ===
+    if (!segEndAtRef.current) {
+      const baseLeft = timeLeft || segDurationRef.current || plan[idx]?.duration || 60;
+      segEndAtRef.current = now + baseLeft * 1000;
+    }
+
+    let end = segEndAtRef.current;
+    let leftSec = Math.ceil((end - now) / 1000);
+
+    // Si se consumieron varios segmentos (por throttling), los “saltamos”
+    if (leftSec <= 0) {
+      let next = idx + 1;
+      let accEnd = end;
+
+      while (next < plan.length && accEnd <= now) {
+        accEnd += (plan[next].duration || 0) * 1000;
+        next++;
+      }
+
+      if (next >= plan.length && accEnd <= now) {
+        setRunning(false); setPhase('done'); setLeft(0); return;
+      }
+
+      const newIdx = next - 1;
+      setIdx(newIdx);
+      setPhase(plan[newIdx].phase);
+      segDurationRef.current = plan[newIdx].duration;
+      segEndAtRef.current = accEnd;
+      leftSec = Math.ceil((accEnd - now) / 1000);
+    }
+
+    // beeps 5-2 cortos, 1 largo
+    if (leftSec <= 5 && leftSec > 1) {
+      const key = `seg-${idx}-tick`;
+      if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === leftSec)) {
+        metronomeClick('tick'); lastBeepRef.current = { key, val: leftSec };
+      }
+    } else if (leftSec === 1) {
+      const key = `seg-${idx}-tock`;
+      if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === leftSec)) {
+        metronomeClick('tock', true); lastBeepRef.current = { key, val: leftSec };
+      }
+    }
+
+    setLeft(leftSec);
+  };
+
+  runTickRef.current = tick;
+
+  if (running || isPreparing) {
+    intId = setInterval(tick, TICK_MS);
+    tick(); // primer tick inmediato
+  }
+
+  const onVis = () => runTickRef.current();
+  document.addEventListener('visibilitychange', onVis);
+  window.addEventListener('focus', onVis);
+
+  return () => {
+    clearInterval(intId);
+    document.removeEventListener('visibilitychange', onVis);
+    window.removeEventListener('focus', onVis);
+  };
+}, [running, isPreparing, isChrono, plan, idx, timeLeft, metronomeClick]);
+
+
+
+  
 
   // ---------- TIEMPO / PRESENTACIÓN ----------
   const totalSeconds = isPreparing ? prepLeft : (isChrono ? chronoElapsed : timeLeft);
@@ -1421,45 +1506,94 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
     : (restBG ? { background: 'rgba(239, 68, 68, 0.25)', borderRadius: 16 } : {});
 
   // ---------- CONTROLES ----------
-  const handleStartPause = async () => {
-    await ensureAudio();
+  // REEMPLAZAR la función completa
+const handleStartPause = async () => {
+  await ensureAudio();
 
-    // Si el circuito terminó, Iniciar = reset + PREP 10s
-    if (phase === 'done') {
-      setIdx(0);
-      setPhase(plan[0]?.phase || 'idle');
-      setLeft(plan[0]?.duration || 0);
-      segDurationRef.current = plan[0]?.duration || 60;
-      setRunning(false);
-      setPrepLeft(prepSeconds);
-      setPrep(true);
-      lastBeepRef.current = { key: '', val: -1 };
-      return;
-    }
-
-    // Pausa/Cancelar prep
-    if (running) { setRunning(false); return; }
-    if (isPreparing) { setPrep(false); setPrepLeft(prepSeconds); return; }
-
-
-    // Si estamos al inicio del todo -> PREP; si no, resume sin prep
-    const atStart = idx === 0 && (isChrono ? chronoElapsed === 0 : timeLeft === (plan[0]?.duration || 0));
-    if (!isChrono && atStart) { setPrepLeft(safePrep); setPrep(true); }
-    else { setRunning(true); }
-  };
-
-  const reset = () => {
+  // Si terminó: reset + volver a PREP al iniciar
+  if (phase === 'done') {
     setIdx(0);
     setPhase(plan[0]?.phase || 'idle');
     setLeft(plan[0]?.duration || 0);
     segDurationRef.current = plan[0]?.duration || 60;
     setRunning(false);
-    setPrep(false);
-    setChronoElapsed(0);
     setPrepLeft(prepSeconds);
+    setPrep(true);
+    prepEndAtRef.current = Date.now() + Math.max(1, prepSeconds) * 1000; 
     lastBeepRef.current = { key: '', val: -1 };
-  };
+    // limpiar absolutos
+    // NUEVO: limpiar tiempos absolutos al reconstruir
+    segEndAtRef.current = 0;
+    prepEndAtRef.current = 0;
+    chronoStartAtRef.current = 0;
+    pauseStartedAtRef.current = 0;
+    pausedAccumRef.current = 0;
+    return;
+  }
 
+  // Pausa / cancelar preparación
+  if (running) {
+    setRunning(false);
+    if (isChrono) pauseStartedAtRef.current = Date.now();
+    return;
+  }
+  if (isPreparing) {
+    setPrep(false);
+    setPrepLeft(prepSeconds);
+    return;
+  }
+
+  // Inicio: si estamos al principio, pasar por PREP
+  const atStart = idx === 0 && (isChrono ? (chronoElapsed === 0) : (timeLeft === (plan[0]?.duration || 0)));
+  if (!isChrono && atStart) {
+    const prep = Math.max(1, prepSeconds);
+    setPrepLeft(prep);
+    prepEndAtRef.current = Date.now() + prep * 1000;
+    setPrep(true);
+    return;
+  }
+
+  // Reanudar
+  if (isChrono) {
+    if (!chronoStartAtRef.current) chronoStartAtRef.current = Date.now();
+    if (pauseStartedAtRef.current) {
+      pausedAccumRef.current += Date.now() - pauseStartedAtRef.current;
+      pauseStartedAtRef.current = 0;
+    }
+  } else {
+    const baseLeft = timeLeft || segDurationRef.current || plan[idx]?.duration || 60;
+    segEndAtRef.current = Date.now() + baseLeft * 1000;
+  }
+  setRunning(true);
+};
+
+
+const reset = () => {
+  setIdx(0);
+  setPhase(plan[0]?.phase || 'idle');
+  setLeft(plan[0]?.duration || 0);
+  segDurationRef.current = plan[0]?.duration || 60;
+  setRunning(false);
+  setPrep(false);
+  setChronoElapsed(0);
+  setPrepLeft(prepSeconds);
+  lastBeepRef.current = { key: '', val: -1 };
+
+  // limpiar tiempos absolutos
+  segEndAtRef.current = 0;
+  prepEndAtRef.current = 0;
+  chronoStartAtRef.current = 0;
+  pauseStartedAtRef.current = 0;
+  pausedAccumRef.current = 0;
+};
+
+// OPCIONAL
+React.useEffect(() => {
+  if (running && !isChrono && !isPreparing && !segEndAtRef.current) {
+    const baseLeft = timeLeft || segDurationRef.current || plan[idx]?.duration || 60;
+    segEndAtRef.current = Date.now() + baseLeft * 1000;
+  }
+}, [running, isChrono, isPreparing, timeLeft, idx, plan]);
 
   return (
     <div className="container-fluid px-0">
@@ -2016,6 +2150,73 @@ const number = isSuperset
     const innerName = isInnerExercise
       ? (typeof ex.name === 'object' ? ex.name.name : ex.name)
       : (ex.type || 'Circuito');
+  // 👇 Detecta si este item es un CIRCUITO dentro del bloque
+  const nc = normalizeCircuit(ex);                // normaliza AMRAP/EMOM/.../Libre
+  const kind = nc.circuitKind;
+  const isInnerCircuit =
+    !isInnerExercise &&
+    !isInnerSuperset &&
+    (
+      Array.isArray(ex?.circuit) ||               // trae lista de ejercicios
+      ['AMRAP','EMOM','E2MOM','E3MOM','Intermitentes','Tabata','Por tiempo','Libre'].includes(kind)
+    );
+
+    // 👇 Si es circuito dentro del bloque, lo pinto similar al "circuito suelto"
+    if (isInnerCircuit) {
+      return (
+        <div key={`blkcirc-${idx}-${j}`} className="col-12 mb-2 mb-4 shadow-personalized">
+          <div className="row justify-content-around rounded-2 p-2 align-items-center">
+            <div className="col-1 text-center">{renderNumberIcon(innerNumber)}</div>
+            <div className="col-7 text-start fw-semibold">
+              {circuitSubtitle(nc)}
+            </div>
+            <div className="col-4 text-end">
+              <button
+                className="btn btn-sm btn-dark"
+                onClick={() => openTimerForCircuit({ ...nc, freeConfig: { ...freeTimerConfig } })}
+              >
+                Iniciar
+              </button>
+            </div>
+          </div>
+
+          <table className="table border-0 mb-0">
+            <thead>
+              <tr>
+                <th className="border-0 text-start">Nombre</th>
+                <th className="border-0">Reps</th>
+                <th className="border-0">Peso</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(ex.circuit || []).map((cItem, k) => (
+                <tr key={cItem.idRefresh || k}>
+                  <td className="border-0 text-start">{cItem.name || '-'}</td>
+                  <td className="border-0">{cItem.reps ?? '-'}</td>
+                  <td className="border-0">{cItem.peso ?? '-'}</td>
+                </tr>
+              ))}
+              <tr >
+                <td colSpan={3} className="border-0">
+                      {ex.notas && (
+                      <div className="rounded-2">
+                        <span className=" text-start mb-2 pb-2">Notas / otros</span>
+                        <div
+                          className="colorNote py-2 mb-2 pb-2 rounded-1 "
+                          style={{ whiteSpace: 'pre-wrap' }}
+                        >
+                          <p className="pb-0 mb-0">{ex.notas}</p>
+                        </div>
+                      </div>
+                    )}
+                </td>
+
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      );
+    }
 
     if (isInnerSuperset) {
       // --- Superserie dentro de bloque ---
