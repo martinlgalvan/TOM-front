@@ -17,6 +17,7 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import ObjectId from 'bson-objectid';
 
 //.............................. COMPONENTES ..............................//
 import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
@@ -257,21 +258,213 @@ function UserRoutineEditPage() {
       });
   }
 
+  // ================== NORMALIZACIÓN Y DEDUP ==================
+  const isPlainExercise = (ex) => ex && ex.type === 'exercise';
+  const isBlock = (ex) => ex && ex.type === 'block';
+  const isCircuit = (ex) => ex && ex.type !== 'exercise' && ex.type !== 'block' && Array.isArray(ex.circuit);
+
+  const cloneWithNewIdIfMissing = (obj, field) => {
+    const id = obj?.[field];
+    if (!id || typeof id !== 'string' || id.trim() === '') {
+      return { ...obj, [field]: new ObjectId().toString() };
+    }
+    return obj;
+  };
+
+  const normalizeDay = (day) => {
+    // nuevo _id de día para evitar colisiones
+    const normalizedDay = {
+      ...day,
+      _id: new ObjectId().toString()
+    };
+
+    const seenIds = new Set();
+    const visualDupes = []; // para warning: (name, numberExercise, supSuffix)
+
+    const normalizedExercises = [];
+
+    for (const el of (day.exercises || [])) {
+      // BLOQUE
+      if (isBlock(el)) {
+        const newBlockId = new ObjectId().toString();
+        const normalizedBlock = {
+          ...el,
+          block_id: newBlockId,
+          // normalizamos ejercicios internos
+          exercises: (el.exercises || []).map(inner => {
+            if (isPlainExercise(inner)) {
+              // cada exercise interno debe tener exercise_id único
+              let e = cloneWithNewIdIfMissing(inner, 'exercise_id');
+              // si su id ya existe en este día, generamos uno nuevo
+              if (seenIds.has(e.exercise_id)) {
+                e = { ...e, exercise_id: new ObjectId().toString() };
+              }
+              seenIds.add(e.exercise_id);
+              return e;
+            }
+            if (isCircuit(inner)) {
+              // los circuitos no usan exercise_id propio; solo aseguramos idRefresh en items
+              const c = { ...inner };
+              c.circuit = (inner.circuit || []).map(item => ({
+                ...item,
+                idRefresh: item?.idRefresh || RefreshFunction.generateUUID()
+              }));
+              return c;
+            }
+            // fallback
+            return inner;
+          })
+        };
+        normalizedExercises.push(normalizedBlock);
+        continue;
+      }
+
+      // CIRCUITO (raíz)
+      if (isCircuit(el)) {
+        const c = { ...el };
+        c.exercise_id = el.exercise_id || new ObjectId().toString(); // a veces lo tienen
+        if (seenIds.has(c.exercise_id)) {
+          c.exercise_id = new ObjectId().toString();
+        }
+        seenIds.add(c.exercise_id);
+        c.circuit = (el.circuit || []).map(item => ({
+          ...item,
+          idRefresh: item?.idRefresh || RefreshFunction.generateUUID()
+        }));
+        normalizedExercises.push(c);
+        continue;
+      }
+
+      // EJERCICIO SUELTO
+      if (isPlainExercise(el)) {
+        let e = cloneWithNewIdIfMissing(el, 'exercise_id');
+        if (seenIds.has(e.exercise_id)) {
+          // mismo ID => regenero para evitar colisión
+          e = { ...e, exercise_id: new ObjectId().toString() };
+        }
+        seenIds.add(e.exercise_id);
+
+        // registro “dupe visual” (no borro, solo advierto)
+        const k = [String(e.name || '').trim(), String(e.numberExercise ?? ''), String(e.supSuffix || '')].join('|');
+        const already = visualDupes.find(v => v.key === k);
+        if (!already) {
+          visualDupes.push({ key: k, count: 1, sample: e });
+        } else {
+          already.count += 1;
+        }
+
+        normalizedExercises.push(e);
+        continue;
+      }
+
+      // fallback: si llega algo raro, lo empujo tal cual
+      normalizedExercises.push(el);
+    }
+
+    // Señales de “posibles duplicados visuales”
+    const visualWarnings = visualDupes.filter(v => v.count > 1);
+
+    return {
+      day: { ...normalizedDay, exercises: normalizedExercises },
+      warnings: {
+        dupesById: 0, // ya solventado regenerando; si quisieras contarlos, podés aumentar aquí
+        dupesVisual: visualWarnings
+      }
+    };
+  };
+
+  const normalizeWeekForPaste = (rawWeek) => {
+    if (!rawWeek || typeof rawWeek !== 'object') return { week: rawWeek, warnings: [] };
+
+    // clonar superficial
+    const cloned = { ...rawWeek };
+    // nuevo _id de semana (si existiese)
+    if ('_id' in cloned) {
+      cloned._id = new ObjectId().toString();
+    }
+
+    const warnings = [];
+    const days = Array.isArray(cloned.routine) ? cloned.routine : cloned.routine?.days || cloned.days || [];
+
+    const normalizedDays = [];
+    for (const d of (days || [])) {
+      const { day, warnings: w } = normalizeDay(d);
+
+      // normalizar warmup/movility IDs para evitar choques
+      day.warmup = (d.warmup || []).map(wu => ({
+        ...wu,
+        warmup_id: wu?.warmup_id ? String(wu.warmup_id) : new ObjectId().toString()
+      }));
+      day.movility = (d.movility || []).map(mv => ({
+        ...mv,
+        movility_id: mv?.movility_id ? String(mv.movility_id) : new ObjectId().toString()
+      }));
+
+      normalizedDays.push(day);
+
+      if (w.dupesVisual?.length) {
+        warnings.push({
+          dayName: d.name || '(Día sin nombre)',
+          type: 'visual-duplicates',
+          items: w.dupesVisual.map(v => ({
+            key: v.key,
+            count: v.count,
+            example: {
+              name: v.sample?.name,
+              numberExercise: v.sample?.numberExercise,
+              supSuffix: v.sample?.supSuffix
+            }
+          }))
+        });
+      }
+    }
+
+    // Acomodar la forma final según tu API:
+    // Tus semanas parecen tener { _id, name, routine: [days...] }
+    const finalWeek = {
+      ...cloned,
+      routine: normalizedDays
+    };
+
+    return { week: finalWeek, warnings };
+  };
+  // ================== /NORMALIZACIÓN Y DEDUP ==================
+
   const loadFromLocalStorage = () => {
     try {
-      if (weekClipboardLocalStorage) {
-        const parsedData = JSON.parse(weekClipboardLocalStorage);
-        ParService.createPARroutine(parsedData, id)
-          .then(() => {
-            setLoading(false);
-            setStatus(RefreshFunction.generateUUID());
-            NotifyHelper.updateToast();
-          });
-      } else {
+      if (!weekClipboardLocalStorage) {
         alert('No hay datos en localStorage!');
+        return;
       }
+
+      const parsedData = JSON.parse(weekClipboardLocalStorage);
+
+      // 1) normalizamos + dedup por ID + regeneramos IDs
+      const { week, warnings } = normalizeWeekForPaste(parsedData);
+
+      // 2) avisos UX: posibles duplicados “visuales”
+      if (warnings.length) {
+        // Un toast corto y log extenso a consola para debug
+        NotifyHelper.instantToast('Atención: se detectaron ejercicios con mismo número/nombre (posibles superseries duplicadas). Revisá el día pegado.');
+        console.warn('Posibles duplicados visuales al pegar semana:', warnings);
+      }
+
+      setLoading(true);
+      ParService.createPARroutine(week, id)
+        .then(() => {
+          setLoading(false);
+          setStatus(RefreshFunction.generateUUID());
+          NotifyHelper.updateToast();
+        })
+        .catch(err => {
+          setLoading(false);
+          console.error('Error al crear rutina pegada:', err);
+          NotifyHelper.instantToast('Error al pegar la semana');
+        });
+
     } catch (err) {
       console.error('Error al cargar desde localStorage: ', err);
+      NotifyHelper.instantToast('Contenido inválido en portapapeles');
     }
   };
 

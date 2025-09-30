@@ -6,10 +6,10 @@ import * as UsersService from "../../services/users.services.js";
 
 const PLAN_LIMITS = [
     { name: "Gratuito", props: { limit: 5, price: "Gratuito"}},
-    { name: "Basico", props: { limit: 20, price: 20000}},
-    { name: "Profesional", props: { limit: 55, price: 30000}},
-    { name: "Elite", props: { limit: 95, price: 36000}},
-    { name: "Empresarial", props: { limit: 140, price: 43500}},
+    { name: "Basico", props: { limit: 20, price: 24000}},
+    { name: "Profesional", props: { limit: 55, price: 34000}},
+    { name: "Elite", props: { limit: 95, price: 40000}},
+    { name: "Empresarial", props: { limit: 140, price: 50000}},
     { name: "Personalizado", props: { limit: 500, price: "Personalizado"}},
 ];
 

@@ -535,6 +535,61 @@ font-weight: 550;
   background: linear-gradient(to right, #ef4444, #f97316);
 }
 
+/* Randomizer.css */
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+}
+
+.table-zebra tbody tr:nth-child(odd) {
+  background: #fafafa;
+}
+
+.glowing-icon {
+  box-shadow: 0 0 0 6px rgba(255,0,0,0.15);
+  border-radius: 8px;
+  transition: box-shadow .3s ease;
+}
+
+.pill-backoff {
+  display: inline-flex;
+  gap: .25rem;
+  align-items: center;
+  font-size: .8rem;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  margin-right: .35rem;
+}
+
+.pill-backoff strong {
+  font-weight: 600;
+}
+
+.colorBackPAR,.colorBackPAR2{
+  border-radius: 12px;
+}
+
+.boxDataWarmup, .boxData {
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.boxDataWarmup:hover, .boxData:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,.08);
+}
+
+.empty-state {
+  padding: 28px 18px;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  background: #f9fafb;
+  color: #6b7280;
+}
+
 
 .colorButonContador{
   background: linear-gradient(to right, #1e293b2a, #374a6928);
@@ -1508,7 +1563,7 @@ font-weight: 550;
 }
 
 .td-3{
-  max-width: 0 !important;
+  max-width: 20% !important;
 }
 
 .td-4{

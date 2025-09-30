@@ -432,7 +432,7 @@ function App() {
                             {isAdmin() && (
                                 <li className="nav-item">
                                     <Link className={`nav-link text-light ${location.pathname === `/personalize/` && 'active'}`} to={`/personalize/`}>
-                                        Perfil
+                                        Planes
                                     </Link>
                                 </li>
                             )}
@@ -655,7 +655,7 @@ function App() {
                     {isAdmin() && (
                         <li className="list-group-item">
                             <Link className='nav-link' to={`/personalize/`} onClick={() => setMenuSidebar(false)}>
-                                Perfil
+                                Planes
                             </Link>
                         </li>
                     )}
