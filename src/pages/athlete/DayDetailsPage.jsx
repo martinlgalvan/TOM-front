@@ -787,35 +787,48 @@ const saveDriveLink = async () => {
   };
 };
 
-    const handleUpdateExercise = () => {
-  // clonamos el array de ejercicios del día
+const handleUpdateExercise = () => {
   const newExercises = [...modifiedDay];
 
   if (blockEditIndices.blockIndex !== null) {
-    // caso BLOQUE: metemos el completeExercise en newExercises[blockIndex].exercises[exerciseIndex]
+    // === DENTRO DE BLOQUE ===
     const b = blockEditIndices.blockIndex;
-    const e = blockEditIndices.exerciseIndex;
 
-    // inmutabilidad: clonamos también el bloque y su array interno
-    newExercises[b] = {
-      ...newExercises[b],
-      exercises: [...newExercises[b].exercises]
-    };
-    newExercises[b].exercises[e] = completeExercise;
+    // Clonar el bloque y su array interno
+    newExercises[b] = { ...newExercises[b], exercises: [...(newExercises[b].exercises || [])] };
+
+    // Buscar por ID dentro del bloque (más seguro que usar índice)
+    const innerIdx = newExercises[b].exercises.findIndex(
+      (ex) => ex?.exercise_id === completeExercise?.exercise_id
+    );
+
+    if (innerIdx >= 0) {
+      newExercises[b].exercises[innerIdx] = { ...newExercises[b].exercises[innerIdx], ...completeExercise };
+    } else if (Number.isInteger(blockEditIndices.exerciseIndex)) {
+      // fallback por índice si no hay ID (raro, pero evita romper)
+      newExercises[b].exercises[blockEditIndices.exerciseIndex] = completeExercise;
+    }
 
   } else {
-    // caso normal
-    newExercises[indexOfExercise] = completeExercise;
+    // === NIVEL TOP (normal o parte de superserie) ===
+    const realIdx = newExercises.findIndex(
+      (ex) => ex?.exercise_id === completeExercise?.exercise_id
+    );
+
+    if (realIdx >= 0) {
+      newExercises[realIdx] = { ...newExercises[realIdx], ...completeExercise };
+    } else if (Number.isInteger(indexOfExercise)) {
+      // fallback por índice si no hay ID
+      newExercises[indexOfExercise] = completeExercise;
+    }
   }
 
-  // actualizamos el estado y hacemos la llamada
   setModifiedDay(newExercises);
   ExercisesService
     .editExercise(week_id, day_id, newExercises)
     .then(() => {
       Notify.instantToast('Rutina actualizada con éxito!');
       setEditExerciseMobile(false);
-      // reseteamos los índices de bloque
       setBlockEditIndices({ blockIndex: null, exerciseIndex: null });
     })
     .catch(err => {
@@ -2186,6 +2199,7 @@ const number = isSuperset
                 <th className="border-0 text-start">Nombre</th>
                 <th className="border-0">Reps</th>
                 <th className="border-0">Peso</th>
+                <th className="border-0">Video</th>
               </tr>
             </thead>
             <tbody>
@@ -2194,6 +2208,22 @@ const number = isSuperset
                   <td className="border-0 text-start">{cItem.name || '-'}</td>
                   <td className="border-0">{cItem.reps ?? '-'}</td>
                   <td className="border-0">{cItem.peso ?? '-'}</td>
+                  <td className="border-0 pt-0 pb-3">
+                  
+                      <IconButton
+                        id={idx === 0 ? 'video' : null}
+                        aria-label="video"
+                        disabled={!cItem.video}
+                        className="p-0"
+                        onClick={() => handleButtonClick(cItem)}
+                      >
+                        {cItem.isImage
+                          ? <ImageIcon className={!cItem.video ? 'imageIconDisabled' : 'imageIcon'} />
+                          : <YouTubeIcon className={cItem.video ? 'ytColor' : 'ytColor-disabled'} />
+                        }
+                      </IconButton>
+                   
+                  </td>
                 </tr>
               ))}
               <tr >
@@ -2439,14 +2469,29 @@ const number = isSuperset
           <th className="border-0 text-start">Nombre</th>
           <th className="border-0">Reps</th>
           <th className="border-0">Peso</th>
+          <th className="border-0">Video</th>
         </tr>
       </thead>
       <tbody>
         {element.circuit.map(c => (
           <tr key={c.idRefresh}>
             <td className="border-0 text-start">{c.name}</td>
-            <td className="border-0">{c.reps}</td>
+            <td className="border-0 px-0">{c.reps}</td>
             <td className="border-0">{c.peso}</td>
+            <td className="border-0 pt-0 pb-3"> 
+                <IconButton
+                  id={idx === 0 ? 'video' : null}
+                  aria-label="video"
+                  disabled={!c.video}
+                  className="p-0"
+                  onClick={() => handleButtonClick(c)}
+                >
+                  {c.isImage
+                    ? <ImageIcon className={!c.video ? 'imageIconDisabled' : 'imageIcon'} />
+                    : <YouTubeIcon className={c.video ? 'ytColor' : 'ytColor-disabled'} />
+                  }
+                </IconButton>
+            </td>
           </tr>
         ))}
       </tbody>

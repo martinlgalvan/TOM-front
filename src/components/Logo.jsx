@@ -26,6 +26,7 @@ import LEONEL_ORTIZ from "/src/assets/img/Leonel_ortiz.png";
 import GABRIEL_BELLEZA from "/src/assets/img/Gabriel_belleza.png";
 import NICOLAS_ECHAZZA from "/src/assets/img/Nicolas_echazza.png";
 import CAMILA_BENEITEZ from "/src/assets/img/camila-beneitez.png";
+import JOAQUIN from "/src/assets/img/Joaquin.png";
 
 const DEFAULT_LOGO = TOM;
 
@@ -117,6 +118,10 @@ const LOGO_MAP = {
     // CAMILA BENEITEZ
    "email:camibeneitez.fitness@gmail.com": CAMILA_BENEITEZ,
    "id:68b720931a6600c8359c6cf3": CAMILA_BENEITEZ,
+
+    // JOAQUIN FALABELLA
+   "email:falabellajoaquin4-trainer@gmail.com": JOAQUIN,
+   "id:68d1a8101ee374a123c67979": JOAQUIN,
 
 
 };
