@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 
 // CHANGES: Se elimina import de ExercisesService, ya que no deseamos usar la función para eliminar desde el service
@@ -46,7 +46,17 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import CircleIcon from '@mui/icons-material/Circle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-
+import Chip from "@mui/material/Chip";
+import Divider from "@mui/material/Divider";
+import Paper from "@mui/material/Paper";
+import TableContainer from "@mui/material/TableContainer";
+import LooksOneIcon from '@mui/icons-material/LooksOne';
+import LooksTwoIcon from '@mui/icons-material/LooksTwo';
+import Looks3Icon from '@mui/icons-material/Looks3';
+import Looks4Icon from '@mui/icons-material/Looks4';
+import Looks5Icon from '@mui/icons-material/Looks5';
+import Looks6Icon from '@mui/icons-material/Looks6';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // PrimeReact
 import { ConfirmDialog } from "primereact/confirmdialog";
@@ -57,7 +67,7 @@ import { Dropdown } from "primereact/dropdown";
 import { Menu } from "primereact/menu";
 import { Button } from 'primereact/button';
 import { SelectButton } from 'primereact/selectbutton';
-
+import { Autocomplete as MUIAutocomplete, TextField } from '@mui/material';
 
 // antd
 import { Segmented } from "antd";
@@ -70,6 +80,10 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Sidebar, Menu as ProSidebarMenu, MenuItem } from "react-pro-sidebar";
 
 import ObjectId from 'bson-objectid';
+import { EyeClosed } from "lucide-react";
+import { Eye } from "lucide-react";
+import { Copy, Pencil, X, ChevronDown } from "lucide-react";
+
 
 function Randomizer() {
   // Parámetros de ruta
@@ -142,6 +156,35 @@ function Randomizer() {
   // CHANGES: Estado para controlar el dialog de rutinas guardadas en mobile
   const [showSavedRoutinesDialog, setShowSavedRoutinesDialog] = useState(false);
 
+  const [openIds, setOpenIds] = useState({}); // { [weekId]: boolean }
+
+  const toggleOpen = (id) => {
+    setOpenIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+   // Filtros "Rutinas guardadas"
+ const [sortMode, setSortMode] = useState('date'); // 'date' | 'name'
+ const [nameAsc, setNameAsc] = useState(true);     // true = A→Z
+ const [categoryFilter, setCategoryFilter] = useState('Todas');
+
+ // Extrae categorías disponibles (si no hay, queda ["Todas"])
+ const availableCategories = useMemo(() => {
+   const set = new Set();
+   (allWeeks || []).forEach(w => {
+     if (w?.category) set.add(String(w.category));
+   });
+   return ['Todas', ...Array.from(set)];
+ }, [allWeeks]);
+
+ // Helper robusto para fecha de creación
+ const getCreatedAt = (w) => {
+   const c = w?.createdAt || w?.created_at || w?.created || w?.date || null;
+   const d = c ? new Date(c) : null;
+   return isNaN(d?.getTime?.()) ? 0 : d.getTime();
+ };
+
+
+
   // Editar nombre del día
   const [isEditingName, setIsEditingName] = useState(false);
   const [newDayName, setNewDayName] = useState("");
@@ -152,6 +195,48 @@ function Randomizer() {
   const [isEditingWeekName, setIsEditingWeekName] = useState(false);
   const [newWeekName, setNewWeekName] = useState(weekName);
 
+  const [weekCategory, setWeekCategory] = useState('');
+  const [newWeekCategory, setNewWeekCategory] = useState(weekCategory);
+  const categoryOptions = useMemo(
+    () => ['Powerlifting', 'Strongman', 'Hipertrofia', 'Salud', 'Artes marciales', 'Iniciantes', 'Avanzados', 'Competencia'],
+    []
+  );
+
+  const CATEGORY_COLORS = useMemo(() => ({
+  'Powerlifting': '#8B0000',   // dark red
+  'Strongman': '#3E2723',      // deep brown
+  'Hipertrofia': '#771334ff',    // pink
+  'Salud': '#2E7D32',          // green
+  'Artes marciales': '#1565C0',// blue
+  'Iniciantes': '#00897B',     // teal
+  'Avanzados': '#4527A0',      // purple
+  'Competencia': '#FF8F00',    // amber
+  default: '#08213dff',          // slate
+}), []);
+
+const getCategoryColor = (cat) => CATEGORY_COLORS[cat] || CATEGORY_COLORS.default;
+
+const getContrastForHex = (hex) => {
+  const c = (hex || '#000000').replace('#','');
+  const r = parseInt(c.slice(0,2), 16) || 0;
+  const g = parseInt(c.slice(2,4), 16) || 0;
+  const b = parseInt(c.slice(4,6), 16) || 0;
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return yiq >= 128 ? '#111111' : '#FFFFFF';
+};
+
+const withAlpha = (hex, alpha = 0.08) => {
+  const c = (hex || '#000000').replace('#','');
+  const r = parseInt(c.slice(0,2), 16) || 0;
+  const g = parseInt(c.slice(2,4), 16) || 0;
+  const b = parseInt(c.slice(4,6), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+// color activo según categoría seleccionada de la semana
+const activeCategoryColor = useMemo(() => getCategoryColor(weekCategory), [weekCategory]);
+const activeCategoryText  = useMemo(() => getContrastForHex(activeCategoryColor), [activeCategoryColor]);
+
   // Glow para alertar uso de video
   const [glowVideo, setGlowVideo] = useState({});
 
@@ -160,14 +245,287 @@ function Randomizer() {
 
   const [renderInputSets, setRenderInputSets] = useState(true);
   const [renderInputReps, setRenderInputReps] = useState(true);
+    const rootWeeks = useMemo(
+    () => (allWeeks || []).filter((w) => !w.parent_par_id),
+    [allWeeks]
+  );
+
+   // Aplica filtro de categoría y orden
+ const filteredRootWeeks = useMemo(() => {
+   const base = rootWeeks.filter(w => 
+     categoryFilter === 'Todas' ? true : String(w?.category) === String(categoryFilter)
+   );
+   if (sortMode === 'date') {
+     return base.slice().sort((a, b) => getCreatedAt(b) - getCreatedAt(a)); // recientes primero
+   }
+   // sort por nombre
+   return base.slice().sort((a, b) => {
+     const an = (a?.name || '').toLowerCase();
+     const bn = (b?.name || '').toLowerCase();
+     const cmp = an.localeCompare(bn);
+     return nameAsc ? cmp : -cmp;
+   });
+ }, [rootWeeks, categoryFilter, sortMode, nameAsc]);
+
 
   const [movilityVisible, setMovilityVisible] = useState(false);
+
+   // UI/logic alineada con DayEditDetailsPage
+ const [repsModeByIndex, setRepsModeByIndex] = useState({}); // { [i]: 'num' | 'text' | 'multi' }
+ const [dayClipboard, setDayClipboard] = useState(null);      // copiar/pegar día
+ const [showActionsBar, setShowActionsBar] = useState(true);  // barra "Acciones:"
+
+ // --- APROXIMACIONES ---
+const approxOverlayRef = useRef(null);
+const [editingApproxIndex, setEditingApproxIndex] = useState(null);
+const [approxData, setApproxData] = useState([{ sets: "", reps: "", peso: "" }]);
+
+const [hasClipboardWeek, setHasClipboardWeek] = useState(() => {
+  try {
+    const raw = localStorage.getItem('userWeek');
+    return !!raw && JSON.parse(raw)?.routine?.length > 0;
+  } catch {
+    return false;
+  }
+});
+
+// Mantener flag cuando cambia el portapapeles en esta u otra pestaña
+useEffect(() => {
+  const handler = (e) => {
+    if (e.key === 'userWeek') {
+      try {
+        const ok = !!e.newValue && JSON.parse(e.newValue)?.routine?.length > 0;
+        setHasClipboardWeek(ok);
+      } catch {
+        setHasClipboardWeek(false);
+      }
+    }
+  };
+  window.addEventListener('storage', handler);
+  return () => window.removeEventListener('storage', handler);
+}, []);
+
+const sanitizeWeekForClipboard = (week) => {
+ if (!week) return null;
+ const days = Array.isArray(week.routine) ? week.routine : [];
+ const safeDays = days.map((d, idx) => {
+   // Clonado profundo y limpieza mínima. Conservamos estructura de ejercicios.
+   const copy = JSON.parse(JSON.stringify(d || {}));
+   // Nuevos IDs locales para editor
+   copy._id = new ObjectId().toString();
+   copy.name = copy.name || copy.title || `Día ${idx + 1}`;
+   if (Array.isArray(copy.exercises)) {
+     copy.exercises = copy.exercises.map((ex, i) => ({
+       ...ex,
+       exercise_id: new ObjectId().toString(),
+       numberExercise: (i + 1),
+     }));
+   } else {
+     copy.exercises = [];
+   }
+   return copy;
+ });
+
+ return {
+   name: week.name || 'Semana PAR',
+   category: week.category || undefined,
+   routine: safeDays,
+   comments: week.comments || undefined,
+   version: 1
+ };
+};
+
+ const copyWeekToClipboard = (week) => {
+ try {
+   const sanitized = sanitizeWeekForClipboard(week);
+   if (!sanitized || !sanitized.routine?.length) {
+     Notify.instantToast('No se pudo copiar: la semana no tiene días.');
+     return;
+   }
+   localStorage.setItem('userWeek', JSON.stringify(sanitized));
+   setHasClipboardWeek(true);
+   // opcional: copiar también al clipboard del sistema
+   try { navigator.clipboard?.writeText(JSON.stringify(sanitized)); } catch {}
+   Notify.instantToast('Semana copiada');
+ } catch (err) {
+   console.error('Error al copiar semana: ', err);
+   Notify.instantToast('Error al copiar la semana');
+ }
+};
+
+ const pasteWeekFromClipboard = () => {
+ try {
+   const raw = localStorage.getItem('userWeek');
+   if (!raw) {
+     Notify.instantToast('No hay una semana copiada todavía');
+     return;
+   }
+   const data = JSON.parse(raw);
+   if (!Array.isArray(data.routine) || data.routine.length === 0) {
+     Notify.instantToast('El contenido copiado no tiene días para pegar');
+     return;
+   }
+
+   // Re-genera IDs locales para una edición limpia
+   const newDays = data.routine.map((d, idx) => {
+     const dayCopy = JSON.parse(JSON.stringify(d));
+     dayCopy._id = new ObjectId().toString();
+     dayCopy.name = dayCopy.name || dayCopy.title || `Día ${idx + 1}`;
+     dayCopy.lastEdited = new Date().toISOString();
+     dayCopy.exercises = Array.isArray(dayCopy.exercises)
+       ? dayCopy.exercises.map((ex, i) => ({
+           ...ex,
+           exercise_id: new ObjectId().toString(),
+           numberExercise: i + 1
+         }))
+       : [];
+     return dayCopy;
+   });
+
+   setAllDays(newDays);
+   setDay(newDays);
+   setModifiedDay(newDays);
+   setCurrentDay(newDays[0] || null);
+   setIndexDay(0);
+   setWeekName(data.name || 'Semana PAR');
+   setNewWeekName(data.name || 'Semana PAR');
+   setWeekCategory(data.category || '');
+   setNewWeekCategory(data.category || '');
+   setIsEditing(true);
+   Notify.instantToast('Semana pegada en el editor');
+ } catch (err) {
+   console.error('Error al pegar semana: ', err);
+   Notify.instantToast('Error al pegar la semana');
+ }
+};
+
+
+const hasApproximation = (exercise) => {
+  if (
+    exercise &&
+    typeof exercise.name === "object" &&
+    Array.isArray(exercise.name.approx)
+  ) {
+    // tiene al menos una línea con algún valor
+    return exercise.name.approx.some(a => a.sets || a.reps || a.peso);
+  }
+  return false;
+};
+
+const handleOpenApprox = (e, index) => {
+  setEditingApproxIndex(index);
+  const current = day[indexDay].exercises[index];
+  let currentApprox = [{ sets: "", reps: "", peso: "" }];
+  if (current && typeof current.name === "object") {
+    currentApprox = Array.isArray(current.name.approx) ? current.name.approx : currentApprox;
+  }
+  setApproxData(currentApprox);
+  approxOverlayRef.current.toggle(e);
+};
+
+const saveApproxInternally = (data) => {
+  if (editingApproxIndex === null) return;
+  const updated = [...day];
+  const ex = updated[indexDay].exercises[editingApproxIndex];
+  const rawName = ex.name;
+  const cleaned = data.filter(a => a.sets || a.reps || a.peso);
+
+  if (cleaned.length === 0) {
+    ex.name = typeof rawName === "object" ? { ...rawName } : { name: rawName };
+    delete ex.name.approx;
+  } else {
+    ex.name = typeof rawName === "object"
+      ? { ...rawName, approx: cleaned }
+      : { name: rawName, approx: cleaned };
+  }
+
+  updated[indexDay].exercises[editingApproxIndex] = ex;
+  setDay(updated);
+  setModifiedDay(updated);
+  setCurrentDay({ ...updated[indexDay] });
+  setIsEditing(true);
+};
+
+const handleSaveApprox = () => {
+  if (editingApproxIndex === null) return;
+  saveApproxInternally(approxData);
+  approxOverlayRef.current.hide();
+  setEditingApproxIndex(null);
+  setApproxData([{ sets: "", reps: "", peso: "" }]);
+};
+
+const removeApproxLine = (idx) => {
+  const arr = [...approxData];
+  arr.splice(idx, 1);
+  setApproxData(arr);
+  saveApproxInternally(arr);
+};
+
+
+ const setRepsMode = (i, mode) => {
+   setRepsModeByIndex(prev => ({ ...prev, [i]: mode }));
+ };
+
+ const incField = (i, field) => {
+   setIsEditing(true);
+   const updated = [...day];
+   const value = Number(updated[indexDay].exercises[i][field] || 0) + 1;
+  updated[indexDay].exercises[i][field] = value;
+   updated[indexDay].lastEdited = new Date().toISOString();
+   setDay(updated); setModifiedDay(updated);
+ };
+
+ const decField = (i, field) => {
+   setIsEditing(true);
+   const updated = [...day];
+   const curr = Number(updated[indexDay].exercises[i][field] || 0);
+   const value = Math.max(0, curr - 1);
+   updated[indexDay].exercises[i][field] = value;
+   updated[indexDay].lastEdited = new Date().toISOString();
+   setDay(updated); setModifiedDay(updated);
+ };
+
+ const copyCurrentDay = () => {
+   if (!currentDay) return;
+   setDayClipboard(JSON.parse(JSON.stringify(currentDay)));
+   Notify.instantToast('Día copiado');
+ };
+
+ const pasteAsNewDay = () => {
+   if (!dayClipboard) return;
+   const clone = JSON.parse(JSON.stringify(dayClipboard));
+   clone._id = new ObjectId().toString();
+   clone.name = `Día ${allDays.length + 1}`;
+   clone.exercises = clone.exercises.map((ex, idx) => ({
+     ...ex,
+     exercise_id: new ObjectId().toString(),
+    numberExercise: idx + 1
+   }));
+   const updated = [...allDays, clone];
+   setAllDays(updated); setDay(updated); setModifiedDay(updated);
+   setCurrentDay(clone); setIndexDay(updated.length - 1);
+   Notify.instantToast('Día pegado');
+ };
+
 
   // CHANGES: Referencia para los menús (uno por cada "week")
   const menuRefs = useRef({});
 
   const topLevelWeeks = allWeeks.filter(week => !week.parent_par_id);
-const getProgressionsFor = (weekId) => allWeeks.filter(w => w.parent_par_id === weekId);
+  const getProgressionsFor = (weekId) => allWeeks.filter(w => w.parent_par_id === weekId);
+
+  // CHANGES: Agrupar weeks por parent para el nuevo diálogo (rendimiento + simpleza)
+  const weeksByParent = useMemo(() => {
+    const map = {};
+    (allWeeks || []).forEach((w) => {
+      if (w.parent_par_id) {
+        (map[w.parent_par_id] ||= []).push(w);
+      }
+    });
+    return map;
+  }, [allWeeks]);
+
+
 
   /* --------------------------------------
    * useEffects de carga de datos 
@@ -203,18 +561,20 @@ const getProgressionsFor = (weekId) => allWeeks.filter(w => w.parent_par_id === 
   }, []);
 
   // Simulamos la rutina local, solo para adaptarlo: 
-  useEffect(() => {
-    setRoutine({
-      name: newWeekName,
-      user_id: id,
-      routine: allDays
-    });
-  }, [allDays, newWeekName, id]);
+    useEffect(() => {
+      setRoutine({
+        name: newWeekName,
+        category: weekCategory || '',
+        user_id: id,
+        routine: allDays
+      });
+    }, [allDays, newWeekName, weekCategory, id]);
 
   // Cargamos PARs
   useEffect(() => {
     PARService.getPAR(id).then((data) => {
       setAllWeeks(data);
+      console.log(data)
     });
   }, [id]);
 
@@ -567,13 +927,15 @@ const hasBackoff = (exercise) => {
       return (
         <>
         {renderInputSets ? 
+        <div>
         <CustomInputNumber
           ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
           initialValue={data}
           onChange={(val) => changeModifiedData(index, val, field)}
           isRep={field === "reps"}
           className={`mt-5`}
-        /> :
+        />
+        </div> :
         <>
           <div className={`row justify-content-center text-center aa ${field == 'reps' && 'mb-2 '}`}>
             <div className="input-number-container">
@@ -636,20 +998,24 @@ const hasBackoff = (exercise) => {
           <IconButton
             aria-label="video"
             className={`w-100 ${shouldGlow ? 'glowing-icon' : ''}`}
-            onClick={(e) => {
-              productRefs.current[index].toggle(e);
-            }}
+            onClick={(e) => productRefs.current[index].toggle(e)}
+            title="Agregar/editar link de video"
           >
             <YouTubeIcon className="colorIconYoutube" />
           </IconButton>
           <OverlayPanel ref={(el) => (productRefs.current[index] = el)}>
-            <input
-              ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-              className="form-control ellipsis-input text-center"
-              type="text"
-              defaultValue={data}
-              onChange={(e) => changeModifiedData(index, e.target.value, field)}
-            />
+            <div style={{minWidth: 280}}>
+              <div className="mb-2 fw-semibold">Link de video</div>
+              <input
+                ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
+                className="form-control ellipsis-input"
+                placeholder="https://youtu.be/..."
+                type="text"
+                defaultValue={data}
+                onChange={(e) => changeModifiedData(index, e.target.value, field)}
+              />
+              <small className="text-muted">Pegá un enlace de YouTube/Vimeo.</small>
+            </div>
           </OverlayPanel>
         </>
       );
@@ -681,16 +1047,20 @@ const hasBackoff = (exercise) => {
         </CustomProvider>
       );
     } else {
-      return (
-        <input
-          ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-          className={`form-control ${firstWidth ? "border" : "border-0"} ellipsis-input text-center`}
-          placeholder={field === 'rest' ? `2...` : "kg..."}
-          type="text"
-          defaultValue={data}
-          onChange={(e) => changeModifiedData(index, e.target.value, field)}
-        />
-      );
+      const isNumeric = ['sets','reps','peso'].includes(field);
+        
+           return (
+             <input
+               ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
+               className={`form-control ${firstWidth ? "border" : "border-0"} ellipsis-input text-center`}
+               placeholder={field === 'peso' ? "kg..." : field === 'rest' ? "mm:ss" : "..."}
+               type={isNumeric ? "number" : "text"}
+               inputMode={isNumeric ? "numeric" : "text"}
+               aria-label={field}
+               defaultValue={data}
+               onChange={(e) => changeModifiedData(index, isNumeric ? Number(e.target.value) : e.target.value, field)}
+             />
+           );
     }
   };
 
@@ -956,6 +1326,7 @@ const hasBackoff = (exercise) => {
    * -------------------------------------*/
   const openEditWeekNameDialog = () => {
     setNewWeekName(weekName);
+    setNewWeekCategory(weekCategory || '');
     setIsEditingWeekName(true);
   };
 
@@ -965,6 +1336,7 @@ const hasBackoff = (exercise) => {
 
   const saveNewWeekName = () => {
     setWeekName(newWeekName);
+    setWeekCategory(newWeekCategory || '');
     setIsEditingWeekName(false);
     Notify.instantToast("Nombre de la semana editado con éxito!");
   };
@@ -976,8 +1348,10 @@ const hasBackoff = (exercise) => {
     const newRoutine = {
       name: weekName,
       user_id: id,
+      category: weekCategory || '',
       routine: modifiedDay
     };
+    console.log('[applyChanges] payload enviado:', newRoutine);
     PARService.createPAR(newRoutine, id).then(() => {
       setIsEditing(false);
       Notify.instantToast("Rutina guardada con éxito (PAR)!");
@@ -1388,32 +1762,91 @@ const removeBackoffLine = (index) => {
   return (
     <>
       <div className='sidebarPro colorMainAll'>
-  <div className="d-flex flex-column justify-content-between colorMainAll shadow-sm" style={{ width: '220px', height: '100vh' }}>
-    <div className="p-3">
-      <h5 className="fw-bold text-center mb-4">TOM</h5>
+        <div className="d-flex flex-column justify-content-between colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh' }}>
+          <div className="p-3">
+              <h5 className="fw-bold text-center mb-4">TOM</h5>
 
-      <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
-        <div className='text-center col-12'><strong>Planificador</strong></div>
-      </div>
+          <div id={'nameWeek'} className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 stylePointer" onClick={openEditWeekNameDialog}>
+            <div className=' col-1'><EditIcon /></div>
+            <div className='text-center col-10'><strong >{weekName}</strong></div>
+          </div>
 
-      <div className="mb-4">
-        <button
-          className="btn btn-outline-light w-100 text-start mb-2"
-          onClick={() => setShowSavedRoutinesDialog(true)}
-        >
-          <VisibilityIcon className="me-2" /> Ver rutinas
-        </button>
+          <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 border"  onClick={() => setShowSavedRoutinesDialog(true)}>
+            <div className=' col-1'><Eye /></div>
+            <div className='text-center col-10'><strong >Ver semanas</strong></div>
+          </div>
 
-      </div>
-    </div>
+           <div
+              className={`bgItemsDropdown rounded mx-2 row justify-content-center mb-3 ${hasClipboardWeek ? 'stylePointer' : 'opacity-50'}`}
+              onClick={() => hasClipboardWeek && pasteWeekFromClipboard()}
+              title={hasClipboardWeek ? 'Pegar la semana copiada' : 'No hay semana copiada'}
+            >
+              <div className=' col-1'><ContentCopyIcon /></div>
+              <div className='text-center col-10'><strong>Pegar semana</strong></div>
+            </div>
 
-    <div className="p-3 text-center">
-      <div className="small text-light mb-2">
-        <strong>TOM</strong><br />Planificación digital
-      </div>
-    </div>
-  </div>
-</div>
+
+        <div className="list-group mb-3">
+        <Segmented
+            id={'dias'}
+              className="w-100 stylesSegmented"
+              size="large"
+              vertical
+              options={allDays.map((day, index) => ({
+                label: day.name,
+                value: day._id,
+                icon: 
+                  index === 0 ? <LooksOneIcon /> :
+                  index === 1 ? <LooksTwoIcon /> :
+                  index === 2 ? <Looks3Icon /> :
+                  index === 3 ? <Looks4Icon /> :
+                  index === 4 ? <Looks5Icon /> :
+                  index === 5 ? <Looks6Icon /> :
+                  <CalendarTodayIcon />
+              }))}
+              value={currentDay ? currentDay._id : ''}
+              onChange={(value) => {
+                const selectedDay = allDays.find((day) => day._id === value);
+                if (selectedDay) {
+                  const selectedIndex = allDays.findIndex((d) => d._id === selectedDay._id);
+                  setIndexDay(selectedIndex);
+                  setCurrentDay(allDays[selectedIndex]);
+                }
+              }}
+            />
+         </div>
+         <div id="agregarDia"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={addNewDay}>
+            <div className=' col-1'><AddIcon /></div>
+            <div className='text-center col-10'><strong >Agregar día</strong></div>
+         </div>
+        
+          <div id="editarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => openEditNameDialog(currentDay)}>
+              <div className=' col-1'><EditIcon /></div>
+              <div className='text-center col-10'><strong >Editar {`${currentDay && currentDay.name}`}</strong></div>
+          </div>
+
+          <div id="eliminarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={handleDeleteDayClick} >
+              <div className=' col-1'><DeleteIcon /></div>
+              <div className='text-center col-10'><strong >Eliminar {`${currentDay && currentDay.name}`}</strong></div>
+          </div>
+          <div className="text-muted small mt-5">
+
+            <div id="addEjercicio"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewExercise()}>
+              <div className=' col-1'><AddIcon  className="me-2" /></div>
+              <div className='text-center col-10'><strong >Añadir ejercicio</strong></div>
+            </div>
+
+            <div id="addCircuit" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewCircuit()} >
+              <div className=' col-1'><AddIcon /></div>
+              <div className='text-center col-10'><strong >Añadir circuito</strong></div>
+            </div>
+
+          </div>
+        
+       </div>
+       <div className="p-3 mt-auto small text-center text-light">TOM · Planificación digital</div>
+     </div>
+   </div>
 
       {/* Contenido principal (respetando espacio del sidebar) */}
       <div className={` ${collapsed ? "marginSidebarClosed" : " marginSidebarOpen"}`}>
@@ -1445,39 +1878,43 @@ const removeBackoffLine = (index) => {
 
           <div className="col-11 mb-3">
               
-                                <div className="row justify-content-around align-items-center py-2">
-              
-                                  <div id="warmup" className={`col-10 col-lg-4 ${ firstWidth > 992 ? 'me-3 ' : 'mb-4'} pt-4  btn boxDataWarmup`} onClick={handleShowMovility}>
-                                    <EditIcon  className="me-2" />
-                                    Administrar bloque de activación <strong className="d-block">{currentDay && currentDay.name}</strong>
-                                  </div>
-                              
-                  
-                                  <div id="warmup" className={`col-10 col-lg-4 ${ firstWidth > 992 && 'ms-3'} pt-4  btn boxDataWarmup`} onClick={handleShowWarmup}>
-                                    <EditIcon  className="me-2" />
-                                    <span className=" me-1">Administrar entrada en calor <strong className="d-block">{currentDay && currentDay.name}</strong></span>
-                                  </div>
-              
-                              </div>
-                              </div>
-              
+          <div className="row g-3 align-items-stretch mb-3">
+              <div className="col-12 col-lg-6 text-start mt-3">
+                  <div id="movility" className="ps-3  bgItemsDropdown py-3" onClick={handleShowMovility}>
+                    <CircleIcon  className="me-2 badgeMovility" />
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activación/movilidad</strong> <span className="small">- {currentDay && currentDay.name} </span> </span>
+                    <span className="d-block stylesSpanBloqs">Haz click para editar</span>
+                  </div>
+               
+              </div>
+
+              <div className="col-12 col-lg-6 text-start mt-3">
+                  <div id="warmup" className="ps-3 bgItemsDropdown py-3" onClick={handleShowWarmup}>
+                    <CircleIcon  className="me-2 badgeWarmup" />
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>entrada en calor</strong> <span className="small">- {currentDay && currentDay.name} </span></span>
+                    <span className="d-block stylesSpanBloqs">Haz click para editar</span>
+                </div>
+              </div>
+
+            </div>
+            </div>
                           
 
-            {firstWidth > 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
+            {firstWidth < 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
               <button className="btn p-2">
                 <AddIcon  className="me-2" />
                 <span className=" me-1">Añadir ejercicio</span>
               </button>
             </div>}
 
-            <div id="nameWeek" className="col-10 col-lg-3 btn mx-2 mb-4 boxData" onClick={() => setIsEditingWeekName(true)}>
+            {firstWidth < 992 && <div id="nameWeek" className="col-10 col-lg-3 btn mx-2 mb-4 boxData" onClick={() => setIsEditingWeekName(true)}>
               <button className="btn p-2" >
                <EditIcon className="me-2" />
                 <strong>{weekName}</strong>
               </button>
-            </div>
+            </div>}
 
-            {firstWidth > 992 &&
+            {firstWidth < 992 &&
              <div id="addCircuit" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewCircuit()}>
               <button className="btn p-2 ">
                 <AddIcon  className="me-2" />
@@ -1485,20 +1922,20 @@ const removeBackoffLine = (index) => {
               </button>
             </div>}
 
-            {firstWidth > 992 && <div id="addSets" className="col-3 btn mx-2 boxData" onClick={() => incrementAllSeries()}>
+            {firstWidth < 992 && <div id="addSets" className="col-3 btn mx-2 boxData" onClick={() => incrementAllSeries()}>
               <button className="btn p-2">
                 <AddIcon  className="me-2" />
                 <span className=" me-1">Sumar 1 serie</span>
               </button>
             </div>}
 
-            <div id="diaActual" className="col-10 col-lg-3 mx-2 ">
+            {firstWidth < 992 &&<div id="diaActual" className="col-10 col-lg-3 mx-2 ">
               <h4  className=" m-0 p-2" >
                 <strong>{currentDay && currentDay.name}</strong>
               </h4>
-            </div>
+            </div>}
 
-            {firstWidth > 992 && <div id="addReps" className="col-3 btn mx-2 boxData" onClick={() => incrementAllReps()}>
+            {firstWidth < 992 && <div id="addReps" className="col-3 btn mx-2 boxData" onClick={() => incrementAllReps()}>
               <button className="btn p-2 ">
                 <AddIcon  className="me-2" />
                 <span className=" me-1">Sumar 1 rep</span>
@@ -1506,55 +1943,9 @@ const removeBackoffLine = (index) => {
             </div> 
             }
 
-            {firstWidth < 992 ? (
+            {firstWidth < 992 &&
               <>
-                <div className={`col-10 col-sm-6 text-center mb-4`}>
-                  <Segmented
-                      options={allDays.map((day) => ({
-                          label: day.name,
-                          value: day._id,
-                      }))}
-                      className="stylesSegmented"
-                      value={currentDay ? currentDay._id : ''}
-                      onChange={(value) => {
-                          const selectedDay = allDays.find((day) => day._id === value);
-                          if (selectedDay) {
-                              const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
-                              setIndexDay(selectedIndex);
-                              setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
-                          }
-                      }}
-                  />
-                </div>
-                <div className={`col-9 col-sm-6 ${firstWidth > 550 ? 'text-start mb-4' : 'text-center mb-4'}`}>
-                    <IconButton
-                            aria-label="video"
-                            className="bg-primary rounded-2 text-light me-2"
-                            onClick={addNewDay}
-                        >
-                            <AddIcon className="" />
-                            <span className="font-icons me-1">Crear día</span>
-                        </IconButton>
-
-                        <IconButton
-                            aria-label="video"
-                            className="bg-secondary rounded-2 text-light me-2"
-                            onClick={() => openEditNameDialog(currentDay)}
-                        >
-                            <EditIcon className="" />
-                        </IconButton>
-                        <IconButton
-                            aria-label="video"
-                            className="bg-danger rounded-2 text-light "
-                            onClick={handleDeleteDayClick}
-                        >
-                            <DeleteIcon className="" />
-                        </IconButton>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className={`col-10 col-sm-6 text-end mt-5`}>
+                <div className={`col-10 col-sm-10 text-center mt-5`}>
                   <Segmented
                       options={allDays.map((day) => ({
                           label: day.name,
@@ -1572,7 +1963,7 @@ const removeBackoffLine = (index) => {
                       }}
                   />
                 </div>
-                <div className={`col-9 col-sm-6 text-start mt-5`}>
+                <div className={`col-9 col-sm-5 text-center mt-5`}>
                     <IconButton
                             aria-label="video"
                             className="bg-primary rounded-2 text-light me-2"
@@ -1598,7 +1989,7 @@ const removeBackoffLine = (index) => {
                         </IconButton>
                 </div>
               </>
-            )}
+            }
           </div>
 
           {/* Tabla principal */}
@@ -1608,14 +1999,11 @@ const removeBackoffLine = (index) => {
               <DragDropContext onDragEnd={handleOnDragEnd}>
                 <Droppable droppableId="exercises-desktop">
                   {(provided) => (
-                    <div
-                      className="table-responsive col-12 col-xl-11 altoTable"
+                    <TableContainer component={Paper} elevation={1} className="col-12 col-xl-11"
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                     >
-                      <table
-                        className={`table table-hover totalHeightTable align-middle fontTable text-center ${isEditing && "table-light"}`}
-                      >
+                  <table className={`table table-hover table-sticky table-zebra align-middle fontTable text-center ${isEditing && "table-light"}`}>
                         <thead>
                           <tr>
                             {propiedades.map((propiedad, index) => (
@@ -1658,26 +2046,57 @@ const removeBackoffLine = (index) => {
                                   </td>
                                   {exercise.type === "exercise" ? (
                                     <>
-                                      <td className="td-2">
-                                        <AutoComplete
-                                          defaultValue={typeof exercise.name==='object'?exercise.name.name:exercise.name}
-                                          onChange={(name,video)=>{
-                                            changeModifiedData(i,name,'name');
-                                            changeModifiedData(i,video,'video');
-                                          }}
-                                        />
-                                        {/* Backoff */}
-                                        <div className="d-flex align-items-center mt-1">
-                                          <button className="btn btn-outline-dark btn-sm" onClick={(e)=>handleOpenBackoffOverlay(e,i)}>
-                                            <AddIcon fontSize="small" /> Back off
-                                          </button>
-                                          <Tooltip title={hasBackoff(exercise)?"Tiene back off":"No tiene back off"}>                                      
-                                            {hasBackoff(exercise)?<CircleIcon color="success"/>:<PanoramaFishEyeIcon/>}
-                                          </Tooltip>
-                                        </div>
-                                      </td>
+                                      <td className="td-2 text-start">
+                                       <div className="d-flex align-items-center mb-1">
+                                         <button
+                                           className="btn colorAproximations py-0 m-0"
+                                           onClick={e => handleOpenApprox(e, i)}
+                                         >
+                                           <AddIcon className="iconsAproximations" /> <span>Aproximaciones</span>
+                                         </button>
+                                         <Tooltip
+                                           title={hasApproximation(exercise) ? "Tiene aproximaciones" : "No tiene aproximaciones"}
+                                           enterDelay={0}
+                                           leaveDelay={0}
+                                         >
+                                           {hasApproximation(exercise)
+                                             ? <CircleIcon color="success" className="ms-1 iconSuccess" />
+                                             : <PanoramaFishEyeIcon className="ms-1 iconSuccess" />
+                                           }
+                                         </Tooltip>
+                                       </div>
+                                    
+                                       <AutoComplete
+                                         defaultValue={typeof exercise.name === 'object' ? exercise.name.name : exercise.name}
+                                         onChange={(name, video) => {
+                                           changeModifiedData(i, name, 'name');
+                                           changeModifiedData(i, video, 'video');
+                                         }}
+                                       />
+                                    
+                                       <div className="d-flex align-items-center mt-1">
+                                         <button
+                                           className="btn colorBackOff py-0 ps-1 m-0 text-start"
+                                           onClick={(e) => handleOpenBackoffOverlay(e, i)}
+                                         >
+                                           <AddIcon className="iconsAproximations" /> <span>Back off</span>
+                                         </button>
+                                         <Tooltip
+                                           title={hasBackoff(exercise) ? "Tiene back off" : "No tiene back off"}
+                                           enterDelay={0}
+                                           leaveDelay={0}
+                                         >
+                                           {hasBackoff(exercise)
+                                             ? <CircleIcon color="success" className="ms-1 iconSuccess" />
+                                             : <PanoramaFishEyeIcon className="ms-1 iconSuccess" />
+                                           }
+                                         </Tooltip>
+                                       </div>
+                                     </td>
                                       <td className="td-3">
+                                        <div>
                                         {customInputEditDay(exercise.sets, i, "sets")}
+                                        </div>
                                       </td>
                                       <td className="td-4 ">
                                         <div className={'marginRepsNew'}>{customInputEditDay(exercise.reps, i, "reps")}</div>
@@ -1802,7 +2221,7 @@ const removeBackoffLine = (index) => {
                           {provided.placeholder}
                         </tbody>
                       </table>
-                    </div>
+                    </TableContainer>
                   )}
                 </Droppable>
               </DragDropContext>
@@ -1935,6 +2354,21 @@ const removeBackoffLine = (index) => {
                   onChange={(e) => setNewWeekName(e.target.value)}
                 />
               </div>
+              <div className="p-field">
+               <MUIAutocomplete
+                 freeSolo
+                 options={categoryOptions}
+                 value={newWeekCategory}
+                 onChange={(_, val) => setNewWeekCategory(val || '')}
+                 renderInput={(params) => (
+                   <TextField
+                     {...params}
+                     label="Categoría"
+                     placeholder="Escribe o selecciona una categoría"
+                   />
+                 )}
+               />
+             </div>
               <div className="p-field text-end">
                 <button
                   className="btn btn-primary mx-2 mt-2"
@@ -1954,59 +2388,237 @@ const removeBackoffLine = (index) => {
 
 
 
-          {/* CHANGES: Dialog para mostrar las rutinas guardadas en mobile */}
-          <Dialog
-  header="Rutinas guardadas"
+ <Dialog
   visible={showSavedRoutinesDialog}
-  style={firstWidth > 968 ? { width: "65vw" } : { width: "90vw" }}
   onHide={() => setShowSavedRoutinesDialog(false)}
-  className={`col-12 col-md-10  ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
->
-  <div className={`list-group d-flex ${firstWidth > 992 ? 'flex-row flex-wrap justify-content-start' : 'flex-column'}`}>
-    {allWeeks && allWeeks.filter(week => !week.parent_par_id).map((week) => (
-      <div
-        key={week._id}
-        className={`colorBackPAR2 card m-2 p-2 border-0 shadow ${firstWidth > 992 ? 'w-30' : ''}`}
-        style={{ minWidth: '250px' }}
-      >
-        <button
-          className="btn w-100 text-start shadow-sm colorBackPAR  p-3 d-flex justify-content-between align-items-center"
-          onClick={() => {
-            setShowSavedRoutinesDialog(false);
-            navigate(`/par/${week._id}`);
-          }}
-        >
-          <strong>{week.name}</strong>
-          <VisibilityIcon />
-        </button>
-
-        {/* Progresiones */}
-        {allWeeks.some(p => p.parent_par_id === week._id) && (
-          <div className="mt-2 px-3 p-2 shadow-sm colorBackPAR rounded ">
-            <p className="mb-1"><strong>Progresiones:</strong></p>
-            {allWeeks
-              .filter(p => p.parent_par_id === week._id)
-              .map((prog) => (
-                <button
-                  key={prog._id}
-                  className="btn w-100 text-start  mb-1 d-flex justify-content-between align-items-center ps-3 pe-2"
-                  onClick={() => {
-                    setShowSavedRoutinesDialog(false);
-                    navigate(`/par/${prog._id}`);
-                  }}
-                >
-                  <span>{prog.name}</span>
-                  <VisibilityIcon className="ms-2" />
-                </button>
-              ))}
-          </div>
-        )}
+  style={firstWidth > 992 ? { width: "85vw" } : { width: "92vw" }}
+  className="col-12 col-md-10"
+  closable={false}
+  header={
+    <div
+      className="sr-header d-flex align-items-start justify-content-between"
+    >
+      <div className="sr-headerLeft">
+        <div className="d-flex align-items-center gap-2 mb-1">
+          <span className="sr-iconbox d-inline-flex align-items-center justify-content-center">
+            <Pencil size={18} />
+          </span>
+          <h2 className="sr-title mb-0">Rutinas guardadas</h2>
+        </div>
+        <p className="sr-subtitle mb-0">Gestiona y organiza tus rutinas de entrenamiento</p>
       </div>
-    ))}
-    {(!allWeeks || allWeeks.length === 0) && (
-      <p>No hay rutinas guardadas</p>
-    )}
+
+      <button
+        className="sr-iconBtn btn btn-light rounded-3"
+        onClick={() => setShowSavedRoutinesDialog(false)}
+        aria-label="Cerrar"
+        title="Cerrar"
+      >
+        <X size={18} />
+      </button>
+    </div>
+  }
+>
+  {/* TOOLBAR / FILTROS */}
+  <div className="sr-toolbar card border-0 shadow-sm rounded-4 mb-4">
+    <div className="card-body">
+      <div className="row g-3 align-items-end pb-2">
+        {/* Ordenar por */}
+        <div className="col-12 col-md-4 ">
+          <label className="form-label mb-1">Ordenar por</label>
+          <select
+            className="form-select"
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value)}
+          >
+            <option value="date">Fecha de creación</option>
+            <option value="name">Nombre</option>
+          </select>
+        </div>
+
+        {/* Nombre (asc/desc) visible sólo si sort = name */}
+        <div
+          className={`col-12 col-md-3 ${sortMode === "name" ? "" : "d-none"}`}
+        >
+          <label className="form-label mb-1">Nombre</label>
+          <select
+            className="form-select"
+            value={nameAsc ? "asc" : "desc"}
+            onChange={(e) => setNameAsc(e.target.value === "asc")}
+          >
+            <option value="asc">A → Z</option>
+            <option value="desc">Z → A</option>
+          </select>
+        </div>
+
+        {/* Categoría */}
+        <div className="col-12 col-md-4">
+          <label className="form-label mb-1">Categoría</label>
+          <select
+            className="form-select"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            {availableCategories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+      </div>
+    </div>
   </div>
+
+  {/* GRID DE SEMANAS */}
+  <div className="row gy-4">
+    {filteredRootWeeks.map((week) => {
+      const children = weeksByParent[week._id] || [];
+      const isOpen = !!openIds[week._id];
+      const total = children.length;
+
+      return (
+        <div key={week._id} className="col-12 col-md-6 col-xl-4">
+          <div
+            className="sr-card card border-0 shadow-sm rounded-4 h-100"
+            role="group"
+            aria-label={`Semana ${week.name}`}
+            style={{ borderTop: `4px solid ${getCategoryColor(week.category)}` }}
+          >
+            <div className="card-body">
+              {/* HEADER DE LA TARJETA */}
+              <div 
+              className="d-flex align-items-start justify-content-between mb-2"
+                style={{
+                  backgroundColor: getCategoryColor(week.category),
+                  color: getContrastForHex(getCategoryColor(week.category)),
+                  borderRadius: 12,
+                  padding: '8px 12px'
+                }}>
+                <strong className=" mb-0 me-3 text-truncate" title={week.name}>
+                  {week.name}
+                </strong>
+                <div className="d-flex align-items-center gap-2">
+                  <button
+                    className="btn btn-light btn-sm rounded-3"
+                    aria-label={`Editar semana ${week.name}`}
+                    title="Editar"
+                    onClick={() => {
+                      setShowSavedRoutinesDialog(false);
+                      navigate(`/par/${week._id}?edit=1`);
+                    }}
+                  >
+                    <Pencil size={18} />
+                  </button>
+                  <button
+                    className="btn btn-light btn-sm rounded-3"
+                    aria-label={`Copiar semana ${week.name}`}
+                    title="Copiar"
+                    onClick={() => copyWeekToClipboard(week)}
+                  >
+                    <Copy size={18} />
+                  </button>
+                </div>
+              </div>
+
+
+              {/* INFO + TOGGLE */}
+              <div className="d-flex align-items-center justify-content-between mt-3">
+                <small className="text-muted badge rounded-pill sr-badge">
+                  {total === 0
+                    ? "Sin progresiones"
+                    : total === 1
+                    ? "1 progresión"
+                    : `${total} progresiones`}
+                </small>
+
+                {total > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-primary py-1 pe-0 text-decoration-none d-inline-flex align-items-center gap-1 sr-toggle"
+                    onClick={() => toggleOpen(week._id)}
+                    aria-expanded={isOpen}
+                    aria-controls={`prog-${week._id}`}
+                    title={isOpen ? "Contraer" : "Expandir"}
+                  >
+                    <span className="small">{isOpen ? "Ocultar" : "Mostrar"}</span>
+                    <ChevronDown
+                      size={18}
+                      className={`transition-200 ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                )}
+              </div>
+
+              {/* LISTA (ACORDEÓN) */}
+              <div
+                id={`prog-${week._id}`}
+                className={`collapse ${isOpen ? "show" : ""} mt-2`}
+              >
+                {children.map((prog) => (
+                  <div
+                    key={prog._id}
+                    className="sr-progItem d-flex align-items-center justify-content-between rounded-3 px-3 py-2 mb-2"
+                    style={{ borderLeft: `4px solid ${getCategoryColor(prog.category)}` }}
+                  >
+                    <p className="mb-0 text-truncate me-2 sr-progName" title={prog.name}>
+                      {prog.name}
+                    </p>
+                    <div className="d-flex align-items-center gap-2">
+                      <button
+                        className="btn btn-light btn-sm rounded-3"
+                        aria-label={`Editar ${prog.name}`}
+                        title="Editar"
+                        onClick={() => {
+                          setShowSavedRoutinesDialog(false);
+                          navigate(`/par/${prog._id}?edit=1`);
+                        }}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        className="btn btn-light btn-sm rounded-3"
+                        aria-label={`Copiar ${prog.name}`}
+                        title="Copiar"
+                        onClick={() => copyWeekToClipboard(prog)}
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+   
+
+              {/* Espaciador cuando no hay hijos */}
+              {total === 0 && <div style={{ height: 8 }} />}
+            </div>
+
+            <div className="text-end me-2">
+              <p
+                className="badge rounded-pill sr-badge"
+                style={{
+                  backgroundColor: getCategoryColor(week.category),
+                  color: getContrastForHex(getCategoryColor(week.category))
+                }}
+              >
+                {week.category ? week.category : 'Sin categoría'}
+              </p>
+            </div>
+
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  {(!allWeeks || allWeeks.length === 0) && (
+    <p className="sr-empty text-center text-muted mt-4">
+      No hay rutinas guardadas
+    </p>
+  )}
 </Dialog>
 
 
@@ -2104,6 +2716,77 @@ const removeBackoffLine = (index) => {
   </div>
 </OverlayPanel>
 
+<OverlayPanel ref={approxOverlayRef} className={`${firstWidth > 992 ? 'w-25' : 'w-75'}`}>
+  <div className="p-3">
+    {approxData.map((line, idx) => (
+      <div key={idx} className="row mb-2 align-items-end">
+        <div className="col-3">
+          <label>Sets</label>
+          <input
+            type="number"
+            className="form-control"
+            value={line.sets}
+            onChange={e => {
+              const arr = [...approxData];
+              arr[idx].sets = e.target.value;
+              setApproxData(arr);
+              saveApproxInternally(arr);
+            }}
+          />
+        </div>
+        <div className="col-3">
+          <label>Reps</label>
+          <input
+            type="text"
+            className="form-control"
+            value={line.reps}
+            onChange={e => {
+              const arr = [...approxData];
+              arr[idx].reps = e.target.value;
+              setApproxData(arr);
+              saveApproxInternally(arr);
+            }}
+          />
+        </div>
+        <div className="col-3">
+          <label>Peso</label>
+          <input
+            type="text"
+            className="form-control"
+            value={line.peso}
+            onChange={e => {
+              const arr = [...approxData];
+              arr[idx].peso = e.target.value;
+              setApproxData(arr);
+              saveApproxInternally(arr);
+            }}
+          />
+        </div>
+        <div className="col-3">
+          <IconButton aria-label="delete" className="mt-4" onClick={() => removeApproxLine(idx)}>
+            <CancelIcon className="text-danger" />
+          </IconButton>
+        </div>
+      </div>
+    ))}
+    <div className="text-center mb-3">
+      <button
+        className="btn btn-outline-dark"
+        onClick={() => setApproxData([...approxData, { sets: "", reps: "", peso: "" }])}
+      >
+        Añadir línea
+      </button>
+    </div>
+    <div className="text-center">
+      <button className="btn btn-secondary me-2" onClick={() => approxOverlayRef.current.hide()}>
+        Cancelar
+      </button>
+      <button className="btn btn-dark" onClick={handleSaveApprox}>
+        Guardar
+      </button>
+    </div>
+  </div>
+</OverlayPanel>
 
 
           {/* Footer móvil */}

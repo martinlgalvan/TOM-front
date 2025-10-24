@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo  } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 
 // Servicios PAR
@@ -35,6 +35,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { Segmented } from "antd";
 import { MultiSelect } from 'primereact/multiselect';
+import { Autocomplete as MUIAutocomplete, TextField } from "@mui/material";
 
 import IconButton from "@mui/material/IconButton";
 import YouTubeIcon from "@mui/icons-material/YouTube";
@@ -81,6 +82,15 @@ function ParDetailsPage() {
   const [isEditingWeekName, setIsEditingWeekName] = useState(false);
   const [newWeekName, setNewWeekName] = useState("");
 
+  const [weekCategory, setWeekCategory] = useState('');
+  const [newWeekCategory, setNewWeekCategory] = useState('');
+  const [newWeekCategoryInput, setNewWeekCategoryInput] = useState('');
+  const categoryOptions = useMemo(
+    () => ['Powerlifting','Strongman','Hipertrofia','Salud','Iniciantes','Avanzados','Competencia'],
+    []
+  );
+
+  const [tourVisible, setTourVisible] = useState(false);
   // Días del PAR
   const [allDays, setAllDays] = useState([]);
   const [day, setDay] = useState([]);
@@ -153,6 +163,8 @@ function ParDetailsPage() {
   const [selectedBlock, setSelectedBlock] = useState(null); // Bloque actual
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [trainer_id, setTrainer_id] = useState(localStorage.getItem("_id"));
+
+  
   
 
   const allCategories = [
@@ -178,18 +190,25 @@ function ParDetailsPage() {
   const [progressions, setProgressions] = useState([]);
   const [isProgression, setIsProgression] = useState(null);
 
+  const approxOverlayRef = useRef(null);
+  const [editingApproxIndex, setEditingApproxIndex] = useState(null);
+  const [approxData, setApproxData] = useState([{ sets: "", reps: "", peso: "" }]);
+
   useEffect(() => {
     BlockService.getBlocks(trainer_id).then(setBlocks);
   }, [trainer_id]);
 
 
-   // Crear nueva progresión
-   function handleCreateProgression() {
-    PARService.createProgressionFromPAR(id)
-      .then(newProg => {
-        setProgressions([...progressions, newProg]);
-      });
-  }
+function handleCreateProgression() {
+  if (!routine) return;
+  const baseId = routine.parent_par_id ?? routine._id; // madre
+  PARService.createProgressionFromPAR(baseId)
+    .then(newProg => {
+      setProgressions(prev => [...prev, newProg]);
+      Notify.instantToast("Progresión creada desde la semana madre");
+    })
+    .catch(() => Notify.instantToast("No se pudo crear la progresión"));
+}
 
   
   useEffect(() => {
@@ -209,11 +228,20 @@ function ParDetailsPage() {
         setLoading(false);
         return;
       }
-      found.parent_par_id && setIsProgression(true)
+      // ⬅️ CAMBIO: marcar si es progresión y calcular baseId
+      found.parent_par_id && setIsProgression(true);
 
-      setProgressions(allPars.filter(p => p.parent_par_id === id))
+      // baseId = si estoy en progresión ⇒ parent_par_id; si no ⇒ mi _id
+      const baseId = found.parent_par_id ? found.parent_par_id : found._id;
+
+      // traer TODAS las progresiones HERMANAS de la madre (incl. la actual si es progresión)
+      setProgressions(allPars.filter(p => p.parent_par_id === baseId));
+
       setRoutine(found);
       setWeekName(found.name || "PAR sin nombre");
+      setWeekCategory(found.category || '');
+      setNewWeekCategory(found.category || '');
+      setNewWeekCategoryInput(found.category || ''); // NUEVO
       setModifiedDay(found.routine);
       setAllDays(found.routine);
       setDay(found.routine);
@@ -411,6 +439,160 @@ function ParDetailsPage() {
 
   // -- END BACKOFF --
 
+  const hasApprox = (exercise) => (
+  exercise &&
+  typeof exercise.name === 'object' &&
+  Array.isArray(exercise.name.approx) &&
+  exercise.name.approx.some(a => a.sets || a.reps || a.peso)
+);
+
+const handleOpenApproxOverlay = (e, idx) => {
+  setEditingApproxIndex(idx);
+  let lines = [{ sets: "", reps: "", peso: "" }];
+  const ex = day[indexDay]?.exercises[idx];
+  if (ex && typeof ex.name === 'object' && Array.isArray(ex.name.approx)) {
+    lines = ex.name.approx;
+  }
+  setApproxData(lines);
+  approxOverlayRef.current.toggle(e);
+};
+
+const saveApproxInternally = (data) => {
+  if (editingApproxIndex === null) return;
+  const updated = [...day];
+  const ex = updated[indexDay].exercises[editingApproxIndex];
+  const rawName = ex.name;
+  const cleaned = (data || []).filter(a => a.sets || a.reps || a.peso);
+
+  if (cleaned.length === 0) {
+    ex.name = typeof rawName === 'object' ? { ...rawName } : { name: rawName };
+    delete ex.name.approx;
+  } else {
+    ex.name = typeof rawName === 'object'
+      ? { ...rawName, approx: cleaned }
+      : { name: rawName, approx: cleaned };
+  }
+
+  updated[indexDay].exercises[editingApproxIndex] = ex;
+  setDay(updated);
+  setModifiedDay(updated);
+  setCurrentDay({ ...updated[indexDay] });
+  setIsEditing(true);
+};
+
+const handleSaveApprox = () => {
+  saveApproxInternally(approxData);
+  approxOverlayRef.current.hide();
+  setEditingApproxIndex(null);
+  setApproxData([{ sets: "", reps: "", peso: "" }]);
+};
+
+const removeApproxLine = (index) => {
+  const updated = [...approxData];
+  updated.splice(index, 1);
+  setApproxData(updated);
+  saveApproxInternally(updated);
+};
+
+
+  // -------------------- COPY / PASTE --------------------
+const reindexExercises = (arr) =>
+  (arr || []).map((ex, idx) => ({ ...ex, numberExercise: idx + 1 }));
+
+const normalizePastedExercises = (exercises) =>
+  (exercises || []).map((ex) => {
+    const clone = JSON.parse(JSON.stringify(ex));
+    // nuevo id para no chocar con otros días
+    clone.exercise_id = new ObjectId().toString();
+
+    // Si es circuito, renovar idRefresh de cada item
+    if (Array.isArray(clone.circuit)) {
+      clone.circuit = clone.circuit.map((c) => ({
+        ...c,
+        idRefresh: RefreshFunction.generateUUID(),
+      }));
+    }
+    return clone;
+  });
+
+const copyWeekToClipboard = () => {
+  try {
+    if (!routine) {
+      Notify.instantToast("No hay rutina para copiar");
+      return;
+    }
+    const cleaned = cleanRoutineFields(routine);
+    cleaned.category = weekCategory || '';   // en vez de routine?.category
+    localStorage.setItem("userWeek", JSON.stringify(cleaned));
+    Notify.instantToast("Estructura copiada con éxito");
+  } catch (err) {
+    console.error(err);
+    Notify.instantToast("No se pudo copiar la estructura");
+  }
+};
+
+// Copiar día → localStorage.userDay
+const copyCurrentDayToClipboard = () => {
+  try {
+    if (!currentDay) {
+      Notify.instantToast("No hay día para copiar");
+      return;
+    }
+    // clon profundo del día actual
+    const dayClone = JSON.parse(JSON.stringify(currentDay));
+    localStorage.setItem("userDay", JSON.stringify(dayClone));
+    Notify.instantToast(`Día "${currentDay.name}" copiado con éxito`);
+  } catch (err) {
+    console.error(err);
+    Notify.instantToast("No se pudo copiar el día");
+  }
+};
+
+// Pegar día desde localStorage.userDay (reemplaza ejercicios del día actual)
+const pasteDayIntoCurrentDayFromClipboard = () => {
+  try {
+    const raw = localStorage.getItem("userDay");
+    if (!raw) {
+      Notify.instantToast("No hay un día copiado para pegar");
+      return;
+    }
+    const dayTemplate = JSON.parse(raw);
+    if (!dayTemplate || !Array.isArray(dayTemplate.exercises)) {
+      Notify.instantToast("El formato del día copiado es inválido");
+      return;
+    }
+
+    const newExercises = reindexExercises(
+      normalizePastedExercises(dayTemplate.exercises)
+    );
+
+    const updatedDays = [...day];
+    updatedDays[indexDay] = {
+      ...updatedDays[indexDay],
+      // mantenemos nombre del día actual, pegamos solo ejercicios
+      exercises: newExercises,
+      lastEdited: new Date().toISOString(),
+    };
+
+    setDay(updatedDays);
+    setModifiedDay(updatedDays);
+
+    // (opcional) sincronizar con allDays
+    const updatedAllDays = [...allDays];
+    updatedAllDays[indexDay] = updatedDays[indexDay];
+    setAllDays(updatedAllDays);
+
+    setCurrentDay({ ...updatedDays[indexDay] });
+    setIsEditing(true);
+    Notify.instantToast("Día pegado con éxito");
+  } catch (err) {
+    console.error(err);
+    Notify.instantToast("No se pudo pegar el día");
+  }
+};
+// ------------------ END COPY / PASTE ------------------
+
+
   /* ------------------------------------------------------------------
    * DRAG & DROP
    * ------------------------------------------------------------------*/
@@ -562,21 +744,22 @@ function ParDetailsPage() {
   /* ------------------------------------------------------------------
    * Guardar / Cancelar
    * ------------------------------------------------------------------*/
-  const applyChanges = () => {
-    if (!routine) return;
-    // Construimos el updated PAR
-    const updatedPar = {
-      ...routine,
-      name: weekName,
-      routine: modifiedDay,
-      block: selectedBlock
+    const applyChanges = () => {
+      if (!routine) return;
+
+      const updatedPar = {
+        ...routine,
+        name: weekName,
+        routine: modifiedDay,
+        block: selectedBlock,
+        category: weekCategory || ''   // ← ANTES: routine?.category ?? ''
+      };
+
+      PARService.updatePAR(routine._id, updatedPar).then(() => {
+        Notify.instantToast("Rutina guardada con éxito (PAR)!");
+        setIsEditing(false);
+      });
     };
-    // Llamamos a update
-    PARService.updatePAR(routine._id, updatedPar).then(() => {
-      Notify.instantToast("Rutina guardada con éxito (PAR)!");
-      setIsEditing(false);
-    });
-  };
 
   const handleCancel = () => {
     setIsEditing(false);
@@ -810,6 +993,7 @@ function ParDetailsPage() {
   const customInputEditDay = (data, index, field) => {
     if (field === "sets" || field === "reps") {
       return (
+        <div style={{ minWidth: 70 }} className="d-inline-block">
         <CustomInputNumber
           ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
           initialValue={data}
@@ -817,6 +1001,7 @@ function ParDetailsPage() {
           isRep={field === "reps"}
           className="mt-5"
         />
+        </div>
       );
     } else if (field === "video") {
       const shouldGlow = glowVideo[index];
@@ -1027,6 +1212,11 @@ function ParDetailsPage() {
     setSelectedBlock(selected);
     setIsEditing(true); // Marca que hay edición pendiente
   };
+
+  const getBaseParId = useCallback(() => {
+  if (!routine) return null;
+  return routine.parent_par_id ?? routine._id;
+}, [routine]);
 
 // NUEVO tableMobile adaptado a tu ParDetailsPage.jsx
 const tableMobile = () => {
@@ -1354,7 +1544,13 @@ const tableMobile = () => {
     <div className="p-3">
       <h5 className="fw-bold text-center mb-4">TOM</h5>
 
-        <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 stylePointer" onClick={() => setIsEditingWeekName(true)}>
+        <div className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3 stylePointer" onClick={() => {
+             setNewWeekName(weekName);
+            const currentCat = weekCategory || '';
+            setNewWeekCategory(currentCat);
+            setNewWeekCategoryInput(currentCat); // NUEVO
+            setIsEditingWeekName(true);
+         }}>
           <div className='col-1'><EditIcon className="me-2" /></div>
           <div className='text-center col-10'><strong>{weekName}</strong></div>
         </div>
@@ -1402,6 +1598,7 @@ const tableMobile = () => {
           <div className='col-1'><DeleteIcon /></div>
           <div className='text-center col-10'><strong>Eliminar {currentDay && currentDay.name}</strong></div>
         </div>
+
       </div>
 
       <div className="text-muted small mt-5">
@@ -1441,15 +1638,10 @@ const tableMobile = () => {
                         <DeleteIcon className="text-light fs-5" /> Eliminar
                       </button>
                     </div>
-                          <div className="col-12 col-lg-6 my-3">
-
-                            <p>Actualmente te encontrás en esta rutina pre-armada. Podés asignarla a tus usuarios.</p>
-
-                          </div>
-                        <div className="col-10">
+                        <div className="col-12">
                           <div className="row justify-content-center">
                           
-                            <div className="col-12">
+                            <div className="col-12 mt-3">
                               <h5>Asignar a:</h5>
                             
                               {allCategories.map(category => {
@@ -1533,23 +1725,22 @@ const tableMobile = () => {
 
 
                 <div className="row justify-content-center">
-                  <div className="col-6 pb-3">
-                    <div className="row justify-content-center align-items-center  pb-3">
-                      <div className="col-10 col-lg-10 btn bgItemsDropdown shadow pt-4" onClick={handleShowMovility}>
-                        <EditIcon className="me-2" />
-                        <span className="me-1">Bloque de <strong>activación/movilidad</strong> <strong className="d-block">{currentDay?.name}</strong></span>
-                      </div>
-                    </div>
+                <div className="col-12 col-lg-6 text-start mt-3">
+                  <div id="movility" className="ps-3  bgItemsDropdown py-3" onClick={handleShowMovility}>
+                    <CircleIcon  className="me-2 badgeMovility" />
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activación/movilidad</strong> <span className="small">- {currentDay && currentDay.name} </span> </span>
+                    <span className="d-block stylesSpanBloqs">Haz click para editar</span>
                   </div>
+               
+              </div>
 
-                  <div className="col-6 pb-3">
-                    <div className="row justify-content-center align-items-center  pb-3">
-                      <div className="col-10 col-lg-10 btn bgItemsDropdown shadow pt-4" onClick={handleShowWarmup}>
-                        <EditIcon className="me-2" />
-                        <span className="me-1">Bloque de <strong>entrada en calor</strong> <strong className="d-block">{currentDay?.name}</strong></span>
-                      </div>
-                    </div>
-                  </div>
+              <div className="col-12 col-lg-6 text-start mt-3">
+                  <div id="warmup" className="ps-3 bgItemsDropdown py-3" onClick={handleShowWarmup}>
+                    <CircleIcon  className="me-2 badgeWarmup" />
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>entrada en calor</strong> <span className="small">- {currentDay && currentDay.name} </span></span>
+                    <span className="d-block stylesSpanBloqs">Haz click para editar</span>
+                </div>
+              </div>
               
 
               </div>
@@ -1636,30 +1827,7 @@ const tableMobile = () => {
 
           {/* Tabla principal */}
           <div className="row justify-content-center align-middle text-center mb-5 pb-5">
-            <div className="row justify-content-around mb-2">
-              <div className="col-3">
-                <div id="addSets" className="bgItemsDropdownUl border-0 rounded-0 m-3 p-2 row justify-content-center">
-                  <div className='col-1'><AddIcon /></div>
-                  <div className='text-center col-10'>
-                    <strong>Herramientas generales:</strong>
-                  </div>
-                </div>
-              </div>
 
-              <div className="col-2 bgItemsDropdownUl stylePointer border-0 rounded-0 p-2 m-3 shadow" onClick={incrementAllSeries}>
-                <div id="addSets" className="row justify-content-center">
-                  <div className='col-1'><AddIcon /></div>
-                  <div className='text-center col-10'><strong>Sumar 1 serie</strong></div>
-                </div>
-              </div>
-
-              <div className="col-2 bgItemsDropdownUl stylePointer border-0 rounded-0 p-2 m-3 shadow" onClick={incrementAllReps}>
-                <div id="addReps" className="row justify-content-center">
-                  <div className='col-1'><AddIcon /></div>
-                  <div className='text-center col-10'><strong>Sumar 1 repetición</strong></div>
-                </div>
-              </div>
-            </div>
             {firstWidth > 992 ? (
               // Escritorio con Drag&Drop
               <DragDropContext onDragEnd={handleOnDragEnd}>
@@ -1735,11 +1903,11 @@ const tableMobile = () => {
                                                 </Tooltip>
                                               </div>
                                         </td>
-                                        <td className="td-3">
-                                          {customInputEditDay(exercise.sets, i, "sets")}
+                                       <td className="td-3">
+                                          <div className='marginRepsNew'>{customInputEditDay(exercise.sets, i, "sets")}</div>
                                         </td>
                                         <td className="td-4 ">
-                                         <div className='marginRepsNew'>{customInputEditDay(exercise.reps, i, "reps")}</div> 
+                                          <div className='marginRepsNew'>{customInputEditDay(exercise.reps, i, "reps")}</div>
                                         </td>
                                         <td className="td-5">
                                           {customInputEditDay(exercise.peso, i, "peso")}
@@ -2055,14 +2223,41 @@ const tableMobile = () => {
                   onChange={(e) => setNewWeekName(e.target.value)}
                 />
               </div>
+              <div className="p-field">
+                 <MUIAutocomplete
+                    freeSolo
+                    options={categoryOptions}
+                    value={newWeekCategory}                 // selección actual (opción)
+                    inputValue={newWeekCategoryInput}       // texto tipeado visible
+                    onChange={(_, val) => {
+                      // cuando elige una opción del menú o confirma algo que coincide
+                      setNewWeekCategory(val || '');
+                      if (typeof val === 'string') setNewWeekCategoryInput(val);
+                    }}
+                    onInputChange={(_, val) => {
+                      // en freeSolo, cada tecla actualiza ambos, así persiste si no selecciona
+                      setNewWeekCategoryInput(val || '');
+                      setNewWeekCategory(val || '');
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Categoría"
+                        placeholder="Escribe o selecciona una categoría"
+                      />
+                    )}
+                  />
+               </div>
               <div className="p-field text-end">
                 <button
                   className="btn btn-primary mx-2 mt-2"
                   onClick={() => {
-                    setWeekName(newWeekName);
-                    setIsEditing(true); // Marcar que hay edición pendiente
+                    const finalCat = (newWeekCategoryInput || newWeekCategory || '').trim();
+                    setWeekName(newWeekName.trim() || 'PAR sin nombre');
+                    setWeekCategory(finalCat);                 // ← GUARDA LA CATEGORÍA EDITADA
+                    setIsEditing(true);                        // marca edición pendiente
                     setIsEditingWeekName(false);
-                    Notify.instantToast("Nombre de la semana editado localmente");
+                    Notify.instantToast("Nombre/categoría editados localmente");
                   }}
                 >
                   Confirmar
@@ -2185,38 +2380,66 @@ const tableMobile = () => {
   </div>
 </OverlayPanel>
 
-{/* Dialogo: Administrar Progresiones */}
-          <Dialog
-            header="Administrar Progresiones"
-            visible={showManageProgressionsDialog}
-            style={{ width: '50vw' }}
-            onHide={closeManageProgressionsDialog}
+<Dialog
+  header="Administrar Progresiones"
+  visible={showManageProgressionsDialog}
+  style={firstWidth > 968 ? { width: "70vw" } : { width: "90vw" }}
+  onHide={closeManageProgressionsDialog}
+>
+  {(() => {
+    const baseId = getBaseParId();                 // madre
+    const isInProgression = !!routine?.parent_par_id;
+    const currentId = routine?._id;
+
+    return (
+      <div>
+
+
+        {/* Lista de progresiones hermanas de la madre */}
+        <div className="row justify-content-center text-center gap-2 mb-3">
+          {progressions && progressions.length > 0 ? (
+            progressions.map((prog, idx) => {
+              const isCurrent = prog._id === currentId;
+              return (
+                <button
+                  key={prog._id}
+                  // ⬅️ CAMBIO: si es la progresión actual, le agregamos glow-bg
+                  className={`btn col-2 ${isCurrent ? 'btn-dark glow-bg' : 'btn-outline-dark'}`}
+                  onClick={() => enterProgression(prog._id)}
+                  title={isCurrent ? 'Estás aquí' : 'Ir a progresión'}
+                >
+                  {`Progresión ${idx + 1}`}
+                </button>
+              );
+            })
+          ) : (
+            <p className="mb-0">No hay progresiones creadas.</p>
+          )}
+
+
+        </div>
+
+        {/* Crear SIEMPRE contra la madre */}
+
+
+        <div className="p-dialog-footer mt-3 pb-0 pe-0 pt-3">
+        <button className="btn btn-outline-dark me-3" onClick={handleCreateProgression}>
+          <AddIcon />
+          Crear progresión
+        </button>
+          {isInProgression && (
+          <button
+            className="btn btn-dark "
+            onClick={() => navigate(`/par/${baseId}`)}
           >
-            <div>
-              {progressions && progressions.length > 0 ? (
-                progressions.map((prog, idx) => (
-                  
-                  <button key={prog._id} className="p-2 btn btn-outline-light mx-2" onClick={() => enterProgression(prog._id)  }>
-                    {`Progresión ${idx + 1}`}
-                  </button>
-                )) 
-               
-              ) : (
-                <p>No hay progresiones creadas.</p>
-              )}
-               <button  className="p-2 btn btn-outline-light mx-2" onClick={() => handleCreateProgression()}>
-                    Crear progresión <AddIcon />
-                  </button>
-            </div>
-            <div className="p-dialog-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={closeManageProgressionsDialog}
-              >
-                Cerrar
-              </button>
-            </div>
-          </Dialog>
+            Volver a semana madre
+          </button>
+        )}
+        </div>
+      </div>
+    );
+  })()}
+</Dialog>
 
           <Dialog
             header="Gestión de bloques"
@@ -2229,6 +2452,57 @@ const tableMobile = () => {
 
 
         </section>
+
+        <OverlayPanel ref={approxOverlayRef} className={firstWidth>992?'w-25':'w-75'}>
+  <div className="p-3">
+    {approxData.map((line, idx) => (
+      <div key={idx} className="row mb-2 align-items-end">
+        {["sets", "reps", "peso"].map((f) => (
+          <div key={f} className="col-3">
+            <label>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
+            <input
+              type={f === "peso" || f === "reps" ? "text" : "number"}
+              className="form-control"
+              value={line[f]}
+              onChange={(e) => {
+                const arr = [...approxData];
+                arr[idx][f] = e.target.value;
+                setApproxData(arr);
+                saveApproxInternally(arr);
+              }}
+            />
+          </div>
+        ))}
+        <div className="col-3">
+          <IconButton
+            aria-label="delete"
+            className="mt-4"
+            onClick={() => removeApproxLine(idx)}
+          >
+            <CancelIcon className="text-danger" />
+          </IconButton>
+        </div>
+      </div>
+    ))}
+
+    <div className="text-center mb-3">
+      <button
+        className="btn btn-outline-dark"
+        onClick={() => setApproxData([...approxData, { sets: '', reps: '', peso: '' }])}
+      >
+        Añadir línea
+      </button>
+    </div>
+    <div className="text-center">
+      <button className="btn btn-secondary me-2" onClick={() => approxOverlayRef.current.hide()}>
+        Cerrar
+      </button>
+      <button className="btn btn-dark" onClick={handleSaveApprox}>
+        Seguir editando
+      </button>
+    </div>
+  </div>
+</OverlayPanel>
 
               <ConfirmDialog />
       </div>
