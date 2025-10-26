@@ -1047,7 +1047,7 @@ const hasBackoff = (exercise) => {
         </CustomProvider>
       );
     } else {
-      const isNumeric = ['sets','reps','peso'].includes(field);
+      const isNumeric = ['sets','reps'].includes(field);
         
            return (
              <input
