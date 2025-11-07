@@ -25,6 +25,7 @@ import GABRIEL_BELLEZA from "/src/assets/img/Gabriel_belleza.png";
 import NICOLAS_ECHAZZA from "/src/assets/img/Nicolas_echazza.png";
 import CAMILA_BENEITEZ from "/src/assets/img/camila-beneitez.png";
 import JOAQUIN from "/src/assets/img/Joaquin.png";
+import AGUSTIN_RAZZETTI from "/src/assets/img/Agustin_razzetti.png";
 
 /** Logo por defecto */
 const DEFAULT_LOGO = TOM;
@@ -122,6 +123,10 @@ const LOGO_MAP = {
     // JOAQUIN FALABELLA
     "email:falabellajoaquin4-trainer@gmail.com": JOAQUIN,
     "id:68d1a8101ee374a123c67979": JOAQUIN,
+
+    "email:agustinrazzetti0@gmail.com": AGUSTIN_RAZZETTI,
+    "id:68efc0809bde6bd1e474bfac": AGUSTIN_RAZZETTI,
+
 };
 
 /** Logos que llevan fondo blanco/rounded en su variante “chica” */
