@@ -26,6 +26,8 @@ import NICOLAS_ECHAZZA from "/src/assets/img/Nicolas_echazza.png";
 import CAMILA_BENEITEZ from "/src/assets/img/camila-beneitez.png";
 import JOAQUIN from "/src/assets/img/Joaquin.png";
 import AGUSTIN_RAZZETTI from "/src/assets/img/Agustin_razzetti.png";
+import FARID from "/src/assets/img/Farid.png";
+import AXEL from "/src/assets/img/Axel.png";
 
 /** Logo por defecto */
 const DEFAULT_LOGO = TOM;
@@ -126,6 +128,12 @@ const LOGO_MAP = {
 
     "email:agustinrazzetti0@gmail.com": AGUSTIN_RAZZETTI,
     "id:68efc0809bde6bd1e474bfac": AGUSTIN_RAZZETTI,
+
+    "email:faridresco@gmail.com": FARID,
+    "id:691757d0490925aa40085818": FARID,
+    
+    "email:axeldellavallol.ac@gmail.com": AXEL,
+    "id:690d4471aac685e40efb8de0": AXEL
 
 };
 
