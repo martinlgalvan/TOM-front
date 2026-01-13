@@ -28,6 +28,7 @@ import JOAQUIN from "/src/assets/img/Joaquin.png";
 import AGUSTIN_RAZZETTI from "/src/assets/img/Agustin_razzetti.png";
 import FARID from "/src/assets/img/Farid.png";
 import AXEL from "/src/assets/img/Axel.png";
+import IÑAKI from "/src/assets/img/iñaki-logo.png";
 
 /** Logo por defecto */
 const DEFAULT_LOGO = TOM;
@@ -133,7 +134,10 @@ const LOGO_MAP = {
     "id:691757d0490925aa40085818": FARID,
     
     "email:axeldellavallol.ac@gmail.com": AXEL,
-    "id:690d4471aac685e40efb8de0": AXEL
+    "id:690d4471aac685e40efb8de0": AXEL,
+    
+    "email:irey241989-trainer@gmail.com": IÑAKI,
+    "id:694c1869aa31bb2de8d104e3": IÑAKI
 
 };
 
