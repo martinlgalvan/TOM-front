@@ -73,7 +73,6 @@ import { FilePlus } from 'lucide-react';
 import { SquarePlus } from 'lucide-react';
 import { CopyPlus } from 'lucide-react';
 import { Files } from 'lucide-react';
-import { ClipboardPlus } from 'lucide-react';
 import { ToggleRight } from 'lucide-react';
 import { ToggleLeft } from 'lucide-react';
 
@@ -1009,27 +1008,6 @@ function FabMenu({ id, items, position = "left" }) {
                       </span>
                     </div>
                   )
-                },
-                {
-              label: 'Comentarios semanales',
-              command: () => setShowWeekCommentsDialog(true),
-              template: (item, opts) => (
-                    <div className="dial-item-tooltip-wrapper">
-                      {/* Boton / icono principal */}
-                      <button
-                        type="button"
-                        {...opts}
-                        className="styleItemsDial styleDial rounded-5 d-flex align-items-center justify-content-center"
-                      >
-                        <ClipboardPlus size={45} />
-                      </button>
-
-                      {/* "Tooltip" siempre visible */}
-                      <span className="tooltip-left">
-                        Comentarios semanales
-                      </span>
-                    </div>
-                  )
                 }
               ];
 
@@ -1090,6 +1068,10 @@ const handleEditBlock = (w) => {
   // ======= Formateo fechas seguro =======
   const fmt = (dateLike) => {
     if (!dateLike) return '-';
+    if (typeof dateLike === 'object' && !(dateLike instanceof Date)) {
+      if ('fecha' in dateLike) return `${dateLike.fecha || '-'} ${dateLike.hora || ''}`.trim();
+      return '-';
+    }
     const ms =
       typeof dateLike === 'string' ? Date.parse(dateLike)
       : dateLike instanceof Date ? dateLike.getTime()
@@ -1097,6 +1079,14 @@ const handleEditBlock = (w) => {
     if (!ms || Number.isNaN(ms)) return '-';
     try { return new Date(ms).toLocaleString(); } catch { return '-'; }
   };
+
+  const formatTrainerCreatedDate = (week) => (
+    fmt(week?.created_at_local || week?.created_local || week?.created_at || week?.effectiveDate)
+  );
+
+  const formatAthleteDate = (week) => (
+    fmt(week?.updated_user_at || week?.athlete_updated_at || week?.user_updated_at || week?.updatedUserAt)
+  );
 
   const handleToggleVisibilityMobile = async (week) => {
     const currentVisibility = week?.visibility || 'visible';
@@ -1422,16 +1412,8 @@ const rightDialItems = [
                   const blockColor = w?.block?.color || w?.block?.colorHex || '#6c757d';
                   const blockName = w?.block?.name || 'Sin bloque';
 
-                  const trainerEdit = fmt(w?.updated_at || w?.coach_updated_at);
-                  const athleteEdit = fmt(w?.athlete_updated_at || w?.user_updated_at);
-
-                  const trainerDateOnly = trainerEdit && !isNaN(new Date(trainerEdit))
-                    ? new Date(trainerEdit).toLocaleDateString()
-                    : '-';
-
-                  const athleteDateOnly = athleteEdit && !isNaN(new Date(athleteEdit))
-                    ? new Date(athleteEdit).toLocaleDateString()
-                    : '-';
+                  const trainerDateLabel = formatTrainerCreatedDate(w);
+                  const athleteDateLabel = formatAthleteDate(w);
 
                   // === ACTUALIZADO: path igual que la web
                   const viewPath = makeWeekViewPath(w);
@@ -1447,7 +1429,7 @@ const rightDialItems = [
                           >
                             <div className="week-mobile-title">{w.name || 'Semana'}</div>
                             <div className="week-mobile-meta">
-                              <span>{trainerDateOnly}</span>
+                              <span>{trainerDateLabel}</span>
                               <span className={`week-mobile-visibility ${isHidden ? 'is-hidden' : 'is-visible'}`}>
                                 {isHidden ? 'Oculta' : 'Visible'}
                               </span>
@@ -1519,13 +1501,13 @@ const rightDialItems = [
                                 <span className="week-mobile-date-label">
                                   <Pencil size={12} className="me-1" /> Entrenador
                                 </span>
-                                <div className="week-mobile-date-value">{trainerDateOnly}</div>
+                                <div className="week-mobile-date-value">{trainerDateLabel}</div>
                               </div>
                               <div className="week-mobile-date-card">
                                 <span className="week-mobile-date-label">
                                   <UserPen size={12} className="me-1" /> Alumno
                                 </span>
-                                <div className="week-mobile-date-value">{athleteDateOnly}</div>
+                                <div className="week-mobile-date-value">{athleteDateLabel}</div>
                               </div>
                             </div>
                           </div>

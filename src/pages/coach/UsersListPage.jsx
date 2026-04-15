@@ -399,7 +399,7 @@ useEffect(() => {
               </button>
               <div>
                 <button
-                  className="btn btn-outline-light my-1 text-center"
+                  className="btn btn-dark my-1 text-center"
                   onClick={() => setShowSportsCalendarDialog(true)}
                 >
                   Calendario deportivo

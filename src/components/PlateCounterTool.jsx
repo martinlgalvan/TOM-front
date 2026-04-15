@@ -56,6 +56,10 @@ const getPlateLabelColor = (plate, isCompetition) => {
   if (!isCompetition) return "#f8fafc";
   return plate <= 5 ? "#111827" : "#f8fafc";
 };
+const getPlateBadgeTextColor = (plate, isCompetition) => {
+  if (!isCompetition) return "#f8fafc";
+  return plate === 15 || plate <= 5 ? "#111827" : "#f8fafc";
+};
 const getPlateLabelSize = (plate) => {
   if (plate <= 1.25) return 5.5;
   if (plate <= 2.5) return 6.5;
@@ -184,7 +188,7 @@ function PlateCounterTool({ isDark = false }) {
                       background: isCompetition
                         ? plateColorCompetition(plate)
                         : plateColorNormal(plate, idx),
-                      color: plate <= 5 || !isCompetition ? "#f8fafc" : "#111827",
+                      color: getPlateBadgeTextColor(plate, isCompetition),
                     }}
                   >
                     {plate} kg

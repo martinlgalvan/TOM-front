@@ -17,7 +17,6 @@ import ReactPlayer from 'react-player';
 import * as _ from "lodash";
 
 
-import { Sidebar } from 'primereact/sidebar';
 import { Segmented } from 'antd';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -81,7 +80,7 @@ import {
 import { normalizeOpenersPlans } from "../../helpers/openersPlanner.js";
 
 const ATHLETE_TOOL_OPTIONS = [
-  { label: "Calculadora y contador", value: "calculator" },
+  { label: "Calculadora", value: "calculator" },
   { label: "Contador de discos", value: "plates" },
   { label: "Estadisticas", value: "stats" },
   { label: "1RM estimado", value: "pr" },
@@ -3512,41 +3511,44 @@ if (isInnerCircuit) {
                 
                 )}
 
-                <div className="row justify-content-center">
-                    <Sidebar
-                        visible={visible}
-                        onHide={() => setVisible(false)}
-                        position="bottom"
-                        className="h-75"
-                    >
-                        {selectedObject && (
-                            <div className="row justify-content-center">
-                                <h3 className="text-center border-top border-bottom py-2 mb-2">
-                                    {getPlainName(selectedObject.name)}
-                                </h3>
-                                <div className="col-12 col-md-6 text-center mt-5">
-                                    {selectedObject.isImage === true ? (
-                                        <div>
-                                            <img
-                                              src={selectedObject.video}
-                                              alt=""
-                                              className="imgModal"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <ReactPlayer
-                                            url={selectedObject.video}
-                                            controls={true}
-                                            width="100%"
-                                            height="450px"
-                                            config={playerOptions}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </Sidebar>
-                </div>
+                <Dialog
+                  header={getPlainName(selectedObject?.name) || "Video"}
+                  visible={visible}
+                  onHide={() => {
+                    setVisible(false);
+                    setSelectedObject(null);
+                  }}
+                  modal
+                  dismissableMask
+                  blockScroll
+                  draggable={false}
+                  style={{ width: isSmallScreen ? '94vw' : '720px' }}
+                  className={`athleteVideoDialog ${athleteDialogClass}`}
+                >
+                  {selectedObject && (
+                    <div className="athlete-video-shell">
+                      {selectedObject.isImage === true ? (
+                        <div className="athlete-video-frame athlete-video-image-frame">
+                          <img
+                            src={selectedObject.video}
+                            alt={getPlainName(selectedObject.name) || "Imagen del ejercicio"}
+                            className="athlete-video-image"
+                          />
+                        </div>
+                      ) : (
+                        <div className="athlete-video-frame">
+                          <ReactPlayer
+                            url={selectedObject.video}
+                            controls={true}
+                            width="100%"
+                            height={isSmallScreen ? "240px" : "405px"}
+                            config={playerOptions}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Dialog>
 
                 {tourVisible && (
                   <Tour
@@ -4058,10 +4060,15 @@ if (isInnerCircuit) {
                             UserService.editProfile(id, { resumen_semanal: updatedSummary })
                               .then(() => {
                                 setWeeklySummary(updatedSummary);
+                                setUserProfile((prev) => ({
+                                  ...(prev || {}),
+                                  resumen_semanal: updatedSummary,
+                                }));
                                 setShowWeeklySummaryModal(false);
                                 Notify.instantToast("Resumen semanal guardado");
 
                                 serverWeeklyRef.current = updatedSummary;
+                                weeklySnapshotRef.current = updatedSummary;
                                 setWeeklyPending(false);
                                 setWeeklyLastFail('');
                                 if (weeklyDraftKey) lsRemove(weeklyDraftKey);

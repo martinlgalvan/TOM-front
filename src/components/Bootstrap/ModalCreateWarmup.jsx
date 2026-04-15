@@ -407,8 +407,8 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
 
       
 
-      {firstWidth > 993 && modifiedWarmup && modifiedWarmup.length > 0 ? (
-        <article className="table-responsive-xxl border-bottom text-center altoTable ">
+      {modifiedWarmup && modifiedWarmup.length > 0 && (
+        <article className="table-responsive coachRoutineAuxTableShell border-bottom text-center altoTable ">
           <table className="table table-hover align-middle text-center pb-5">
             <thead>
               <tr>
@@ -451,8 +451,6 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
             </tbody>
           </table>
         </article>
-      ) : (
-        tableMobile()
       )}
 
 
@@ -481,4 +479,5 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
 }
 
 export default ModalCreateWarmup;
+
 

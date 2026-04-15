@@ -397,8 +397,8 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
         </article>
       </section>
 
-      {firstWidth > 993 && modifiedMovility && modifiedMovility.length > 0 ? (
-        <article className="table-responsive-xxl border-bottom text-center altoTable ">
+      {modifiedMovility && modifiedMovility.length > 0 && (
+        <article className="table-responsive coachRoutineAuxTableShell border-bottom text-center altoTable ">
           <table className="table table-hover align-middle text-center pb-5 ">
             <thead>
               <tr>
@@ -455,8 +455,6 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
             </tbody>
           </table>
         </article>
-      ) : (
-        tableMobile()
       )}
 
       {isEditing && (
@@ -484,4 +482,5 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
 }
 
 export default ModalCreateMovility;
+
 

@@ -4895,6 +4895,54 @@ padding: 0 5px;
   color: #102132 !important;
 }
 
+.coachRoutineAuxTableShell{
+  width: 100%;
+  background: #ffffff !important;
+  border: 1px solid #d8e1ec !important;
+  border-radius: 14px;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.coachRoutineAuxTableShell .table{
+  min-width: 820px;
+  margin-bottom: 0;
+}
+
+.coachRoutineAuxTableShell th,
+.coachRoutineAuxTableShell td{
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.coachRoutineAuxTableShell td:nth-child(2){
+  min-width: 240px;
+}
+
+.coachRoutineAuxTableShell td:nth-child(7){
+  min-width: 220px;
+}
+
+.coachRoutineAuxTableShell textarea{
+  min-height: 38px;
+}
+
+@media screen and (max-width: 993px){
+  .coachRoutineAuxDialog .p-dialog-content{
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .coachRoutineAuxTableShell{
+    max-height: calc(100vh - 230px);
+  }
+
+  .coachRoutineAuxTableShell .table{
+    min-width: 760px;
+  }
+}
+
 .coachRoutineAuxDialog .table thead th{
   background: #eef3f8 !important;
   color: #102132 !important;
@@ -7669,6 +7717,71 @@ input:checked + .slider:before {
 .timerSettingsDialog.athlete-dialog-dark.p-dialog .btn-outline-secondary{
   color: #e5e7eb !important;
   border-color: rgba(255,255,255,0.22) !important;
+}
+
+.athleteVideoDialog.p-dialog {
+  border-radius: 18px !important;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28) !important;
+}
+
+.athleteVideoDialog.p-dialog .p-dialog-header {
+  padding: 14px 18px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.athleteVideoDialog.p-dialog .p-dialog-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.athleteVideoDialog.p-dialog .p-dialog-content {
+  padding: 18px !important;
+}
+
+.athleteVideoDialog.athlete-dialog-dark.p-dialog .p-dialog-title {
+  color: #f8fafc !important;
+}
+
+.athlete-video-shell {
+  width: 100%;
+}
+
+.athlete-video-frame {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #020617;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.athlete-video-image-frame {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 260px;
+}
+
+.athlete-video-image {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 576px) {
+  .athleteVideoDialog.p-dialog .p-dialog-content {
+    padding: 12px !important;
+  }
+
+  .athleteVideoDialog.p-dialog .p-dialog-header {
+    padding: 12px 14px !important;
+  }
+
+  .athlete-video-frame {
+    border-radius: 12px;
+  }
 }
 
 /* Ultima prioridad: los colores propios de cada bloque deben definir el contraste. */
