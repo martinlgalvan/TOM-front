@@ -14,8 +14,8 @@ function NotFound404() {
     
     <div className='row justify-content-center text-center mt-5 mb-3'>
       <div className='col-6'>
-        <h2>Página no encontrada / se movió de lugar.</h2>
-        <p>Por favor, volvé al inicio</p>
+        <h2>Pagina no encontrada / se movio de lugar.</h2>
+        <p>Por favor, volve al inicio</p>
 
         <Link to={'/'} className='btn btn-warning' >Volver al inicio</Link>
       </div>

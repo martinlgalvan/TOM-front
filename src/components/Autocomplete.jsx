@@ -3,13 +3,13 @@ import { usePopper } from 'react-popper';
 import { createPortal } from 'react-dom';
 
 import Exercises from './../assets/json/NEW_EXERCISES.json';
-// Si tienes un "databaseUser" en localStorage, ajusta la lógica
+// Si tienes un "databaseUser" en localStorage, ajusta la logica
 // a tu conveniencia
 
 const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
   const [exercisesDatabase, setExercisesDatabase] = useState([]);
 
-  // Estado para el texto del input y la lógica de sugerencias
+  // Estado para el texto del input y la logica de sugerencias
   const [inputValue, setInputValue] = useState(defaultValue);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -63,10 +63,10 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
 
   // Filtra sugerencias al cambiar inputValue
   const filterData = (value) => {
-    // Pequeña lógica para filtrar
+    // Pequena logica para filtrar
     if (!value || value.trim() === '') {
-      // Si quieres mostrar *todos* los items al hacer click, aquí
-      // podrías poner la lista completa:
+      // Si quieres mostrar *todos* los items al hacer click, aqui
+      // podrias poner la lista completa:
       // setFilteredSuggestions( ... );
       setFilteredSuggestions([]);
       return;
@@ -100,7 +100,7 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
     // Si hay algo, mostramos
     if (value.trim() !== '') {
       setShowSuggestions(true);
-      // Forzamos popper a actualizar la posición
+      // Forzamos popper a actualizar la posicion
       if (update) update();
     } else {
       setShowSuggestions(false);
@@ -119,7 +119,7 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
 
   // Para ocultar las sugerencias cuando pierde el foco
   const handleBlur = () => {
-    // Le damos un pequeño delay para permitir el click
+    // Le damos un pequeno delay para permitir el click
     // en la sugerencia:
     setTimeout(() => {
       setShowSuggestions(false);
@@ -151,7 +151,7 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
         disabled={isProgression}
         onBlur={handleBlur}
         className="form-control styleNameInput"
-        placeholder={`${isProgression ? 'Progresion' : 'Seleccioná un ejercicio...'}`}
+        placeholder={`${isProgression ? 'Progresion' : 'Selecciona un ejercicio...'}`}
         style={{ zIndex: 1 }}
       />
 
@@ -184,7 +184,7 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
               </li>
             ))}
           </ul>,
-          document.body // o algún otro nodo root
+          document.body // o algun otro nodo root
         )
       )}
     </div>

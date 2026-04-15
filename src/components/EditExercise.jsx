@@ -66,7 +66,7 @@ function onSubmit(e){
       .then((data) => {
         refreshEdit(false)
         onHide()
-        Notify.instantToast('Rutina actualizada con éxito!')
+        Notify.instantToast('Rutina actualizada con exito!')
       } )
   
   

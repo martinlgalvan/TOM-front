@@ -25,6 +25,7 @@ import { SelectButton } from "primereact/selectbutton";
 import LogoChico from "../../components/LogoChico.jsx";
 import DeleteUserDialog from "../../components/DeleteActions/DeleteUserDialog.jsx";
 import PrimeReactTable from "../../components/PrimeReactTable.jsx";
+import SportsCalendarManager from "../../components/SportsCalendarManager.jsx";
 
 //.............................. ICONOS MUI ..............................//
 import PersonIcon from "@mui/icons-material/Person";
@@ -54,6 +55,7 @@ function UsersListPage() {
 
   // ---------- Anuncios
   const [showAnnouncementsDialog, setShowAnnouncementsDialog] = useState(false);
+  const [showSportsCalendarDialog, setShowSportsCalendarDialog] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [usersList, setUsersList] = useState([]);
@@ -82,8 +84,8 @@ function UsersListPage() {
   const DAYS = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
   const CATEGORIES = ["Alumno casual", "Alumno dedicado", "Atleta iniciante", "Atleta avanzado"];
   const MODE_OPTIONS = [
-    { label: "Anuncio único", value: "once" },
-    { label: "Programar días", value: "repeat" },
+    { label: "Anuncio unico", value: "once" },
+    { label: "Programar dias", value: "repeat" },
     { label: "Cada X del mes", value: "monthly" },
   ];
 
@@ -172,27 +174,27 @@ function UsersListPage() {
       },
       {
         title: "Cantidad de alumnos.",
-        description: "Número de alumnos que tenés actualmente.",
+        description: "Numero de alumnos que tenes actualmente.",
         target: () => document.getElementById("alumnos"),
         placement: "right",
         prevButtonProps: { children: "« Anterior" },
         nextButtonProps: { children: "Siguiente »" },
       },
       {
-        title: "Administración de anuncios",
-        description: "Botón para administrar anuncios. Estos son mensajes generales para tus alumnos.",
+        title: "Administracion de anuncios",
+        description: "Boton para administrar anuncios. Estos son mensajes generales para tus alumnos.",
         target: () => document.getElementById("anuncios"),
         placement: "right",
         prevButtonProps: { children: "« Anterior" },
         nextButtonProps: { children: "Siguiente »" },
       },
       {
-        title: "Creación de alumnos",
-        description: "Este botón te permitira crear el usuario para tu alumno.",
+        title: "Creacion de alumnos",
+        description: "Este boton te permitira crear el usuario para tu alumno.",
         target: () => document.getElementById("crearAlumno"),
         placement: "right",
         prevButtonProps: { children: "« Anterior" },
-        nextButtonProps: { children: "¡Finalizar! " },
+        nextButtonProps: { children: "!Finalizar! " },
       },
     ]);
   }, []);
@@ -363,6 +365,14 @@ useEffect(() => {
                 Administrar anuncios
               </button>
             </div>
+            <div className="text-light rounded text-center small">
+              <button
+                className="btn btn-outline-light my-1 text-center"
+                onClick={() => setShowSportsCalendarDialog(true)}
+              >
+                Calendario deportivo
+              </button>
+            </div>
           </div>
 
           <div className="d-grid ">
@@ -387,6 +397,14 @@ useEffect(() => {
               <button className="btn btn-warning my-1 text-center" onClick={() => setShowAnnouncementsDialog(true)}>
                 Administrar anuncios{" "}
               </button>
+              <div>
+                <button
+                  className="btn btn-outline-light my-1 text-center"
+                  onClick={() => setShowSportsCalendarDialog(true)}
+                >
+                  Calendario deportivo
+                </button>
+              </div>
             </div>
           )}
 
@@ -447,7 +465,7 @@ useEffect(() => {
   {loadingAnnouncements ? (
     <p className="ms-1 my-3 text-muted">Cargando...</p>
   ) : announcements.length === 0 ? (
-    <p className="ms-1 my-3 text-muted">No hay anuncios creados aún.</p>
+    <p className="ms-1 my-3 text-muted">No hay anuncios creados aun.</p>
   ) : (
     <div>
       {announcements.map((a) => {
@@ -470,7 +488,7 @@ useEffect(() => {
             className="bg-light rounded-3 p-3 mb-3 border"
             style={{ borderColor: "#e9ecef" }}
           >
-            {/* Fila superior: título + acciones */}
+            {/* Fila superior: titulo + acciones */}
             <div className="d-flex justify-content-between align-items-start">
               <div className="pe-3">
                 <div className="fw-semibold">{a.title}</div>
@@ -497,7 +515,7 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Fila inferior: métricas + link */}
+            {/* Fila inferior: metricas + link */}
             <div className="mt-2 border-top pt-2 d-flex justify-content-between align-items-center small">
               <div className="text-muted d-flex align-items-center">
                 <span className="me-3 d-inline-flex align-items-center">
@@ -518,7 +536,7 @@ useEffect(() => {
                   onClick={() => fetchViewsForAnnouncement(a._id)}
                 >
                   
-                  Ver quién lo vio
+                  Ver quien lo vio
                 </button>
               </div>
 
@@ -554,11 +572,11 @@ useEffect(() => {
 >
   {/* -------- Formulario -------- */}
   <div className="p-fluid text-dark">
-    {/* Título */}
+    {/* Titulo */}
     <div className="mb-3">
-      <label className="form-label fw-semibold">Título del anuncio *</label>
+      <label className="form-label fw-semibold">Titulo del anuncio *</label>
       <InputText
-        placeholder="Ingrese el título del anuncio"
+        placeholder="Ingrese el titulo del anuncio"
         value={announcementForm.title}
         onChange={(e) =>
           setAnnouncementForm({ ...announcementForm, title: e.target.value })
@@ -566,9 +584,9 @@ useEffect(() => {
       />
     </div>
 
-    {/* Descripción */}
+    {/* Descripcion */}
     <div className="mb-3">
-      <label className="form-label fw-semibold">Descripción *</label>
+      <label className="form-label fw-semibold">Descripcion *</label>
       <InputTextarea
         rows={3}
         placeholder="Escriba el contenido del anuncio..."
@@ -605,7 +623,7 @@ useEffect(() => {
               <InputText
                 className="flex-grow-1 me-2"
                 value={link}
-                placeholder="https://…"
+                placeholder="https://..."
                 onChange={(e) => {
                   const updated = [...announcementForm.link_urls];
                   updated[index] = e.target.value;
@@ -686,13 +704,13 @@ useEffect(() => {
           <>
             <Card
               value="once"
-              title="Anuncio único"
+              title="Anuncio unico"
               subtitle="Enviar inmediatamente"
             />
             <Card
               value="repeat"
-              title="Programar días"
-              subtitle="Repetir cada X días"
+              title="Programar dias"
+              subtitle="Repetir cada X dias"
             />
             <Card
               value="monthly"
@@ -712,9 +730,9 @@ useEffect(() => {
     {/* Campos condicionales por modo */}
     {announcementForm.mode === "once" && (
       <div className="mb-3">
-        <label className="form-label fw-semibold">Fecha de envío</label>
+        <label className="form-label fw-semibold">Fecha de envio</label>
         <p className="text-muted small mb-2">
-          Por ejemplo, si selecciona el 17/05, solo ese día se mostrará el
+          Por ejemplo, si selecciona el 17/05, solo ese dia se mostrara el
           anuncio.
         </p>
         <Calendar
@@ -735,9 +753,9 @@ useEffect(() => {
 
     {announcementForm.mode === "repeat" && (
       <div className="mb-3">
-        <label className="form-label fw-semibold">Día de la semana</label>
+        <label className="form-label fw-semibold">Dia de la semana</label>
         <p className="text-muted small mb-2">
-          Por ejemplo, si selecciona el viernes, todos los viernes se mostrará
+          Por ejemplo, si selecciona el viernes, todos los viernes se mostrara
           este anuncio.
         </p>
         <Dropdown
@@ -746,7 +764,7 @@ useEffect(() => {
           onChange={(e) =>
             setAnnouncementForm({ ...announcementForm, repeat_day: e.value })
           }
-          placeholder="Seleccionar día"
+          placeholder="Seleccionar dia"
           disabled={editMode && isModeLocked()}
           className="w-100"
         />
@@ -755,10 +773,10 @@ useEffect(() => {
 
     {announcementForm.mode === "monthly" && (
       <div className="mb-3">
-        <label className="form-label fw-semibold">Día del mes</label>
+        <label className="form-label fw-semibold">Dia del mes</label>
         <p className="text-muted small mb-2">
-          Por ejemplo, si selecciona el 1, todos los meses en el día 1 se
-          mostrará este anuncio.
+          Por ejemplo, si selecciona el 1, todos los meses en el dia 1 se
+          mostrara este anuncio.
         </p>
         <Dropdown
           value={announcementForm.day_of_month}
@@ -769,23 +787,23 @@ useEffect(() => {
           onChange={(e) =>
             setAnnouncementForm({ ...announcementForm, day_of_month: e.value })
           }
-          placeholder="Seleccionar día"
+          placeholder="Seleccionar dia"
           disabled={editMode && isModeLocked()}
           className="w-100"
         />
       </div>
     )}
 
-    {/* Categoría / Destinatarios */}
+    {/* Categoria / Destinatarios */}
     <div className="mb-3">
-      <label className="form-label fw-semibold">Categoría </label>
+      <label className="form-label fw-semibold">Categoria </label>
       <MultiSelect
         value={announcementForm.target_categories}
         options={CATEGORIES}
         onChange={(e) =>
             setAnnouncementForm({ ...announcementForm, target_categories: e.value })
         }
-        placeholder="Seleccionar categoría"
+        placeholder="Seleccionar categoria"
         className="w-100"
       />
     </div>
@@ -795,6 +813,8 @@ useEffect(() => {
       <MultiSelect
         value={announcementForm.target_users}
         options={usersList}
+        optionLabel="label"
+        optionValue="value"
         onChange={(e) =>
           setAnnouncementForm({ ...announcementForm, target_users: e.value })
         }
@@ -804,7 +824,7 @@ useEffect(() => {
       />
     </div>
 
-    {/* Pie: switch informativo + botón acción */}
+    {/* Pie: switch informativo + boton accion */}
     <div className="d-flex align-items-center justify-content-between mt-4">
       <div className="form-check form-switch">
         <input
@@ -817,7 +837,7 @@ useEffect(() => {
           disabled
         />
         <label className="form-check-label ms-1" htmlFor="scheduledSwitch">
-          Este anuncio será programado
+          Este anuncio sera programado
         </label>
       </div>
 
@@ -831,7 +851,7 @@ useEffect(() => {
   </div>
 </Dialog>
 
-{/* ---- Diálogo de vistas (sin cambios funcionales, estilos limpios) ---- */}
+{/* ---- Dialogo de vistas (sin cambios funcionales, estilos limpios) ---- */}
 <Dialog
   header={`Alumnos que vieron:`}
   visible={showViewsDialog}
@@ -839,14 +859,14 @@ useEffect(() => {
   className="col-10 col-sm-9 col-lg-6 col-xl-5"
 >
   {Array.isArray(viewsDialogData) && viewsDialogData.length === 0 ? (
-    <p className="text-muted mb-0">Aún nadie ha visto este anuncio.</p>
+    <p className="text-muted mb-0">Aun nadie ha visto este anuncio.</p>
   ) : (
     <ul className="list-group">
       {Array.isArray(viewsDialogData) &&
         viewsDialogData.map((user) => (
           <li key={user._id} className="list-group-item py-2 px-3">
             <strong>{user.name}</strong>{" "}
-            <span className="text-muted small ms-1">— {user.email}</span>
+            <span className="text-muted small ms-1">- {user.email}</span>
           </li>
         ))}
     </ul>
@@ -856,13 +876,20 @@ useEffect(() => {
       <ConfirmDialog
         visible={!!announcementToDelete}
         onHide={() => setAnnouncementToDelete(null)}
-        message="¿Estás seguro que deseas eliminar este anuncio?"
-        header="Confirmar eliminación"
+        message="?Estas seguro que deseas eliminar este anuncio?"
+        header="Confirmar eliminacion"
         icon="pi pi-exclamation-triangle"
-        acceptLabel="Sí, eliminar"
+        acceptLabel="Si, eliminar"
         rejectLabel="Cancelar"
         accept={handleConfirmDelete}
         reject={() => setAnnouncementToDelete(null)}
+      />
+
+      <SportsCalendarManager
+        visible={showSportsCalendarDialog}
+        onHide={() => setShowSportsCalendarDialog(false)}
+        coachId={id}
+        users={users}
       />
     </>
   );

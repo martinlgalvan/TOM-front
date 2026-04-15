@@ -15,7 +15,7 @@ function BibliotecExercises() {
         setExercises(Exercises);
     }, []);
 
-    // Función para convertir enlaces de YouTube Shorts a formato compatible
+    // Funcion para convertir enlaces de YouTube Shorts a formato compatible
     const formatVideoUrl = (url) => {
         if (url.includes("shorts/")) {
             return url.replace("shorts/", "watch?v=");
@@ -23,7 +23,7 @@ function BibliotecExercises() {
         return url;
     };
 
-    // Alternar acordeón de ejercicios
+    // Alternar acordeon de ejercicios
     const toggleExercise = (exerciseLabel) => {
         setOpenExercise(openExercise === exerciseLabel ? null : exerciseLabel);
     };
@@ -37,7 +37,7 @@ function BibliotecExercises() {
             <section className="container">
                 <h2 className="text-center my-4">Biblioteca de Ejercicios</h2>
 
-                <p className="text-center mt-2 mb-3">En caso de que quieras añadir ejercicios propios, junto a sus videos, comunicate con el administrador para hacerlo.</p>
+                <p className="text-center mt-2 mb-3">En caso de que quieras anadir ejercicios propios, junto a sus videos, comunicate con el administrador para hacerlo.</p>
 
                 {exercises.map((category) => (
                     <Accordion key={category.label} sx={{ backgroundColor: "#ffffff", marginBottom: 2 }}>

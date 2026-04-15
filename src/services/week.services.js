@@ -1,6 +1,8 @@
+import { API_BASE } from './apiFetch.js'
+
 //Busca la rutina de un alumno
 async function findRoutineByUserId(user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
+    return fetch(`${API_BASE}/api/user/${user_id}/routine`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -20,8 +22,8 @@ async function findRoutineByUserId(user_id) {
 
 //Crea una semana
 async function createWeek(body, user_id) {
-    // body típicamente: { name: 'Semana X', visibility: 'visible' }
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
+    // body tipicamente: { name: 'Semana X', visibility: 'visible' }
+    return fetch(`${API_BASE}/api/user/${user_id}/routine`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -40,7 +42,7 @@ async function createWeek(body, user_id) {
 }
 
 async function createClonWeek(user_id, fecha) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine/clon`, {
+    return fetch(`${API_BASE}/api/user/${user_id}/routine/clon`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -60,7 +62,7 @@ async function createClonWeek(user_id, fecha) {
 
 //Encuentra una semana por su ID
 async function findByWeekId(week_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}`, {
+    return fetch(`${API_BASE}/api/week/${week_id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -77,9 +79,9 @@ async function findByWeekId(week_id) {
         })
 }
 
-//Editar rutina completa (array de días/ejercicios)
+//Editar rutina completa (array de dias/ejercicios)
 async function editWeek(week_id, routine) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}`, {
+    return fetch(`${API_BASE}/api/week/${week_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -98,7 +100,7 @@ async function editWeek(week_id, routine) {
 }
 
 async function assignBlockToRoutine(weekId, block) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${weekId}`, {
+    return fetch(`${API_BASE}/api/week/${weekId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -117,7 +119,7 @@ async function assignBlockToRoutine(weekId, block) {
 
 // Edita el nombre de una semana
 async function editNameWeek(week_id, name) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}/day/`, {
+    return fetch(`${API_BASE}/api/week/${week_id}/day/`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -137,7 +139,7 @@ async function editNameWeek(week_id, name) {
 
 //Eliminar una semana por su ID
 async function deleteWeek(week_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${week_id}`, {
+    return fetch(`${API_BASE}/api/week/${week_id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -148,7 +150,7 @@ async function deleteWeek(week_id) {
 }
 
 async function exportToExcel(data) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/excel`, {
+    return fetch(`${API_BASE}/api/excel`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -167,12 +169,12 @@ async function exportToExcel(data) {
 }
 
 /**
- * ✅ NUEVO: actualización genérica de propiedades de una semana
- * Uso típico: updateWeekProperties(weekId, { visibility: 'hidden' })
- * También te sirve a futuro: updateWeekProperties(weekId, { name: 'Semana 8', tags: [...] })
+ * NUEVO: actualizacion generica de propiedades de una semana
+ * Uso tipico: updateWeekProperties(weekId, { visibility: 'hidden' })
+ * Tambien te sirve a futuro: updateWeekProperties(weekId, { name: 'Semana 8', tags: [...] })
  */
 async function updateWeekProperties(weekId, partial) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/week/${weekId}/properties`, {
+    return fetch(`${API_BASE}/api/week/${weekId}/properties`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -199,3 +201,4 @@ export {
     // NUEVO
     updateWeekProperties
 }
+

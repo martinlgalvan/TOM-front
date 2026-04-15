@@ -28,7 +28,7 @@ function UsersListPage() {
     
             // Busca el plan correspondiente en PLAN_LIMITS
             const selectedPlan = PLAN_LIMITS.find((plan) => plan.name === data.plan) || PLAN_LIMITS.find((plan) => plan.name === "Gratuito");
-            setPlanLimit(selectedPlan.props.limit); // Establece el límite del plan
+            setPlanLimit(selectedPlan.props.limit); // Establece el limite del plan
         });
     
         // Obtener lista de usuarios del usuario actual
@@ -53,7 +53,7 @@ function UsersListPage() {
             <section className="container-fluid">
                 <article className="row justify-content-center mt-4">
                     <div className="col-10 col-lg-6 mb-4 text-center">
-                        {/* Información del plan y barra de progreso */}
+                        {/* Informacion del plan y barra de progreso */}
                         <h5>
                             Plan Actual: {plan} ({totalUsers}/{planLimit} alumnos)
                         </h5>
@@ -64,18 +64,18 @@ function UsersListPage() {
                         />
                         {progress >= 100 && (
                             <p style={{ color: "#f44336", marginTop: "10px" }}>
-                                ¡Has alcanzado el límite de alumnos de tu plan!
+                                !Has alcanzado el limite de alumnos de tu plan!
                             </p>
                         )}
                     </div>
 
                     <div className="col-10  mb-4 text-center">
 
-                        <p>Para mantener tu plan activo, aboná del 1 al 10 de cada mes.</p>
+                        <p>Para mantener tu plan activo, abona del 1 al 10 de cada mes.</p>
                         <p>Datos bancarios</p>
                         <p>Alias: plani.tom.uala</p>
                         <p>CVU: 0000007900204282114220</p>
-                        <p>Enviá el comprobante acá</p>
+                        <p>Envia el comprobante aca</p>
                         <a href="https://wa.me/message/6PSH46QCW4OTP1" target="_blank" class="whatsapp-btn">WhatsApp</a>
 
                     </div>
@@ -119,7 +119,7 @@ function UsersListPage() {
 
 
                     <div className="col-10 text-center my-5">
-                        <h2>Más personalización pronto...</h2>
+                        <h2>Mas personalizacion pronto...</h2>
                     </div>
 
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SelectButton } from 'primereact/selectbutton';
 
-const PercentageCalculator = () => {
+const PercentageCalculator = ({ isDark = false }) => {
   const [value, setValue] = useState('');
   const [percentage, setPercentage] = useState('');
   const [barra, setBarra] = useState(20);
@@ -55,7 +55,7 @@ const PercentageCalculator = () => {
   ];
 
   return (
-    <div className="calc-container">
+    <div className={`calc-container ${isDark ? 'calc-theme-dark' : 'calc-theme-light'}`}>
 
       <div className="card-dark row justify-content-center">
         <div className='col-6'>
@@ -103,7 +103,7 @@ const PercentageCalculator = () => {
       </div>
 
       <div className="card-dark mt-2">
-        <label className="label">Modo de cálculo</label>
+        <label className="label">Modo de calculo</label>
         <div className="card flex justify-content-center mt-2 bg-transparent">
         <SelectButton
           value={modoCalculo}
@@ -127,12 +127,12 @@ const PercentageCalculator = () => {
           <div className="big-result">{workingWeight} kg</div>
             {/*modoCalculo === 'restar'
               ? <span>Por lo tanto, en la barra, debes tener <strong>{workingWeight}kg</strong></span>
-              : <span>Por lo tanto, debés sacar <strong>{value - workingWeight}kg</strong> </span>
+              : <span>Por lo tanto, debes sacar <strong>{value - workingWeight}kg</strong> </span>
               */}
 
         </div>
       ) : (
-        <p className="text-light text-center mt-4">Ingresá los valores para calcular el peso.</p>
+        <p className="text-light text-center mt-4">Ingresa los valores para calcular el peso.</p>
       )}
 
       {/*val && perc && weightPerSide > 0 && (

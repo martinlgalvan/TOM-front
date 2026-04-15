@@ -1,20 +1,23 @@
-async function changeProperty(userId, category ) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${userId}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'auth-token': localStorage.getItem('token')
-        },
-        body: JSON.stringify( { category } )
-    })
-        .then(async response => {
-            if (response.ok) {
-                return response.json()
-            }
-            else {
-                throw Error('La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.')
-            }
-        })
+﻿import { API_BASE } from './apiFetch.js'
+
+ async function changeProperty(userId, category) {
+  const token = localStorage.getItem('token');
+
+  const res = await fetch(`${API_BASE}/api/user/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': token,
+    },
+    body: JSON.stringify({ category })
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(txt);
+  }
+
+  return res.json();
 }
 
 

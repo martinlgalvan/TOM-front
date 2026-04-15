@@ -41,7 +41,7 @@ function LoginPage({ onLogin }) {
         <main className='container-fluid'>
             <div className="my-5 d-flex flex-column justify-content-center align-items-center py-3">
                 <div className="card p-4 shadow-lg" style={{ width: '100%', maxWidth: '400px', border: 'none' }}>
-                    <h2 className="text-center mb-4" style={{ fontWeight: 600 }}>Iniciar Sesión</h2>
+                    <h2 className="text-center mb-4" style={{ fontWeight: 600 }}>Iniciar Sesion</h2>
                     
                     {error && 
                         <div className="alert alert-danger text-center" role="alert">
@@ -51,7 +51,7 @@ function LoginPage({ onLogin }) {
 
                     <form onSubmit={onSubmit}>
                         <div className="form-group mb-4">
-                            <label htmlFor="email" className="form-label" style={{ fontWeight: 500 }}>Correo electrónico</label>
+                            <label htmlFor="email" className="form-label" style={{ fontWeight: 500 }}>Correo electronico</label>
                             <input 
                                 type="email" 
                                 className="form-control form-control-lg" 
@@ -64,7 +64,7 @@ function LoginPage({ onLogin }) {
                         </div>
 
                         <div className="form-group mb-4 position-relative">
-                            <label htmlFor="password" className="form-label" style={{ fontWeight: 500 }}>Contraseña</label>
+                            <label htmlFor="password" className="form-label" style={{ fontWeight: 500 }}>Contrasena</label>
                             <input 
                                 type={showPassword ? "text" : "password"} 
                                 className="form-control form-control-lg" 

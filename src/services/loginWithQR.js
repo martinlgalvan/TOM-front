@@ -1,5 +1,7 @@
+import { API_BASE, apiFetch } from './apiFetch.js'
+
 async function generateQR(user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/generate-qr/${user_id}`, {
+    return apiFetch(`/api/generate-qr/${user_id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -10,30 +12,38 @@ async function generateQR(user_id) {
                 return response.json()
             }
             else {
-                throw Error('La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.')
+                throw Error('La contrasena o el email son incorrectos. Por favor ingrese una cuenta valida.')
             }
         })
 }
 
-async function loginWithQR(token) {
-    return fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/qr-login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }), // Envia el token en el cuerpo de la solicitud
-    })
-        .then(async (response) => {
-            if (response.ok) {
-                return response.json(); // Devuelve los datos del usuario y el JWT
-            } else {
-                const error = await response.json();
-                throw new Error(error.message || 'Error al iniciar sesión con el QR.');
-            }
-        });
+ async function loginWithQR(qrToken) {
+  const res = await fetch(`${API_BASE}/api/qr-login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ token: qrToken })
+  });
+
+  if (!res.ok) {
+    // si el back manda { message }, lo mostramos
+    let msg = 'Error al iniciar sesion con QR.';
+    try {
+      const data = await res.json();
+      if (data?.message) msg = data.message;
+    } catch (_) {}
+    throw new Error(msg);
+  }
+
+  // ✅ Esperamos { token, user }
+  return res.json();
 }
+
 
 export {
     generateQR,
     loginWithQR
 }
+
+

@@ -52,7 +52,7 @@ let idRefresh = generateUUID()
     setLoading(true)
 
     setTimeout(() => {     
-      setExercisesAmrap([...exercisesAmrap, exercise]); //esto debería de funcionar
+      setExercisesAmrap([...exercisesAmrap, exercise]); //esto deberia de funcionar
       setName('')
       setReps(1)
       setPeso('')
@@ -263,7 +263,7 @@ useEffect(() => {
             </div>
 
             <div className="col-6 text-center">
-              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className={`input-group-text btn border ${textColor == 'false' ? "bbb" : "blackColor"} mt-3`} style={{ "backgroundColor": `black` }}>Añadir ejercicio</button>
+              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className={`input-group-text btn border ${textColor == 'false' ? "bbb" : "blackColor"} mt-3`} style={{ "backgroundColor": `black` }}>Anadir ejercicio</button>
             </div>      
           </div>
 

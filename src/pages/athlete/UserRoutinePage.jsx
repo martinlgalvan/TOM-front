@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -18,6 +18,10 @@ import ViewStreamIcon from '@mui/icons-material/ViewStream';
 function UserRoutinePage() {
     const { id } = useParams();
     const username = localStorage.getItem('name');
+    const [isDark, setIsDark] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return localStorage.getItem('mobileDarkMode') === 'true';
+    });
 
     const navigate = useNavigate()
     const [routine, setRoutine] = useState([]);
@@ -32,13 +36,36 @@ function UserRoutinePage() {
     const [commentsData, setCommentsData] = useState(null); // { mode: 'free'|'days', title?, description?, items? }
     const [commentsWeek, setCommentsWeek] = useState(null);
 
-    const isPaid = localStorage.getItem('state');
-    const puedeVerRutina = isPaid === 'permitir' || isPaid === 'true' || isPaid === null || isPaid === undefined;
+    const [paymentState, setPaymentState] = useState(() => localStorage.getItem('state'));
+
+    const puedeVerRutina = useMemo(() => {
+        return paymentState === 'permitir' || paymentState === 'true' || paymentState === null || paymentState === undefined;
+    }, [paymentState]);
+
+    const refreshPaymentState = useCallback(async () => {
+        try {
+            const user = await UserServices.findUserById(id);
+            const isPaid = user?.payment_info?.isPaid;
+
+            if (isPaid === null || isPaid === undefined) {
+                localStorage.removeItem('state');
+                setPaymentState(null);
+                return;
+            }
+
+            const normalized = String(isPaid);
+            localStorage.setItem('state', normalized);
+            setPaymentState(normalized);
+        } catch (error) {
+            console.error('Error refrescando estado de acceso del usuario:', error);
+        }
+    }, [id]);
 
     // refs para observer
     const weekRefs = useRef([]);
 
     const handleCloseDialog = () => setVisibleEdit(false);
+    const athleteDialogClass = isDark ? 'athlete-dialog-dark' : '';
 
     // ==== Helpers de fecha ====
     const parseDDMMYYYY = (fechaStr = '', horaStr = '') => {
@@ -75,18 +102,18 @@ function UserRoutinePage() {
             if (ts) return new Date(ts).toLocaleDateString('es-AR');
         }
         const ca = week?.created_at;
-        if (ca && typeof ca === 'object' && 'fecha' in ca) return ca.fecha || '—';
+        if (ca && typeof ca === 'object' && 'fecha' in ca) return ca.fecha || '-';
         const ts = toTimestampSafe(ca);
-        return ts ? new Date(ts).toLocaleDateString('es-AR') : '—';
+        return ts ? new Date(ts).toLocaleDateString('es-AR') : '-';
     };
 
-    // ==== Mapeo de labels de días de la rutina ====
+    // ==== Mapeo de labels de dias de la rutina ====
     const getDayLabelMap = (week) => {
         const map = {};
         (week?.routine || []).forEach((d, idx) => {
             const key = String(d?._id ?? '');
             if (!key) return;
-            map[key] = d?.name || d?.title || `Día ${idx + 1}`;
+            map[key] = d?.name || d?.title || `Dia ${idx + 1}`;
         });
         return map;
     };
@@ -122,7 +149,7 @@ function UserRoutinePage() {
                         const dayId = String(it?.dayId ?? '').trim();
                         if (!dayId) return null;
                         const text = String(it?.text ?? '').trim();
-                        const label = it?.label || labels[dayId] || `Día`;
+                        const label = it?.label || labels[dayId] || 'Dia';
                         return { dayId, label, text };
                     })
                     .filter(Boolean)
@@ -132,7 +159,7 @@ function UserRoutinePage() {
                     .map(k => {
                         const dayId = String(k);
                         const text = String(src.daysMap[k] ?? '').trim();
-                        const label = labels[dayId] || `Día`;
+                        const label = labels[dayId] || 'Dia';
                         return { dayId, label, text };
                     })
                     .filter(it => it.text.length > 0);
@@ -142,7 +169,7 @@ function UserRoutinePage() {
                     .map(k => {
                         const dayId = String(k);
                         const text = String(src.days[k] ?? '').trim();
-                        const label = labels[dayId] || `Día`;
+                        const label = labels[dayId] || 'Dia';
                         return { dayId, label, text };
                     })
                     .filter(it => it.text.length > 0);
@@ -186,7 +213,7 @@ function UserRoutinePage() {
         };
     };
 
-    // ==== Detección sólida de comentarios para el indicador ====
+    // ==== Deteccion solida de comentarios para el indicador ====
     const getCommentsMeta = (week) => {
         const vm = buildCommentsVM(week);
         if (!vm) return { has: false, count: undefined };
@@ -208,7 +235,7 @@ function UserRoutinePage() {
                     : [];
                 const sorted = [...visibleWeeks].sort((a, b) => getSortTime(b) - getSortTime(a));
                 setRoutine(sorted);
-                NotifyHelper.instantToast('Semanas cargadas con éxito');
+                NotifyHelper.instantToast('Semanas cargadas con exito');
             });
     }, [id]);
 
@@ -231,8 +258,48 @@ function UserRoutinePage() {
     useEffect(() => {
         UserServices.getProfileById(id)
             .then(setUserProfile)
-            .catch((error) => console.error("Error al obtener el perfil del alumno:", error));
+            .catch((error) => console.error('Error al obtener el perfil del alumno:', error));
     }, [id]);
+
+    useEffect(() => {
+        refreshPaymentState();
+    }, [refreshPaymentState]);
+
+    useEffect(() => {
+        const read = () => {
+            const enabled = localStorage.getItem('mobileDarkMode') === 'true';
+            setIsDark(enabled);
+        };
+
+        read();
+        window.addEventListener('mobileDarkModeChange', read);
+        window.addEventListener('resize', read);
+
+        return () => {
+            window.removeEventListener('mobileDarkModeChange', read);
+            window.removeEventListener('resize', read);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleWindowFocus = () => {
+            refreshPaymentState();
+        };
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                refreshPaymentState();
+            }
+        };
+
+        window.addEventListener('focus', handleWindowFocus);
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            window.removeEventListener('focus', handleWindowFocus);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
+    }, [refreshPaymentState]);
 
     const seeRoutine = (i) => {
         setPressedRoutine(routine[i].routine);
@@ -316,25 +383,25 @@ function UserRoutinePage() {
                 <Logo />
             </section>
 
-            <section className='container'>
+            <section className={`container user-routine-page ${isDark ? 'user-routine-dark' : ''}`}>
             {puedeVerRutina ? ( <>
                 <div className='transition-rigth-to-medium'>
-                    <h2 className='text-center mt-4 mb-3'>Hola {username}!</h2>
-                    <p className='my-3 text-center'>
-                        Debajo, verás todas las semanas que tu entrenador cargó.
+                    <h2 className={`text-center mt-4 mb-3 ${isDark ? 'text-light' : ''}`}>Hola {username}!</h2>
+                    <p className={`my-3 text-center ${isDark ? 'user-routine-subtitle-dark' : ''}`}>
+                        Debajo, veras todas las semanas que tu entrenador cargo.
                     </p>
                 </div>
 
                 {userProfile && userProfile.devolucion && (
-                    <div className="card p-3 my-3">
-                        <h5 className="card-title">Correcciones / Devolución</h5>
+                    <div className={`card p-3 my-3 ${isDark ? 'user-routine-panel-dark border-0' : ''}`}>
+                        <h5 className={`card-title ${isDark ? 'text-light' : ''}`}>Correcciones / Devolucion</h5>
                         {userProfile.devolucionFecha && (
-                        <p className="text-muted">
+                        <p className={isDark ? 'text-light-emphasis' : 'text-muted'}>
                             Fecha: {new Date(userProfile.devolucionFecha).toLocaleString()}
                         </p>
                         )}
-                        <p className="card-text" style={{ whiteSpace: 'pre-wrap' }}>
-                        {userProfile.devolucion ? userProfile.devolucion : "No se han cargado correcciones."}
+                        <p className={`card-text ${isDark ? 'text-light' : ''}`} style={{ whiteSpace: 'pre-wrap' }}>
+                        {userProfile.devolucion ? userProfile.devolucion : 'No se han cargado correcciones.'}
                         </p>
                     </div>
                 )}
@@ -354,18 +421,18 @@ function UserRoutinePage() {
                                 <div
                                     ref={el => (weekRefs.current[indexWeek] = el)}
                                     key={indexWeek}
-                                    className={`col-11 stylesBoxWeeks box pt-2 pb-1 mt-2 ${animationClass} mb-4 rounded-3 position-relative`}
+                                    className={`col-11 stylesBoxWeeks user-routine-week-card box pt-2 pb-1 mt-2 ${animationClass} mb-4 rounded-3 position-relative`}
                                     onClick={() => navigateToPage(week._id, indexWeek)}
                                 >
                                     {/* Indicador arriba-derecha: ahora cliqueable y abre dialog */}
                                     {has && (
                                         <div
                                             style={commentIndicatorWrap}
-                                            title="Ver comentarios"
-                                            aria-label="Ver comentarios"
+                                            title='Ver comentarios'
+                                            aria-label='Ver comentarios'
                                             onClick={(e) => openCommentsDialog(week, e)}
                                         >
-                                            <div style={commentIconBox}>
+                                            <div style={commentIconBox} className={isDark ? 'user-routine-comment-icon-dark' : ''}>
                                                 <MessageSquare size={18} />
                                                 {Number.isFinite(count) && count > 0
                                                     ? <span style={badgeCount}>{count}</span>
@@ -376,16 +443,16 @@ function UserRoutinePage() {
 
                                     <div className='row'>
                                         <div className='col-1'>
-                                            <CircleIcon className='fs07em text-primary' />
+                                            <CircleIcon className={`fs07em ${isDark ? 'user-routine-week-dot-dark' : 'text-primary'}`} />
                                         </div>
                                         <div className='col-11'>
-                                            <p className='m-0'>{week.name}</p>
+                                            <p className={`m-0 ${isDark ? 'text-light' : ''}`}>{week.name}</p>
                                         </div>
 
                                         <div className='col-5 mt-3 mb-2'>
-                                            <div className='row badgeFecha rounded-2 py-1 m-auto'>
-                                                <div className='col-3 ps-1 m-auto'><CalendarTodayIcon className='fs08em text-primary' /></div>
-                                                <div className='col-8 ps-0 fs07em m-auto'>
+                                            <div className='row badgeFecha user-routine-week-badge rounded-2 py-1 m-auto'>
+                                                <div className='col-3 ps-1 m-auto'><CalendarTodayIcon className={`fs08em ${isDark ? 'user-routine-week-dot-dark' : 'text-primary'}`} /></div>
+                                                <div className={`col-8 ps-0 fs07em m-auto ${isDark ? 'text-light' : ''}`}>
                                                     {getWeekDateLabel(week)}
                                                 </div>
                                             </div>
@@ -393,9 +460,9 @@ function UserRoutinePage() {
 
                                         {week.block && week.block.name && (
                                             <div className='col-7 mt-3 mb-2'>
-                                                <div className='row badgeFecha rounded-2 py-1 m-auto' style={{ backgroundColor: `${week.block.color}` }}>
-                                                    <div className='col-2 ps-1 m-auto'><ViewStreamIcon className='fs07em' /></div>
-                                                    <div className='col-10 fs07em m-auto px-0'>{week.block.name}</div>
+                                                <div className='row badgeFecha user-routine-week-badge rounded-2 py-1 m-auto' style={{ backgroundColor: `${week.block.color}` }}>
+                                                    <div className={`col-2 ps-1 m-auto ${isDark ? 'text-light' : ''}`}><ViewStreamIcon className='fs07em' /></div>
+                                                    <div className={`col-10 fs07em m-auto px-0 ${isDark ? 'text-light' : ''}`}>{week.block.name}</div>
                                                 </div>
                                             </div>
                                         )}
@@ -407,21 +474,21 @@ function UserRoutinePage() {
                 )}
 
                 </> ) : (
-                    <div className="d-flex flex-column align-items-center justify-content-center my-5 py-5 px-4 card shadow-sm bg-light">
+                    <div className={`d-flex flex-column align-items-center justify-content-center my-5 py-5 px-4 card shadow-sm ${isDark ? 'user-routine-panel-dark border-0' : 'bg-light'}`}>
                         <UserLock />
                         <h4 className="mb-3 text-danger fw-bold">Acceso restringido</h4>
-                        <p className="text-muted text-center" style={{ maxWidth: '500px' }}>
-                            Para poder visualizar tu rutina de entrenamiento, es necesario que tengas la mensualidad al día.
+                        <p className={`${isDark ? 'text-light-emphasis' : 'text-muted'} text-center`} style={{ maxWidth: '500px' }}>
+                            Para poder visualizar tu rutina de entrenamiento, es necesario que tengas la mensualidad al dia.
                         </p>
-                        <p className="text-muted text-center" style={{ maxWidth: '500px' }}>
-                            Si creés que esto es un error, por favor <strong>contactá con tu entrenador</strong>.
+                        <p className={`${isDark ? 'text-light-emphasis' : 'text-muted'} text-center`} style={{ maxWidth: '500px' }}>
+                            Si crees que esto es un error, por favor <strong>contacta con tu entrenador</strong>.
                         </p>
                     </div>
                 )}
 
                 {routine && (
                     <Dialog
-                        className='col-12 col-md-10 col-xxl-8'
+                        className={`${athleteDialogClass} col-12 col-md-10 col-xxl-8`}
                         contentClassName={'colorDialog'}
                         headerClassName={'colorDialog'}
                         header={indexRoutine.name}
@@ -469,7 +536,7 @@ function UserRoutinePage() {
                                                             </a>
                                                         ) : '-'}
                                                     </td>
-                                                    <td className="text-center">{exercise.notas || '-'}</td>
+                                                    <td className='text-center'>{exercise.notas || '-'}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -480,54 +547,55 @@ function UserRoutinePage() {
                     </Dialog>
                 )}
 
-                {/* Dialog de comentarios (render distinto según mode) */}
+                {/* Dialog de comentarios (render distinto segun mode) */}
                 <Dialog
-                    className='col-12 col-md-8 col-xxl-6'
+                    className={`${athleteDialogClass} col-12 col-md-8 col-xxl-6`}
                     contentClassName={'colorDialog'}
                     headerClassName={'colorDialog'}
-                    header={commentsWeek?.name ? `Comentarios - ${commentsWeek.name}` : 'Comentarios'}
+                    header={commentsWeek?.name ? `Comentarios - ${commentsWeek.name}` : `Comentarios`}
                     visible={visibleComments}
                     modal
                     onHide={() => setVisibleComments(false)}
                 >
                     {!commentsData ? (
-                        <div className="text-muted">No hay comentarios cargados.</div>
+                        <div className={isDark ? 'text-light-emphasis' : 'text-muted'}>No hay comentarios cargados.</div>
                     ) : commentsData.mode === 'free' ? (
-                        <div className="border rounded-3 p-3 bg-light">
-                            {commentsData.title && <h6 className="mb-2">{commentsData.title}</h6>}
+                        <div className={`border rounded-3 p-3 ${isDark ? 'user-routine-panel-dark border-secondary-subtle' : 'bg-light'}`}>
+                            {commentsData.title && <h6 className={`mb-2 ${isDark ? 'text-light' : ''}`}>{commentsData.title}</h6>}
                             {commentsData.description ? (
-                                <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                                <p className={`mb-0 ${isDark ? 'text-light' : ''}`} style={{ whiteSpace: 'pre-wrap' }}>
                                     {commentsData.description}
                                 </p>
                             ) : (
-                                <span className="text-muted">Sin contenido.</span>
+                                <span className={isDark ? 'text-light-emphasis' : 'text-muted'}>Sin contenido.</span>
                             )}
                         </div>
                     ) : (
                         <div className="d-flex flex-column gap-3">
-                            <h6 className="mb-2">{commentsData.title || 'Comentarios por día'}</h6>
+                            <h6 className={`mb-2 ${isDark ? 'text-light' : ''}`}>{commentsData.title || 'Comentarios por dia'}</h6>
                             {Array.isArray(commentsData.items) && commentsData.items.length > 0 ? (
                                 commentsData.items.map((it) => (
-                                    <div key={it.dayId} className="border rounded-3 p-3 bg-light">
-                                        <div className="fw-semibold mb-2">{it.label || `Día`}</div>
+                                    <div key={it.dayId} className={`border rounded-3 p-3 ${isDark ? 'user-routine-panel-dark border-secondary-subtle' : 'bg-light'}`}>
+                                        <div className={`fw-semibold mb-2 ${isDark ? 'text-light' : ''}`}>{it.label || 'Dia'}</div>
                                         {it.text ? (
-                                            <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                                            <p className={`mb-0 ${isDark ? 'text-light' : ''}`} style={{ whiteSpace: 'pre-wrap' }}>
                                                 {it.text}
                                             </p>
                                         ) : (
-                                            <span className="text-muted">Sin contenido.</span>
+                                            <span className={isDark ? 'text-light-emphasis' : 'text-muted'}>Sin contenido.</span>
                                         )}
                                     </div>
                                 ))
                             ) : (
-                                <span className="text-muted">No hay comentarios por día cargados.</span>
+                                <span className={isDark ? 'text-light-emphasis' : 'text-muted'}>No hay comentarios por dia cargados.</span>
                             )}
                         </div>
                     )}
                 </Dialog>
 
                 <Dialog
-                    header={`Completa tu perfil`}
+                    className={athleteDialogClass}
+                    header={'Completa tu perfil'}
                     visible={showProfileMissingModal}
                     style={{ width: '90vw' }}
                     modal
@@ -535,7 +603,7 @@ function UserRoutinePage() {
                     footer={
                         <div className="row justify-content-center mt-2">
                             <div className="col-6 text-center">
-                                <Button label="Más tarde" onClick={() => setShowProfileMissingModal(false)} className="p-button-secondary text-light " />
+                                <Button label="Mas tarde" onClick={() => setShowProfileMissingModal(false)} className="p-button-secondary text-light " />
                             </div>
                             <div className="col-6 text-center">
                                 <Button label="Ir al perfil " onClick={redirectToPerfil} className="p-button-primary text-light " />
@@ -543,7 +611,7 @@ function UserRoutinePage() {
                         </div>
                     }
                 >
-                    <p>Hola {username}!, por favor completá tu perfil, así tu entrenador tiene tu información.</p>
+                    <p>Hola {username}!, por favor completa tu perfil, asi tu entrenador tiene tu informacion.</p>
                 </Dialog>
             </section>
         </>

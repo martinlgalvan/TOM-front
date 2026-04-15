@@ -29,9 +29,10 @@ import CAMILA_BENEITEZ from "/src/assets/img/camila-beneitez.png";
 import JOAQUIN from "/src/assets/img/Joaquin.png";
 import AGUSTIN_RAZZETTI from "/src/assets/img/Agustin_razzetti.png";
 import FARID from "/src/assets/img/Farid.png";
-import IÑAKI from "/src/assets/img/iñaki-logo.png";
-import AXEL from "/src/assets/img/Axel.png";
+import INAKI from "/src/assets/img/inaki-logo.png";
+import AXEL from "/src/assets/img/Axel.jpeg";
 import DANIEL from "/src/assets/img/Daniel.png";
+import TOM_WHITE from "/src/assets/img/TOM_White.png";
 
 const DEFAULT_LOGO = TOM;
 
@@ -40,7 +41,7 @@ const LOGO_MAP = {
   "email:arielbruno97@gmail.com": ARIELBRUNO,
   "id:663b122634b3af9cafacb80c": ARIELBRUNO,
 
-  // JESÚS OLIVA
+  // JESUS OLIVA
   "email:jesusoliva@gmail.com": JESUSOLIVA,
   "id:648c06a7c3ce34126657a924": JESUSOLIVA,
 
@@ -48,19 +49,19 @@ const LOGO_MAP = {
   "email:mathiasrago7@gmail.com": MATHIAS_RAGO,
   "id:66066ff46310dcb00ee20717": MATHIAS_RAGO,
 
-  // GERÓNIMO BISANZIO
+  // GERONIMO BISANZIO
   "email:bisabisanzio@gmail.com": GERONIMO_BISANZIO,
   "id:660df0889e33d1815acf9506": GERONIMO_BISANZIO,
 
-  // JEREMÍAS OLMEDO
+  // JEREMIAS OLMEDO
   "email:jeremiasolmedo6@gmail.com": JEREMIAS_OLMEDO,
   "id:660680376310dcb00ee20719": JEREMIAS_OLMEDO,
 
-  // MATÍAS VILLALBA (equipo)
+  // MATIAS VILLALBA (equipo)
   "email:matuch_27@hotmail.com": MATIAS_VILLALBA,
   "id:66156628e97c68ef705f451f": MATIAS_VILLALBA,
 
-  // MATÍAS VILLALBA (personal)
+  // MATIAS VILLALBA (personal)
   "email:matiasvill83@gmail.com": MATIAS_VILLALBA_PERSONAL,
   "id:65285e48af829c334f96e695": MATIAS_VILLALBA_PERSONAL,
 
@@ -88,7 +89,7 @@ const LOGO_MAP = {
   "email:svstrong.training@gmail.com": SOL,
   "id:6861636cdbfbe24db072ca58": SOL,
 
-  // MARTÍN CASANOVA
+  // MARTIN CASANOVA
   "email:martincasanova2001-trainer@gmail.com": MARTIN_CASANOVA,
   "id:686976ccd5788ade7ad998bf": MARTIN_CASANOVA,
 
@@ -104,7 +105,7 @@ const LOGO_MAP = {
   "email:marchesoti465@est.derecho.uba.ar": VALU_MARCHE,
   "id:666dd193caf84a7b159941d2": VALU_MARCHE,
 
-  // AGUSTÍN ARENAS
+  // AGUSTIN ARENAS
   "email:agu.arenaspf@gmail.com": AGUSTIN_ARENAS,
   "id:6887d82d7e742d5bca1eada6": AGUSTIN_ARENAS,
 
@@ -137,8 +138,8 @@ const LOGO_MAP = {
     "email:Axeldellavallol.ac@gmail.com": AXEL,
     "id:690d4471aac685e40efb8de0": AXEL,
 
-    "email:irey241989-trainer@gmail.com": IÑAKI,
-    "id:694c1869aa31bb2de8d104e3": IÑAKI,
+    "email:irey241989-trainer@gmail.com": INAKI,
+    "id:694c1869aa31bb2de8d104e3": INAKI,
 
     "email:danielnoferi@gmail.com": DANIEL,
     "id:694026ca258acddc74ed3339": DANIEL
@@ -158,16 +159,46 @@ function resolveLogoFromStorage() {
   return byId || byEmail || DEFAULT_LOGO;
 }
 
+function shouldUseWhiteTomLogo(resolvedLogo) {
+  if (typeof window === "undefined") return false;
+
+  // Solo si el logo resultante es el default (TOM)
+  if (resolvedLogo !== TOM) return false;
+
+  // Solo si esta activo el modo oscuro mobile
+  const darkEnabled = localStorage.getItem("mobileDarkMode") === "true";
+  if (!darkEnabled) return false;
+
+  // Solo en mobile (mismo criterio que en App)
+  const isMobile = window.matchMedia("(max-width: 991px)").matches;
+  return isMobile;
+}
+
 function Logo({ isHomePage = false }) {
   const [urlPath, setUrlPath] = useState(DEFAULT_LOGO);
 
-  useEffect(() => {
-    setUrlPath(resolveLogoFromStorage());
+  const recomputeLogo = () => {
+    const resolved = resolveLogoFromStorage();
+    const finalLogo = shouldUseWhiteTomLogo(resolved) ? TOM_WHITE : resolved;
+    setUrlPath(finalLogo);
+  };
 
-    // (Opcional) Si querés que cambie en vivo cuando se actualiza localStorage en otra pestaña:
-    // const onStorage = () => setUrlPath(resolveLogoFromStorage());
+  useEffect(() => {
+    recomputeLogo();
+
+    // ✅ Para que se actualice al tocar el switch (evento que dispara App)
+    const onThemeChange = () => recomputeLogo();
+    window.addEventListener("mobileDarkModeChange", onThemeChange);
+
+    // (Opcional) si cambia en otra pestana
+    // const onStorage = () => recomputeLogo();
     // window.addEventListener("storage", onStorage);
-    // return () => window.removeEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("mobileDarkModeChange", onThemeChange);
+      // window.removeEventListener("storage", onStorage);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -176,10 +207,8 @@ function Logo({ isHomePage = false }) {
         <div className={`row justify-content-center align-items-center position-relative divPrincipal marginNavBar`}>
           <h1 className="visually-hidden">TOM</h1>
 
-          {/* Imagen de fondo */}
           <img className="background-logo position-absolute w-100 h-100" src={BackgroundLogo} alt="TOM" />
 
-          {/* Imagen centrada con fondo blanco y opacidad */}
           <div className="image-container position-relative d-flex justify-content-center align-items-center">
             <img className="img-fluid centered-img" src={urlPath} alt="TOM" />
           </div>

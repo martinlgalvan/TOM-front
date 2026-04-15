@@ -5,7 +5,7 @@ self.onmessage = function (e) {
     timeLeft--;
     if (timeLeft <= 0) {
       clearInterval(interval);
-      self.postMessage("done"); // Envía mensaje al componente principal cuando termine
+      self.postMessage("done"); // Envia mensaje al componente principal cuando termine
       self.close();
     } else {
       self.postMessage(timeLeft);

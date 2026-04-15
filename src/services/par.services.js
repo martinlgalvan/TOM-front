@@ -1,5 +1,7 @@
+﻿import { API_BASE } from './apiFetch.js'
+
 async function getPAR(user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine/par`, {
+    return fetch(`${API_BASE}/api/user/${user_id}/routine/par`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -19,7 +21,7 @@ async function getPAR(user_id) {
 
 //Crea un papr
 async function createPAR(routine, user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine/par`, {
+    return fetch(`${API_BASE}/api/user/${user_id}/routine/par`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -38,7 +40,7 @@ async function createPAR(routine, user_id) {
 }
 
 async function updatePAR(id, updatedPAR) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/par/${id}`, {
+    return fetch(`${API_BASE}/api/par/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -55,7 +57,7 @@ async function updatePAR(id, updatedPAR) {
 }
 
 async function deletePAR(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/par/${id}`, {
+    return fetch(`${API_BASE}/api/par/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -76,7 +78,7 @@ async function deletePAR(id) {
 
 
 async function createPARroutine(routine, user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine/par/week`, {
+    return fetch(`${API_BASE}/api/user/${user_id}/routine/par/week`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -95,7 +97,7 @@ async function createPARroutine(routine, user_id) {
 }
 
 async function createProgressionsPARToUsers(template, userIds) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/routine/progression/multi`, {
+    return fetch(`${API_BASE}/api/routine/progression/multi`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -118,7 +120,7 @@ async function createProgressionsPARToUsers(template, userIds) {
 }
 
 async function createProgressionFromPAR(par_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/par/${par_id}/progression`, {
+    return fetch(`${API_BASE}/api/par/${par_id}/progression`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

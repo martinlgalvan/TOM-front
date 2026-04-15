@@ -3,23 +3,23 @@ import { Box, Typography, IconButton, Fade, Grow } from '@mui/material';
 import { Play, Pause, RefreshCcw } from 'lucide-react';
 
 // CountdownTimer: initial, running, paused, expired states with overlay animations and controls
-export default function CountdownTimer({ initialTime = "00:30" }) {
+export default function CountdownTimer({darkMode, initialTime = "00:30" }) {
   // Normalize input to MM:SS
  const normalize = input => {
   const str = String(input).trim()
-    // convertir comas, apóstrofos y puntos a “:”
+    // convertir comas, apostrofos y puntos a ":"
     .replace(/[,.'´`]/g, ':')
-    // eliminar todo lo que no sea dígito o “:”
+    // eliminar todo lo que no sea digito o ":"
     .replace(/[^0-9:]/g, '')
 
   const parts = str.split(':').filter(Boolean)
   let m = 0, s = 0
 
   if (parts.length === 0) {
-    // nada válido
+    // nada valido
     m = 0; s = 0
   } else if (parts.length === 1) {
-    // un solo número → minutos
+    // un solo numero → minutos
     m = parseInt(parts[0], 10) || 0
   } else {
     // al menos MM:SS
@@ -70,19 +70,19 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
  const handleStartPause = e => {
   e.stopPropagation();
 
-  // Si estamos “expired”, lo reiniciamos antes de arrancar
+  // Si estamos "expired", lo reiniciamos antes de arrancar
   if (timeLeft === 0) {
     remainingTimeRef.current = baseSeconds;   // o initialSeconds, lo que uses
     setTimeLeft(baseSeconds);
   }
 
   if (isRunning) {
-    // Pausar…
+    // Pausar...
     clearInterval(intervalRef.current);
     setIsRunning(false);
     remainingTimeRef.current = timeLeft;
   } else {
-    // Arrancar o reanudar…
+    // Arrancar o reanudar...
     startTimestampRef.current = Date.now();
     setIsRunning(true);
     intervalRef.current = setInterval(() => {
@@ -124,25 +124,21 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
   return (
     <Box position="relative" className="timerBox" display="inline-block">
       {/* Timer display */}
-      <Typography
+      <span
         variant="subtitle2"
-        sx={{
-          fontFamily: 'monospace', p: 1, borderRadius: 1,
-            
-        }}
-        className="timer"
+        className={`timer me-4 ${darkMode ? "textWeightCards" : "textWeightCards"}`}
       >
         {toMMSS(timeLeft)}
-      </Typography>
+      </span>
 
       {/* Expired overlay: red background + play button */}
       <Fade in={isExpired} timeout={400} mountOnEnter unmountOnExit appear>
-        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+        <Box position="absolute" top={0} left={0} width="110%" height={"100%"} marginLeft={"-3px"}
           display="flex" alignItems="center" justifyContent="center"
-          sx={{ backgroundColor: 'rgba(255,0,0,0.4)', borderRadius: 1, backdropFilter: 'blur(0.5px)'  }}
+          sx={{ backgroundColor: 'rgba(255,0,0,0.4)', padding: "0 10px", borderRadius: 1, backdropFilter: 'blur(0.5px)'  }}
         >
           <Grow in={isExpired} timeout={300} mountOnEnter unmountOnExit>
-            <IconButton onClick={handleStartPause} size="small">
+            <IconButton className={'marginPlayButton'} onClick={handleStartPause} size="small">
               <Play size={20} />
             </IconButton>
           </Grow>
@@ -151,7 +147,7 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
 
       {/* Initial stopped overlay: play button */}
       <Fade in={isStopped} timeout={400} mountOnEnter unmountOnExit appear>
-        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+        <Box position="absolute" top={0} left={0} width="100%" height="100%"
           display="flex" alignItems="center" justifyContent="center"
           sx={{ backgroundColor: 'transparent', borderRadius: 1 }}
         >
@@ -165,7 +161,7 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
 
       {/* Running overlay: pause button rotates from play */}
       <Fade in={isRunning} timeout={400} mountOnEnter unmountOnExit appear>
-        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+        <Box position="absolute" top={0} left={0} width="100%" height="100%"
           display="flex" alignItems="center" justifyContent="center"
           
           sx={{  borderRadius: 1 }}
@@ -180,13 +176,13 @@ export default function CountdownTimer({ initialTime = "00:30" }) {
 
       {/* Paused overlay: pause icon rotated + reset button */}
       <Fade in={isPaused} timeout={400} mountOnEnter unmountOnExit appear>
-        <Box position="absolute" top={5} left={0} width="100%" height="100%"
+        <Box position="absolute" top={0} left={0} width="100%" height="100%"
           display="flex" alignItems="center" justifyContent="center"
           sx={{ backgroundColor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(0.5px)', borderRadius: 1 }}
         >
           <Grow in={isPaused} timeout={300} mountOnEnter unmountOnExit>
             <Box className={'contButton'} display="flex" gap={0.5}>
-              <IconButton  onClick={handleReset} className="ms-4 ps-3"  size="small">
+              <IconButton  onClick={handleReset} className="ms-3"  size="small">
                 <RefreshCcw className="text-dark" size={18} />
               </IconButton>
               <IconButton  onClick={handleStartPause} size="small">

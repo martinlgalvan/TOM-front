@@ -59,7 +59,7 @@ function AddColorToUser(){
 
                             <ul className="list-group list-group-flush">
                                 <li className="list-group-item ">
-                                    <label htmlFor="name2" className="form-label">Código HEX (#000000)</label>
+                                    <label htmlFor="name2" className="form-label">Codigo HEX (#000000)</label>
                                     <input type="text" className="form-control my-1 rounded-0 text-center" id="name2" name="name2" value={color} onChange={handleColorChange}/>
                                 </li>
 
@@ -82,10 +82,10 @@ function AddColorToUser(){
 
                     <div className='col-10 col-lg-5 mb-3'>
                         <p className='mb-4'>
-                            Así se verán los botones
+                            Asi se veran los botones
                         </p>
 
-                        <button className={`btn ${textColor == false ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }}>Botón de prueba</button>
+                        <button className={`btn ${textColor == false ? "bbb" : "blackColor"}`} style={{ "backgroundColor": `${color}` }}>Boton de prueba</button>
                     </div>
 
                         <div className='col-10 col-lg-12  mb-3'>

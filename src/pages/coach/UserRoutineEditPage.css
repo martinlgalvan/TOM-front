@@ -1,0 +1,229 @@
+.week-actions-web .col-12 {
+  display: flex;
+}
+
+.week-action-badge {
+  margin-top: 6px;
+  max-width: 100%;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 4px 8px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.week-mobile-card {
+  border: 1px solid #dce3f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(20, 28, 46, 0.08);
+  overflow: hidden;
+}
+
+.week-mobile-head {
+  padding: 14px 14px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, #f8fbff 0%, #f2f6fd 100%);
+}
+
+.week-mobile-head-main {
+  min-width: 0;
+}
+
+.week-mobile-title {
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.week-mobile-meta {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.week-mobile-visibility {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.week-mobile-visibility.is-visible {
+  background: #e7f8ee;
+  color: #167b3c;
+  border-color: #bde7cb;
+}
+
+.week-mobile-visibility.is-hidden {
+  background: #fdecec;
+  color: #b42318;
+  border-color: #f3c1c1;
+}
+
+.week-mobile-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.week-mobile-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #d1d9e6;
+  background: #ffffff;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.week-mobile-icon-btn.is-open {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.week-mobile-icon-btn.is-visible {
+  background: #f8fbff;
+  border-color: #c6d2e6;
+  color: #174ea6;
+}
+
+.week-mobile-icon-btn.is-hidden {
+  background: #fff1f1;
+  border-color: #f4caca;
+  color: #b42318;
+}
+
+.week-mobile-body {
+  border-top: 1px solid #e5ebf5;
+  padding: 12px 14px 10px;
+}
+
+.week-mobile-action-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.week-mobile-action-btn {
+  border: 1px solid #d5deec;
+  background: #f8fbff;
+  color: #0f172a;
+  border-radius: 12px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.week-mobile-action-btn.is-danger {
+  border-color: #f0c4c4;
+  background: #fff2f2;
+  color: #b42318;
+}
+
+.week-mobile-dates {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.week-mobile-date-card {
+  border: 1px solid #dde5f2;
+  border-radius: 12px;
+  background: #f8fafd;
+  padding: 8px;
+}
+
+.week-mobile-date-label {
+  font-size: 11px;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+}
+
+.week-mobile-date-value {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.week-mobile-foot {
+  padding: 10px 14px 12px;
+  border-top: 1px solid #e5ebf5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafd 100%);
+}
+
+.week-mobile-block-wrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.week-mobile-block-caption {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.week-mobile-block-pill {
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  display: inline-block;
+}
+
+.week-mobile-edit-block {
+  border: 1px solid #cdd6e5;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 430px) {
+  .week-mobile-head {
+    padding: 12px;
+  }
+
+  .week-mobile-body {
+    padding: 10px 12px;
+  }
+
+  .week-mobile-foot {
+    padding: 10px 12px;
+  }
+}

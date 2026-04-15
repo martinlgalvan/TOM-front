@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
@@ -34,7 +34,7 @@ function Profile() {
     ];
 
     const diasOptions = Array.from({ length: 7 }, (_, i) => ({
-        label: `${i + 1} días`,
+        label: `${i + 1} dias`,
         value: i + 1
     }));
 
@@ -59,11 +59,11 @@ function Profile() {
         UserServices.editProfile(id, userDetails)
             .then(() => {
                 setSuccess(true);
-                NotifyHelper.instantToast("Perfil actualizado con éxito!");
+                NotifyHelper.instantToast("Perfil actualizado con exito!");
             })
             .catch((error) => {
                 console.error('Error al actualizar el perfil:', error);
-                NotifyHelper.instantToast("Error al actualizar el perfil. Intentá de nuevo.");
+                NotifyHelper.instantToast("Error al actualizar el perfil. Intenta de nuevo.");
             })
             .finally(() => {
                 setLoading(false);
@@ -105,7 +105,7 @@ function Profile() {
                 <div className="row justify-content-center mt-3">
                     <h2 className="text-center">Bienvenido a tu perfil {username}!</h2>
                     <p className="text-center my-4">
-                        A continuación, podés cargar tu información personal.
+                        A continuacion, podes cargar tu informacion personal.
                     </p>
 
                     {loading ? (
@@ -165,7 +165,7 @@ function Profile() {
 
                             {success && (
                                 <div className="alert alert-success text-center mt-3">
-                                    ¡Datos guardados correctamente!
+                                    !Datos guardados correctamente!
                                 </div>
                             )}
 
@@ -175,7 +175,7 @@ function Profile() {
                 </div>
 
                 <Dialog
-                    header={`Preguntas Frecuentes`}
+                    header={'Preguntas Frecuentes'}
                     visible={visible}
                     style={{ width: '90vw' }}
                     modal
@@ -183,24 +183,24 @@ function Profile() {
                 >
                     <div>
                         <div>
-                            <h3>¿Qué es la fatiga?</h3>
-                            <p>Es la sensación de cansancio, determinada por la disminución del rendimiento deportivo.</p>
+                            <h3>Que es la fatiga?</h3>
+                            <p>Es la sensacion de cansancio, determinada por la disminucion del rendimiento deportivo.</p>
                         </div>
                         <div>
-                            <h3>¿Qué es el NEAT?</h3>
-                            <p>Es el gasto energético que resulta de todas las acciones cotidianas no deportivas que requieren esfuerzo físico.</p>
+                            <h3>Que es el NEAT?</h3>
+                            <p>Es el gasto energetico que resulta de todas las acciones cotidianas no deportivas que requieren esfuerzo fisico.</p>
                         </div>
                         <div>
-                            <h3>¿Qué son los DOMS?</h3>
-                            <p>Son molestias musculares que aparecen aproximadamente 24 hs después de entrenar.</p>
+                            <h3>Que son los DOMS?</h3>
+                            <p>Son molestias musculares que aparecen aproximadamente 24 hs despues de entrenar.</p>
                         </div>
                         <div>
-                            <h3>¿Qué es el estrés?</h3>
-                            <p>Es una reacción física o emocional a una demanda. Cada persona lo vive diferente.</p>
+                            <h3>Que es el estres?</h3>
+                            <p>Es una reaccion fisica o emocional a una demanda. Cada persona lo vive diferente.</p>
                         </div>
                         <div>
-                            <h3>¿Qué es la alimentación?</h3>
-                            <p>Es la calidad del alimento que ingerís para entrenar mejor y alcanzar tus objetivos.</p>
+                            <h3>Que es la alimentacion?</h3>
+                            <p>Es la calidad del alimento que ingeris para entrenar mejor y alcanzar tus objetivos.</p>
                         </div>
                     </div>
                 </Dialog>

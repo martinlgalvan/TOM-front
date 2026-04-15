@@ -28,7 +28,7 @@ function UsersListPage() {
     const {id} = useParams()
     const {numberUsers} = useParams()
     //En app esta guardado el array entero.
-    //Acá, agarro los usuarios
+    //Aca, agarro los usuarios
     const data = sessionStorage.getItem('U4S3R')
     let parsed = JSON.parse(data)
 
@@ -42,7 +42,7 @@ function UsersListPage() {
     const [profileData, setProfileData] = useState(null);
     const [selectedDay, setSelectedDay] = useState(null);
 
-    const [name, setName] = useState()          // Variable para la eliminación
+    const [name, setName] = useState()          // Variable para la eliminacion
     const [user_id, setUser_id] = useState()    // ----------------------------*
 
 
@@ -103,7 +103,7 @@ function UsersListPage() {
         setShowDialog(false);
       };
 
-    //Función de búsqueda
+    //Funcion de busqueda
     const searcher = (e) => setSearch(e.target.value)   
     
     const results = !search ? users : users.filter((dato)=> dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
@@ -124,12 +124,12 @@ function UsersListPage() {
         <section className='container-fluid'>
 
             <Logo />
-            <h2 className='text-center mb-5 col-12'>¡Bienvenido/a {localStorage.getItem('name')}!</h2>
+            <h2 className='text-center mb-5 col-12'>!Bienvenido/a {localStorage.getItem('name')}!</h2>
 
             <article className='row justify-content-center text-center '>
 
                 <div className='col-6 mb-3'>
-                    <p>Bienvenido al administrador de tus alumnos. Acá podrás crear el usuario a tus alumnos para que puedan ingresar a su planificación.</p>
+                    <p>Bienvenido al administrador de tus alumnos. Aca podras crear el usuario a tus alumnos para que puedan ingresar a su planificacion.</p>
                 </div>
                 
                 <div className='mb-4 '>
@@ -168,7 +168,7 @@ function UsersListPage() {
                                     <tr>
                                         <th scope="col">Nombre</th>
                                         <th scope="col" className='responsiveEmail'>Email</th>
-                                        <th scope="col">Acciones</th>
+                                        <th scope='col'>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -176,12 +176,12 @@ function UsersListPage() {
                                     {transitions((styles, {_id, name, email }) => (
                                         <animated.tr key={_id} style={styles}>
                             
-                                                <td className='text-center'><Link className={`btn LinkDays ClassBGHover w-100`} to={`/user/routine/${_id}/${name}`}>{name}</Link></td>
-                                                <td className='text-center responsiveEmail'><Link className={`btn LinkDays ClassBGHover w-100`} to={`/user/routine/${_id}/${name}`}>{email}</Link></td>
+                                                <td className='text-center'><Link className={'btn LinkDays ClassBGHover w-100'} to={`/user/routine/${_id}/${name}`}>{name}</Link></td>
+                                                <td className='text-center responsiveEmail'><Link className={'btn LinkDays ClassBGHover w-100'} to={`/user/routine/${_id}/${name}`}>{email}</Link></td>
                                                 <td className='text-center'>
 
                                                     <IconButton
-                                                        aria-label="video"
+                                                        aria-label='video'
                                                         className=""
                                                         onClick={() => openDialog(_id, name) }
                                                         >

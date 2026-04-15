@@ -45,12 +45,12 @@ function RenderPARs({
   const [users, setUsers] = useState([]);
 
   const navigate = useNavigate()
-  // Array de días (en la PAR) => editableWeek.routine
+  // Array de dias (en la PAR) => editableWeek.routine
   // Ejercicios => day.exercises
 
   const [options, setOptions] = useState([]);
 
-  // Al igual que Randomizer, "editMode" y "isEditing" para cambiar el diseño mobile
+  // Al igual que Randomizer, "editMode" y "isEditing" para cambiar el diseno mobile
   const [editMode, setEditMode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [actualUser, setActualUser] = useState(null);
@@ -77,12 +77,12 @@ useEffect(() => {
         setActualUser(selectedOption);
     }, []);
 
-    // ADDED: Creamos la función designWeekToUser para asignar un PAR a un usuario 
+    // ADDED: Creamos la funcion designWeekToUser para asignar un PAR a un usuario 
     //        y refrescar la lista de PAR
     const designWeekToUser = useCallback((weekData, userId) => {
         PARService.createPARroutine(weekData, userId)
             .then((data) => {
-                Notify.instantToast('PAR creado con éxito');
+                Notify.instantToast('PAR creado con exito');
             })
     }, [id]);
 
@@ -108,7 +108,7 @@ useEffect(() => {
 
 
 
-  // ========== tableMobile (igual diseño que randomizer) ==========
+  // ========== tableMobile (igual diseno que randomizer) ==========
   const tableMobile = () => {
     if (!currentDay) return null;
     return (
@@ -137,14 +137,14 @@ useEffect(() => {
               className="btn btn-outline-dark  my-2"
               onClick={AddNewExercise}
             >
-              <AddIcon /> Añadir ejercicio
+              <AddIcon /> Anadir ejercicio
             </button>
             <button
               aria-label="video"
               className="btn btn-outline-dark  my-2"
               onClick={AddNewCircuit}
             >
-              <AddIcon /> Añadir circuito
+              <AddIcon /> Anadir circuito
             </button>
           </div>
         </div>
@@ -291,7 +291,7 @@ useEffect(() => {
                               </div>
                               {/* Nombre */}
                               <span className="col-11 my-1 mb-2">
-                                {/* réplica de "customInputEditExerciseInCircuit" */}
+                                {/* replica de "customInputEditExerciseInCircuit" */}
                                 <AutoComplete
                                   defaultValue={item.name}
                                   onChange={(val, video) => {
@@ -413,7 +413,7 @@ useEffect(() => {
                           >
                             <AddIcon />
                             <span className="font-icons me-1">
-                              Añadir Ejercicio al Circuito
+                              Anadir Ejercicio al Circuito
                             </span>
                           </IconButton>
                         </div>
@@ -450,14 +450,14 @@ useEffect(() => {
               className="btn btn-outline-dark  my-2 "
               onClick={AddNewExercise}
             >
-              <AddIcon /> Añadir ejercicio
+              <AddIcon /> Anadir ejercicio
             </button>
             <button
               aria-label="video"
               className="btn btn-outline-dark  my-2 "
               onClick={AddNewCircuit}
             >
-              <AddIcon /> Añadir circuito
+              <AddIcon /> Anadir circuito
             </button>
           </div>
         </div>
@@ -547,14 +547,14 @@ useEffect(() => {
                         value={actualUser}
                         options={users}
                         optionLabel="name"
-                        placeholder="Seleccioná un alumno"
+                        placeholder="Selecciona un alumno"
                         onChange={(e) => handleDropdownChange(e.value)}
                         className=""
                         filter
                         scrollHeight={"360px"}
                         filterPlaceholder={"Buscar alumno"}
-                        emptyFilterMessage={"No se encontró ningún alumno"}
-                        emptyMessage={"No se encontró ningún alumno"}
+                        emptyFilterMessage={"No se encontro ningun alumno"}
+                        emptyMessage={"No se encontro ningun alumno"}
                     />}
                 </div>
 
@@ -564,7 +564,7 @@ useEffect(() => {
                   disabled={!actualUser}
                   onClick={() => designWeekToUser(editableWeek, actualUser?._id)}
                 >
-                  Asignación
+                  Asignacion
                 </button>
               </div>
               <div className="col-4">
@@ -589,7 +589,7 @@ useEffect(() => {
           }
           onHide={() => setDialogVisible(false)}
         >
-          {/* Segmented con los días */}
+          {/* Segmented con los dias */}
           {editableWeek.routine && editableWeek.routine.length > 0 && (
             <Segmented
               options={editableWeek.routine.map((day) => ({
@@ -601,7 +601,7 @@ useEffect(() => {
             />
           )}
 
-          {/* Nombre del día */}
+          {/* Nombre del dia */}
           {currentDay && (
             <div className="my-3 text-center">
               <h4>{currentDay.name}</h4>

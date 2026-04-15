@@ -27,7 +27,7 @@ function ModalConfirmDeleteExercise({show, handleClose, closeModal, week_id, day
         <Modal.Header className='' closeButton>
           <Modal.Title className='text-center'></Modal.Title>
         </Modal.Header>
-        <Modal.Body className='text-center'>¿Estás seguro que deseas eliminar el ejercicio '<b>{name}</b>'?</Modal.Body>
+        <Modal.Body className='text-center'>?Estas seguro que deseas eliminar el ejercicio '<b>{name}</b>'?</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={closeModal}>
             Cerrar

@@ -3,7 +3,6 @@ import * as UsersService from '../../services/users.services.js';
 import * as Notify from './../../helpers/notify.js';
 import * as ChangePropertyService from '../../services/changePropertys.services.js';
 import { Dialog } from 'primereact/dialog';
-import { Dropdown } from 'primereact/dropdown';
 
 // MUI
 import IconButton from '@mui/material/IconButton';
@@ -13,6 +12,8 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 
 export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
   const [name, setName] = useState("");
@@ -62,12 +63,12 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
     }
 
     if (!parentId) {
-      setError("No se proporcionó un ID válido para crear el alumno.");
+      setError("No se proporciono un ID valido para crear el alumno.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      setError("Las contrasenas no coinciden.");
       return;
     }
 
@@ -88,7 +89,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
         onClose();
       })
       .catch(err => {
-        setError(err.message || 'Ocurrió un error al crear el alumno.');
+        setError(err.message || 'Ocurrio un error al crear el alumno.');
       });
   }
 
@@ -108,6 +109,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
       <div className="card-body">
         <p className="text-muted fs09em mb-1 ms-3">Esta es la forma de dar de alta a un alumno.</p>
         <p className="text-muted fs08em mb-3 ms-4">Antes de crearlo, te pedimos que guardes los datos, asi se lo envias a tu alumno.</p>
+
         <form onSubmit={onSubmit} noValidate>
           {error && (
             <div className="alert alert-danger text-center p-0" role="alert">
@@ -116,7 +118,8 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
           )}
 
           <ul className="list-group list-group-flush">
-            {/* Nombre completo */}
+
+            {/* Nombre */}
             <li className="list-group-item">
               <label htmlFor="name" className="form-label">Nombre *</label>
               <div className="input-group">
@@ -127,8 +130,6 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
                   type="text"
                   className={`form-control border-start-0  ${touched.name && !name ? 'is-invalid' : ''}`}
                   id="name"
-                  name="name"
-                  placeholder="Ingrese el nombre"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   onBlur={() => setTouched(prev => ({ ...prev, name: true }))}
@@ -137,9 +138,9 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
               </div>
             </li>
 
-            {/* Correo electrónico */}
+            {/* Email */}
             <li className="list-group-item">
-              <label htmlFor="email" className="form-label">Correo electrónico *</label>
+              <label htmlFor="email" className="form-label">Correo electronico *</label>
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <MailOutlineOutlinedIcon fontSize="small" />
@@ -148,8 +149,6 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
                   type="email"
                   className={`form-control border-start-0  ${touched.email && !email ? 'is-invalid' : ''}`}
                   id="email"
-                  name="email"
-                  placeholder="ejemplo@correo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
@@ -158,20 +157,17 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
               </div>
             </li>
 
-            {/* Contraseña */}
+            {/* Password */}
             <li className="list-group-item">
-              <label htmlFor="password" className="form-label">Contraseña *</label>
+              <label className="form-label">Contrasena *</label>
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <LockOutlinedIcon fontSize="small" />
                 </span>
                 <input
                   type={showPassword ? "text" : "password"}
-                  className={`form-control border-start-0  ${touched.password && !password ? 'is-invalid' : ''}`}
-                  id="password"
-                  name="password"
-                  placeholder="Mínimo 8 caracteres"
                   minLength={6}
+                  className={`form-control border-start-0  ${touched.password && !password ? 'is-invalid' : ''}`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onBlur={() => setTouched(prev => ({ ...prev, password: true }))}
@@ -183,20 +179,17 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
               </div>
             </li>
 
-            {/* Confirmar contraseña */}
+            {/* Confirm Password */}
             <li className="list-group-item">
-              <label htmlFor="confirmPassword" className="form-label">Confirmar contraseña *</label>
+              <label className="form-label">Confirmar contrasena *</label>
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <LockOutlinedIcon fontSize="small" />
                 </span>
                 <input
                   type={showPassword ? "text" : "password"}
-                  className={`form-control border-start-0  ${touched.confirmPassword && !confirmPassword ? 'is-invalid' : ''}`}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="Repita la contraseña"
                   minLength={6}
+                  className={`form-control border-start-0  ${touched.confirmPassword && !confirmPassword ? 'is-invalid' : ''}`}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   onBlur={() => setTouched(prev => ({ ...prev, confirmPassword: true }))}
@@ -208,36 +201,44 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
               </div>
             </li>
 
-            {/* Categoría */}
+            {/* NUEVO SELECT (MUI) */}
             <li className="list-group-item">
-              <label htmlFor="category" className="form-label d-block">Categoría *</label>
+              <label className="form-label d-block">Categoria *</label>
+
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <CategoryOutlinedIcon fontSize="small" />
                 </span>
-                <div className="flex-grow-1 ">
-                  <Dropdown
-                    id="category"
-                    name="category"
+
+                <div className="flex-grow-1">
+                  <TextField
+                    select
+                    fullWidth
+                    variant="outlined"
                     value={category}
-                    options={nivelOptions}
-                    onChange={(e) => setCategory(e.value)}
-                    placeholder="Seleccione una categoría"
-                    className={` ${touched.category && !category ? 'p-invalid' : ''} w-100`}
-                    panelClassName=""
+                    onChange={(e) => setCategory(e.target.value)}
                     onBlur={() => setTouched(prev => ({ ...prev, category: true }))}
-                    required
-                  />
+                    error={touched.category && !category}
+                    placeholder="Seleccione una categoria"
+                    size="small"
+                  >
+                    {nivelOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </div>
               </div>
+
               {touched.category && !category && (
-                <small className="text-danger">Debe seleccionar una categoría.</small>
+                <small className="text-danger">Debe seleccionar una categoria.</small>
               )}
             </li>
 
-            {/* Botón */}
+            {/* Boton */}
             <li className="list-group-item">
-              <button type="submit" className="btn colorMainAll text-light  w-100">
+              <button type="submit" className="btn colorMainAll text-light w-100">
                 Crear Usuario
               </button>
             </li>

@@ -1,5 +1,7 @@
+﻿import { API_BASE } from './apiFetch.js'
+
 async function findExercises(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/exercises/${id}`, {
+    return fetch(`${API_BASE}/api/exercises/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -18,7 +20,7 @@ async function findExercises(id) {
 
 //Crea alumnos
 async function createExercise(id, user) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/exercises/${id}`, {
+    return fetch(`${API_BASE}/api/exercises/${id}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -39,10 +41,10 @@ async function createExercise(id, user) {
     })
 }
 
-//Editar un día
+//Editar un dia
 
 async function editExercise(exercise_id, exercise) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/exercises/${exercise_id}`, {
+    return fetch(`${API_BASE}/api/exercises/${exercise_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -60,9 +62,9 @@ async function editExercise(exercise_id, exercise) {
     })
 }
 
-//Eliminar un día por su ID
+//Eliminar un dia por su ID
 async function deleteExercise(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/exercises/${id}`, {
+    return fetch(`${API_BASE}/api/exercises/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ export function registerServiceWorker() {
         .register("/service-worker.js") // Esta ruta busca en public/
         .then((registration) => {
 
-          // Verifica si hay una actualización disponible
+          // Verifica si hay una actualizacion disponible
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             installingWorker.onstatechange = () => {

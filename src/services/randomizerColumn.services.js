@@ -1,5 +1,7 @@
+﻿import { API_BASE } from './apiFetch.js'
+
 async function getColumns(user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/${user_id}/columns`, {
+    return fetch(`${API_BASE}/api/${user_id}/columns`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -18,7 +20,7 @@ async function getColumns(user_id) {
 
 //Crea un dia
 async function createColumn(data, user_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/${user_id}/columns`, {
+    return fetch(`${API_BASE}/api/${user_id}/columns`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -37,10 +39,10 @@ async function createColumn(data, user_id) {
 }
 
 
-//Editar un día
+//Editar un dia
 
 async function editColumn(column_id, updatedData) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/column/${column_id}`, {
+    return fetch(`${API_BASE}/api/column/${column_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -59,7 +61,7 @@ async function editColumn(column_id, updatedData) {
 }
 
 async function deleteColumn(column_id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/column/${column_id}`, {
+    return fetch(`${API_BASE}/api/column/${column_id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -79,7 +81,7 @@ async function deleteColumn(column_id) {
 
 //Crea un dia
 async function createExerciseInColumn(column_id, data) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/column/${column_id}`, {
+    return fetch(`${API_BASE}/api/column/${column_id}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -100,7 +102,7 @@ async function createExerciseInColumn(column_id, data) {
 
 //
 async function editExerciseInColumn(column_id, exercise_id, exercise) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/column/${column_id}/exercise/${exercise_id}`, {
+    return fetch(`${API_BASE}/api/column/${column_id}/exercise/${exercise_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -120,7 +122,7 @@ async function editExerciseInColumn(column_id, exercise_id, exercise) {
 
 
 async function deleteExerciseInColumn(idColumn, idExercise) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/column/${idColumn}/exercise/${idExercise}`, {
+    return fetch(`${API_BASE}/api/column/${idColumn}/exercise/${idExercise}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

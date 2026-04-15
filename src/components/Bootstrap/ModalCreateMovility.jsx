@@ -22,10 +22,10 @@ import AddIcon from "@mui/icons-material/Add";
 import options from "../../assets/json/options.json";
 
 function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
-  // Estado para el bloque de activación
-  const [movility, setMovility] = useState([]); // Copia local de la semana (con el bloque de activación)
-  const [movilityName, setMovilityName] = useState(""); // Nombre del bloque de activación
-  const [indexMovilityA, setIndexMovilityA] = useState(0); // Índice del día en la semana en el que se crea el bloque
+  // Estado para el bloque de activacion
+  const [movility, setMovility] = useState([]); // Copia local de la semana (con el bloque de activacion)
+  const [movilityName, setMovilityName] = useState(""); // Nombre del bloque de activacion
+  const [indexMovilityA, setIndexMovilityA] = useState(0); // Indice del dia en la semana en el que se crea el bloque
   const [modifiedMovility, setModifiedMovility] = useState([]); // Array donde se mantienen los cambios
   const inputRefs = useRef([]); // Para inputs no controlados
   const [groupedOptions, setGroupedOptions] = useState([]); // Opciones agrupadas a partir del JSON
@@ -51,19 +51,20 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     setGroupedOptions(computedOptions);
   }, []);
 
-  // Inicializar el bloque de activación según la semana y el día
+  // Inicializar el bloque de activacion segun la semana y el dia
   useEffect(() => {
-    if (week) {
-      const index = week.findIndex((day) => day._id === day_id);
-      setIndexMovilityA(index);
-      const dayData = week[index];
-      // Si existe una propiedad "movilityName" en el día se utiliza, sino se usa el nombre del día o se asigna "Bloque de Activación" por defecto.
-      const name = dayData?.movilityName || dayData?.name || "Bloque de Activación";
+    if (Array.isArray(week)) {
+      const index = week.findIndex((day) => String(day?._id) === String(day_id));
+      const safeIndex = index >= 0 ? index : (week.length > 0 ? 0 : -1);
+      setIndexMovilityA(safeIndex);
+      const dayData = safeIndex >= 0 ? week[safeIndex] : null;
+      // Si existe una propiedad "movilityName" en el dia se utiliza, sino se usa el nombre del dia o se asigna "Bloque de Activacion" por defecto.
+      const name = dayData?.movilityName || dayData?.name || "Bloque de Activacion";
       setMovilityName(name);
       setModifiedMovility(week); // Guardamos la copia completa para trabajar sobre ella
       setMovility(week);
     } else {
-      console.warn("La semana no está disponible");
+      console.warn("La semana no esta disponible");
     }
   }, [week, day_id]);
 
@@ -71,37 +72,49 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     setFirstWidth(window.innerWidth);
   }, []);
 
-  // Actualiza un valor de un ejercicio dentro del bloque de activación
+  const hasValidMovilityDay =
+    Number.isInteger(indexMovilityA) &&
+    indexMovilityA >= 0 &&
+    indexMovilityA < modifiedMovility.length;
+
+  // Actualiza un valor de un ejercicio dentro del bloque de activacion
   const handleInputChange = (index, value, field) => {
+    if (!hasValidMovilityDay) return;
     setIsEditing(true);
-    const updatedMovility = [...movility];
-    // Se asume que en el objeto del día se guarda un array "movility" con los ejercicios del bloque.
+    const updatedMovility = [...modifiedMovility];
+    // Se asume que en el objeto del dia se guarda un array "movility" con los ejercicios del bloque.
     updatedMovility[indexMovilityA].movility = updatedMovility[indexMovilityA].movility || [];
+    if (!updatedMovility[indexMovilityA].movility[index]) return;
     updatedMovility[indexMovilityA].movility[index] = {
       ...updatedMovility[indexMovilityA].movility[index],
       [field]: value,
     };
     setModifiedMovility(updatedMovility);
+    setMovility(updatedMovility);
   };
 
-  // Función para aplicar y guardar los cambios
+  // Funcion para aplicar y guardar los cambios
   const applyChanges = () => {
+    if (!hasValidMovilityDay) {
+      Notify.instantToast("No hay dia seleccionado para editar movilidad.");
+      return;
+    }
     const updatedMovility = [...modifiedMovility];
-    // Actualizamos el nombre del bloque de activación en el objeto del día
+    // Actualizamos el nombre del bloque de activacion en el objeto del dia
     updatedMovility[indexMovilityA].movilityName = movilityName;
     WeekService.editWeek(week_id, updatedMovility)
       .then(() => {
         setMovility(updatedMovility);
         setIsEditing(false);
         editAndClose();
-        Notify.instantToast("Guardado con éxito");
+        Notify.instantToast("Guardado con exito");
       })
       .catch((error) => {
         console.error("Error al guardar cambios:", error);
       });
   };
 
-  // Función para renderizar inputs según el campo; se comporta de forma similar al del warmup
+  // Funcion para renderizar inputs segun el campo; se comporta de forma similar al del warmup
   const customInputEditMovility = (data, index, field) => {
     if (field === "numberMovility") {
       return (
@@ -139,19 +152,19 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
           />
         </div>
       );
-    } else if (field === "notas") {
+    } else if (field === 'notas') {
       return (
         
           <InputTextarea
             ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-            className={`w-100`}
+            className={'w-100'}
             autoResize
             defaultValue={data}
             onChange={(e) => handleInputChange(index, e.target.value, field)}
           />
         
       );
-    } else if (field === "video") {
+    } else if (field === 'video') {
       return (
         <>
           <IconButton
@@ -163,7 +176,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
           >
             <YouTubeIcon className="colorIconYoutube" />
           </IconButton>
-          <OverlayPanel ref={(el) => (productRefs.current[index] = el)}>
+          <OverlayPanel ref={(el) => (productRefs.current[index] = el)} className="dayEditLightOverlayPanel">
             <input
               ref={(el) =>
                 (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })
@@ -191,8 +204,12 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     }
   };
 
-  // Función para agregar un nuevo ejercicio al bloque de activación
+  // Funcion para agregar un nuevo ejercicio al bloque de activacion
   const addNewMovilityExercise = () => {
+    if (!hasValidMovilityDay) {
+      Notify.instantToast("No hay dia seleccionado para agregar movilidad.");
+      return;
+    }
     setIsEditing(true);
     const updatedMovility = [...modifiedMovility];
     if (!updatedMovility[indexMovilityA].movility) {
@@ -212,9 +229,10 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     updatedMovility[indexMovilityA].movility.push(newExercise);
     inputRefs.current.push({});
     setModifiedMovility(updatedMovility);
+    setMovility(updatedMovility);
   };
 
-  // Función para generar un UUID
+  // Funcion para generar un UUID
   const generateUUID = () => {
     let d = new Date().getTime();
     let uuid = "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -225,13 +243,14 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     return uuid;
   };
 
-  // Función para confirmar la eliminación de un ejercicio
+  // Funcion para confirmar la eliminacion de un ejercicio
   const deleteMovility = (event, index, name) => {
     confirmDialog({
-      message: `¿Estás seguro de que deseas eliminar este ejercicio?`,
-      header: "Confirmación",
+      className: "coachConfirmDialog",
+      message: "Estas seguro de que deseas eliminar este ejercicio?",
+      header: "Confirmacion",
       icon: "pi pi-exclamation-triangle",
-      acceptLabel: "Sí, eliminar",
+      acceptLabel: "Si, eliminar",
       rejectLabel: "No",
       acceptClassName: "p-button-danger",
       accept: () => acceptDeleteMovility(index),
@@ -239,6 +258,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
   };
 
   const acceptDeleteMovility = (index) => {
+    if (!hasValidMovilityDay) return;
     Notify.instantToast();
     setIsEditing(true);
     const updatedMovility = [...modifiedMovility];
@@ -248,6 +268,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     }
     inputRefs.current = inputRefs.current.filter((_, i) => i !== index);
     setModifiedMovility(updatedMovility);
+    setMovility(updatedMovility);
   };
 
   const confirmCancel = () => {
@@ -259,14 +280,13 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     editAndClose();
   };
 
-  // Versión para móviles (tabla)
+  // Version para moviles (tabla)
   const tableMobile = () => {
     return (
       <div className="p-0 bg-light">
 
           <div>
-            {modifiedMovility[indexMovilityA] &&
-              modifiedMovility[indexMovilityA].movility &&
+            {modifiedMovility[indexMovilityA]?.movility &&
               modifiedMovility[indexMovilityA].movility.map((exercise, i) => (
                 <div className="shadowCards py-2 px-0 mt-5" key={exercise.movility_id}>
                   <div className="row justify-content-center p-0">
@@ -342,7 +362,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
                               <IconButton
                                 aria-label="video"
                                 className="styleButtonsEdit rounded-0"
-                                onClick={() => deleteMovility(i, exercise.name)}
+                                onClick={(e) => deleteMovility(e, i, exercise.name)}
                               >
                                 <CancelIcon className="bbbbb" />
                               </IconButton>
@@ -371,7 +391,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
               onClick={addNewMovilityExercise}
             >
               <AddIcon />
-              <span className="font-icons me-1">Añadir ejercicio</span>
+              <span className="font-icons me-1">Anadir ejercicio</span>
             </IconButton>
           </div>
         </article>
@@ -393,7 +413,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
               </tr>
             </thead>
             <tbody>
-              {modifiedMovility[indexMovilityA].movility &&
+              {modifiedMovility[indexMovilityA]?.movility &&
                 modifiedMovility[indexMovilityA].movility.map((item, index) => (
                   <tr key={item.movility_id}>
                     <td>
@@ -450,16 +470,18 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
       <ConfirmDialog
         visible={showCancelDialog}
         onHide={() => setShowCancelDialog(false)}
-        message="¿Estás seguro de que deseas cancelar los cambios? Se perderán todos los cambios no guardados."
-        header="Confirmación"
+        message="Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+        header="Confirmacion"
         icon="pi pi-exclamation-triangle"
-        acceptLabel="Sí"
+        acceptLabel="Si"
         rejectLabel="No"
         accept={handleCancel}
         reject={() => setShowCancelDialog(false)}
+        className="coachConfirmDialog"
       />
     </>
   );
 }
 
 export default ModalCreateMovility;
+

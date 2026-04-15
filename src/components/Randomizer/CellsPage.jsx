@@ -66,7 +66,7 @@ useEffect(() => {
 
 function onChangeName(event){
   setNamePAR(event.target.value);
-  if (event.target.value.trim() === "") { // Verifica si el valor está vacío o solo contiene espacios en blanco
+  if (event.target.value.trim() === "") { // Verifica si el valor esta vacio o solo contiene espacios en blanco
     setDenied(false);
   } else {
     setDenied(true);
@@ -125,7 +125,7 @@ function onChangeName(event){
     });
   
     const progressObject = {
-      name: `Día ${dayCount + 1}`,
+      name: `Dia ${dayCount + 1}`,
       _id: generateMongoDBObjectId(),
       exercises: newProgress,
     };
@@ -224,8 +224,8 @@ function onChangeName(event){
                       filter
                       scrollHeight={"360px"}
                       filterPlaceholder={"Columna"}
-                      emptyFilterMessage={"No se encontró ningun ejercicio"}
-                      emptyMessage={"No se encontró ningun ejercicio"}
+                      emptyFilterMessage={"No se encontro ningun ejercicio"}
+                      emptyMessage={"No se encontro ningun ejercicio"}
                     />
                   </td>
                   
@@ -254,7 +254,7 @@ function onChangeName(event){
 
         <div className="mt-2 custom-target-icon">
             <button disabled={!denied}  className={` col-6 col-lg-3 btn ${textColor == 'false' ? "bbb" : "blackColor"}  m-2`} style={{ "backgroundColor": `${color}` }} onClick={() => createProgress(namePAR)}>
-              Añadir día
+              Anadir dia
             </button>
         </div>
 

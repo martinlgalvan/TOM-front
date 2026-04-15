@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+﻿import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 
 //.............................. SERVICES ..............................//
@@ -14,22 +14,20 @@ import * as RefreshFunction from "../../helpers/generateUUID.js";
 import Options from "../../assets/json/options.json";
 
 //.............................. BIBLIOTECAS EXTERNAS ..............................//
-import { TimePicker, CustomProvider } from 'rsuite';
-import { Tour } from 'antd';
+import { ConfigProvider, Segmented, Tour, theme as antdTheme } from 'antd';
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
 import { OverlayPanel } from "primereact/overlaypanel";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
-import { Segmented } from "antd";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import esES from 'rsuite/locales/es_ES'; 
 import ObjectId from 'bson-objectid';
 import { SelectButton } from 'primereact/selectbutton';
 import Tooltip from '@mui/material/Tooltip';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { AutoComplete as PrimeAutoComplete } from 'primereact/autocomplete';
+import { SpeedDial } from 'primereact/speeddial';
 
 
 //.............................. COMPONENTES ..............................//
@@ -39,6 +37,7 @@ import ModalCreateWarmup from "../../components/Bootstrap/ModalCreateWarmup.jsx"
 import ModalCreateMovility from "../../components/Bootstrap/ModalCreateMovility.jsx";
 import CustomInputNumber from "../../components/CustomInputNumber.jsx";
 import AutoComplete from "../../components/Autocomplete.jsx";
+import ExerciseComparisonChart from "../../components/ExerciseComparisonChart.jsx";
 
 //.............................. ICONOS MUI ..............................//
 
@@ -66,8 +65,6 @@ import CircleIcon from '@mui/icons-material/Circle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
-import ImageIcon from '@mui/icons-material/Image';
-
 
 import {
   User,
@@ -76,50 +73,44 @@ import {
   ClipboardCopy,
   HelpCircle,
   ToggleLeft,
+  Plus,
+  X,
   SquarePlus,
   Info,
   Badge,
+  Save,
+  Eye,
   BadgePlus,
   InfoIcon,
-  RectangleEllipsis
+  RectangleEllipsis,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ChevronDown
 } from 'lucide-react';
 import { Add, PlusOneOutlined } from "@mui/icons-material";
+import { Ban } from "lucide-react";
 
-function parseToDateForTimePicker(timeData) {
-  if (timeData == null || timeData === "") {
-    // Por defecto, retornamos 00:00
-    return new Date(0, 0, 0, 0, 0, 0);
+const dayEditTokenTheme = {
+  algorithm: antdTheme.darkAlgorithm
+};
+
+const dayEditSegmentedTheme = {
+  components: {
+    Segmented: {
+      trackBg: "#eef2f6",
+      itemColor: "#111827",
+      itemHoverColor: "#111827",
+      itemHoverBg: "#f8fafc",
+      itemSelectedBg: "#ffffff",
+      itemSelectedColor: "#111827",
+      itemActiveBg: "#e5e7eb",
+      trackPadding: 4
+    }
   }
+};
 
-  // Lo convertimos a string para manipularlo
-  let str = String(timeData).trim().replace(",", ".");
-
-  // Separamos minutos/segundos si viene con ":", por ejemplo "03:15"
-  if (str.includes(":")) {
-    let [minStr, secStr = "0"] = str.split(":");
-    let minutes = parseInt(minStr, 10) || 0;
-    let seconds = parseInt(secStr, 10) || 0;
-    const date = new Date();
-    date.setHours(0, minutes, seconds, 0);
-    return date;
-  }
-
-  // Si no tiene ":", interpretamos todo como minutos (o minutos con decimales)
-  let numeric = parseFloat(str);
-  if (isNaN(numeric)) {
-    // Si definitivamente no se parsea a número, devolvemos 00:00
-    return new Date(0, 0, 0, 0, 0, 0);
-  }
-
-  // Ej: 2 => "02:00", 2.5 => 2 minutos 30 seg, 3 => "03:00"
-  const totalSeconds = Math.round(numeric * 60);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  const date = new Date();
-  date.setHours(0, minutes, seconds, 0);
-  return date;
-}
+const dayEditDarkTokens = antdTheme.getDesignToken(dayEditTokenTheme);
 
 function DayEditDetailsPage() {
   const { week_id } = useParams();
@@ -137,8 +128,10 @@ function DayEditDetailsPage() {
   const [newWeekName, setNewWeekName] = useState(weekName);
 
   const [options, setOptions] = useState(); 
-  const [day, setDay] = useState([]);
-  const [modifiedDay, setModifiedDay] = useState([]); 
+  const [modifiedDay, setModifiedDay] = useState([]);
+  // Fuente unica de verdad para evitar desincronizaciones entre day/allDays/modifiedDay.
+  const day = modifiedDay;
+  const setDay = setModifiedDay;
   const [warmup, setWarmup] = useState(false); 
   const [firstWidth, setFirstWidth] = useState(); 
   const [visibleEdit, setVisibleEdit] = useState(false); 
@@ -146,11 +139,14 @@ function DayEditDetailsPage() {
 
   let idRefresh = RefreshFunction.generateUUID();
 
-  const [allDays, setAllDays] = useState([]);
+  const allDays = modifiedDay;
+  const setAllDays = setModifiedDay;
   const [indexDay, setIndexDay] = useState(0);
   const [currentDay, setCurrentDay] = useState(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showDeleteDayDialog, setShowDeleteDayDialog] = useState(false); 
+  const [showReorderDaysDialog, setShowReorderDaysDialog] = useState(false);
+  const [draftDaysOrder, setDraftDaysOrder] = useState([]);
   const [isEditingName, setIsEditingName] = useState(false); 
   const [newDayName, setNewDayName] = useState(""); 
   const [dayToEdit, setDayToEdit] = useState(null); 
@@ -163,6 +159,33 @@ function DayEditDetailsPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [tourVisible, setTourVisible] = useState(false);
   const [movilityVisible, setMovilityVisible] = useState(false);
+
+  const [isToolsDialVisible, setIsToolsDialVisible] = useState(false);
+
+  const [dialogAllWeeks, setDialogAllWeeks] = useState(false);
+
+  const weeksScrollerRef = useRef(null);
+  const [colWidth, setColWidth] = useState(260); // ancho por columna semana
+  const [activeWeekIdx, setActiveWeekIdx] = useState(0);
+  const blockNameOverlayRef = useRef({});
+
+  const toText = (v) => {
+  if (v === null || v === undefined) return "-";
+  if (typeof v === "string") return v === "" ? "-" : v;
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  if (Array.isArray(v)) return v.map(toText).join(", ");
+  if (typeof v === "object") {
+    try {
+      // stringify corto para que no sea enorme
+      return JSON.stringify(v);
+    } catch {
+      return "-";
+    }
+  }
+  return "-";
+};
+
+  const currentWeekDisplayName = useMemo(() => toText(weekName) || 'Semana actual', [weekName]);
 
   //Aproximaciones
   const [approxData, setApproxData] = useState([{ reps: "", peso: "" }]);
@@ -182,35 +205,461 @@ function DayEditDetailsPage() {
 
   const productRefsSimple = useRef({});
   const productRefsCircuit = useRef([]);
+  const mobileVideoRefs = useRef({});
+
+  const [seeAllWeeks, setSeeAllWeeks] = useState(null);
+  const [selectedCompareWeekId, setSelectedCompareWeekId] = useState("");
+
+  const currentWeekForComparison = useMemo(() => ({
+    _id: routine?._id || week_id || "__current__",
+    name: weekName || "Semana actual",
+    routine: Array.isArray(modifiedDay) ? modifiedDay : []
+  }), [routine, week_id, weekName, modifiedDay]);
+
+  const compareCandidateWeeks = useMemo(() => {
+    const source = Array.isArray(seeAllWeeks) ? seeAllWeeks : [];
+    const currentId = String(currentWeekForComparison?._id || "");
+    const seen = new Set();
+    return source.filter((w) => {
+      const wid = String(w?._id || "");
+      if (!wid || wid === currentId) return false;
+      if (seen.has(wid)) return false;
+      seen.add(wid);
+      return true;
+    });
+  }, [seeAllWeeks, currentWeekForComparison]);
+
+  const normalizeCompareText = useCallback((value) => {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }, []);
+
+  const getCompareExerciseName = useCallback((exercise) => {
+    if (!exercise || typeof exercise !== "object") return "";
+    if (typeof exercise.name === "string") return exercise.name.trim();
+    if (exercise.name && typeof exercise.name === "object" && typeof exercise.name.name === "string") {
+      return exercise.name.name.trim();
+    }
+    return "";
+  }, []);
+
+  const getCompareSupSuffix = useCallback((exercise) => {
+    if (!exercise || typeof exercise !== "object") return "";
+    const raw = exercise.supSuffix ?? exercise.sup ?? exercise.suffix ?? "";
+    return String(raw || "").trim();
+  }, []);
+
+  const buildWeekStructureSignature = useCallback((week) => {
+    const tokens = [];
+    const days = Array.isArray(week?.routine) ? week.routine : [];
+
+    const walkExercise = (exercise, path) => {
+      if (!exercise || typeof exercise !== "object") return;
+
+      if (exercise.type === "block" && Array.isArray(exercise.exercises)) {
+        tokens.push(`${path}|block:start`);
+        exercise.exercises.forEach((inner, innerIdx) => {
+          walkExercise(inner, `${path}|block:${innerIdx}`);
+        });
+        tokens.push(`${path}|block:end`);
+        return;
+      }
+
+      if (Array.isArray(exercise.circuit)) {
+        tokens.push(`${path}|circuit:start|sets:${normalizeCompareText(exercise?.typeOfSets)}`);
+        exercise.circuit.forEach((item, itemIdx) => {
+          const itemName = normalizeCompareText(item?.name);
+          tokens.push(`${path}|circuit:item:${itemIdx}|name:${itemName}`);
+        });
+        tokens.push(`${path}|circuit:end`);
+        return;
+      }
+
+      const exerciseName = normalizeCompareText(getCompareExerciseName(exercise));
+      const supSuffix = normalizeCompareText(getCompareSupSuffix(exercise));
+      if (!exerciseName) return;
+      tokens.push(`${path}|exercise:${exerciseName}|sup:${supSuffix}`);
+    };
+
+    days.forEach((day, dayIdx) => {
+      const exercises = Array.isArray(day?.exercises) ? day.exercises : [];
+      tokens.push(`day:${dayIdx}|count:${exercises.length}`);
+      exercises.forEach((exercise, rootIdx) => {
+        walkExercise(exercise, `day:${dayIdx}|root:${rootIdx}`);
+      });
+    });
+
+    return tokens.join("||");
+  }, [normalizeCompareText, getCompareExerciseName, getCompareSupSuffix]);
+
+  const currentWeekSignature = useMemo(() => {
+    return buildWeekStructureSignature(currentWeekForComparison);
+  }, [buildWeekStructureSignature, currentWeekForComparison]);
+
+  const compareWeeksWithMeta = useMemo(() => {
+    return compareCandidateWeeks.map((weekItem) => ({
+      ...weekItem,
+      __isComparable: buildWeekStructureSignature(weekItem) === currentWeekSignature
+    }));
+  }, [compareCandidateWeeks, buildWeekStructureSignature, currentWeekSignature]);
+
+  const comparableWeeks = useMemo(() => {
+    return compareWeeksWithMeta.filter((weekItem) => weekItem.__isComparable);
+  }, [compareWeeksWithMeta]);
+
+  const selectedCompareWeek = useMemo(() => {
+    if (!comparableWeeks.length) return null;
+    return (
+      comparableWeeks.find((w) => String(w?._id) === String(selectedCompareWeekId)) ||
+      comparableWeeks[0]
+    );
+  }, [comparableWeeks, selectedCompareWeekId]);
+
+  const getCompareWeekDateLabel = useCallback((week) => {
+    const created = week?.created_at;
+    if (created && typeof created === "object") {
+      const fecha = typeof created?.fecha === "string" ? created.fecha.trim() : "";
+      const hora = typeof created?.hora === "string" ? created.hora.trim() : "";
+      return [fecha, hora].filter(Boolean).join(" | ");
+    }
+    const ms = Date.parse(created || "");
+    return Number.isFinite(ms) ? new Date(ms).toLocaleString() : "";
+  }, []);
+
+  const weeksWithCurrent = useMemo(() => {
+    const prev = Array.isArray(seeAllWeeks) ? seeAllWeeks : [];
+
+    const currentWeek = {
+      _id: routine?._id || "__current__",
+      name: weekName || "Semana actual",
+      routine: Array.isArray(modifiedDay) ? modifiedDay : [],
+      __isCurrent: true
+    };
+
+    return [...prev, currentWeek];
+  }, [seeAllWeeks, modifiedDay, weekName, routine]);
+
+  //  Ahora el count sale del nuevo array
+  const weeksCount = weeksWithCurrent.length;
+
+  const [compareWithCurrent, setCompareWithCurrent] = useState(false);
 
   const [circuitToDelete, setCircuitToDelete] = useState(null);
-const [showDeleteCircuitDialog, setShowDeleteCircuitDialog] = useState(false);
-const [showDeleteBlockDialog, setShowDeleteBlockDialog] = useState(false);
-const [blockToDelete, setBlockToDelete] = useState({ index: null, name: "" });
+  const [showDeleteCircuitDialog, setShowDeleteCircuitDialog] = useState(false);
+  const [showDeleteBlockDialog, setShowDeleteBlockDialog] = useState(false);
+  const [blockToDelete, setBlockToDelete] = useState({ index: null, name: "" });
 
-const [exerciseToDeleteInCircuit, setExerciseToDeleteInCircuit] = useState(null);
-const [showDeleteExerciseInCircuitDialog, setShowDeleteExerciseInCircuitDialog] = useState(false);
+  const [exerciseToDeleteInCircuit, setExerciseToDeleteInCircuit] = useState(null);
+  const [showDeleteExerciseInCircuitDialog, setShowDeleteExerciseInCircuitDialog] = useState(false);
 
-const [dayClipboard, setDayClipboard] = useState(() => localStorage.getItem('copiedDay') || null);
-const hasDayClipboard = Boolean(dayClipboard || localStorage.getItem("copiedDay"));
+  const [dayClipboard, setDayClipboard] = useState(() => localStorage.getItem('copiedDay') || null);
+  const hasDayClipboard = Boolean(dayClipboard || localStorage.getItem("copiedDay"));
+  const canDeleteDay =
+    (Array.isArray(modifiedDay) && modifiedDay.length > 1) ||
+    (Array.isArray(allDays) && allDays.length > 1);
+
+const weeksForGrid = useMemo(() => {
+   const weeks = Array.isArray(seeAllWeeks) ? seeAllWeeks : [];
+   const maxDays = weeks.reduce((m, w) => Math.max(m, Array.isArray(w?.routine) ? w.routine.length : 0), 0);
+   return {
+     weeks,
+     maxDays,
+   };
+ }, [seeAllWeeks]);
+
+ const flattenDayByOrder = useCallback((day) => {
+ const rows = [];
+ if (!day || !Array.isArray(day.exercises)) return rows;
+ const pickName = (n) => (typeof n === 'object' ? n?.name : n) || '';
+
+  day.exercises.forEach((ex) => {
+   if (ex?.type === 'exercise') {
+     rows.push({ name: pickName(ex.name), sets: ex.sets ?? '', reps: ex.reps ?? '', peso: ex.peso ?? '' });
+     return;
+   }
+   if (ex?.type === 'block' && Array.isArray(ex.exercises)) {
+     ex.exercises.forEach((inEx) => {
+       if (inEx?.type === 'exercise') {
+         rows.push({ name: pickName(inEx.name), sets: inEx.sets ?? '', reps: inEx.reps ?? '', peso: inEx.peso ?? '' });
+       } else if (Array.isArray(inEx?.circuit)) {
+         inEx.circuit.forEach((ci) => {
+           rows.push({ name: ci?.name || '', sets: '', reps: ci?.reps ?? '', peso: ci?.peso ?? '' });
+         });
+       }
+     });
+     return;
+   }
+   if (Array.isArray(ex?.circuit)) {
+     ex.circuit.forEach((ci) => {
+       rows.push({ name: ci?.name || '', sets: '', reps: ci?.reps ?? '', peso: ci?.peso ?? '' });
+     });
+   }
+ });
+ return rows;
+ }, []);
+
+ // Indice de la semana actual (modifiedDay) por indice de dia -> array ordenado de filas
+ const currentWeekRowsByDay = useMemo(() => {
+ const days = Array.isArray(modifiedDay) ? modifiedDay : [];
+ const out = {};
+ days.forEach((d, idx) => { out[idx] = flattenDayByOrder(d); });
+ return out;
+ }, [modifiedDay, flattenDayByOrder]);
+
+ // Chequea si la semana del slide activo es comparable por indice/estructura
+ const canCompareWeek = useMemo(() => {
+ if (!weeksCount) return false;
+ const w = seeAllWeeks?.[activeWeekIdx];
+ const prevDays = Array.isArray(w?.routine) ? w.routine : [];
+ const currDays = Array.isArray(modifiedDay) ? modifiedDay : [];
+ if (prevDays.length !== currDays.length) return false;
+ for (let i = 0; i < prevDays.length; i++) {
+   const a = flattenDayByOrder(prevDays[i]).length;
+   const b = (currentWeekRowsByDay[i] || []).length;
+   if (a !== b) return false;
+ }
+ return true;
+ }, [weeksCount, seeAllWeeks, activeWeekIdx, modifiedDay, flattenDayByOrder, currentWeekRowsByDay]);
+
+ // Deltas: numerico seguro (vacio/string no numerico -> null)
+ const toNum = (v) => {
+ if (v === null || v === undefined) return null;
+ const n = Number(String(v).replace(',', '.').replace(/[^\d.-]/g, ''));
+ return Number.isFinite(n) ? n : null;
+ };
+ const deltaAbs = (curr, prev) => {
+ const c = toNum(curr), p = toNum(prev);
+ if (c === null || p === null) return null;
+ return c - p;
+ };
+
+
+ const deltaPct = (curr, prev) => {
+ const c = toNum(curr), p = toNum(prev);
+ if (c === null || p === null || p === 0) return null;
+ return ((c - p) / p) * 100;
+ };
+
+ const TrendIcon = ({ curr, prev }) => {
+  const d = deltaAbs(curr, prev); // usa tu helper ya definido arriba
+  if (d === null) return null;
+
+  if (d > 0) return <TrendingUp size={14} className="text-success" title={`Subio (+${d})`} />;
+  if (d < 0) return <TrendingDown size={14} className="text-danger" title={`Bajo (${d})`} />;
+  return <Minus size={14} className="text-muted" title="Sin cambios" />;
+};
+
+ const weekHeaderText = useCallback((week, idx) => {
+   const weekName = toText(week?.name) || `Semana ${idx + 1}`;
+   const fecha = toText(week?.created_at_local?.fecha);
+   const hora  = toText(week?.created_at_local?.hora);
+   const created = [fecha !== "-" ? fecha : "", hora !== "-" ? `- ${hora}` : ""].filter(Boolean).join(" ").trim();
+   return { weekName, created };
+ }, []);
+
+ const cellSummary = useCallback((day) => {
+   if (!day) return { title: "-", sub: "Sin dia" };
+   const name = toText(day?.name);
+   const exCount = Array.isArray(day?.exercises) ? day.exercises.length : 0;
+   return { title: name, sub: `${exCount} ejercicio${exCount === 1 ? "" : "s"}` };
+ }, []);
+
+ // Navegacion horizontal
+ const scrollWeeks = useCallback((dir) => {
+   const node = weeksScrollerRef.current;
+   if (!node) return;
+   const delta = (colWidth + 16) * 2; // 2 columnas por "pagina"
+   node.scrollBy({ left: dir * delta, behavior: "smooth" });
+ }, [colWidth]);
+
+ const flattenDayExercises = useCallback((day) => {
+  const rows = [];
+  if (!day || !Array.isArray(day.exercises)) return rows;
+  const pickName = (n) => (typeof n === 'object' ? n?.name : n) || '';
+
+  day.exercises.forEach((ex) => {
+    if (ex?.type === 'exercise') {
+      rows.push({ name: pickName(ex.name), sets: ex.sets ?? '', reps: ex.reps ?? '', peso: ex.peso ?? '' });
+      return;
+    }
+    if (ex?.type === 'block' && Array.isArray(ex.exercises)) {
+      ex.exercises.forEach((inEx) => {
+        if (inEx?.type === 'exercise') {
+          rows.push({ name: pickName(inEx.name), sets: inEx.sets ?? '', reps: inEx.reps ?? '', peso: inEx.peso ?? '' });
+        } else if (Array.isArray(inEx?.circuit)) {
+          inEx.circuit.forEach((ci) => {
+            rows.push({ name: ci?.name || '', sets: '', reps: ci?.reps ?? '', peso: ci?.peso ?? '' });
+          });
+        }
+      });
+      return;
+    }
+    if (Array.isArray(ex?.circuit)) {
+      ex.circuit.forEach((ci) => {
+        rows.push({ name: ci?.name || '', sets: '', reps: ci?.reps ?? '', peso: ci?.peso ?? '' });
+      });
+    }
+  });
+  return rows;
+}, []);
+
+const normalizeName = (raw) => {
+   const s = typeof raw === 'object' && raw !== null ? raw?.name : raw;
+   return (s ?? '').toString().trim().toLowerCase();
+ };
+
+ // Construye indice: por dia (idx) => nombre normalizado => { sets, reps, peso }
+ const currentWeekIndex = useMemo(() => {
+   const days = Array.isArray(modifiedDay) ? modifiedDay : [];
+   const byDay = {};
+   days.forEach((day, dIdx) => {
+     const map = {};
+     if (Array.isArray(day?.exercises)) {
+       day.exercises.forEach((ex) => {
+         if (ex?.type === 'exercise') {
+           const key = normalizeName(ex?.name);
+           if (key) map[key] = { sets: ex?.sets, reps: ex?.reps, peso: ex?.peso };
+           return;
+         }
+         if (ex?.type === 'block' && Array.isArray(ex?.exercises)) {
+           ex.exercises.forEach((inEx) => {
+             if (inEx?.type === 'exercise') {
+               const key = normalizeName(inEx?.name);
+               if (key) map[key] = { sets: inEx?.sets, reps: inEx?.reps, peso: inEx?.peso };
+             } else if (Array.isArray(inEx?.circuit)) {
+               inEx.circuit.forEach((ci) => {
+                 const key = normalizeName(ci?.name);
+                 if (key) map[key] = { sets: '', reps: ci?.reps, peso: ci?.peso };
+               });
+             }
+           });
+           return;
+         }
+         if (Array.isArray(ex?.circuit)) {
+           ex.circuit.forEach((ci) => {
+             const key = normalizeName(ci?.name);
+             if (key) map[key] = { sets: '', reps: ci?.reps, peso: ci?.peso };
+           });
+         }
+       });
+     }
+     byDay[dIdx] = map;
+   });
+   return byDay;
+ }, [modifiedDay]);
+
 
 // Lista fija de nombres de bloque
 const BLOCK_NAME_OPTIONS = [
   'Bloque de fuerza',
   'Bloque de hipertrofia',
   'Bloque de volumen',
-  'Bloque de recuperación',
+  'Bloque de recuperacion',
   'Bloque de pliometria'
 ];
 // Estado para manejar las sugerencias del Autocomplete
 const [blockNameSuggestions, setBlockNameSuggestions] = useState(BLOCK_NAME_OPTIONS);
 
+const sanitizeBrokenText = (value) => {
+  return String(value ?? "")
+    .replace(/D\u00C3\u00ADa/g, "Dia")
+    .replace(/d\u00C3\u00ADas/g, "dias")
+    .replace(/d\u00C3\u00ADa/g, "dia")
+    .replace(/A\u00C3\u00B1adir/g, "Anadir")
+    .replace(/a\u00C3\u00B1adir/g, "anadir")
+    .replace(/M\u00C3\u00BAltiple/g, "Multiple")
+    .replace(/m\u00C3\u00BAltiple/g, "multiple")
+    .replace(/Est\u00C3\u00A1s/g, "Estas");
+};
+
+const safeParseWeeks = (input) => {
+  if (!input) return [];
+  if (Array.isArray(input)) return input;
+
+  if (typeof input === "string") {
+    let txt = input.trim();
+    if ((txt.startsWith('"') && txt.endsWith('"')) || (txt.startsWith("'") && txt.endsWith("'"))) {
+      txt = txt.slice(1, -1).replace(/\\"/g, '"');
+    }
+    for (let i = 0; i < 2; i++) {
+      try {
+        const parsed = JSON.parse(txt);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && typeof parsed === "object" && Array.isArray(parsed.weeks)) return parsed.weeks;
+        if (typeof parsed === "string") {
+          txt = parsed;
+          continue;
+        }
+        break;
+      } catch {
+        break;
+      }
+    }
+  }
+  return [];
+};
+
+useEffect(() => {
+  if (dialogAllWeeks) {
+    setActiveWeekIdx(weeksCount - 1); //  al abrir, va al final
+  }
+}, [dialogAllWeeks, weeksCount]);
+
+useEffect(() => {
+  if (!dialogAllWeeks) return;
+  if (!comparableWeeks.length) {
+    setSelectedCompareWeekId("");
+    return;
+  }
+  setSelectedCompareWeekId((prev) => {
+    const stillValid = comparableWeeks.some((w) => String(w?._id) === String(prev));
+    return stillValid ? prev : String(comparableWeeks[0]?._id || "");
+  });
+}, [dialogAllWeeks, comparableWeeks]);
+
+  useEffect(() => {
+    if (weeksCount > 0 && activeWeekIdx >= weeksCount) {
+      setActiveWeekIdx(weeksCount - 1);
+    }
+  }, [weeksCount, activeWeekIdx]);
+
+  const nextWeek = useCallback(() => {
+    setActiveWeekIdx((i) => Math.min(i + 1, weeksCount - 1));
+  }, [weeksCount]);
+
+  const prevWeek = useCallback(() => {
+    setActiveWeekIdx((i) => Math.max(i - 1, 0));
+  }, []);
+
+  // Navegacion con flechas del teclado mientras el dialogo esta abierto
+  useEffect(() => {
+    if (!dialogAllWeeks) return;
+    const onKey = (e) => {
+      if (e.key === 'ArrowRight') nextWeek();
+      if (e.key === 'ArrowLeft')  prevWeek();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dialogAllWeeks, nextWeek, prevWeek]);
+
   const [tempColor, setTempColor] = useState();
+
+  React.useEffect(() => {
+  const raw = sessionStorage.getItem("WEEKS"); // string
+  const parsed = safeParseWeeks(raw);          // array
+  setSeeAllWeeks(parsed);
+  // opcional: log cuando ya esta seteado
+  // console.log("seeAllWeeks para dialogo:", parsed);
+}, [statusCancel]); // si cambias semanas cuando cambia statusCancel
 
   useEffect(() => {
   setLoading(true);
   Notify.notifyA("Cargando");
-
+  
   WeekService.findByWeekId(week_id).then((data) => {
     const w = data[0];
     const upgraded = upgradeWeekShape(w.routine || []);
@@ -253,74 +702,74 @@ const [blockNameSuggestions, setBlockNameSuggestions] = useState(BLOCK_NAME_OPTI
   useEffect(() => {
     setTourSteps([
       {
-        title: 'Nombre de la semana.',
-        description: 'Ademas de ser el nombre, podés editarlo apretando el botón.',
+        title: 'Nombre de la semana',
+        description: 'Ademas de ser el nombre, podes editarlo apretando el boton.',
         target: () => document.getElementById('nameWeek'),
         placement: 'right',
-        nextButtonProps: { children: 'Siguiente »' }
+        nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Días de la semana',
-        description: 'Estos son los dias que contiene la semana. Podes navegar entre ellos apretando en el día correspondiente.',
+        title: 'Dias de la semana',
+        description: 'Estos son los dias que contiene la semana. Podes navegar entre ellos apretando en el dia correspondiente.',
         target: () => document.getElementById('dias'),
         placement: 'right',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: 'Siguiente »' }
+        prevButtonProps: { children: '<< Anterior' },
+        nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Agregar día',
-        description: 'Este botón permite agregar un día.',
+        title: 'Agregar dia',
+        description: 'Este boton permite agregar un dia.',
         target: () => document.getElementById('agregarDia'),
         placement: 'right',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: 'Siguiente »' }
+        prevButtonProps: { children: '<< Anterior' },
+        nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Editar el nombre del día',
-        description: 'Acá podes editar el nombre de cada día.',
+        title: 'Editar el nombre del dia',
+        description: 'Aca podes editar el nombre de cada dia.',
         target: () => document.getElementById('editarDia'),
         placement: 'right',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: 'Siguiente »' }
+        prevButtonProps: { children: '<< Anterior' },
+        nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Eliminar día',
-        description: 'Podes eliminar un día. Esta acción es reversible, si apretas cancelar.',
+        title: 'Eliminar dia',
+        description: 'Podes eliminar un dia. Esta accion es reversible, si apretas cancelar.',
         target: () => document.getElementById('eliminarDia'),
         placement: 'right',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: 'Siguiente »' }
+        prevButtonProps: { children: '<< Anterior' },
+        nextButtonProps: { children: 'Siguiente >>' }
       },
         {
-        title: 'Añadir ejercicio',
+        title: 'Anadir ejercicio',
         description: 'Podes agregar un ejercicio para luego completarlo.',
         target: () => document.getElementById('addEjercicio'),
         placement: 'right',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: 'Siguiente »' }
+        prevButtonProps: { children: '<< Anterior' },
+        nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Añadir circuito',
+        title: 'Anadir circuito',
         description: 'Podes agregar la estructura de un circuito, para luego completarlo.',
         target: () => document.getElementById('addCircuit'),
         placement: 'right',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: 'Siguiente »' }
+        prevButtonProps: { children: '<< Anterior' },
+        nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Bloque de movilidad/activación',
-        description: 'Ingresá al bloque de activación/movilidad de tu alumno. ',
+        title: 'Bloque de movilidad/activacion',
+        description: 'Ingresa al bloque de activacion/movilidad de tu alumno. ',
         target: () => document.getElementById('movility'),
         placement: 'bottom',
-        prevButtonProps: { children: '« Anterior' },
-        nextButtonProps: { children: 'Siguiente »' }
+        prevButtonProps: { children: '<< Anterior' },
+        nextButtonProps: { children: 'Siguiente >>' }
       },
       {
         title: 'Bloque de entrada en calor',
-        description: 'Ingresá al bloque de entrada en calor de tu alumno. ',
+        description: 'Ingresa al bloque de entrada en calor de tu alumno. ',
         target: () => document.getElementById('warmup'),
         placement: 'bottom',
-        prevButtonProps: { children: '« Anterior' },
+        prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Finalizar' }
       }
     ]);
@@ -329,12 +778,15 @@ const [blockNameSuggestions, setBlockNameSuggestions] = useState(BLOCK_NAME_OPTI
 
 
   useEffect(() => {
-    if (day[indexDay]) {
-      setCurrentDay({ ...day[indexDay] });
-      setRenderInputSets(true)
-      setRenderInputReps(true)
+    if (modifiedDay[indexDay]) {
+      setCurrentDay({ ...modifiedDay[indexDay] });
+      setRenderInputSets(true);
+      setRenderInputReps(true);
+      return;
     }
-  }, [day, indexDay]);      
+    setCurrentDay(null);
+  }, [modifiedDay, indexDay]);   
+   
 
 
   // ================= FUNCIONES PARA APROXIMAR ====================
@@ -362,12 +814,12 @@ const saveApproxInternally = (lines) => {
   const { blockIndex, exIndex } = editingApproxIndex.current || {};
   if (blockIndex == null) return;
 
-  // 1) clonamos el día y la lista de ejercicios
+  // 1) clonamos el dia y la lista de ejercicios
   const updatedDays = [...day];
   const dayCopy = { ...updatedDays[indexDay] };
   let exercisesCopy = [...dayCopy.exercises];
 
-  // 2) preparamos el nameObj en base a las líneas limpias
+  // 2) preparamos el nameObj en base ? las lineas limpias
   const cleaned = lines.filter(l => l.reps || l.peso);
   const buildNameObj = rawName => {
     const base = typeof rawName === 'object' ? { ...rawName } : { name: rawName };
@@ -384,14 +836,14 @@ const saveApproxInternally = (lines) => {
     let   innerCopy   = [...blockCopy.exercises];
     const rawExercise = innerCopy[exIndex];
 
-    // 3) clonar y actualizar sólo ese ejercicio
+    // 3) clonar y actualizar solo ese ejercicio
     const exCopy = { ...rawExercise, name: buildNameObj(rawExercise.name) };
     innerCopy[exIndex] = exCopy;
     blockCopy.exercises = innerCopy;
     exercisesCopy[blockIndex] = blockCopy;
 
   } else {
-    // === ejercicio a nivel raíz ===
+    // === ejercicio ? nivel raiz ===
     const rawExercise = exercisesCopy[blockIndex];
     const exCopy     = { ...rawExercise, name: buildNameObj(rawExercise.name) };
     exercisesCopy[blockIndex] = exCopy;
@@ -424,7 +876,7 @@ const removeApproxLine = i => {
 
 const hasApproximation = ex =>
   Array.isArray(ex.name?.approximations) &&
-  ex.name.approximations.some(a => a.reps || a.peso);
+  ex.name?.approximations.some((a) => a.reps || a.peso);
 
 
   const handleShowMovility = () => {
@@ -441,7 +893,7 @@ const hasApproximation = ex =>
     ? day[indexDay].exercises[blockIndex].exercises[exIndex]
     : day[indexDay].exercises[blockIndex];
 
-  // … resto exactamente igual …
+  // ... resto exactamente igual ...
   let currentBackoff = [{ sets: "", reps: "", peso: "" }];
   if (currentExercise && typeof currentExercise.name === 'object') {
     currentBackoff = Array.isArray(currentExercise.name.backoff)
@@ -464,19 +916,19 @@ const saveBackoffInternally = (lines) => {
   const { blockIndex, exIndex } = editingBackoffIndex.current || {};
   if (blockIndex == null) return;
 
-  // 2) Clonamos el día completo
+  // 2) Clonamos el dia completo
   const updated = [...day];
 
   // 3) Dependiendo de exIndex escogemos el array correcto
   const targetArray = exIndex != null
     ? updated[indexDay].exercises[blockIndex].exercises   // dentro de un bloque
-    : updated[indexDay].exercises;                        // al nivel raíz
+    : updated[indexDay].exercises;                        // al nivel raiz
 
-  // 4) El índice concreto del ejercicio que editamos
+  // 4) El indice concreto del ejercicio que editamos
   const idx = exIndex != null ? exIndex : blockIndex;
   const ex = targetArray[idx];
 
-  // 5) Filtramos líneas vacías y construimos nameObj
+  // 5) Filtramos lineas vacias y construimos nameObj
   const cleaned = lines.filter(l => l.sets || l.reps || l.peso);
   let nameObj = typeof ex.name === 'object'
     ? { ...ex.name }
@@ -493,7 +945,7 @@ const saveBackoffInternally = (lines) => {
   // 6) Asignamos al ejercicio
   ex.name = nameObj;
 
-  // 7) Volvemos a escribir ese ejercicio en su sitio
+  // 7) Volvemos ? escribir ese ejercicio en su sitio
   if (exIndex != null) {
     updated[indexDay].exercises[blockIndex].exercises[exIndex] = ex;
   } else {
@@ -512,7 +964,7 @@ const handleSaveBackoff = () => {
    saveBackoffInternally(backoffData);
    // 2) cierro el panel
    backoffOverlayRef.current.hide();
-   // 3) reseteo el índice de edición en el ref
+   // 3) reseteo el indice de edicion en el ref
    editingBackoffIndex.current = { blockIndex: null, exIndex: null };
    // 4) limpio los datos temporales del overlay
    setBackoffData([{ sets: "", reps: "", peso: "" }]);
@@ -531,14 +983,14 @@ const hasBackoff = ex =>
   ex.name.backoff.some(b => b.sets || b.reps || b.peso);
 
 
-  /**  re-enumerar los ejercicios después de arrastrar y soltar. **/
+  /**  re-enumerar los ejercicios despues de arrastrar y soltar. **/
   const reorderExercises = (exercisesArray) => {
     return exercisesArray.map((ex, idx) => {
       return { ...ex, numberExercise: idx + 1 };
     });
   };
 
-  /** Función que se llama cuando el drag termina. Reordena la lista y actualiza el estado. */
+  /** Funcion que se llama cuando el drag termin?. Reordena la lista y actualiza el estado. */
   
 
   const editAndClose = () => {
@@ -559,7 +1011,7 @@ const hasBackoff = ex =>
   };
 
   const propiedades = [
-    "⇄",
+    "",
     "#",
     "Nombre",
     "Series",
@@ -570,16 +1022,6 @@ const hasBackoff = ex =>
     "Notas",
     "#",
   ];
-
-  const customLocale = {
-    ...esES,
-    TimePicker: {
-      ...esES.TimePicker,
-      hours: 'Horas',
-      minutes: 'Minutos',
-      seconds: 'Segundos'
-    }
-  };
 
   const inputRefs = useRef([]);
 
@@ -610,62 +1052,149 @@ const hasBackoff = ex =>
   };
 
 function RestInputDropdown({ value = "03:15", onChange }) {
-  const minutes = Array.from({ length: 10 }, (_, i) => i + 1);
-  const seconds = [15, 30, 45];
-  const options = minutes.flatMap(m =>
-    seconds.map(s => `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`)
-  );
+  const options = Array.from({ length: 20 }, (_, idx) => {
+    const totalSeconds = (idx + 1) * 30;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+  });
+  const overlayRef = useRef(null);
 
   const [val, setVal] = useState(() => formatForDisplay(value));
-  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     setVal(formatForDisplay(value));
   }, [value]);
 
   function formatForDisplay(raw) {
-    const digits = raw.replace(/\D/g, '');
+    const digits = String(raw ?? '').replace(/\D/g, '');
+    if (!digits) return '';
     if (digits.length <= 2) return digits;
     const mm = digits.slice(0,2);
     const ss = digits.slice(2,4);
     return `${mm}:${ss}`;
   }
 
-  const onInputChange = e => {
-    setVal(formatForDisplay(e.target.value));
-  };
-
-  const onComplete = e => {
-    const q = e.query.trim();
-    setSuggestions(
-      q === "" 
-        ? options 
-        : options.filter(opt => opt.startsWith(q))
-    );
-  };
-
   const formatAndEmit = raw => {
-    let [m='', s=''] = raw.split(':');
-    m = m.replace(/\D/g,''); s = s.replace(/\D/g,'');
-    if (!m) m = '00'; if (m.length===1) m = '0'+m;
-    if (!s) s = '00'; if (s.length===1) s = '0'+s;
-    const formatted = `${m}:${s}`;
+    const digits = String(raw ?? '').replace(/\D/g, '').slice(0, 4);
+    if (!digits) {
+      setVal('');
+      onChange('');
+      return;
+    }
+
+    let mm = digits.slice(0, 2);
+    let ss = digits.slice(2, 4);
+
+    if (!mm) mm = '00';
+    if (mm.length === 1) mm = `0${mm}`;
+    if (!ss) ss = '00';
+    if (ss.length === 1) ss = `${ss}0`;
+
+    const safeSeconds = String(Math.min(59, parseInt(ss, 10) || 0)).padStart(2, '0');
+    const formatted = `${mm}:${safeSeconds}`;
     setVal(formatted);
     onChange(formatted);
   };
 
   return (
-    <PrimeAutoComplete
-      dropdown
-      value={val}
-      suggestions={suggestions}
-      completeMethod={onComplete}
-      onChange={e => setVal(e.value)}
-      onSelect={e => formatAndEmit(e.value)}
-      onBlur={() => formatAndEmit(val)}
-      placeholder="MM:SS"
-      className="form-control form-control-sm"
-    />
+    <div className="dayEditRestManual">
+      <input
+        type="text"
+        value={val}
+        maxLength={5}
+        placeholder="MM:SS"
+        className="form-control dayEditFieldInput dayEditRestManualInput text-center"
+        onChange={(e) => setVal(formatForDisplay(e.target.value))}
+        onBlur={() => formatAndEmit(val)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            formatAndEmit(val);
+            overlayRef.current?.hide();
+          }
+        }}
+      />
+
+      <button
+        type="button"
+        className="dayEditRestManualToggle"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={(e) => overlayRef.current?.toggle(e)}
+        aria-label="Seleccionar rest"
+      >
+        <ChevronDown size={15} />
+      </button>
+
+      <OverlayPanel ref={overlayRef} className="dayEditDarkOverlayPanel dayEditRestPresetOverlay">
+        <div className="dayEditRestPresetGrid">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className="dayEditRestPresetItem"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                formatAndEmit(option);
+                overlayRef.current?.hide();
+              }}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </OverlayPanel>
+    </div>
+  );
+}
+
+function CircuitTimeInput({ value = "", onCommit, placeholder = "10", options = [] }) {
+  const [draft, setDraft] = useState(String(value ?? ""));
+
+  useEffect(() => {
+    setDraft(String(value ?? ""));
+  }, [value]);
+
+  const commit = (rawValue) => {
+    const nextValue = String(rawValue ?? "").trim();
+    setDraft(nextValue);
+    onCommit(nextValue);
+  };
+
+  return (
+    <div className="dayEditCircuitTimeCombo">
+      <input
+        type="text"
+        className="form-control form-control-sm dayEditCircuitTextInput dayEditCircuitTimeInput"
+        value={draft}
+        placeholder={placeholder}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => commit(draft)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit(e.currentTarget.value);
+            e.currentTarget.blur();
+          }
+        }}
+      />
+
+      <select
+        className="form-select form-select-sm dayEditCircuitTimeSelect"
+        defaultValue=""
+        onChange={(e) => {
+          if (!e.target.value) return;
+          commit(e.target.value);
+          e.target.value = "";
+        }}
+        aria-label="Seleccionar tiempo"
+      >
+        <option value=""></option>
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+    </div>
   );
 }
 
@@ -757,7 +1286,7 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
                                 className={`styleSelectButton px-0`}
                                 options={[
                                   { label: 'Texto', value: 'text' },
-                                  { label: 'Múltiple', value: 'multiple' }
+                                  { label: 'Multiple', value: 'multiple' }
                                 ]}
                               />
                             </div> 
@@ -769,23 +1298,8 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
         </>
       );}
        else if (field === "video") {
-  // clave única por bloque+ejercicio o por ejercicio simple
+  // clave unica por bloque+ejercicio o por ejercicio simple
   const refKey = blockIndex != null ? `b-${blockIndex}-e-${index}` : `s-${index}`;
-
-  // setter exclusivo para isImage
-  const setIsImage = (checked) => {
-    if (blockIndex != null) {
-      changeBlockExerciseData(blockIndex, index, "isImage", checked);
-    } else {
-      changeModifiedData(index, checked, "isImage");
-    }
-  };
-
-  // valor actual de isImage según sea bloque o ejercicio simple
-  const currentIsImage =
-    blockIndex != null
-      ? !!day[indexDay]?.exercises?.[blockIndex]?.exercises?.[index]?.isImage
-      : !!day[indexDay]?.exercises?.[index]?.isImage;
 
   return (
     <>
@@ -800,33 +1314,15 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
         <YouTubeIcon className="colorIconYoutube largoIconYt" />
       </IconButton>
 
-      <OverlayPanel ref={(el) => (productRefsSimple.current[refKey] = el)}>
-        <div className="mb-3">
-          <div className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id={`checkbox-image-${refKey}`}
-              checked={currentIsImage}
-              onChange={(e) => setIsImage(e.target.checked)}
-            />
-            <label className="form-check-label" htmlFor={`checkbox-image-${refKey}`}>
-              ¿Es una imagen?
-            </label>
-            <span className="d-block textSpanVideo">
-              Si tildás esta opción, e ingresas un link de una imagen, tu alumno la verá.
-            </span>
-          </div>
-        </div>
-
+      <OverlayPanel ref={(el) => (productRefsSimple.current[refKey] = el)} className="dayEditLightOverlayPanel">
         <input
           ref={(el) => (inputRefs.current[`${refKey}-${field}`] = el)}
-          className="form-control ellipsis-input text-center"
+          className="form-control ellipsis-input text-center dayEditFieldInput"
           type="text"
           defaultValue={data}
           onChange={(e) => {
             if (blockIndex != null) {
-              // 🔧 dentro de bloque: actualiza SOLO ese ejercicio
+              // Y dentro de bloque: actualiza SOLO ese ejercicio
               changeBlockExerciseData(blockIndex, index, "video", e.target.value);
             } else {
               // ejercicio simple
@@ -841,39 +1337,25 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
       return (
         <InputTextarea
           ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-          className={`w-100 mt-2 pt-1`}
+          className={`w-100 mt-2 pt-1 dayEditNotesInput`}
           autoResize
           defaultValue={data}
           onChange={e => applyChange(e.target.value)}
         />
       );
     } else if (field === "rest") {
-      // CHANGES: Usamos parseToDateForTimePicker para normalizar la entrada
-      // y en onChange guardamos en formato mm:ss
       return (
-        <CustomProvider locale={customLocale}>
-          <TimePicker
-            format="mm:ss"
-            defaultValue={parseToDateForTimePicker(data)}
-            ranges={[]}
-            placeholder="min..."
-            editable
-            className={'text-center'}
-            hideSeconds={seconds => seconds % 15 !== 0}
-            onChange={e => {
-              const mm = String(e.getMinutes()).padStart(2, "0");
-              const ss = String(e.getSeconds()).padStart(2, "0");
-              applyChange(`${mm}:${ss}`);                    // <— y también aquí
-            }}
-          />
-        </CustomProvider>
+        <RestInputDropdown
+          value={data || ""}
+          onChange={applyChange}
+        />
       );
     } else {
       return (
         <div className="row justify-content-center text-center">
         <input
           ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-          className={`form-control ${firstWidth > 992 ? 'stylePesoInput' : 'stylePesoInputMobile'} text-center`}
+          className={`form-control dayEditFieldInput ${firstWidth > 992 ? 'stylePesoInput' : 'stylePesoInputMobile'} text-center`}
           placeholder={ field === 'rest' ? `2...`: "kg..."}
           type="text"
           defaultValue={data}
@@ -887,19 +1369,40 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
   const applyChanges = () => {
     WeekService.editWeek(week_id, modifiedDay)
       .then(() => {
-        Notify.instantToast("Rutina guardada con éxito!");
+        Notify.instantToast("Rutina guardada con exito!");
         setStatus(idRefresh);
         setIsEditing(false);
       });
   };
 
 const handleDeleteClick = (exercise) => {
-   const nameString = typeof exercise.name === 'object'
-     ? exercise.name.name
-     : exercise.name;
-   setExerciseToDelete({ exercise_id: exercise.exercise_id, name: nameString })
-    setShowDeleteDialog(true)
-}
+  const nameString =
+    typeof exercise?.name === "object"
+      ? exercise?.name?.name
+      : exercise?.name;
+
+  setExerciseToDelete({
+    scope: "root", //  NUEVO
+    exercise_id: exercise.exercise_id,
+    name: nameString,
+  });
+  setShowDeleteDialog(true);
+};
+
+const handleDeleteExerciseInBlockClick = (blockIndex, exercise) => {
+  const nameString =
+    typeof exercise?.name === "object"
+      ? exercise?.name?.name
+      : exercise?.name;
+
+  setExerciseToDelete({
+    scope: "block", //  NUEVO
+    blockIndex,
+    exercise_id: exercise.exercise_id,
+    name: nameString,
+  });
+  setShowDeleteDialog(true);
+};
 
   function acceptDeleteExercise(id) {
     setIsEditing(true);
@@ -909,7 +1412,7 @@ const handleDeleteClick = (exercise) => {
     );
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    Notify.instantToast("Ejercicio eliminado con éxito");
+    Notify.instantToast("Ejercicio eliminado con exito");
   }
 
   const BLOCK_PALETTE = [
@@ -933,13 +1436,21 @@ const BlockColorDot = ({ color, active, onClick }) => (
   />
 );
 
-  const handleDeleteConfirm = () => {
-    if (exerciseToDelete) {
-      acceptDeleteExercise(exerciseToDelete.exercise_id);
-    }
-    setShowDeleteDialog(false);
-    setExerciseToDelete(null);
-  };
+const handleDeleteConfirm = () => {
+  if (!exerciseToDelete) return;
+
+  if (exerciseToDelete.scope === "block") {
+    removeExerciseFromBlock(exerciseToDelete.blockIndex, exerciseToDelete.exercise_id);
+    Notify.instantToast("Ejercicio eliminado con exito");
+  } else {
+    acceptDeleteExercise(exerciseToDelete.exercise_id);
+  }
+
+  setShowDeleteDialog(false);
+  setExerciseToDelete(null);
+};
+
+
 
   const handleDeleteCancel = () => {
     setShowDeleteDialog(false);
@@ -952,6 +1463,10 @@ const BlockColorDot = ({ color, active, onClick }) => (
   };
 
   const AddNewExercise = () => {
+    if (!Array.isArray(modifiedDay) || !modifiedDay[indexDay]) {
+      Notify.instantToast("No hay dia seleccionado.");
+      return;
+    }
     const updatedDays = [...modifiedDay];  
     const nextNumberExercise = updatedDays[indexDay].exercises.length + 1;
 
@@ -969,38 +1484,40 @@ const BlockColorDot = ({ color, active, onClick }) => (
     };
 
     updatedDays[indexDay].exercises.push(newExercise);
+    updatedDays[indexDay].lastEdited = new Date().toISOString();
+    setIsEditing(true);
     setDay(updatedDays);
     setAllDays(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Ejercicio creado con éxito!");
+    Notify.instantToast("Ejercicio creado con exito!");
   };
 
-  const handleCancel = () => {
-    setCurrentDay[null];
-    setStatusCancel(idRefresh);
-    setIsEditing(false);
-  };
+const handleCancel = () => {
+  setCurrentDay(null);
+  setStatusCancel(idRefresh);
+  setIsEditing(false);
+};
 
   const confirmCancel = () => {
     setShowCancelDialog(true);
   };
 
-   // ======== COPY / PASTE DÍA ========
+   // ======== COPY / PASTE DIA ========
  const copyDayToClipboard = () => {
-   const src = day?.[indexDay];
+   const src = modifiedDay?.[indexDay] || day?.[indexDay];
    if (!src) {
-     Notify.instantToast("No hay día seleccionado");
+     Notify.instantToast("No hay dia seleccionado");
      return;
    }
    try {
      const json = JSON.stringify(src);
      localStorage.setItem("copiedDay", json);
      setDayClipboard(json);
-     Notify.instantToast("Día copiado con éxito!");
+     Notify.instantToast("Dia copiado con exito!");
    } catch (e) {
-     console.error("Error al copiar día:", e);
-     Notify.instantToast("Error al copiar el día");
+     console.error("Error al copiar dia:", e);
+     Notify.instantToast("Error al copiar el dia");
    }
  };
 
@@ -1010,7 +1527,17 @@ const BlockColorDot = ({ color, active, onClick }) => (
    return { ...rest, exercise_id: new ObjectId().toString() };
  };
 
- // Clona un objeto de circuito (raíz o dentro de bloque)
+ const cloneWarmupItem = (item) => {
+   const { warmup_id, ...rest } = item || {};
+   return { ...rest, warmup_id: new ObjectId().toString() };
+ };
+
+ const cloneMovilityItem = (item) => {
+   const { movility_id, ...rest } = item || {};
+   return { ...rest, movility_id: new ObjectId().toString() };
+ };
+
+ // Clona un objeto de circuito (raiz o dentro de bloque)
  const cloneCircuit = (ex) => {
    const { exercise_id, circuit = [], ...rest } = ex || {};
    const newCircuit = Array.isArray(circuit)
@@ -1019,7 +1546,7 @@ const BlockColorDot = ({ color, active, onClick }) => (
    return { ...rest, exercise_id: new ObjectId().toString(), circuit: newCircuit };
  };
 
- // Decide cómo clonar un elemento (bloque / ejercicio / circuito)
+ // Decide como clonar un elemento (bloque / ejercicio / circuito)
  const cloneAnyExerciseOrStructure = (el) => {
    if (!el) return el;
    if (el.type === 'block') return cloneBlock(el);
@@ -1032,7 +1559,7 @@ const cloneBlock = (block) => {
   const { block_id, numberExercise, exercises = [], ...rest } = block || {};
   const clonedInner = exercises.map(inner => cloneAnyExerciseOrStructure(inner));
 
-  // Re-enumerar sólo los hijos del bloque, no el bloque en sí
+  // Re-enumerar solo los hijos del bloque, no el bloque en si
   clonedInner.forEach((it, idx) => {
     if (it.numberExercise == null || it.numberExercise === '') {
       it.numberExercise = `${idx + 1}`;
@@ -1048,13 +1575,21 @@ const cloneBlock = (block) => {
 };
 
 const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
-  const { _id: _omit, exercises = [] } = srcDay || {};
+  const {
+    _id: _omit,
+    exercises = [],
+    warmup = [],
+    movility = [],
+    movilityName
+  } = srcDay || {};
   const clonedExercises = exercises.map(el => cloneAnyExerciseOrStructure(el));
+  const clonedWarmup = Array.isArray(warmup) ? warmup.map(cloneWarmupItem) : [];
+  const clonedMovility = Array.isArray(movility) ? movility.map(cloneMovilityItem) : [];
 
-  // 👉 No numerar bloques
+  // Y No numerar bloques
   clonedExercises.forEach((it, idx) => {
     if (it?.type === 'block') {
-      delete it.numberExercise;      // por si venía con número
+      delete it.numberExercise;      // por si venia con numero
     } else if (!it?.numberExercise) {
       it.numberExercise = `${idx + 1}`;
     }
@@ -1062,16 +1597,19 @@ const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
 
   return {
     _id: new ObjectId().toString(),
-    name: `Día ${nextIndexNumber}`,
+    name: `Dia ${nextIndexNumber}`,
     lastEdited: new Date().toISOString(),
-    exercises: clonedExercises
+    exercises: clonedExercises,
+    warmup: clonedWarmup,
+    movility: clonedMovility,
+    movilityName: movilityName || undefined
   };
 };
 
  const pasteDayFromClipboard = () => {
    const raw = dayClipboard || localStorage.getItem("copiedDay");
    if (!raw) {
-     Notify.instantToast("No hay un día copiado");
+     Notify.instantToast("No hay un dia copiado");
      return;
    }
    try {
@@ -1085,76 +1623,168 @@ const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
      setCurrentDay(newDay);
      setIndexDay(updatedDays.length - 1);
      setIsEditing(true);
-     Notify.instantToast("Día pegado con éxito!");
+     Notify.instantToast("Dia pegado con exito!");
    } catch (e) {
-     console.error("Error al pegar día:", e);
-     Notify.instantToast("Contenido copiado inválido");
+     console.error("Error al pegar dia:", e);
+     Notify.instantToast("Contenido copiado invalido");
    }
  };
- // ======== FIN COPY / PASTE DÍA ========
+ // ======== FIN COPY / PASTE DIA ========
 
-  const addNewDay = () => {
-  // ⇨ Partimos de modifiedDay (no de allDays)
-  const updatedDays = [...modifiedDay];
+const addNewDay = () => {
+  const updatedDays = [...modifiedDay]; //  una sola fuente
 
   const nextDayIndex = updatedDays.length + 1;
   const newDay = {
     _id: new ObjectId().toString(),
-    name: `Día ${nextDayIndex}`,
+    name: `Dia ${nextDayIndex}`,
     lastEdited: new Date().toISOString(),
     exercises: [],
   };
 
   updatedDays.push(newDay);
 
-  setAllDays(updatedDays);
-  setDay(updatedDays);
+  //  sincronizar todo
   setModifiedDay(updatedDays);
+  setDay(updatedDays);
+  setAllDays(updatedDays);
 
-  Notify.instantToast("Día creado con éxito");
+  //  ir al nuevo dia (evita indices colgados)
+  setIndexDay(updatedDays.length - 1);
+  setCurrentDay(newDay);
+
+  setIsEditing(true);
+  Notify.instantToast("Dia creado con exito");
 };
 
-  const confirmDeleteDay = () => {
-    setIsEditing(true);
-    if (!currentDay) return;
+const openReorderDaysDialog = () => {
+  if (!Array.isArray(modifiedDay) || modifiedDay.length < 2) {
+    Notify.instantToast("Necesitas al menos 2 dias para reordenar.");
+    return;
+  }
+  setDraftDaysOrder([...modifiedDay]);
+  setShowReorderDaysDialog(true);
+};
 
-    const updatedDays = [...allDays];
-    const dayIndex = updatedDays.findIndex(day => day._id === currentDay._id);
+const closeReorderDaysDialog = () => {
+  setShowReorderDaysDialog(false);
+  setDraftDaysOrder([]);
+};
 
-    updatedDays.splice(dayIndex, 1);
+const handleDayOrderDragEnd = (result) => {
+  if (!result?.destination) return;
+  const { source, destination } = result;
+  if (source.index === destination.index) return;
 
-    if (updatedDays.length === 0) {
-      setAllDays([]);
-      setCurrentDay(null);
-      setIndexDay(0);
-      return;
-    }
+  const updated = Array.from(draftDaysOrder);
+  const [moved] = updated.splice(source.index, 1);
+  updated.splice(destination.index, 0, moved);
+  setDraftDaysOrder(updated);
+};
 
-    const newDayIndex = dayIndex === 0 ? 0 : dayIndex - 1;
-    setAllDays(updatedDays);
-    setCurrentDay(updatedDays[newDayIndex]);
-    setIndexDay(newDayIndex);
-    setModifiedDay(updatedDays);
-  };
+const applyDayOrder = () => {
+  if (!Array.isArray(draftDaysOrder) || !draftDaysOrder.length) {
+    closeReorderDaysDialog();
+    return;
+  }
+
+  const selectedDayId = currentDay?._id ? String(currentDay._id) : null;
+  const updatedDays = [...draftDaysOrder];
+  setModifiedDay(updatedDays);
+
+  let nextIndex = 0;
+  if (selectedDayId) {
+    const found = updatedDays.findIndex((d) => String(d?._id) === selectedDayId);
+    if (found !== -1) nextIndex = found;
+  }
+
+  setIndexDay(nextIndex);
+  setCurrentDay(updatedDays[nextIndex] || null);
+  setIsEditing(true);
+  setShowReorderDaysDialog(false);
+  setDraftDaysOrder([]);
+  Notify.instantToast("Orden de dias actualizado.");
+};
+
+const confirmDeleteDay = () => {
+  const updatedDays = [...(Array.isArray(modifiedDay) ? modifiedDay : [])];
+  if (updatedDays.length <= 1) {
+    Notify.instantToast("Debe quedar al menos 1 dia.");
+    return;
+  }
+
+  let idx = -1;
+  if (currentDay?._id) {
+    idx = updatedDays.findIndex((d) => String(d?._id) === String(currentDay._id));
+  }
+  if (idx === -1 && Number.isInteger(indexDay) && indexDay >= 0 && indexDay < updatedDays.length) {
+    idx = indexDay;
+  }
+
+  //  si no lo encuentra, NO borres nada (evita splice(-1,1))
+  if (idx === -1) {
+    console.warn("confirmDeleteDay: dia no encontrado en modifiedDay", {
+      currentDayId: currentDay?._id,
+      modifiedDayIds: updatedDays.map((d) => d?._id),
+    });
+    Notify.instantToast("No se pudo eliminar: el dia no esta sincronizado.");
+    return;
+  }
+
+  setIsEditing(true);
+  updatedDays.splice(idx, 1);
+
+  //  elegir un indice valido
+  const newIndex = Math.min(idx, updatedDays.length - 1);
+
+  //  sincronizar TODO (clave)
+  setModifiedDay(updatedDays);
+  setDay(updatedDays);
+  setAllDays(updatedDays);
+
+  setIndexDay(newIndex);
+  setCurrentDay(updatedDays[newIndex]);
+};
 
   const handleDeleteDayClick = () => {
+    if (!canDeleteDay) {
+      Notify.instantToast("Debe quedar al menos 1 dia.");
+      return;
+    }
+    if (!currentDay) {
+      Notify.instantToast("No hay dia seleccionado.");
+      return;
+    }
     setShowDeleteDayDialog(true);
   };
 
   const openEditNameDialog = (day) => {
+    if (!day) {
+      Notify.instantToast("No hay dia seleccionado.");
+      return;
+    }
     setDayToEdit(day);
-    setNewDayName(day.name);
+    setNewDayName(sanitizeBrokenText(day.name));
     setIsEditingName(true);
   };
 
   const saveNewDayName = () => {
+    if (!dayToEdit?._id) {
+      setIsEditingName(false);
+      Notify.instantToast("No se pudo editar el nombre del dia.");
+      return;
+    }
     setIsEditing(true);
     const updatedDays = [...allDays];
     const dayIndex = updatedDays.findIndex((d) => d._id === dayToEdit._id);
     if (dayIndex !== -1) {
       updatedDays[dayIndex].name = newDayName;
       setAllDays(updatedDays);
+      setDay(updatedDays);
       setModifiedDay(updatedDays);
+      setCurrentDay(updatedDays[dayIndex]);
+    } else {
+      Notify.instantToast("No se encontro el dia a editar.");
     }
     setIsEditingName(false);
   };
@@ -1176,16 +1806,38 @@ function handleDeleteCircuitInBlock(blockIndex, circuitIndex, name) {
   setShowDeleteCircuitDialog(true);
 }
 
+function handleDeleteMainCircuitClick(circuitIndex, circuit) {
+  setCircuitToDelete({
+    blockIndex: null,
+    circuitIndex,
+    name: circuitSubtitle(circuit || {})
+  });
+  setShowDeleteCircuitDialog(true);
+}
+
 function confirmDeleteCircuitInBlock() {
-  const { blockIndex, circuitIndex } = circuitToDelete;
+  const { blockIndex, circuitIndex, name } = circuitToDelete || {};
+  if (circuitIndex == null) {
+    setShowDeleteCircuitDialog(false);
+    setCircuitToDelete(null);
+    return;
+  }
+
+  setIsEditing(true);
   const updated = [...day];
-  const block = updated[indexDay].exercises[blockIndex];
-  block.exercises.splice(circuitIndex, 1);
+
+  if (blockIndex == null) {
+    updated[indexDay].exercises.splice(circuitIndex, 1);
+  } else {
+    const block = updated[indexDay].exercises[blockIndex];
+    block.exercises.splice(circuitIndex, 1);
+  }
+
   updated[indexDay].lastEdited = new Date().toISOString();
   setDay(updated);
   setModifiedDay(updated);
   setShowDeleteCircuitDialog(false);
-  Notify.instantToast(`${circuitToDelete.name} eliminado con éxito`);
+  Notify.instantToast(`${name} eliminado con exito`);
   setCircuitToDelete(null);
 }
 
@@ -1198,7 +1850,7 @@ const handleDeleteBlockClick = (blockIndex, blockName) => {
 const confirmDeleteBlock = () => {
   setIsEditing(true);
   const updatedDays = [...day];
-  // filtrar el bloque por índice
+  // filtrar el bloque por indice
   updatedDays[indexDay].exercises = updatedDays[indexDay].exercises.filter(
     (_, i) => i !== blockToDelete.index
   );
@@ -1209,14 +1861,18 @@ const confirmDeleteBlock = () => {
   setModifiedDay(updatedDays);
   setAllDays(updatedDays);
 
-  Notify.instantToast(`Bloque "${blockToDelete.name}" eliminado con éxito`);
+  Notify.instantToast(`Bloque "${blockToDelete.name}" eliminado con exito`);
 
-  // limpiar diálogo
+  // limpiar dialogo
   setShowDeleteBlockDialog(false);
   setBlockToDelete({ index: null, name: "" });
 };
 
 const AddNewCircuit = (blockIndex = null, kind = 'Libre') => {
+  if (!Array.isArray(day) || !day[indexDay]) {
+    Notify.instantToast("No hay dia seleccionado.");
+    return;
+  }
   setIsEditing(true);
   const base = circuitDefaults(kind);
   const updated = [...day];
@@ -1224,7 +1880,7 @@ const AddNewCircuit = (blockIndex = null, kind = 'Libre') => {
     exercise_id: new ObjectId().toString(),
     numberExercise: 0, // se setea abajo
     circuitKind: kind,
-    type: '',          // sigue disponible para "Libre" (título)
+    type: '',          // sigue disponible para "Libre" (titulo)
     typeOfSets: '',
     notas: '',
     circuit: [{ name: "", reps: 1, peso: "0", video: "", idRefresh: RefreshFunction.generateUUID() }],
@@ -1242,25 +1898,47 @@ const AddNewCircuit = (blockIndex = null, kind = 'Libre') => {
 
   updated[indexDay].lastEdited = new Date().toISOString();
   setDay(updated); setModifiedDay(updated); setCurrentDay(updated[indexDay]);
-  Notify.instantToast(kind === 'Libre' ? "Circuito (Libre) añadido" : `Circuito ${kind} añadido`);
+  Notify.instantToast(kind === 'Libre' ? "Circuito (Libre) anadido" : `Circuito ${kind} anadido`);
 };
 
 function handleDeleteExerciseInCircuit(blockIndex, circuitIndex, exerciseIndex, exerciseName) {
-  setExerciseToDeleteInCircuit({ blockIndex, circuitIndex, exerciseIndex, exerciseName });
+  const nameString =
+    typeof exerciseName === "object"
+      ? exerciseName?.name
+      : exerciseName;
+
+  setExerciseToDeleteInCircuit({
+    blockIndex,
+    circuitIndex,
+    exerciseIndex,
+    exerciseName: nameString || "este ejercicio",
+  });
   setShowDeleteExerciseInCircuitDialog(true);
 }
 
 function confirmDeleteExerciseInCircuit() {
-const { blockIndex, circuitIndex, exerciseIndex } = exerciseToDeleteInCircuit;
-const updated = [...day];
-const block = updated[indexDay].exercises[blockIndex];
-block.exercises[circuitIndex].circuit.splice(exerciseIndex, 1);
-updated[indexDay].lastEdited = new Date().toISOString();
-setDay(updated);
-setModifiedDay(updated);
-Notify.instantToast(`${exerciseToDeleteInCircuit.exerciseName} eliminado con éxito`);
-setShowDeleteExerciseInCircuitDialog(false);
-setExerciseToDeleteInCircuit(null);
+  const { blockIndex, circuitIndex, exerciseIndex } = exerciseToDeleteInCircuit || {};
+  if (circuitIndex == null || exerciseIndex == null) return;
+
+  const updated = [...day];
+
+  if (blockIndex == null) {
+    updated[indexDay].exercises[circuitIndex].circuit.splice(exerciseIndex, 1);
+  } else {
+    const block = updated[indexDay].exercises[blockIndex];
+    block.exercises[circuitIndex].circuit.splice(exerciseIndex, 1);
+  }
+
+  updated[indexDay].lastEdited = new Date().toISOString();
+
+  setIsEditing(true);
+  setDay(updated);
+  setModifiedDay(updated);
+  setCurrentDay(updated[indexDay]);
+
+  Notify.instantToast(`${exerciseToDeleteInCircuit.exerciseName} eliminado con exito`);
+  setShowDeleteExerciseInCircuitDialog(false);
+  setExerciseToDeleteInCircuit(null);
 }
 
 const CircuitHeaderEditor = ({
@@ -1271,25 +1949,65 @@ const CircuitHeaderEditor = ({
   onNumberChange,
   numberOptions = []
 }) => {
-  const kind = circuit?.circuitKind ?? 'Libre';
+  const circuitKindOptions = useMemo(() => CIRCUIT_KINDS.map((item) => item.value), []);
+  const minuteChoiceOptions = useMemo(() => Array.from({ length: 15 }, (_, idx) => String(idx + 1)), []);
+  const normalizeCircuitKind = (rawValue) => {
+    const cleanValue = String(rawValue ?? "").trim();
+    if (!cleanValue) return "Libre";
+    const matchedKind = CIRCUIT_KINDS.find((item) => {
+      const label = String(item.label || "").toLowerCase();
+      const value = String(item.value || "").toLowerCase();
+      const current = cleanValue.toLowerCase();
+      return current === label || current === value;
+    });
+    return matchedKind?.value || cleanValue;
+  };
+  const kind = normalizeCircuitKind(circuit?.circuitKind ?? 'Libre');
   const set = (k, v) => onField(k, v);
+  const formatCircuitTime = (totalSeconds) => {
+    const safeSeconds = Math.max(1, Number(totalSeconds) || 60);
+    const minutes = Math.floor(safeSeconds / 60);
+    const seconds = safeSeconds % 60;
+    if (seconds === 0) return String(minutes);
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
 
-  // Compacta mm:ss
-  const MMSS = ({ valueSec = 0, onChange }) => (
-    <CustomProvider locale={customLocale}>
-      <TimePicker
-        format="mm:ss"
-        defaultValue={parseToDateForTimePicker(fmtMMSS(valueSec))}
-        ranges={[]}
-        editable
-        hideSeconds={() => false}
-        className="form-control form-control-sm p-0 border-0"
-        onChange={(date) => {
-          if (!date) return onChange(0);
-          onChange(toSec(date.getMinutes(), date.getSeconds()));
-        }}
-      />
-    </CustomProvider>
+  const parseCircuitTime = (rawValue) => {
+    const value = String(rawValue ?? '').trim().replace(',', '.');
+    if (!value) return 60;
+
+    const mmssMatch = value.match(/^(\d{1,2}):(\d{1,2})$/);
+    if (mmssMatch) {
+      const minutes = parseInt(mmssMatch[1], 10) || 0;
+      const seconds = parseInt(mmssMatch[2], 10) || 0;
+      return Math.max(1, (minutes * 60) + seconds);
+    }
+
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) {
+      return Math.max(1, Math.round(numeric * 60));
+    }
+
+    return 60;
+  };
+
+  const commitFreeTimeText = (rawValue) => {
+    const trimmed = String(rawValue ?? '').trim();
+    if (!trimmed) {
+      set('typeOfSets', '');
+      return;
+    }
+
+    set('typeOfSets', trimmed);
+  };
+
+  const renderTimeInput = ({ value, onCommit, placeholder = '10' }) => (
+    <CircuitTimeInput
+      value={value}
+      onCommit={onCommit}
+      placeholder={placeholder}
+      options={minuteChoiceOptions}
+    />
   );
 
   // ============= Inline editors (compactos) =============
@@ -1313,14 +2031,17 @@ const CircuitHeaderEditor = ({
                     <div>
             <div>
             <span className="small fs07em text-muted">Mins</span>
-            <MMSS valueSec={circuit.durationSec || 0} onChange={(v) => set('durationSec', v)} />
+            {renderTimeInput({
+              value: formatCircuitTime(circuit.durationSec || toSec(12, 0)),
+              onCommit: (rawValue) => set('durationSec', parseCircuitTime(rawValue))
+            })}
           </div></div>
         )
 
       case 'EMOM':
       case 'E2MOM':
       case 'E3MOM': {
-        // Mostramos “Total (min)” como en el mockup
+        // Mostramos "Total (min)" como en el mockup
         const interval =
           kind === 'EMOM' ? (circuit.intervalMin || 1) : (kind === 'E2MOM' ? 2 : 3);
         return (
@@ -1341,15 +2062,15 @@ const CircuitHeaderEditor = ({
             )}
             <div>
               <span className="small text-muted fs07em">Mins</span>
-              <SmallNum
-                value={circuit.totalMinutes || interval * (circuit.totalRounds || 1)}
-                onChange={(tot) => {
-                  set('totalMinutes', tot);
-                  set('totalRounds', Math.max(1, Math.round(tot / interval)));
-                }}
-                min={1}
-                title="Total (min)"
-              />
+              {renderTimeInput({
+                value: formatCircuitTime((Number(circuit.totalMinutes) || interval * (circuit.totalRounds || 1)) * 60),
+                onCommit: (rawValue) => {
+                  const totalSeconds = parseCircuitTime(rawValue);
+                  const totalMinutes = totalSeconds / 60;
+                  set('totalMinutes', totalMinutes);
+                  set('totalRounds', Math.max(1, Math.round(totalMinutes / interval)));
+                }
+              })}
             </div>
           </div>
         );
@@ -1377,7 +2098,7 @@ const CircuitHeaderEditor = ({
                 title="Descanso (s)"
               />
                </div>
-            <span className="small text-muted mt-3">×</span>
+            <span className="small text-muted mt-3">x</span>
             <div>
               <span className="small fs07em text-muted">Rounds</span>
               <SmallNum
@@ -1394,7 +2115,10 @@ const CircuitHeaderEditor = ({
           <div>
             <div>
             <span className="small fs07em text-muted">Mins</span>
-            <MMSS valueSec={circuit.timeCapSec || 0} onChange={(v) => set('timeCapSec', v)} />
+            {renderTimeInput({
+              value: formatCircuitTime(circuit.timeCapSec || toSec(12, 0)),
+              onCommit: (rawValue) => set('timeCapSec', parseCircuitTime(rawValue))
+            })}
           </div></div>
         )
 
@@ -1418,7 +2142,7 @@ const CircuitHeaderEditor = ({
                 title="Descanso (s)"
               />
             </div>
-            <span className="small text-muted mt-3">×</span>
+            <span className="small text-muted mt-3">x</span>
             <div>
             <span className="small text-muted fs07em">Rounds</span>
               <SmallNum
@@ -1432,8 +2156,8 @@ const CircuitHeaderEditor = ({
 
       default: // Libre
         return (
-          <div className="d-flex align-items-end gap-3">
-            <div>
+          <div className="d-flex align-items-end gap-3 dayEditCircuitInlineFields">
+            <div className="dayEditCircuitInlineField dayEditCircuitInlineFieldName">
               <span className="small text-muted fs07em">Nombre</span>
               <input
                 className="form-control form-control-sm"
@@ -1443,14 +2167,13 @@ const CircuitHeaderEditor = ({
                 style={{ width: 200 }}
               />
             </div>
-            <div>
+            <div className="dayEditCircuitInlineField dayEditCircuitInlineFieldMeta">
               <span className="small text-muted fs07em">Mins / vueltas</span>
-              <input
-                className="form-control form-control-sm"
-                defaultValue={circuit.typeOfSets || ''}
-                onBlur={(e) => set('typeOfSets', e.target.value)}
-                style={{ width: 160 }}
-              />
+              {renderTimeInput({
+                value: circuit.typeOfSets || '',
+                onCommit: commitFreeTimeText,
+                placeholder: '10'
+              })}
             </div>
           </div>
         );
@@ -1458,8 +2181,7 @@ const CircuitHeaderEditor = ({
   };
 
   const MobileInline = () => (
-    <div className="d-flex align-items-center gap-2">
-      <span>–</span>
+    <div className="dayEditCircuitMobileInline">
       <DesktopInline />
     </div>
   );
@@ -1467,10 +2189,10 @@ const CircuitHeaderEditor = ({
   // ============= Render =============
   return (
     <>
-      {/* DESKTOP (>= md):  número + select modo + “–” + inline + Notas a la derecha */}
-      <div className="d-none d-md-flex align-items-center gap-3">
-     
-          <div style={{ minWidth: 72 }}>
+      {/* DESKTOP (>= md):  numero + select modo + "-" + inline + Notas ? la derecha */}
+      <div className="d-none d-md-flex gap-3 dayEditCircuitHeaderEditor">
+      
+          <div className="dayEditCircuitNumberField">
             <Dropdown
               value={numberValue}
               options={numberOptions}
@@ -1479,28 +2201,28 @@ const CircuitHeaderEditor = ({
               className="p-dropdown-group w-100"
             />
           </div>
+         
         
-       
-        <div>
+        <div className="dayEditCircuitTypeField">
           <span className="small text-muted fs07em">Tipo de circuito</span>
-            <select
-            className="form-select form-select-sm w-auto"
+          <Dropdown
             value={kind}
-            onChange={(e) => set('circuitKind', e.target.value)}
-          >
-            {CIRCUIT_KINDS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
+            options={circuitKindOptions}
+            onChange={(e) => set('circuitKind', normalizeCircuitKind(e.value))}
+            appendTo={document.body}
+            className="dayEditCircuitControl dayEditCircuitTypeSelect"
+            panelClassName="dayEditCircuitDropdownPanel p-dropdown-panel"
+            placeholder="Tipo de circuito"
+          />
         </div>
 
 
-        <div className="d-flex align-items-center gap-2">
-          <span className="mt-3">–</span>
+        <div className="dayEditCircuitDashGroup">
+          <span className="dayEditCircuitHeaderDash">-</span>
           <DesktopInline />
         </div>
 
-        <div className="ms-auto mt-3" style={{ minWidth: 280 }}>
+        <div className="ms-auto dayEditCircuitNotesField">
           <input
             className="form-control form-control-sm"
             placeholder="Notas"
@@ -1526,17 +2248,16 @@ const CircuitHeaderEditor = ({
       </div>
     )}
 
-    {/* ⬇️ ANTES: dropdown de ejercicios del circuito
+    {/*  ANTES: dropdown de ejercicios del circuito
         AHORA: dropdown de KIND del circuito */}
     <div style={{ minWidth: 200 }}>
       <Dropdown
-        value={kind}                                   // <- usa el kind actual
-        options={CIRCUIT_KINDS}                        // <- AMRAP, EMOM, E2MOM, etc
-        optionLabel="label"
-        optionValue="value"
-        onChange={(e) => onField('circuitKind', e.value)} // <- dispara el cambio
+        value={kind}
+        options={circuitKindOptions}
+        onChange={(e) => onField('circuitKind', normalizeCircuitKind(e.value))}
         appendTo={document.body}
-        className="p-dropdown-group w-100"
+        className="w-100 dayEditCircuitControl dayEditCircuitTypeSelect"
+        panelClassName="dayEditCircuitDropdownPanel p-dropdown-panel"
         placeholder="Tipo de circuito"
       />
     </div>
@@ -1560,6 +2281,10 @@ const CircuitHeaderEditor = ({
 
 
 const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
+  if (!Array.isArray(day) || !day[indexDay]) {
+    Notify.instantToast("No hay dia seleccionado.");
+    return;
+  }
   setIsEditing(true);
   const updated = [...day];
   const dayCopy = updated[indexDay];
@@ -1576,7 +2301,7 @@ const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
   dayCopy.lastEdited = new Date().toISOString();
   setDay(updated);
   setModifiedDay(updated);
-  Notify.instantToast("Ejercicio añadido al circuito!");
+  Notify.instantToast("Ejercicio anadido al circuito!");
 };
 
 
@@ -1587,7 +2312,7 @@ const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
       // circuito dentro de un bloque
       changeBlockCircuitData(blockIndex, circuitIndex, field, value);
     } else {
-      // circuito a nivel raíz
+      // circuito ? nivel raiz
       changeCircuitData(circuitIndex, field, value);
     }
     setIsEditing(true);
@@ -1685,7 +2410,7 @@ const changeBlockCircuitData = (blockIndex, circuitIndex, field, value) => {
   setCurrentDay(updated[indexDay]);
 };
 
-// === CAMPOS ESPECÍFICOS POR MODO ===
+// === CAMPOS ESPECIFICOS POR MODO ===
 const KIND_FIELDS = [
   'durationSec',        // AMRAP
   'intervalMin',        // EMOMs
@@ -1697,7 +2422,7 @@ const KIND_FIELDS = [
   'typeOfSets'          // Libre
 ];
 
-// Limpia todos los campos específicos antes de aplicar defaults del nuevo modo
+// Limpia todos los campos especificos antes de aplicar defaults del nuevo modo
 const stripKindSpecificFields = (obj = {}) => {
   const clone = { ...obj };
   KIND_FIELDS.forEach(k => { delete clone[k]; });
@@ -1769,10 +2494,10 @@ const changeExerciseInCircuit = (circuitIndex, exIndex, field, value) => {
         }}>
           <YouTubeIcon className="colorIconYoutube" />
         </IconButton>
-        <OverlayPanel ref={el => productRefsCircuit.current[key] = el}>
+        <OverlayPanel ref={el => productRefsCircuit.current[key] = el} className="dayEditLightOverlayPanel">
           <input
             ref={el => inputRefs.current[key] = el}
-            className="form-control ellipsis-input text-center"
+            className="form-control ellipsis-input text-center dayEditFieldInput"
             type="text"
             defaultValue={data}
             onBlur={e => apply(e.target.value)}
@@ -1808,7 +2533,7 @@ const changeExerciseInCircuit = (circuitIndex, exIndex, field, value) => {
     <div className="row justify-content-center text-center">
     <input
       ref={el => inputRefs.current[key] = el}
-      className="form-control ellipsis-input text-center stylePesoInput"
+      className="form-control ellipsis-input text-center stylePesoInput dayEditFieldInput"
       type="text"
       defaultValue={data}
       onBlur={e => apply(e.target.value)}
@@ -1817,18 +2542,6 @@ const changeExerciseInCircuit = (circuitIndex, exIndex, field, value) => {
   );
 };
   
-
-const deleteCircuit = (circuitIndex) => {
-  setIsEditing(true);
-  const updatedDays = [...day];
-  const removed = updatedDays[indexDay].exercises.splice(circuitIndex, 1)[0];
-
-  setDay(updatedDays);
-  setModifiedDay(updatedDays);
-
-  const label = circuitSubtitle(removed || {});
-  Notify.instantToast(`${label} eliminado con éxito`);
-};
 
 // === NUEVO: tipos de circuito ===
 const CIRCUIT_KINDS = [
@@ -1861,54 +2574,101 @@ const circuitDefaults = kind => {
     case 'E2MOM':         return { intervalMin: 2, totalRounds: 8,  totalMinutes: 16 };
     case 'E3MOM':         return { intervalMin: 3, totalRounds: 6,  totalMinutes: 18 };
     case 'Intermitentes': return { workSec: 30, restSec: 30, totalRounds: 10 };
-    case 'Por tiempo':    return { timeCapSec: toSec(20,0) };
+    case 'Por tiempo':    return { timeCapSec: toSec(18,0) };
     case 'Tabata':        return { workSec: 20, restSec: 10, totalRounds: 8 };
     default:              return {}; // Libre
   }
 };
 
-// Subtítulo UX (se muestra al usuario)
+// Subtitulo UX (se muestra al usuario)
 const circuitSubtitle = c => {
   const kind = c?.circuitKind || 'Libre';
   switch (kind) {
-    case 'AMRAP':         return `AMRAP – ${fmtMMSS(c.durationSec||0)}`;
-    case 'EMOM':          return `EMOM – ${String(c.intervalMin||1)}:00 × ${c.totalRounds||0}`;
-    case 'E2MOM':         return `E2MOM – 2:00 × ${c.totalRounds||0}`;
-    case 'E3MOM':         return `E3MOM – 3:00 × ${c.totalRounds||0}`;
-    case 'Intermitentes': return `Intermitentes – ${(c.workSec||0)}:${String(c.restSec||0).padStart(2,'0')} × ${c.totalRounds||0}`;
-    case 'Por tiempo':    return `For time – CAP ${fmtMMSS(c.timeCapSec||0)}`;
-    case 'Tabata':        return `Tabata – ${(c.workSec||20)}:${String(c.restSec||10).padStart(2,'0')} × ${c.totalRounds||8}`;
-    return `${c.type?.trim() ? c.type : 'Libre'}${c.typeOfSets ? ' – ' + c.typeOfSets : ''}`;
+    case 'AMRAP':
+      return `AMRAP - ${fmtMMSS(c.durationSec || 0)}`;
+    case 'EMOM':
+      return `EMOM - ${String(c.intervalMin || 1)}:00 x ${c.totalRounds || 0}`;
+    case 'E2MOM':
+      return `E2MOM - 2:00 x ${c.totalRounds || 0}`;
+    case 'E3MOM':
+      return `E3MOM - 3:00 x ${c.totalRounds || 0}`;
+    case 'Intermitentes':
+      return `Intermitentes - ${(c.workSec || 0)}:${String(c.restSec || 0).padStart(2, '0')} x ${c.totalRounds || 0}`;
+    case 'Por tiempo':
+      return `For time - CAP ${fmtMMSS(c.timeCapSec || 0)}`;
+    case 'Tabata':
+      return `Tabata - ${(c.workSec || 20)}:${String(c.restSec || 10).padStart(2, '0')} x ${c.totalRounds || 8}`;
+    default:
+      return `${c?.type?.trim() ? c.type : 'Libre'}${c?.typeOfSets ? ' - ' + c.typeOfSets : ''}`;
   }
 };
 
-// Upgrader: deja cualquier circuito viejo en "Libre" y agrega campos faltantes
-const upgradeCircuitShape = (c) => {
-  if (!Array.isArray(c?.circuit)) return c;
-  const upgraded = { circuitKind: 'Libre', ...c };
-  return upgraded;
+const ensurePlainId = (value) => {
+  if (value == null || value === '') return new ObjectId().toString();
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object' && value.$oid) return String(value.$oid);
+  if (typeof value?.toString === 'function') return value.toString();
+  return String(value);
 };
-const upgradeWeekShape = (days) =>
-  (days||[]).map(d => ({
-    ...d,
-    exercises: (d.exercises||[]).map(el => {
-      if (el?.type === 'block') {
-        return {
-          ...el,
-          exercises: (el.exercises||[]).map(x => upgradeCircuitShape(x))
-        };
-      }
-      return upgradeCircuitShape(el);
-    })
+
+const ensureCircuitItems = (items = []) =>
+  items.map((item) => ({
+    ...item,
+    idRefresh: item?.idRefresh || RefreshFunction.generateUUID()
   }));
 
+const upgradeCircuitShape = (c) => {
+  if (!c || typeof c !== 'object') return c;
+  if (!Array.isArray(c?.circuit)) return c;
+  return {
+    circuitKind: 'Libre',
+    ...c,
+    exercise_id: ensurePlainId(c.exercise_id),
+    circuit: ensureCircuitItems(c.circuit)
+  };
+};
 
+const upgradeExerciseShape = (ex) => {
+  if (!ex || typeof ex !== 'object') return ex;
 
+  if (ex?.type === 'block') {
+    return {
+      ...ex,
+      block_id: ensurePlainId(ex.block_id),
+      exercises: (Array.isArray(ex.exercises) ? ex.exercises : []).map((inner) => upgradeExerciseShape(inner))
+    };
+  }
 
+  if (Array.isArray(ex?.circuit)) {
+    return upgradeCircuitShape(ex);
+  }
 
+  if (ex?.type === 'exercise') {
+    return {
+      ...ex,
+      exercise_id: ensurePlainId(ex.exercise_id)
+    };
+  }
 
+  return ex;
+};
 
-  const incrementAllSeries = () => {
+const upgradeWeekShape = (days) =>
+  (days || []).map((d) => ({
+    ...d,
+    _id: ensurePlainId(d?._id),
+    warmup: (Array.isArray(d?.warmup) ? d.warmup : []).map((w) => ({
+      ...w,
+      warmup_id: ensurePlainId(w?.warmup_id)
+    })),
+    movility: (Array.isArray(d?.movility) ? d.movility : []).map((m) => ({
+      ...m,
+      movility_id: ensurePlainId(m?.movility_id)
+    })),
+    exercises: (Array.isArray(d?.exercises) ? d.exercises : []).map((el) => upgradeExerciseShape(el))
+  }));
+
+const incrementAllSeries = () => {
       const updatedDays = day.map((dayItem, idx) => {
     if (idx !== indexDay) return dayItem;
     return {
@@ -1940,13 +2700,12 @@ const upgradeWeekShape = (days) =>
     const updatedAllDays = [...allDays];
     updatedAllDays[indexDay] = updatedDays[indexDay];
     setAllDays(updatedAllDays);
-    setRenderInputSets(null)
   };
 
   const incrementAllReps = () => {
-  // bump sabe subir reps según su tipo
+  // bump sabe subir reps segun su tipo
   const bump = repsVal => {
-    // 1) Si es array (modo múltiple), clonar y sumar 1 al último
+    // 1) Si es array (modo multiple), clonar y sumar 1 al ultimo
     if (Array.isArray(repsVal)) {
       const newArr = [...repsVal];
       const last = parseInt(newArr[newArr.length - 1], 10) || 0;
@@ -1954,12 +2713,12 @@ const upgradeWeekShape = (days) =>
       return newArr;
     }
 
-    // 2) Si es string no numérica (modo texto), devolver tal cual
+    // 2) Si es string no numerica (modo texto), devolver tal cual
     if (typeof repsVal === 'string' && isNaN(Number(repsVal))) {
       return repsVal;
     }
 
-    // 3) En cualquier otro caso (número o string numérico), sumar 1
+    // 3) En cualquier otro caso (numero o string numerico), sumar 1
     const n = parseInt(repsVal, 10) || 0;
     return n + 1;
   };
@@ -1990,13 +2749,11 @@ const upgradeWeekShape = (days) =>
   setDay(updatedDays);
   setModifiedDay(updatedDays);
 
-  // También sincronizamos allDays
+  // Tambien sincronizamos allDays
   const updatedAllDays = [...allDays];
   updatedAllDays[indexDay] = updatedDays[indexDay];
   setAllDays(updatedAllDays);
 
-  // Forzar re-render de inputs si usas renderInputReps
-  setRenderInputReps(false);
 };
 
   const openEditWeekNameDialog = () => {
@@ -2014,23 +2771,23 @@ const upgradeWeekShape = (days) =>
         setStatus(idRefresh);
         setWeekName(newWeekName);
         setIsEditingWeekName(false);
-        Notify.instantToast("Nombre editado con éxito!");
+        Notify.instantToast("Nombre editado con exito!");
       });
   };
 
   
  const changeBlockExerciseData = (blockIndex, exIndex, field, value) => {
    setIsEditing(true);
-   // 1) Clone superficial del array de días
+   // 1) Clone superficial del array de dias
    const updatedDays = [...day];
    const block = updatedDays[indexDay].exercises[blockIndex];
 
-   // 2) Clonar el ejercicio a modificar
+   // 2) Clonar el ejercicio ? modificar
    const oldEx = block.exercises[exIndex];
    const newEx = { ...oldEx };
 
    if (field === 'name') {
-     // 3) Si el nombre venía como objeto (con aproximaciones/backoff), preservamos esas propiedades:
+     // 3) Si el nombre venia como objeto (con aproximaciones/backoff), preservamos esas propiedades:
      if (typeof oldEx.name === 'object' && oldEx.name !== null) {
        newEx.name = { ...oldEx.name, name: value };
      } else {
@@ -2044,7 +2801,7 @@ const upgradeWeekShape = (days) =>
    // 5) Reemplazamos el ejercicio en su sitio
    block.exercises[exIndex] = newEx;
 
-   // 6) Actualizamos el día y el estado global
+   // 6) Actualizamos el dia y el estado global
    updatedDays[indexDay].lastEdited = new Date().toISOString();
    setDay(updatedDays);
    setModifiedDay(updatedDays);
@@ -2071,7 +2828,7 @@ const removeExerciseFromBlock = (blockIndex, exerciseId) => {
   setIsEditing(true);
 }
 
-// Añade un ejercicio dentro de un bloque dado su índice en el array
+// Anade un ejercicio dentro de un bloque dado su indice en el array
 const addExerciseToBlock = (blockIndex) => {
   setIsEditing(true);
   const updatedDays = [...day];
@@ -2094,7 +2851,7 @@ const addExerciseToBlock = (blockIndex) => {
   setDay(updatedDays);
   setModifiedDay(updatedDays);
   setCurrentDay(updatedDays[indexDay]);
-  Notify.instantToast("Ejercicio añadido al bloque");
+  Notify.instantToast("Ejercicio anadido al bloque");
 };
 
 // Edita campo name/color de un bloque
@@ -2117,14 +2874,18 @@ const deleteBlock = (blockId) => {
   );
   setDay(updatedDays);
   setModifiedDay(updatedDays);
-  Notify.instantToast("Bloque eliminado con éxito");
+  Notify.instantToast("Bloque eliminado con exito");
 };
 
 const AddBlock = () => {
-  // ① Parte de modifiedDay, que sí contiene las aproximaciones actuales
+  if (!Array.isArray(modifiedDay) || !modifiedDay[indexDay]) {
+    Notify.instantToast("No hay dia seleccionado.");
+    return;
+  }
+  // a Parte de modifiedDay, que si contiene las aproximaciones actuales
   const updatedDays = [...modifiedDay];
 
-  // ② Crea el bloque
+  // a Crea el bloque
   const newBlock = {
     type: 'block',
     block_id: new ObjectId().toString(),
@@ -2134,13 +2895,13 @@ const AddBlock = () => {
   };
   updatedDays[indexDay].exercises.push(newBlock);
 
-  // ③ Actualiza todos los estados, incluida la fuente “allDays”
+  // a Actualiza todos los estados, incluida la fuente "allDays"
   setAllDays(updatedDays);
   setDay(updatedDays);
   setModifiedDay(updatedDays);
   setCurrentDay(updatedDays[indexDay]);
 
-  Notify.instantToast("Bloque creado con éxito");
+  Notify.instantToast("Bloque creado con exito");
 };
 
 const handleOnDragEnd = (result) => {
@@ -2184,6 +2945,43 @@ const BLOCK_COLOR_OPTIONS = [
   { label: "Uva", value: "linear-gradient(135deg, rgba(185,53,185,0.86) 0%, rgba(25,38,155,0.8) 100%)" },
 ];
 
+const prevWeekIndex = useMemo(() => {
+  // semana anterior inmediata ? la actual (ultima anterior del storage)
+  const prev = Array.isArray(seeAllWeeks) && seeAllWeeks.length > 0
+    ? seeAllWeeks[seeAllWeeks.length - 1]
+    : null;
+
+  const days = Array.isArray(prev?.routine) ? prev.routine : [];
+  const byDay = {};
+
+  days.forEach((day, dIdx) => {
+    const map = {};
+    const rows = flattenDayExercises(day);
+    rows.forEach((r) => {
+      const key = normalizeName(r.name);
+      if (key) map[key] = { sets: r.sets, reps: r.reps, peso: r.peso };
+    });
+    byDay[dIdx] = map;
+  });
+
+  return byDay;
+}, [seeAllWeeks, flattenDayExercises, normalizeName]);
+
+const renderTrendIcon = (delta) => {
+  if (delta == null) return null;
+  if (delta > 0) return <TrendingUp size={14} className="ms-1" />;
+  if (delta < 0) return <TrendingDown size={14} className="ms-1" />;
+  return <Minus size={14} className="ms-1" />;
+};
+
+const getDeltaIfNumeric = (current, previous) => {
+  const c = toNum(current);
+  const p = toNum(previous);
+  if (c === null || p === null) return null;
+  return c - p;
+};
+
+
 function colorItemTemplate(option) {
   return (
     <div
@@ -2201,25 +2999,69 @@ function colorItemTemplate(option) {
 
   const tableMobile = () => {
     return (
-      <div className="p-1">
+      <div className="p-1 dayEditMobileTable">
         {currentDay && (
-       <div className="row justify-content-center text-center mb-3 p-0">
-         <div className="col-5 px-1">
-           <button className="btn btn-outline-dark w-100 py-2 px-1" onClick={incrementAllSeries}>
-             <UpgradeIcon /> Sumar 1 serie
+       <div className="row justify-content-center text-center mb-2 p-0">
+
+
+         <div className="col-5  mt-3">
+           {/* --- AGREGAMOS BOTON DE BLOQUE --- */}
+           <button className="btn stylesHerramientasButtons py-1 mb-2 fs08em px-2 w-100" onClick={AddBlock}>
+             <AddIcon /> 
+             Agregar bloque
            </button>
          </div>
-         <div className="col-5 px-1">
-           <button className="btn btn-outline-dark w-100 py-2 px-1" onClick={incrementAllReps}>
-             <UpgradeIcon /> Sumar 1 rep
+
+        <div className="col-5  mt-3">
+          <button
+            className="btn stylesHerramientasButtons py-1 mb-2 fs08em px-1 w-100"
+            onClick={() => setDialogAllWeeks(true)}
+          >
+            <Eye /> Ver semanas
+          </button>
+         </div>
+
+         <div className="col-5 mt-2 ">
+           <button
+             className="btn stylesHerramientasButtons w-100 py-2 px-2 fs08em d-flex align-items-center justify-content-center gap-1"
+             onClick={incrementAllSeries}
+           >
+             <LibraryAddIcon fontSize="small" /> Sumar 1 serie
            </button>
          </div>
-         <div className="col-10 px-1 mt-3">
-           {/* --- AGREGAMOS BOTÓN DE BLOQUE --- */}
-           <button className="btn btn-outline-dark py-2" onClick={AddBlock}>
-             <AddIcon /> Agregar bloque de entrenamiento
+
+         <div className="col-5 mt-2">
+           <button
+             className="btn stylesHerramientasButtons w-100 py-2 px-2 fs08em d-flex align-items-center justify-content-center gap-1"
+             onClick={incrementAllReps}
+           >
+             <PlusOneOutlined fontSize="small" /> Sumar 1 rep
            </button>
          </div>
+
+         <div className="col-5 mt-2">
+          <button
+            className="btn stylesHerramientasButtons w-100 py-1 px-1 fs08em"
+            onClick={copyDayToClipboard}
+          >
+            <ContentCopyIcon /> Copiar dia
+          </button>
+        </div>
+
+        <div className="col-5 mt-2">
+          <button
+            className="btn stylesHerramientasButtons w-100 py-1 px-1 fs08em"
+            onClick={pasteDayFromClipboard}
+            style={{
+              opacity: hasDayClipboard ? 1 : 0.5,
+              pointerEvents: hasDayClipboard ? 'auto' : 'none'
+            }}
+          >
+            <LibraryAddIcon /> Pegar dia
+          </button>
+        </div>
+
+
        </div>
      )}
 
@@ -2249,41 +3091,71 @@ function colorItemTemplate(option) {
                       {exercise.type === 'block' ? (
                         <>
                           {/* Cabecera del bloque */}
-                          <div className="d-flex justify-content-between align-items-center mb-2 p-2" style={{ backgroundColor: exercise.color }}>
-                            <PrimeAutoComplete
-                              value={exercise.name}
-                              suggestions={blockNameSuggestions}
-                              dropdown
-                              placeholder="Nombre del bloque"
-                              className="form-control form-control-sm"
-                              completeMethod={(e) => {
-                                const q = e.query.toLowerCase();
-                                setBlockNameSuggestions(
-                                  BLOCK_NAME_OPTIONS.filter(opt =>
-                                    opt.toLowerCase().includes(q)
-                                  )
-                                );
-                              }}
-                              onChange={(e) => changeBlockData(i, 'name', e.value)}
-                            />
-                            <IconButton onClick={() => handleDeleteBlockClick(i, exercise.name)}>
-                              <CancelIcon />
-                            </IconButton>
-                          </div>
+<div
+  className="d-flex justify-content-between align-items-center mb-2 p-2"
+  style={{ backgroundColor: exercise.color }}
+>
+  {/* IZQ: texto centrado */}
+  <div className="d-flex align-items-center justify-content-center flex-grow-1 gap-2">
+    <span className="text-light fw-semibold text-truncate" style={{ maxWidth: 180 }}>
+      {exercise.name || "Bloque"}
+    </span>
+
+    {/* BOTON UNICO (centrado) para cambiar nombre */}
+    <IconButton
+      onClick={(e) => blockNameOverlayRef.current[`b-${exercise.block_id}`]?.toggle(e)}
+      className="text-light blockNameTriggerLight"
+      aria-label="cambiar-nombre-bloque"
+    >
+      <EditIcon fontSize="small" />
+    </IconButton>
+
+    <OverlayPanel
+      ref={(el) => (blockNameOverlayRef.current[`b-${exercise.block_id}`] = el)}
+      className="blockNameOverlayPanel dayEditDarkOverlayPanel"
+    >
+      <div className="blockNameOverlayBody">
+        <div className="blockNameOverlayTitle">Nombre del bloque</div>
+
+        <PrimeAutoComplete
+          value={exercise.name}
+          suggestions={blockNameSuggestions}
+          dropdown
+          placeholder="Escribi o elegi un nombre"
+          className="w-100 blockNameAutoComplete"
+          inputClassName="blockNameAutoCompleteInput"
+          completeMethod={(e) => {
+            const q = e.query.toLowerCase();
+            setBlockNameSuggestions(
+              BLOCK_NAME_OPTIONS.filter((opt) => opt.toLowerCase().includes(q))
+            );
+          }}
+          onChange={(e) => changeBlockData(i, "name", e.value)}
+        />
+        <div className="blockNameOverlayHint">Sugerencias + nombre libre.</div>
+      </div>
+    </OverlayPanel>
+  </div>
+
+  {/* DER: borrar bloque */}
+  <IconButton onClick={() => handleDeleteBlockClick(i, exercise.name)}>
+    <CancelIcon className="text-light" />
+  </IconButton>
+</div>
                           {/* Ejercicios dentro del bloque */}
                           {exercise.exercises.map((ex, j) =>
                             Array.isArray(ex.circuit) ? (
                             <div key={ex.exercise_id} className="row justify-content-center">
-<div className="col-12">
-<CircuitHeaderEditor
-  circuit={ex}
-  onField={(field, value) => changeBlockCircuitData(i, j, field, value)}
-  showNumber
-  numberValue={ex.numberExercise}
-  numberOptions={options}
-  onNumberChange={(v) => changeBlockCircuitData(i, j, 'numberExercise', v)}
-/>
-</div>
+                              <div className="col-12">
+                                <CircuitHeaderEditor
+                                  circuit={ex}
+                                  onField={(field, value) => changeBlockCircuitData(i, j, field, value)}
+                                  showNumber
+                                  numberValue={ex.numberExercise}
+                                  numberOptions={options}
+                                  onNumberChange={(v) => changeBlockCircuitData(i, j, 'numberExercise', v)}
+                                />
+                              </div>
 
                               {/* Lista de ejercicios del circuito */}
                               <div className="notStyle">
@@ -2331,7 +3203,7 @@ function colorItemTemplate(option) {
                                 ))}
                               </div>
 
-                              {/* Botón “Añadir ejercicio” y notas */}
+                              {/* Boton "Anadir ejercicio" y notas */}
                               <div className="row justify-content-center my-4">
                                 <div className="col-8 my-3">
                                   <IconButton
@@ -2339,7 +3211,7 @@ function colorItemTemplate(option) {
                                     onClick={() => AddExerciseToCircuit(j, i)}
                                   >
                                     <AddIcon />
-                                    <span className="font-icons">Añadir ejercicio</span>
+                                    <span className="font-icons">Anadir ejercicio</span>
                                   </IconButton>
                                 </div>
                                 <div className="col-11 me-4 text-center">
@@ -2350,7 +3222,7 @@ function colorItemTemplate(option) {
                                 </div>
                               </div>
 
-                              {/* Número de circuito + acciones */}
+                              {/* Numero de circuito + acciones */}
                               <div className="notStyle">
                                 <div className="row justify-content-center">
                                   <div className="col-4 ms-4">
@@ -2360,7 +3232,7 @@ function colorItemTemplate(option) {
                                       onChange={e =>
                                         changeBlockCircuitData(i, j, 'numberExercise', e.target.value)
                                       }
-                                      placeholder="Seleccionar número"
+                                      placeholder="Seleccionar numero"
                                       optionLabel="label"
                                       className="p-dropdown-group w-100"
                                     />
@@ -2383,7 +3255,7 @@ function colorItemTemplate(option) {
                             </div>
                           ) : (
                             <div key={ex.exercise_id} className="border rounded p-2 mb-2">
-                              {/* Número + Nombre + Botones */}
+                              {/* Numero + Nombre + Botones */}
                               <div className="d-flex justify-content-between align-items-center mb-1">
                                 <span>{ex.numberExercise}.</span>
                                 <div className="flex-grow-1 mx-2 mb-3">
@@ -2443,11 +3315,11 @@ function colorItemTemplate(option) {
                                     {customInputEditDay(ex.reps, j, 'reps', i)}
                                  
                                 </div>
-                                <div className="col-4 ">
-                                  <span className="fs07em text-muted ms-2">Sets</span>
+                                <div className="col-5 ">
+                                  <span className="fs07em text-muted ms-2">Rest</span>
                                   {customInputEditDay(ex.rest, j, 'rest', i)}
                                 </div>
-                                <div className="col-7 ">
+                                <div className="col-5 ">
                                   <span className="fs07em text-muted text-center m-auto">Peso</span>
                                   <div>{customInputEditDay(ex.peso, j, 'peso', i)}</div>
                                 </div>
@@ -2460,24 +3332,46 @@ function colorItemTemplate(option) {
                               </div>
                               {/* YouTube + Editar */}
                               <div className="d-flex justify-content-between align-items-center mt-2">
-                                <IconButton disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
-                                  {ex.isImage ? 
-                                    <ImageIcon /> :
-                                    <YouTubeIcon />
-                                  }
+                                <IconButton onClick={(e) => mobileVideoRefs.current[`block-mobile-${i}-${j}`]?.toggle(e)}>
+                                  <YouTubeIcon />
                                 </IconButton>
-                                <IconButton onClick={() => handleEditMobileBlockExercise(ex, i, j)}>
-                                  <EditIcon />
+                                <OverlayPanel
+                                  ref={(el) => (mobileVideoRefs.current[`block-mobile-${i}-${j}`] = el)}
+                                  className="dayEditLightOverlayPanel"
+                                >
+                                  <input
+                                    className="form-control ellipsis-input text-center dayEditFieldInput"
+                                    type="text"
+                                    defaultValue={ex.video || ""}
+                                    placeholder="Pegá el link del video"
+                                    onChange={(e) => changeBlockExerciseData(i, j, 'video', e.target.value)}
+                                  />
+                                </OverlayPanel>
+
+                                <IconButton
+                                  onClick={() => handleDeleteExerciseInBlockClick(i, ex)}
+                                  aria-label="delete-exercise-in-block"
+                                >
+                                  <DeleteIcon className="text-danger" />
                                 </IconButton>
                               </div>
                             </div>
                           ))}
-                          <button
-                            className="btn btn-outline-dark w-100"
-                            onClick={() => addExerciseToBlock(i)}
-                          >
-                            <AddIcon /> Añadir ejercicio al bloque
-                          </button>
+                     <div className="d-flex flex-column gap-2">
+                        <button
+                          className="btn btn-outline-dark w-100"
+                          onClick={() => addExerciseToBlock(i)}
+                        >
+                          <AddIcon /> Anadir ejercicio al bloque
+                        </button>
+
+                        <button
+                          className="btn btn-outline-dark w-100"
+                          onClick={() => AddNewCircuit(i)}
+                        >
+                          <AddIcon /> Anadir circuito al bloque
+                        </button>
+                      </div>
                         </>
                       ) : exercise.type === 'exercise' ? (
                         /* --- EJERCICIO SUELTO --- */
@@ -2527,41 +3421,55 @@ function colorItemTemplate(option) {
                               </div>
                               </div>
                           {/* Controles sets / reps / peso / rest */}
-                          <div className="row justify-content-center">
-                              <div className="col-4 mb-2">
+                          <div className="row justify-content-center text-center">
+                              <div className="col-5 mb-2 ms-3">
                                 <span className="fs07em text-muted text-start ">Sets</span>
                                 {customInputEditDay(exercise.sets, i, 'sets')}
                               </div>
                             
-                            <div className={`col-7 mb-2`}>
+                            <div className={`col-6 mb-2`}>
                               <span className="fs07em text-muted text-start ">Reps</span>
                               {customInputEditDay(exercise.reps, i, 'reps')}
                             </div>
-                            <div className="col-4 ">
+                            <div className="col-5">
                               <span className="fs07em text-muted text-start ">Rest</span>
                               {customInputEditDay(exercise.rest, i, 'rest')}
                             </div>
 
-                            <div className="col-7">
+                            <div className="col-5">
                               <span className="fs07em text-muted text-start ">Peso</span>
                               {customInputEditDay(exercise.peso, i, 'peso')}
                             </div>
                      
-                            <div className="col-12 text-start">
-                              <span className="fs07em text-muted text-start ">Notas</span>
+                            <div className="col-11 text-center mt-2">
+                              <span className="fs07em text-muted text-center ">Notas</span>
                               {customInputEditDay(exercise.notas, i, 'notas')}
                             </div>
                           </div>
                           {/* YouTube + Editar */}
                           <div className="d-flex justify-content-between align-items-center mt-2">
-                            <IconButton disabled={!exercise.video} onClick={() => handleButtonClick(exercise)}>
-                              {exercise.isImage ?
-                                <ImageIcon /> :
-                                <YouTubeIcon />
-                              }
+                            <IconButton onClick={(e) => mobileVideoRefs.current[`root-mobile-${i}`]?.toggle(e)}>
+                              <YouTubeIcon />
                             </IconButton>
-                            <IconButton onClick={() => handleEditMobileExercise(exercise, i)}>
-                              <EditIcon />
+                            <OverlayPanel
+                              ref={(el) => (mobileVideoRefs.current[`root-mobile-${i}`] = el)}
+                              className="dayEditLightOverlayPanel"
+                            >
+                              <input
+                                className="form-control ellipsis-input text-center dayEditFieldInput"
+                                type="text"
+                                defaultValue={exercise.video || ""}
+                                placeholder="Pega el link del video"
+                                onChange={(e) => changeModifiedData(i, e.target.value, 'video')}
+                              />
+                            </OverlayPanel>
+
+                            {/*  ELIMINAR (en lugar del lapiz) */}
+                            <IconButton
+                              onClick={() => handleDeleteClick(exercise)}
+                              aria-label="delete-exercise"
+                            >
+                              <DeleteIcon className="text-danger" />
                             </IconButton>
                           </div>
                         </>
@@ -2589,15 +3497,9 @@ function colorItemTemplate(option) {
                                             <div className="col-4">
                                               <span className="text-end ">
                                                 <IconButton
-                                                  aria-label="video"
+                                                  aria-label="delete-circuit-exercise"
                                                   className=" text-light "
-                                                  onClick={() => {
-                                                    setIsEditing(true);
-                                                    const updatedDays = [...day];
-                                                    updatedDays[indexDay].exercises[i].circuit.splice(j, 1);
-                                                    setDay(updatedDays);
-                                                    setModifiedDay(updatedDays);
-                                                  }}
+                                                  onClick={() => handleDeleteExerciseInCircuit(null, i, j, item.name)}
                                                 >
                                                   <CancelIcon className="colorIconDeleteExercise" />
                                                 </IconButton>
@@ -2636,7 +3538,7 @@ function colorItemTemplate(option) {
                                         onClick={() => AddExerciseToCircuit(i)}
                                       >
                                         <AddIcon className="" />
-                                        <span className="font-icons ">Añadir ejercicio</span>
+                                        <span className="font-icons ">Anadir ejercicio</span>
                                       </IconButton>
                                     </div>
                                     <div className="col-11 me-4 text-center">
@@ -2663,7 +3565,7 @@ function colorItemTemplate(option) {
                                           <IconButton
                                             aria-label="video"
                                             className="bg-danger col-7 fontDeleteCircuit rounded-2 text-light"
-                                            onClick={() => deleteCircuit(i)}
+                                            onClick={() => handleDeleteMainCircuitClick(i, exercise)}
                                           >
                                             <DeleteIcon />
                                             Eliminar 
@@ -2692,10 +3594,101 @@ function colorItemTemplate(option) {
     );
   };
 
+  const itemsTools = [
+  {
+    label: 'Sumar 1 serie',
+    command: () => incrementAllSeries(),
+    template: (item, opts) => (
+      <div className="dial-item-tooltip-wrapper text-center">
+        <button
+          type="button"
+          {...opts}
+          className="styleItemsDial styleDial rounded-5 d-flex align-items-center justify-content-center"
+        >
+          <UpgradeIcon className="fontBadgePlus" />
+        </button>
+        <span className="fs08em text-light d-block mt-1">
+          Sumar 1 serie
+        </span>
+      </div>
+    )
+  },
+  {
+    label: 'Sumar 1 rep',
+    command: () => incrementAllReps(),
+    template: (item, opts) => (
+      <div className="dial-item-tooltip-wrapper text-center">
+        <button
+          type="button"
+          {...opts}
+          className="styleItemsDial styleDial rounded-5 d-flex align-items-center justify-content-center"
+        >
+          <UpgradeIcon className="fontBadgePlus" />
+        </button>
+        <span className="fs08em text-light d-block mt-1">
+          Sumar 1 rep
+        </span>
+      </div>
+    )
+  },
+  {
+    label: 'Agregar bloque',
+    command: () => AddBlock(),
+    template: (item, opts) => (
+      <div className="dial-item-tooltip-wrapper text-center">
+        <button
+          type="button"
+          {...opts}
+          className="styleItemsDial styleDial rounded-5 d-flex align-items-center justify-content-center"
+        >
+          <AddIcon className="fontBadgePlus" />
+        </button>
+        <span className="fs08em text-light d-block mt-1">
+          Agregar bloque
+        </span>
+      </div>
+    )
+  },
+  {
+    label: 'Ver semanas',
+    command: () => setDialogAllWeeks(true),
+    template: (item, opts) => (
+      <div className="dial-item-tooltip-wrapper text-center">
+        <button
+          type="button"
+          {...opts}
+          className="styleItemsDial styleDial rounded-5 d-flex align-items-center justify-content-center"
+        >
+          <Eye className="fontBadgePlus" />
+        </button>
+        <span className="fs08em text-light d-block mt-1">
+          Ver semanas
+        </span>
+      </div>
+    )
+  }
+];
+ 
+
   return (
-    <div className="container-fluid ">
+    <div
+      className="container-fluid ddp ddp-dark dayEditDarkPage"
+      style={{
+        "--dayedit-bg": "#041324",
+        "--dayedit-surface": "#12263f",
+        "--dayedit-surface-alt": "#17304d",
+        "--dayedit-surface-hover": "#1d3b5d",
+        "--dayedit-border": "#254566",
+        "--dayedit-border-strong": "#31577e",
+        "--dayedit-text": dayEditDarkTokens.colorText,
+        "--dayedit-text-muted": dayEditDarkTokens.colorTextSecondary,
+        "--dayedit-text-soft": dayEditDarkTokens.colorTextTertiary,
+        "--dayedit-accent": "#5ea3ff",
+        "--dayedit-success": dayEditDarkTokens.colorSuccess
+      }}
+    >
       {/**a
-       * SIDEBAR: fijo a la izquierda 
+       * SIDEBAR: fijo ? la izquierda 
        */}
        <div className='sidebarPro colorMainAll'>
                  <div className="d-flex flex-column justify-content-between colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh' }}>
@@ -2708,36 +3701,37 @@ function colorItemTemplate(option) {
 
             
        
-                   <div className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
-                     <Segmented
-                     id={'dias'}
-                        className="w-100 stylesSegmented"
-                        size="large"
-                        vertical
-                        options={allDays.map((day, index) => ({
-                          label: day.name,
-                          value: day._id,
-                          icon: 
-                            index === 0 ? <LooksOneIcon /> :
-                            index === 1 ? <LooksTwoIcon /> :
-                            index === 2 ? <Looks3Icon /> :
-                            index === 3 ? <Looks4Icon /> :
-                            index === 4 ? <Looks5Icon /> :
-                            index === 5 ? <Looks6Icon /> :
-                            <CalendarTodayIcon />
-                        }))}
-                        value={currentDay ? currentDay._id : ''}
-                        onChange={(value) => {
-                          const selectedDay = allDays.find((day) => day._id === value);
-                          if (selectedDay) {
-                            const selectedIndex = allDays.findIndex((d) => d._id === selectedDay._id);
-                            setIndexDay(selectedIndex);
-                            setCurrentDay(allDays[selectedIndex]);
-                          }
-                        }}
-                      />
-                    
-                   </div>        
+                    <div className="d-flex justify-content-between text-light bgItemsDropdown align-items-center mb-3">
+                      <ConfigProvider theme={dayEditSegmentedTheme}>
+                        <Segmented
+                          id={'dias'}
+                          className="w-100"
+                          size="large"
+                          vertical
+                          options={allDays.map((day, index) => ({
+                            label: sanitizeBrokenText(day.name),
+                            value: day._id,
+                            icon:
+                              index === 0 ? <LooksOneIcon /> :
+                              index === 1 ? <LooksTwoIcon /> :
+                              index === 2 ? <Looks3Icon /> :
+                              index === 3 ? <Looks4Icon /> :
+                              index === 4 ? <Looks5Icon /> :
+                              index === 5 ? <Looks6Icon /> :
+                              <CalendarTodayIcon />
+                          }))}
+                          value={currentDay ? currentDay._id : ''}
+                          onChange={(value) => {
+                            const list = Array.isArray(modifiedDay) ? modifiedDay : [];
+                            const selectedIndex = list.findIndex((d) => d?._id === value);
+                            if (selectedIndex !== -1) {
+                              setIndexDay(selectedIndex);
+                              setCurrentDay(list[selectedIndex]);
+                            }
+                          }}
+                        />
+                      </ConfigProvider>
+                    </div>        
 
                    
 
@@ -2745,19 +3739,36 @@ function colorItemTemplate(option) {
 
                     <div id="agregarDia"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={addNewDay}>
                       <div className=' col-1'><AddIcon /></div>
-                      <div className='text-center col-10'><strong >Agregar día</strong></div>
+                      <div className='text-center col-10'><strong >Agregar dia</strong></div>
                     </div>
 
-                    <div id="editarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => openEditNameDialog(currentDay)} >
-                    
-                    <div className=' col-1'><EditIcon /></div>
-                      <div className='text-center col-10'><strong >Editar {`${currentDay && currentDay.name}`}</strong></div>
+                     <div id="editarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => openEditNameDialog(currentDay)}>
+                     <div className=' col-1'><EditIcon /></div>
+                       <div className='text-center col-10'><strong >Editar {`${sanitizeBrokenText(currentDay && currentDay.name)}`}</strong></div>
+                     </div>
+
+                     <div
+                      id="reordenarDias"
+                      className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3"
+                      onClick={openReorderDaysDialog}
+                    >
+                      <div className=' col-1'><DragIndicatorIcon /></div>
+                      <div className='text-center col-10'><strong>Reordenar dias</strong></div>
                     </div>
 
-                    <div id="eliminarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={handleDeleteDayClick} >
+                     <div
+                       id="eliminarDia"
+                       className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3"
+                      onClick={handleDeleteDayClick}
+                      style={{
+                        opacity: canDeleteDay ? 1 : 0.5,
+                        pointerEvents: canDeleteDay ? "auto" : "none",
+                        cursor: canDeleteDay ? "pointer" : "not-allowed"
+                      }}
+                    >
                       <span></span>
                          <div className=' col-1'><DeleteIcon /></div>
-                      <div className='text-center col-10'><strong >Eliminar {`${currentDay && currentDay.name}`}</strong></div>
+                      <div className='text-center col-10'><strong >Eliminar {`${sanitizeBrokenText(currentDay && currentDay.name)}`}</strong></div>
                     </div>
 
                     <div
@@ -2766,10 +3777,10 @@ function colorItemTemplate(option) {
                       onClick={copyDayToClipboard}
                     >
                       <div className=' col-1'><ContentCopyIcon /></div>
-                      <div className='text-center col-10'><strong>Copiar día</strong></div>
+                      <div className='text-center col-10'><strong>Copiar dia</strong></div>
                     </div>
                   
-                    {/* Pegar día */}
+                    {/* Pegar dia */}
                     <div
                       id="pegarDia"
                       className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3"
@@ -2777,7 +3788,7 @@ function colorItemTemplate(option) {
                       style={{ opacity: hasDayClipboard ? 1 : 0.5, pointerEvents: hasDayClipboard ? 'auto' : 'none' }}
                     >
                       <div className=' col-1'><LibraryAddIcon /></div>
-                      <div className='text-center col-10'><strong>Pegar día</strong></div>
+                      <div className='text-center col-10'><strong>Pegar dia</strong></div>
                     </div>
 
                   </div>
@@ -2786,12 +3797,12 @@ function colorItemTemplate(option) {
 
                       <div id="addEjercicio"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewExercise()}>
                         <div className=' col-1'><AddIcon  className="me-2" /></div>
-                        <div className='text-center col-10'><strong >Añadir ejercicio</strong></div>
+                        <div className='text-center col-10'><strong >Anadir ejercicio</strong></div>
                       </div>
 
                       <div id="addCircuit" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewCircuit()} >
                         <div className=' col-1'><AddIcon /></div>
-                        <div className='text-center col-10'><strong >Añadir circuito</strong></div>
+                        <div className='text-center col-10'><strong >Anadir circuito</strong></div>
                       </div>
 
 
@@ -2815,14 +3826,14 @@ function colorItemTemplate(option) {
         </div>
         }
 
-      <div className={` ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}>
-        <section className=" totalHeight">
-          <div  className={`row  ${firstWidth > 992 && 'mb-3'} justify-content-around pb-3 align-middle align-center align-items-center`}>
+      <div className={`dayEditPageContent ${firstWidth < 992 ? 'dayEditPageContentMobile' : (collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen')}`}>
+        <section className="totalHeight dayEditMainSection">
+          <div  className={`row dayEditTopBlocksRow ${firstWidth > 992 && 'mb-3'} justify-content-around align-middle align-center align-items-center`}>
 
             <div className=" col-lg-6   mt-3">
                   <div id="movility" className="ps-3  bgItemsDropdown py-3" onClick={handleShowMovility}>
                     <CircleIcon  className="me-2 badgeMovility" />
-                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activación/movilidad</strong> <span className="small">- {currentDay && currentDay.name} </span> </span>
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activacion/movilidad</strong> <span className="small">- {sanitizeBrokenText(currentDay && currentDay.name)} </span> </span>
                     <span className="d-block stylesSpanBloqs">Haz click para editar</span>
                   </div>
                
@@ -2831,7 +3842,7 @@ function colorItemTemplate(option) {
               <div className=" col-lg-6  mt-3">
                   <div id="warmup" className="ps-3 bgItemsDropdown py-3" onClick={handleShowWarmup}>
                     <CircleIcon  className="me-2 badgeWarmup" />
-                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>entrada en calor</strong> <span className="small">- {currentDay && currentDay.name} </span></span>
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>entrada en calor</strong> <span className="small">- {sanitizeBrokenText(currentDay && currentDay.name)} </span></span>
                     <span className="d-block stylesSpanBloqs">Haz click para editar</span>
                 </div>
               </div>
@@ -2840,61 +3851,70 @@ function colorItemTemplate(option) {
           
               {firstWidth < 992 && 
               <>
-              <div className={`col-10 col-sm-6 text-center mb-4 mt-3`}>
+              <div className={`col-10 col-sm-6 text-center mt-3`}>
                     
-                    <Segmented
-                        options={allDays.map(day => {
-                          const name = day.name || '';
-                          const short = name.length > 6 ? `${name.slice(0, 5)}` : name;
-                          return {
-                            value: day._id,
-                            label: (
-                              <span title={name} style={{ display: 'inline-block', maxWidth: '8ch', maxHeight: '2.3ch', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {short}
-                              </span>
-                            )
-                          };
-                        })}
-                        className="stylesSegmented"
-                        value={currentDay ? currentDay._id : ''}
-                        onChange={(value) => {
-                            const selectedDay = allDays.find((day) => day._id === value);
-
-                            if (selectedDay) {
-                                const selectedIndex = allDays.findIndex(day => day._id === selectedDay._id);
-                                setIndexDay(selectedIndex);
-                                setCurrentDay(day[selectedIndex]); // Actualizar currentDay con day
+                    <ConfigProvider theme={dayEditSegmentedTheme}>
+                      <Segmented
+                          className="dayEditMobileDaySegmented"
+                          options={allDays.map(day => {
+                            const name = sanitizeBrokenText(day.name || '');
+                            const short = name.length > 6 ? `${name.slice(0, 5)}` : name;
+                            return {
+                              value: day._id,
+                              label: (
+                                <span title={name} style={{ display: 'inline-block', maxWidth: '8ch', maxHeight: '2.3ch', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {short}
+                                </span>
+                              )
+                            };
+                          })}
+                          value={currentDay ? currentDay._id : ''}
+                          onChange={(value) => {
+                            const list = Array.isArray(modifiedDay) ? modifiedDay : [];
+                            const selectedIndex = list.findIndex((d) => d?._id === value);
+                            if (selectedIndex !== -1) {
+                              setIndexDay(selectedIndex);
+                              setCurrentDay(list[selectedIndex]);
                             }
-                        }}
-                    />
+                          }}
+                      />
+                    </ConfigProvider>
 
-                    <p className="text-center mb-4 colorNameAlumno rounded-2 mt-3 py-2">
-                        {currentDay && currentDay.name}
+                    <p className="text-center mb-4 colorNameAlumno rounded-2 mt-3 py-1 fs09em">
+                        Estas en: <b>{sanitizeBrokenText(currentDay && currentDay.name)}</b>
                     </p>
 
                 </div>
-                <div className={`col-9 col-sm-6 ${firstWidth > 550 ? 'text-start mb-4' : 'text-center mb-4'}`}>
+                <div className={`col-12 col-sm-6 ${firstWidth > 550 ? 'text-start mb-4' : 'text-center mb-4'}`}>
                     <IconButton
                             aria-label="video"
-                            className="bg-primary rounded-2 text-light me-2"
+                            className="stylesbuttonCrearDia rounded-2 me-2"
                             onClick={addNewDay}
                         >
                             <AddIcon className="" />
-                            <span className="font-icons me-1">Crear día</span>
+                            <span className="font-icons me-1">Crear dia</span>
                         </IconButton>
 
                         <IconButton
                             aria-label="video"
-                            className="bg-secondary rounded-2 text-light me-2"
+                            className="stylesbuttonEditarDia rounded-2 text-light me-2"
                             onClick={() => openEditNameDialog(currentDay)}
                             
                         >
                             <EditIcon className="" />
                         </IconButton>
                         <IconButton
+                            aria-label="reorder-days"
+                            className="stylesbuttonEditarDia rounded-2 text-light me-2"
+                            onClick={openReorderDaysDialog}
+                        >
+                            <DragIndicatorIcon className="" />
+                        </IconButton>
+                        <IconButton
                             aria-label="video"
-                            className="bg-danger rounded-2 text-light "
+                            className="stylesbuttonEliminarDia rounded-2 text-light "
                             onClick={handleDeleteDayClick}
+                            disabled={!canDeleteDay}
                         >
                             <DeleteIcon className="" />
                         </IconButton>
@@ -2904,7 +3924,7 @@ function colorItemTemplate(option) {
                 }
           </div>
 
-          <div className="row justify-content-center align-middle text-center mb-5 pb-5">
+          <div className="row dayEditTableRow justify-content-center align-middle text-center mb-5 pb-5">
            
              
        
@@ -2914,35 +3934,54 @@ function colorItemTemplate(option) {
                 <Droppable droppableId="exercises-desktop" type="MAIN">
                   {(provided) => (
                     <div 
-                      className="table-responsive col-12  altoTable"
+                      className="table-responsive col-12 px-0 altoTable dayEditTableShell dayEditDesktopTableShell"
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                     >
                       <table
-                        className={`table  totalHeightTable align-middle fontTable text-center ${
+                        className={`table totalHeightTable align-middle fontTable text-center ddp-table dayEditDesktopTable ${
                           isEditing && "table-light"
                         }`}
                       >
+                        <colgroup>
+                          <col className="dayEditColDrag" />
+                          <col className="dayEditColOrder" />
+                          <col className="dayEditColName" />
+                          <col className="dayEditColSets" />
+                          <col className="dayEditColReps" />
+                          <col className="dayEditColPeso" />
+                          <col className="dayEditColRest" />
+                          <col className="dayEditColVideo" />
+                          <col className="dayEditColNotes" />
+                          <col className="dayEditColDelete" />
+                        </colgroup>
                         <thead className=" ">
                           <tr className=" ">
-                            <th className="px-0 mx-0 pt-0 bg-transparent" colSpan={2}><div className="btn style1Item w-100">Acciones:</div></th>
-                            
+                            <th className="px-0 mx-0 pt-0 bg-transparent" colSpan={2}>
+                              <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn justify-content-center w-100">
+                                Acciones:
+                              </div>
+                            </th>
                             <th className="pb-1 pb-1 mx-0  ">
-
-                              <button className="rounded-2 text-start " onClick={() => incrementAllSeries()} >
-                                <Tooltip placement="top" arrow title={ "Sumarás una serie a todos los ejercicios" } enterDelay={0} leaveDelay={0}>
-                                  <div className=" btn  px-0 pe-2  style1Item"><UpgradeIcon className="fontBadgePlus " />Sumar 1 serie</div>
+                              <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => incrementAllSeries()} >
+                                <Tooltip placement="top" arrow title={ "Sumaras una serie a todos los ejercicios." } enterDelay={0} leaveDelay={0}>
+                                  <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
+                                    <LibraryAddIcon className="bulkAdjustHeaderIcon" />
+                                    <span>Sumar 1 serie</span>
+                                  </div>
                                 </Tooltip>
                               </button>
-
                             </th>
                               
                           
                             <th className="pb-1 pb-1 mx-0  "  >
 
-                              <button className="rounded-2 text-start " onClick={() => incrementAllReps()} >
-                                <Tooltip placement="top" arrow title={ "Sumarás una repetición a todos los ejercicios" } enterDelay={0} leaveDelay={0}>
-                                  <div className=" btn  px-0 pe-2 style1Item "><UpgradeIcon className=" fontBadgePlus" />Sumar 1 rep</div> 
+                              <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => incrementAllReps()} >
+                                <Tooltip placement="top" arrow title={ "Sumaras una repeticion a todos los ejercicios." } enterDelay={0} leaveDelay={0}>
+                                  <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
+                                    <PlusOneOutlined className="bulkAdjustHeaderIcon" />
+                                    <span>Sumar 1 rep</span>
+                                  </div> 
                                 </Tooltip>
                               </button>
 
@@ -2950,12 +3989,26 @@ function colorItemTemplate(option) {
 
                               <th className="pb-1 pb-1 mx-0  " colSpan={2}  >
 
-                                <button className="rounded-2 text-start " onClick={AddBlock}>
-                                  <Tooltip placement="top" arrow title={ "En vez de agregar un ejercicio, primero agregás un bloque, para luego crear los ejercicios que desees dentro de él. Tu alumno verá el bloque. Por ejemplo, podés agregar un bloque de fuerza, luego uno de auxiliares, etc." } enterDelay={0} leaveDelay={0}>
-                                    <div className=" btn  px-0 pe-2 style1Item "><AddIcon className=" fontBadgePlus" />Agregar bloque de entrenamiento</div> 
+                                <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={AddBlock}>
+                                  <Tooltip placement="top" arrow title={ "En vez de agregar un ejercicio, primero agregas un bloque para luego crear los ejercicios que desees dentro de el. Tu alumno vera el bloque. Por ejemplo, podes agregar un bloque de fuerza y luego otro de auxiliares." } enterDelay={0} leaveDelay={0}>
+                                    <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
+                                      <AddIcon className="bulkAdjustHeaderIcon" />
+                                      <span>Agregar bloque de entrenamiento</span>
+                                    </div>
                                   </Tooltip>
                                 </button>
 
+                            </th>
+
+                            <th className="pb-1 pb-1 mx-0  " colSpan={3}  >
+                                <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => setDialogAllWeeks(true)}>
+                                  <Tooltip placement="top" arrow title={ "Podras ver de manera rapida todas las semanas anteriores de este alumno." } enterDelay={0} leaveDelay={0}>
+                                    <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
+                                      <Eye className="bulkAdjustHeaderIcon" />
+                                      <span>Ver semanas anteriores</span>
+                                    </div>
+                                  </Tooltip>
+                                </button>
                             </th>
                             
                           </tr>
@@ -2963,7 +4016,7 @@ function colorItemTemplate(option) {
 
                         <thead>
                           <tr>
-                            {/* CHANGES: Aquí usamos key={index} para evitar duplicados */}
+                            {/* CHANGES: Aqui usamos key={index} para evitar duplicados */}
                             {propiedades.map((propiedad, index) => (
                               <th
                                 key={index}
@@ -2993,8 +4046,12 @@ function colorItemTemplate(option) {
                                       <tr ref={providedDrag.innerRef} {...providedDrag.draggableProps}>
   <td colSpan={propiedades.length} className="p-0 border-0">
     <div
-      className="rounded-3 shadow-sm"
-      style={{ overflow: 'hidden', border: '1px solid #ececec' }}
+      className="rounded-3"
+      style={{
+        overflow: 'hidden',
+        border: '1px solid rgba(15, 23, 42, 0.42)',
+        boxShadow: 'none'
+      }}
     >
       {/* HEADER ROJO */}
       <div
@@ -3010,22 +4067,40 @@ function colorItemTemplate(option) {
 
           <span className="fw-semibold">Bloque</span>
 
-          <PrimeAutoComplete
-            value={exercise.name}
-            suggestions={blockNameSuggestions}
-            dropdown
-            placeholder="Nombre del bloque"
-            className="form-control form-control-sm bg-transparent border-0 text-dark"
-            completeMethod={(e) => {
-              const q = e.query.toLowerCase();
-              setBlockNameSuggestions(
-                BLOCK_NAME_OPTIONS.filter(opt =>
-                  opt.toLowerCase().includes(q)
-                )
-              );
-            }}
-            onChange={(e) => changeBlockData(i, 'name', e.value)}
-          />
+          <button
+            type="button"
+            className="btn btn-sm blockNameEditButton text-white"
+            onClick={(e) => blockNameOverlayRef.current[`b-web-${exercise.block_id}`]?.toggle(e)}
+          >
+            <EditIcon fontSize="inherit" />
+            <span>{exercise.name || "Nombre del bloque"}</span>
+          </button>
+          <OverlayPanel
+            ref={(el) => (blockNameOverlayRef.current[`b-web-${exercise.block_id}`] = el)}
+            className="blockNameOverlayPanel dayEditDarkOverlayPanel"
+          >
+            <div className="blockNameOverlayBody">
+              <div className="blockNameOverlayTitle">Nombre del bloque</div>
+              <PrimeAutoComplete
+                value={exercise.name}
+                suggestions={blockNameSuggestions}
+                dropdown
+                placeholder="Escribi o elegi un nombre"
+                className="w-100 blockNameAutoComplete"
+                inputClassName="blockNameAutoCompleteInput"
+                completeMethod={(e) => {
+                  const q = e.query.toLowerCase();
+                  setBlockNameSuggestions(
+                    BLOCK_NAME_OPTIONS.filter((opt) =>
+                      opt.toLowerCase().includes(q)
+                    )
+                  );
+                }}
+                onChange={(e) => changeBlockData(i, 'name', e.value)}
+              />
+              <div className="blockNameOverlayHint">Sugerencias + nombre libre.</div>
+            </div>
+          </OverlayPanel>
         </div>
 
         <div className="d-flex align-items-center">
@@ -3050,7 +4125,7 @@ function colorItemTemplate(option) {
       </div>
 
       {/* SUB-ENCABEZADO DE COLUMNAS (fondo claro) */}
-      <div className="px-3 py-2 small text-muted " style={{ background: '#fffef7' }}>
+      <div className="px-3 py-2 small text-muted dayEditBlockColumns">
         <div className="row g-0 fw-semibold">
           <div className="col-1">#</div>
           <div className="col-3 text-start">Ejercicio</div>
@@ -3078,7 +4153,11 @@ function colorItemTemplate(option) {
                                         
                                           >
 
-                                        <td style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }} >
+                                        <td
+                                          colSpan={2}
+                                          className="dayEditBlockOrderCell"
+                                          style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}
+                                        >
                                           <Dropdown
                                             value={ex.numberExercise}
                                             options={options}
@@ -3090,10 +4169,10 @@ function colorItemTemplate(option) {
                                                 e.target.value
                                               )
                                             }
-                                            className="p-dropdown-group w-100"
+                                            className="p-dropdown-group w-100 dayEditBlockOrderDropdown"
                                           />
                                         </td>
-                                        <td colSpan={2}>
+                                        <td>
                                         <div className="">
                                                           <div className="d-flex align-items-center mb-1">
                                                           <button className="btn colorAproximations py-0 m-0"
@@ -3110,7 +4189,7 @@ function colorItemTemplate(option) {
                                                           <AutoComplete
                                                                 defaultValue={typeof ex.name === 'object' ? ex.name.name : ex.name}
                                                                 onChange={(name, video) => {
-                                                                  // Usa la función específica para ejercicios de bloque
+                                                                  // Usa la funcion especifica para ejercicios de bloque
                                                                   changeBlockExerciseData(i, j, 'name', name);
                                                                   changeBlockExerciseData(i, j, 'video', video);
                                                                 }}
@@ -3157,15 +4236,10 @@ function colorItemTemplate(option) {
                                                         </td>
                                                         <td>
                                                           <IconButton
-                                                            onClick={() =>
-                                                              removeExerciseFromBlock(
-                                                                i,
-                                                                ex.exercise_id
-                                                              )
-                                                            }
-                                                          >
-                                                            <CancelIcon />
-                                                          </IconButton>
+                                                              onClick={() => handleDeleteExerciseInBlockClick(i, ex)}
+                                                            >
+                                                              <CancelIcon className="colorIconDeleteExercise" />
+                                                            </IconButton>
                                                         </td>
                                                       </tr>
                                 )}
@@ -3173,64 +4247,81 @@ function colorItemTemplate(option) {
 
                                   return (
                                     <React.Fragment key={ex.exercise_id}>
-                                      {/* --- Fila de encabezado del circuito dentro del bloque --- */}
-                                      <tr style={{ backgroundColor: exercise.color }}>
-                                        <td colSpan={8} className="text-start">
-                                          <CircuitHeaderEditor
-                                            circuit={ex}
-                                            onField={(field, value) => changeBlockCircuitData(i, j, field, value)}
-                                            showNumber
-                                            numberValue={ex.numberExercise}
-                                            numberOptions={options}
-                                            onNumberChange={(v) => changeBlockCircuitData(i, j, 'numberExercise', v)}
-                                          />
-                                        </td>
-                                        <td>
-                                      <IconButton onClick={() => handleDeleteCircuitInBlock(i, j, circuitSubtitle(ex))}>
-                                            <CancelIcon />
-                                          </IconButton>
-                                        </td>
-                                      </tr>
-
-                                      {/* --- Cada ejercicio dentro del circuito --- */}
-                                      {ex.circuit.map((ce, k) => (
-                                        <tr key={ce.idRefresh}>
-                                          <td colSpan={1} className="text-center">
-                                            <div className="border p-2 bg-light rounded-1">{k}</div>
-                                          </td>
-                                          <td colSpan={3} className="text-start">
-                                            <span className="fs08em">Nombre</span>
-                                            {customInputEditExerciseInCircuit(ce.name,j,k,'name',ce.name,i)}
-                                          </td>
-                                          <td colSpan={1} className="text-center">
-                                             <span className="fs08em">Reps</span>
-                                            {customInputEditExerciseInCircuit(ce.reps, j, k, 'reps', ce.reps, i)}
-                                          </td>
-                                          <td  className="text-center" colSpan={3}>
-                                             <span className="fs08em">Peso</span>
-                                            {customInputEditExerciseInCircuit(ce.peso, j, k, 'peso', ce.peso, i)}
-                                          </td>
-                                          <td colSpan={1} className="text-center">
-                                             <span className="fs08em d-block">Video</span>
-                                            {customInputEditExerciseInCircuit(ce.video, j, k, 'video', ce.video, i)}
-                                          </td>
-                                          <td colSpan={1}>
-                                            <IconButton onClick={() => handleDeleteExerciseInCircuit(i, j, k, ce.name)}>
-                                              <CancelIcon />
-                                            </IconButton>
-                                          </td>
-                                        </tr>
-                                      ))}
-
-                                      {/* --- Botón “Añadir ejercicio” dentro del circuito --- */}
                                       <tr>
-                                        <td colSpan={propiedades.length} className="text-center py-5 ">
-                                          <button
-                                            className="btn btn-outline-dark "
-                                            onClick={() => AddExerciseToCircuit(/*circuitIndex=*/ j, /*blockIndex=*/ i)}
-                                          >
-                                            <AddIcon /> Añadir ejercicio al circuito
-                                          </button>
+                                        <td colSpan={propiedades.length} className="p-0 border-0">
+                                          <table className="table text-center align-middle dayEditCircuitNestedTable">
+                                            <colgroup>
+                                              <col className="dayEditCircuitColIndex" />
+                                              <col className="dayEditCircuitColName" />
+                                              <col className="dayEditCircuitColReps" />
+                                              <col className="dayEditCircuitColPeso" />
+                                              <col className="dayEditCircuitColVideo" />
+                                              <col className="dayEditCircuitColDelete" />
+                                            </colgroup>
+                                            <thead>
+                                              <tr>
+                                                <td colSpan={5} className="text-start">
+                                                  <CircuitHeaderEditor
+                                                    circuit={ex}
+                                                    onField={(field, value) => changeBlockCircuitData(i, j, field, value)}
+                                                    showNumber
+                                                    numberValue={ex.numberExercise}
+                                                    numberOptions={options}
+                                                    onNumberChange={(v) => changeBlockCircuitData(i, j, 'numberExercise', v)}
+                                                  />
+                                                </td>
+                                                <td className="dayEditCircuitDeleteCell">
+                                                  <IconButton onClick={() => handleDeleteCircuitInBlock(i, j, circuitSubtitle(ex))}>
+                                                    <CancelIcon className="colorIconDeleteExercise" />
+                                                  </IconButton>
+                                                </td>
+                                              </tr>
+                                              <tr>
+                                                <th>#</th>
+                                                <th>Nombre</th>
+                                                <th>Reps</th>
+                                                <th>Peso</th>
+                                                <th>Video</th>
+                                                <th></th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {ex.circuit.map((ce, k) => (
+                                                <tr key={ce.idRefresh}>
+                                                  <td className="dayEditCircuitIndexCell">
+                                                    <span>{k + 1}</span>
+                                                  </td>
+                                                  <td className="text-start">
+                                                    {customInputEditExerciseInCircuit(ce.name, j, k, 'name', ce.name, i)}
+                                                  </td>
+                                                  <td className="text-center">
+                                                    {customInputEditExerciseInCircuit(ce.reps, j, k, 'reps', ce.reps, i)}
+                                                  </td>
+                                                  <td className="text-center">
+                                                    {customInputEditExerciseInCircuit(ce.peso, j, k, 'peso', ce.peso, i)}
+                                                  </td>
+                                                  <td className="text-center">
+                                                    {customInputEditExerciseInCircuit(ce.video, j, k, 'video', ce.video, i)}
+                                                  </td>
+                                                  <td className="dayEditCircuitDeleteCell">
+                                                    <IconButton onClick={() => handleDeleteExerciseInCircuit(i, j, k, ce.name)}>
+                                                      <CancelIcon className="colorIconDeleteExercise" />
+                                                    </IconButton>
+                                                  </td>
+                                                </tr>
+                                              ))}
+                                              <tr>
+                                                <td colSpan={6} className="text-center py-4">
+                                                  <button
+                                                    className="btn circuitAddExerciseBtn"
+                                                    onClick={() => AddExerciseToCircuit(j, i)}
+                                                  >
+                                                    <AddIcon /> Anadir ejercicio al circuito
+                                                  </button>
+                                                </td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
                                         </td>
                                       </tr>
                                     </React.Fragment>
@@ -3242,21 +4333,21 @@ function colorItemTemplate(option) {
                                
                               </React.Fragment>
 
-                                      {/* Fila para añadir ejercicio al bloque */}
+                                      {/* Fila para anadir ejercicio al bloque */}
                                       <tr>
                                         <td colSpan={propiedades.length} className="text-center rounded-bottom-3" style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}>
                                           <button
                                             className="btn btn-light mx-3"
                                             onClick={() => addExerciseToBlock(i)}
                                           >
-                                            <AddIcon /> Añadir ejercicio al bloque
+                                            <AddIcon /> Anadir ejercicio al bloque
                                           </button>
 
                                           <button
                                             className="btn btn-light  mx-3"
                                             onClick={() => AddNewCircuit(i)}
                                           >
-                                            <AddIcon /> Añadir circuito al bloque
+                                            <AddIcon /> Anadir circuito al bloque
                                           </button>
 
                                         </td>
@@ -3268,16 +4359,18 @@ function colorItemTemplate(option) {
                                                     {...providedDrag.draggableProps}
                                                     className="GeneralTrExercises"
                                                   >
-                                                    <td >
-                                                      <div className="row justify-content-center">
+                                                    <td className="dayEditCellDrag">
+                                                      <div className="d-flex justify-content-center">
                                                         <IconButton
                                                           {...providedDrag.dragHandleProps}
+                                                          size="small"
+                                                          className="dayEditCompactIconButton"
                                                         >
                                                           <DragIndicatorIcon />
                                                         </IconButton>
                                                       </div>
                                                     </td>
-                                                    <td>
+                                                    <td className="dayEditCellOrder">
                                                       <Dropdown
                                                         value={exercise.numberExercise}
                                                         options={options}
@@ -3290,7 +4383,7 @@ function colorItemTemplate(option) {
                                                         }}
                                                         placeholder="Seleccionar numero"
                                                         optionLabel="label"
-                                                        className="p-dropdown-group w-100"
+                                                        className="p-dropdown-group w-100 dayEditOrderDropdown"
                                                       />
                                                     </td>
                                                     {exercise.type === "exercise" ? (
@@ -3389,15 +4482,9 @@ function colorItemTemplate(option) {
                                                         <td>
                                                           <div className="row justify-content-center">
                                                             <IconButton
-                                                              aria-label="video"
+                                                              aria-label="delete-exercise"
                                                               className="col-12"
-                                                              onClick={() => {
-                                                                const confirmObj = {
-                                                                  exercise_id: exercise.exercise_id,
-                                                                  name: exercise.name
-                                                                };
-                                                                handleDeleteClick(confirmObj);
-                                                              }}
+                                                              onClick={() => handleDeleteClick(exercise)}
                                                             >
                                                               <CancelIcon className="colorIconDeleteExercise" />
                                                             </IconButton>
@@ -3406,69 +4493,73 @@ function colorItemTemplate(option) {
                                                       </>
                                                     ) : (
                                                       <>
-                                                        <td colSpan={9}>
-                                                          <table className="table text-center align-middle">
+                                                        <td colSpan={propiedades.length - 2}>
+                                                          <table className="table text-center align-middle dayEditCircuitNestedTable">
+                                                            <colgroup>
+                                                              <col className="dayEditCircuitColIndex" />
+                                                              <col className="dayEditCircuitColName" />
+                                                              <col className="dayEditCircuitColReps" />
+                                                              <col className="dayEditCircuitColPeso" />
+                                                              <col className="dayEditCircuitColVideo" />
+                                                              <col className="dayEditCircuitColDelete" />
+                                                            </colgroup>
                                                             <thead>
                                                               <tr>
 
-                                                                <td colSpan={8} className="text-start">
+                                                                <td colSpan={5} className="text-start">
                                                                <CircuitHeaderEditor
                                                                   circuit={exercise}
                                                                   onField={(field, value) => changeCircuitData(i, field, value)}
-                                                                  showNumber
                                                                   numberValue={exercise.numberExercise}
                                                                   numberOptions={options}
                                                                   onNumberChange={(v) => changeCircuitData(i, 'numberExercise', v)}
                                                                 />
                                                                 </td>
-                                                                <td>
+                                                                <td className="dayEditCircuitDeleteCell">
                                                                   <IconButton
                                                                     aria-label="delete"
-                                                                    onClick={() => deleteCircuit(i)}
+                                                                    onClick={() => handleDeleteMainCircuitClick(i, exercise)}
 
                                                                   >
-                                                                    <CancelIcon />
+                                                                    <CancelIcon className="colorIconDeleteExercise" />
                                                                   </IconButton>
                                                                 </td>
                                                               </tr>
 
-                                                              <tr></tr>
                                                               <tr >
-                                                                <th colSpan={3}>Nombre</th>
-                                                                <th colSpan={2} >Reps</th>
-                                                                <th colSpan={2}>Peso</th>
-                                                                <th colSpan={1}>Video</th>
-                                                                
+                                                                <th>#</th>
+                                                                <th>Nombre</th>
+                                                                <th>Reps</th>
+                                                                <th>Peso</th>
+                                                                <th>Video</th>
+                                                                <th></th>
                                                               </tr>
                                                             </thead>
                                                             <tbody>
                                                               {exercise.circuit.map((circuitExercise, j) => (
                                                                 <tr key={circuitExercise.idRefresh}>
-                                                                  <td colSpan={3} className="" >
+                                                                  <td className="dayEditCircuitIndexCell">
+                                                                    <span>{j + 1}</span>
+                                                                  </td>
+                                                                  <td className="text-start" >
                                                                     {customInputEditExerciseInCircuit(circuitExercise.name, i, j, 'name')}
                                                                   </td>
-                                                                  <td colSpan={2} className="td-3" >
+                                                                  <td className="text-center td-3" >
                                                                     <div className="marginRepsNew">
                                                                     {customInputEditExerciseInCircuit(circuitExercise.reps, i, j, 'reps')}
                                                                     </div>
                                                                   </td>
-                                                                  <td colSpan={2} className="" >
+                                                                  <td className="text-center" >
                                                                     {customInputEditExerciseInCircuit(circuitExercise.peso, i, j, 'peso')}
                                                                   </td>
-                                                                  <td colSpan={1} className="">
+                                                                  <td className="text-center">
                                                                     {customInputEditExerciseInCircuit(circuitExercise.video, i, j, 'video')}
                                                                   </td>
-                                                                  <td>
+                                                                  <td className="dayEditCircuitDeleteCell">
                                                                     <IconButton
-                                                                      aria-label="video"
+                                                                      aria-label="delete-circuit-exercise"
                                                                       className="col-12"
-                                                                      onClick={() => {
-                                                                        setIsEditing(true);
-                                                                        const updatedDays = [...day];
-                                                                        updatedDays[indexDay].exercises[i].circuit.splice(j, 1);
-                                                                        setDay(updatedDays);
-                                                                        setModifiedDay(updatedDays);
-                                                                      }}
+                                                                      onClick={() => handleDeleteExerciseInCircuit(null, i, j, circuitExercise.name)}
                                                                     >
                                                                       <CancelIcon className="colorIconDeleteExercise" />
                                                                     </IconButton>
@@ -3479,11 +4570,11 @@ function colorItemTemplate(option) {
                                                                 <td colSpan={6}>
                                                                   <button
                                                                     aria-label="video"
-                                                                    className="btn btn-outline-dark my-4"
+                                                                    className="btn circuitAddExerciseBtn my-4"
                                                                     onClick={() => AddExerciseToCircuit(i)}
                                                                   >
                                                                     <AddIcon />
-                                                                    <span className=" me-1">Añadir Ejercicio al Circuito</span>
+                                                                    <span className=" me-1">Anadir ejercicio al circuito</span>
                                                                   </button>
                                                                 </td>
                                                               </tr>
@@ -3515,64 +4606,119 @@ function colorItemTemplate(option) {
           </div>
 
           {isEditing && (
-            <div className="floating-button-mobile index-up">
-              <button
-                className="px-5 btn btn-light  my-4"
-                onClick={() => applyChanges()}
-              >
-                Guardar
-              </button>
-              <button
-                className="px-5 btn btn-danger   my-4"
-                onClick={() => confirmCancel()}
-              >
-                Cancelar
-              </button>
+            <div className="floating-button-mobile">
+              <div className="unsavedChangesCard">
+                <div className="unsavedChangesCopy">
+                  <div className="unsavedChangesTitleRow">
+                    <span className="unsavedChangesIndicator" />
+                    <span className="unsavedChangesTitle">Cambios sin guardar</span>
+                  </div>
+                  <span className="unsavedChangesSubtitle">
+                    Hay ediciones pendientes en este dia.
+                  </span>
+                </div>
+                <div className="unsavedChangesActions">
+                  <button
+                    className="unsavedChangesBtn unsavedChangesBtnSecondary"
+                    onClick={() => confirmCancel()}
+                  >
+                    <X size={16} />
+                    <span>Cancelar</span>
+                  </button>
+                  <button
+                    className="unsavedChangesBtn unsavedChangesBtnPrimary"
+                    onClick={() => applyChanges()}
+                  >
+                    <Save size={16} />
+                    <span>Guardar</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
+
+          {firstWidth < 992 && (
+            <nav className="fixed-bottom footerColor d-flex justify-content-around  pt-0 pb-2">
+
+
+              {/* -------- BOTON: Anadir circuito -------- */}
+              <div className="row justify-content-center text-center">
+
+                <button
+                  type="button"
+                  onClick={() => AddNewCircuit()}
+                  className="styleItemsDial text-center d-block styleDial rounded-5 d-flex align-items-center justify-content-center"
+                  
+                >
+                  <Plus size={28} className="d-block" />
+                </button>
+                <span className=" fs08em d-block text-light ">
+                  Anadir circuito
+                </span>
+              </div>
+
+              {/* -------- BOTON: Anadir ejercicio -------- */}
+              <div className="row justify-content-center text-center">
+                <button
+                  type="button"
+                  onClick={() => AddNewExercise()}
+                  className="styleItemsDial styleDial rounded-5 d-flex align-items-center justify-content-center"
+                  
+                >
+                  <Plus size={28} />
+                </button>
+                <span className="fs08em text-light">
+                  Anadir ejercicio
+                </span>
+              </div>
+
+            </nav>
+          )}
+
+
 
           {/* Ajustamos estilos de dialog para que se desplacen segun collapsed */}
           <ConfirmDialog
             visible={showDeleteDayDialog}
             onHide={() => setShowDeleteDayDialog(false)}
-            message="¿Querés eliminar este día? Podes cancelar después y revertir esta acción."
-            header="Eliminar día"
+            message="Queres eliminar este dia? Podes cancelar despues y revertir esta accion."
+            header="Eliminar dia"
             icon="pi pi-exclamation-triangle"
-            acceptLabel="Sí"
+            acceptLabel="Si"
             rejectLabel="No"
             accept={() => {
               confirmDeleteDay();
               setShowDeleteDayDialog(false);
             }}
-            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            className={`coachConfirmDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             reject={() => setShowDeleteDayDialog(false)}
           />
 
           <ConfirmDialog
             visible={showCancelDialog}
             onHide={() => setShowCancelDialog(false)}
-            message="¿Estás seguro de que deseas cancelar los cambios? Se perderán todos los cambios no guardados."
-            header="Confirmación"
+            message="Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+            header="Confirmacion"
             icon="pi pi-exclamation-triangle"
-            acceptLabel="Sí"
+            acceptLabel="Si"
             rejectLabel="No"
             accept={() => handleCancel()}
             reject={() => setShowCancelDialog(false)}
-            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            className={`coachConfirmDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
           />
 
           <ConfirmDialog
             visible={visible}
             onHide={() => setVisible(false)}
-            message="¿Estás seguro de que deseas eliminar este elemento?"
-            header="Confirmación"
+            message="Estas seguro de que deseas eliminar este elementoa"
+            header="Confirmacion"
             icon="pi pi-exclamation-triangle"
             acceptLabel="Eliminar"
             acceptClassName="p-button-danger"
             rejectLabel="Cancelar"
             accept={confirmDelete}
             reject={() => setVisible(false)}
-            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            className={`coachConfirmDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
           />
 
           <Dialog
@@ -3586,12 +4732,12 @@ function colorItemTemplate(option) {
           ></Dialog>
 
           <ConfirmDialog 
-          className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+          className={`coachConfirmDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
           />
 
           <Dialog
             header={`${exerciseToDelete?.name || ""}`}
-            className={`dialogDeleteExercise ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            className={`coachModalDialog dialogDeleteExercise ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={showDeleteDialog}
             style={{
               width: `${firstWidth > 991 ? "50vw" : "80vw"}`
@@ -3600,35 +4746,109 @@ function colorItemTemplate(option) {
               <div className="row justify-content-center ">
                 <div className="col-lg-12 me-3">
                   <button
-                    className="btn btn-outlined-secondary"
+                    className="coachDialogBtn coachDialogBtnSecondary"
                     onClick={handleDeleteCancel}
                   >
-                    No
+                    Cancelar
                   </button>
                   <button
-                    className="btn btn-danger"
+                    className="coachDialogBtn coachDialogBtnDanger"
                     onClick={handleDeleteConfirm}
                   >
-                    Sí, eliminar
+                    Si, eliminar
                   </button>
                 </div>
               </div>
             }
             onHide={handleDeleteCancel}
           >
-            <p className="p-4 text-dark">
-              ¡Cuidado! Estás por eliminar{" "}
-              <b>"{exerciseToDelete?.name}"</b>. ¿Estás seguro?
+            <p className="p-4 mb-0 coachDialogMessage">
+              Cuidado, estas por eliminar <b>"{exerciseToDelete?.name}"</b>. Queres continuar?
             </p>
           </Dialog>
 
+<Dialog
+    className={`coachModalDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+    header="Semanas anteriores"
+    visible={dialogAllWeeks}
+    style={{ width: "min(1200px, 96vw)" }}
+    onHide={() => setDialogAllWeeks(false)}
+    draggable={false}
+    resizable={false}
+  >
+    <div className="small text-muted mb-2">
+      La comparacion siempre toma como referencia la semana actual.
+    </div>
+
+    <div className="d-flex align-items-center gap-2 overflow-auto pb-2 mb-3" style={{ whiteSpace: "nowrap" }}>
+      <button
+        type="button"
+        className="btn btn-sm btn-secondary"
+        disabled
+        title="Semana actual"
+      >
+        {currentWeekDisplayName} <span className="badge text-bg-light ms-2">Semana actual</span>
+      </button>
+
+      {compareWeeksWithMeta.map((weekItem, idx) => {
+        const weekId = String(weekItem?._id || "");
+        const isComparable = weekItem?.__isComparable !== false;
+        const isSelected = isComparable && String(selectedCompareWeekId) === weekId;
+        const dateLabel = getCompareWeekDateLabel(weekItem);
+        return (
+          <button
+            key={weekId || `compare-week-${idx}`}
+            type="button"
+            className={`btn btn-sm text-start ${isSelected ? "btn-primary" : "btn-outline-secondary"}`}
+            onClick={() => {
+              if (!isComparable) return;
+              setSelectedCompareWeekId(weekId);
+            }}
+            aria-disabled={!isComparable}
+            title={
+              isComparable
+                ? ""
+                : "No se puede comparar debido a que tiene ejercicios diferentes."
+            }
+            style={
+              isComparable
+                ? undefined
+                : {
+                    opacity: 0.7,
+                    cursor: "not-allowed",
+                    borderStyle: "dashed",
+                    borderColor: "#dc3545"
+                  }
+            }
+          >
+            <div className="d-flex align-items-center justify-content-between gap-2">
+              <span className="fw-semibold">
+                {toText(weekItem?.name) || `Semana ${idx + 1}`}
+              </span>
+              {!isComparable ? (
+                <span className="badge text-bg-danger">No comparable</span>
+              ) : null}
+            </div>
+            {dateLabel ? (
+              <div className={isSelected ? "small text-white-50" : "small text-muted"}>
+                {dateLabel}
+              </div>
+            ) : null}
+          </button>
+        );
+      })}
+    </div>
+
+    <ExerciseComparisonChart
+      currentWeek={currentWeekForComparison}
+      previousWeek={selectedCompareWeek}
+    />
+  </Dialog>
           <Dialog
-            className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
-            contentClassName={"colorDialog"}
-            headerClassName={"colorDialog"}
+            className={`coachModalDialog coachRoutineAuxDialog col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : ' marginSidebarOpen'}`}
             header={
-              <div className="d-flex align-items-start justify-content-between  border-bottom">
-                <div><span className="fs-5">Bloque de entrada en calor</span> - <span className="fs-5">{currentDay && currentDay.name}</span></div>
+              <div className="d-flex align-items-start justify-content-between">
+                <div><span className="fs-5">Bloque de entrada en calor</span> - <span className="fs-5">{sanitizeBrokenText(currentDay && currentDay.name)}</span></div>
                 
               </div>
             }
@@ -3647,9 +4867,9 @@ function colorItemTemplate(option) {
           </Dialog>
 
           <Dialog
-            header="Editar Nombre del Día"
+            header="Editar nombre del dia"
             visible={isEditingName}
-            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            className={`coachModalDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             style={{
               ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" })
             }}
@@ -3666,23 +4886,23 @@ function colorItemTemplate(option) {
                 />
               </div>
               <div className="p-field text-end">
-                <button className="btn btn-primary mx-2 mt-2" onClick={saveNewDayName}>
-                  Confirmar
-                </button>
                 <button
-                  className="btn btn-secondary mx-2 mt-2"
+                  className="coachDialogBtn coachDialogBtnSecondary mx-2 mt-2"
                   onClick={() => setIsEditingName(false)}
                 >
                   Cancelar
+                </button>
+                <button className="coachDialogBtn coachDialogBtnPrimary mx-2 mt-2" onClick={saveNewDayName}>
+                  Confirmar
                 </button>
               </div>
             </div>
           </Dialog>
 
           <Dialog
-            header="Editar Nombre de la Semana"
+            header="Editar nombre de la semana"
             visible={isEditingWeekName}
-            className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            className={`coachModalDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             style={{
               ...(firstWidth > 968 ? { width: "35vw" } : { width: "75vw" })
             }}
@@ -3699,44 +4919,89 @@ function colorItemTemplate(option) {
                 />
               </div>
               <div className="p-field text-end">
-                <button className="btn btn-primary mx-2 mt-2" onClick={saveNewWeekName}>
-                  Confirmar
-                </button>
                 <button
-                  className="btn btn-secondary mx-2 mt-2"
+                  className="coachDialogBtn coachDialogBtnSecondary mx-2 mt-2"
                   onClick={closeEditWeekNameDialog}
                 >
                   Cancelar
+                </button>
+                <button className="coachDialogBtn coachDialogBtnPrimary mx-2 mt-2" onClick={saveNewWeekName}>
+                  Confirmar
                 </button>
               </div>
             </div>
           </Dialog>
 
-          {firstWidth < 992 && (
-            <nav className="fixed-bottom colorNavBottom d-flex justify-content-around pb-4 pt-1" >
-              
-              <div className="row justify-content-center text-center ">
-                <div className="">
-                  <IconButton className="text-light align-self-bottom" onClick={() => AddNewCircuit()}>
-                    <AddIcon />
-                  </IconButton>
-                </div>
-                <span className='col-12 text-light fontTextNavBar'>Añadir circuito</span>
-              </div>
+          <Dialog
+            header="Reordenar dias"
+            visible={showReorderDaysDialog}
+            className={`coachModalDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            style={{
+              ...(firstWidth > 968 ? { width: "35vw" } : { width: "85vw" })
+            }}
+            onHide={closeReorderDaysDialog}
+          >
+            <p className="small mb-3 coachDialogMessage">Arrastra cada dia para cambiar el orden de la semana.</p>
 
-              <div className="row justify-content-center text-center ">
-                <div className="">
-                  <IconButton className="text-light align-self-bottom" onClick={() => AddNewExercise()}>
-                    <AddIcon />
-                  </IconButton>
-                </div>
-                <span className='col-12 text-light fontTextNavBar'>Añadir ejercicio</span>
-                
-              </div>
+            <DragDropContext onDragEnd={handleDayOrderDragEnd}>
+              <Droppable droppableId="reorder-days-list">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="list-group"
+                  >
+                    {(draftDaysOrder || []).map((d, idx) => (
+                      <Draggable
+                        key={`reorder-day-${String(d?._id || idx)}`}
+                        draggableId={`reorder-day-${String(d?._id || idx)}`}
+                        index={idx}
+                      >
+                        {(dragProvided, snapshot) => (
+                          <div
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            className={`list-group-item d-flex align-items-center justify-content-between ${snapshot.isDragging ? "bg-light" : ""}`}
+                          >
+                            <div className="d-flex align-items-center">
+                              <span
+                                {...dragProvided.dragHandleProps}
+                                className="me-2 stylePointer"
+                                aria-label="drag-day"
+                              >
+                                <DragIndicatorIcon fontSize="small" />
+                              </span>
+                              <span>{sanitizeBrokenText(d?.name || `Dia ${idx + 1}`)}</span>
+                            </div>
+                            <span className="badge bg-secondary">{idx + 1}</span>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+
+            <div className="text-end mt-3">
+              <button
+                className="coachDialogBtn coachDialogBtnSecondary mx-2"
+                onClick={closeReorderDaysDialog}
+              >
+                Cancelar
+              </button>
+              <button
+                className="coachDialogBtn coachDialogBtnPrimary mx-2"
+                onClick={applyDayOrder}
+              >
+                Aplicar
+              </button>
+            </div>
+          </Dialog>
 
 
-            </nav>
-          )}
+
 
                           {tourVisible && (
                             <Tour
@@ -3752,12 +5017,12 @@ function colorItemTemplate(option) {
                             />)}
 
 <Dialog
-  className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
+  className={`coachModalDialog coachRoutineAuxDialog col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
   blockScroll={window.innerWidth > 600 ? false : true}
-  /* Header custom para replicar el diseño (titulo izq + X der) */
+  /* Header custom para replicar el diseno (titulo izq + X der) */
   header={
-    <div className="d-flex align-items-start justify-content-between  border-bottom">
-      <div><span className="fs-5">Bloque de activación / movilidad</span> - <span className="fs-5">{currentDay && currentDay.name}</span></div>
+    <div className="d-flex align-items-start justify-content-between">
+      <div><span className="fs-5">Bloque de activacion / movilidad</span> - <span className="fs-5">{sanitizeBrokenText(currentDay && currentDay.name)}</span></div>
       
     </div>
   }
@@ -3772,7 +5037,7 @@ function colorItemTemplate(option) {
           />
         </Dialog>
 
-      <OverlayPanel ref={backoffOverlayRef} className={firstWidth > 992 ? 'w-25' : 'w-75'}>
+      <OverlayPanel ref={backoffOverlayRef} className={`dayEditDarkOverlayPanel ${firstWidth > 992 ? 'w-25' : 'w-75'}`}>
         <div className="p-3">
 
           <div className="form-check mb-3">
@@ -3784,26 +5049,26 @@ function colorItemTemplate(option) {
               onChange={(e) => setUseCustomTitle(e.target.checked)}
             />
             <label htmlFor="customTitleCheckbox" className="form-check-label fontSizeNotBack">
-              No es un back off? Personalizá el nombre de la sección.
+              No es un back off. Personaliza el nombre de la seccion.
             </label>
           </div>
 
-          {/* SI ESTÁ TILDADO, MOSTRAMOS EL INPUT */}
+          {/* SI ESTA TILDADO, MOSTRAMOS EL INPUT */}
           {useCustomTitle && (
             <div className="mb-3">
-              <label htmlFor="backoffTitleInput" className="form-label fontSizeNotBack ">Título personalizado</label>
+              <label htmlFor="backoffTitleInput" className="form-label fontSizeNotBack ">Titulo personalizado</label>
               <input
                 id="backoffTitleInput"
                 type="text"
-                className="form-control"
+                className="form-control dayEditFieldInput"
                 value={backoffTitleName}
                 onChange={(e) => setBackoffTitleName(e.target.value)}
-                placeholder="Ingresá el nombre"
+                placeholder="Ingresa el nombre"
               />
             </div>
           )}
 
-          {/* AQUÍ TU MAP DE backoffData (igual que antes) */}
+          {/* AQUI TU MAP DE backoffData (igual que antes) */}
           {backoffData.map((line, idx) => (
             <div key={idx} className="row mb-2 align-items-end">
               {["sets", "reps", "peso"].map((f) => (
@@ -3811,7 +5076,7 @@ function colorItemTemplate(option) {
                   <label className={'fs07em'}>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
                   <input
                     type={f === "peso" || f === "reps" ? "text" : "number"}
-                    className="form-control styleInputBackOffs text-center "
+                    className="form-control styleInputBackOffs text-center dayEditFieldInput"
                     value={line[f]}
                     onChange={(e) => {
                       const arr = [...backoffData];
@@ -3834,13 +5099,13 @@ function colorItemTemplate(option) {
             </div>
           ))}
 
-          {/* Botones de añadir línea, cerrar y guardar */}
+          {/* Botones de anadir linea, cerrar y guardar */}
           <div className="text-center mb-3">
             <button
               className="btn btn-outline-dark fs09em py-0 px-2"
               onClick={() => setBackoffData([...backoffData, { sets: "", reps: "", peso: "" }])}
             >
-              Añadir otro back off
+              Anadir otro back off
             </button>
           </div>
           <div className="text-center">
@@ -3857,19 +5122,19 @@ function colorItemTemplate(option) {
         </div>
       </OverlayPanel>
 
-    <OverlayPanel ref={approxOverlayRef} className={ firstWidth > 992 ? 'w-25' : 'w-75' }>
+    <OverlayPanel ref={approxOverlayRef} className={`dayEditDarkOverlayPanel ${ firstWidth > 992 ? 'w-25' : 'w-75' }`}>
       <div className="">
 
-        {/* Cada línea con su número de aproximación */}
+        {/* Cada linea con su numero de aproximacion */}
         { approxData.map((line, idx) => (
           <div key={idx} className="mb-2">
             <div className="small text-muted fs07em mb-0">
-              {`${idx+1}° aproximación`}
+              {`${idx+1} aproximacion`}
             </div>
             <div className="row g-1 align-items-end">
               <div className="col-5">
                 <label className="form-label  fs07em mb-0">Reps</label>
-                <input type="text" className="form-control text-center styleInputBackOffs"
+                <input type="text" className="form-control text-center styleInputBackOffs dayEditFieldInput"
                       value={line.reps}
                       onChange={e => {
                         const arr = [...approxData];
@@ -3880,7 +5145,7 @@ function colorItemTemplate(option) {
               </div>
               <div className="col-5">
                 <label className="form-label  fs07em mb-0">Peso</label>
-                <input type="text" className="form-control text-center styleInputBackOffs"
+                <input type="text" className="form-control text-center styleInputBackOffs dayEditFieldInput"
                       value={line.peso}
                       onChange={e => {
                         const arr = [...approxData];
@@ -3899,11 +5164,11 @@ function colorItemTemplate(option) {
           </div>
         ))}
 
-        {/* Botón añadir línea */}
+        {/* Boton anadir linea */}
         <div className="text-center mb-3">
           <button className="btn btn-outline-dark py-0 px-2 fs09em"
                   onClick={() => setApproxData([...approxData, { reps:"", peso:"" }])}>
-            Añadir otra aproximación
+            Anadir otra aproximacion
           </button>
         </div>
 
@@ -3925,37 +5190,40 @@ function colorItemTemplate(option) {
     <ConfirmDialog
       visible={showDeleteCircuitDialog}
       onHide={() => setShowDeleteCircuitDialog(false)}
-      message={`¿Estás seguro de que deseas eliminar el circuito "${circuitToDelete?.name}"?`}
+      message={`Estas seguro de que deseas eliminar el circuito "${circuitToDelete?.name}"?`}
       header="Eliminar circuito"
       icon="pi pi-exclamation-triangle"
-      acceptLabel="Sí"
+      acceptLabel="Si"
       rejectLabel="No"
       accept={confirmDeleteCircuitInBlock}
       reject={() => setShowDeleteCircuitDialog(false)}
+      className={`coachConfirmDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
     />
 
       <ConfirmDialog
           visible={showDeleteExerciseInCircuitDialog}
           onHide={() => setShowDeleteExerciseInCircuitDialog(false)}
-          message={`¿Estás seguro de que deseas eliminar el ejercicio "${exerciseToDeleteInCircuit?.exerciseName}"?`}
+          message={`Estas seguro de que deseas eliminar el ejercicio "${exerciseToDeleteInCircuit?.exerciseName}"?`}
           header="Eliminar ejercicio"
           icon="pi pi-exclamation-triangle"
-          acceptLabel="Sí"
+          acceptLabel="Si"
           rejectLabel="No"
           accept={confirmDeleteExerciseInCircuit}
           reject={() => setShowDeleteExerciseInCircuitDialog(false)}
+          className={`coachConfirmDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
         />
 
         <ConfirmDialog
           visible={showDeleteBlockDialog}
           onHide={() => setShowDeleteBlockDialog(false)}
-          message={`¿Estás seguro de que deseas eliminar el bloque "${blockToDelete.name}"?`}
+          message={`Estas seguro de que deseas eliminar el bloque "${blockToDelete.name}"?`}
           header="Eliminar bloque"
           icon="pi pi-exclamation-triangle"
-          acceptLabel="Sí"
+          acceptLabel="Si"
           rejectLabel="No"
           accept={confirmDeleteBlock}
           reject={() => setShowDeleteBlockDialog(false)}
+          className={`coachConfirmDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
         />
 
         </section>
@@ -3965,3 +5233,6 @@ function colorItemTemplate(option) {
 }
 
 export default DayEditDetailsPage;
+
+
+

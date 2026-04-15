@@ -24,9 +24,9 @@ function NewDay(){
 
             <form onSubmit={onSubmit}>
                 <div className="input-group mb-5">
-                <label htmlFor="name" className="visually-hidden ">Nombre del día</label>
-                    <input type="text" className="form-control" id="name" name="name"  onChange={changeName} value={name} placeholder="Día 1" />
-                    <button className={`input-group-text btn ${textColor == 'false' ? "bbb" : "blackColor"}`} `} style={{ "backgroundColor": `${color}` }}>Crear día</button>
+                <label htmlFor="name" className="visually-hidden ">Nombre del dia</label>
+                    <input type="text" className="form-control" id="name" name="name"  onChange={changeName} value={name} placeholder='Dia 1' />
+                    <button className={`input-group-text btn ${textColor == "false" ? "bbb" : "blackColor"}} `} style={{ "backgroundColor": `${color}` }}>Crear dia</button>
                 </div>
             </form>
 

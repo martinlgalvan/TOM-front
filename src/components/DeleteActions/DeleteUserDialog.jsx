@@ -16,7 +16,7 @@ const DeleteUserDialog = ({ visible, onHide, user_id, name }) => {
       UserService.deleteUser(user_id)
             .then(() => {
                
-                onHide("delete");
+                onHide('delete');
             })
    
     }
@@ -31,7 +31,7 @@ const DeleteUserDialog = ({ visible, onHide, user_id, name }) => {
     <Dialog visible={visible} onHide={handleCancel} header={`Eliminar ${name}`}>
       <div className='row justify-content-center'>
         <div className='col-10 col-sm-6 mb-3'>
-          <label htmlFor="inputDelete" className='text-center mb-4'>Por favor, escriba <b>"ELIMINAR"</b> si desea eliminar permanentemente el usuario.</label>
+          <label htmlFor='inputDelete' className='text-center mb-4'>Por favor, escriba <b>"ELIMINAR"</b> si desea eliminar permanentemente el usuario.</label>
           <input
             id='inputDelete'
             type="text"

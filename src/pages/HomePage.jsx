@@ -21,7 +21,7 @@ function HomePage() {
   const [username, setUsername] = useState(null);
   const navigate = useNavigate()
 
-  // Crear refs únicos para cada card
+  // Crear refs unicos para cada card
   const leftRef1 = useRef(null);
   const leftRef2 = useRef(null);
   const rightRef1 = useRef(null);
@@ -36,7 +36,7 @@ function HomePage() {
       setIsLoged(true)
       setUsername(localStorage.getItem('name'))
     }
-  }, [userType]); // Se ejecutará solo cuando `userType` cambie
+  }, [userType]); // Se ejecutara solo cuando `userType` cambie
 
   
   // Efecto para configurar el IntersectionObserver solo si el usuario es "entrenador"
@@ -73,9 +73,9 @@ function HomePage() {
         if (centerRef2.current) observer.unobserve(centerRef2.current);
       };
     }
-  }, [userType]); // Se ejecutará solo cuando `userType` cambie
+  }, [userType]); // Se ejecutara solo cuando `userType` cambie
 
-  // Función para manejar la selección de tipo de usuario
+  // Funcion para manejar la seleccion de tipo de usuario
   const handleUserType = (type) => {
     if(type === 'atleta'){
       if(localStorage.getItem('token')){
@@ -122,9 +122,9 @@ function HomePage() {
                 </IconButton>
               </div>
               <div class="blog-slider__content">
-                <div class="blog-slider__title">{isLoged ? `Bienvenido ${username}` : 'Iniciar sesión'}</div>
-                <div class="blog-slider__text">{isLoged ? 'Entrá ' : 'Inicia sesión'} y observá la planificación que tu entrenador armó. </div>
-                <button  class="blog-slider__button" onClick={() => handleUserType('atleta')}>{isLoged ? 'Ver rutina' : 'Iniciar sesión'}</button>
+                <div class="blog-slider__title">{isLoged ? `Bienvenido ${username}` : 'Iniciar sesion'}</div>
+                <div class="blog-slider__text">{isLoged ? 'Entra ' : 'Inicia sesion'} y observa la planificacion que tu entrenador armo. </div>
+                <button  class="blog-slider__button" onClick={() => handleUserType('atleta')}>{isLoged ? 'Ver rutina' : 'Iniciar sesion'}</button>
               </div>
           </div>
         </div>
@@ -144,8 +144,8 @@ function HomePage() {
                     </IconButton>
                   </div>
                   <div class="blog-slider__content ">
-                    <div class="blog-slider__title">¿Sos entrenador?</div>
-                    <div class="blog-slider__text">Ingresá y mirá las caracteristicas de nuestro software. </div>
+                    <div class="blog-slider__title">?Sos entrenador?</div>
+                    <div class="blog-slider__text">Ingresa y mira las caracteristicas de nuestro software. </div>
                     <button  class="blog-slider__button" onClick={() => handleUserType('entrenador')}>Ver</button>
                   </div>
               </div>
@@ -162,13 +162,13 @@ function HomePage() {
 
 
             <div className="row justify-content-center colorFondo transition-rigth-to-medium">
-              <h2 className="my-4 col-12 text-center tipografia-titulos">¿QUE BRINDA NUESTRO SOFTWARE?</h2>
+              <h2 className="my-4 col-12 text-center tipografia-titulos">?QUE BRINDA NUESTRO SOFTWARE?</h2>
               <p className="mt-4 mb-5 col-10 col-lg-6 text-center">
-                Acá vas a encontrar todas las herramientas para <b>gestionar la planificación de tus alumnos.</b> Nuestro software está en continuo desarrollo, codo a codo junto a los entrenadores que la utilizan (podés ser uno), ya que nuestro objetivo es tu <b>comodidad</b>, un software hecho 100% para los entrenadores, para que planificar sea una tarea mucho más <b>sencilla</b>. No nos interesa hacer un software y que cobrés cuotas, o que gestiones turnos, <b>nos interesa que el trabajo que hagas, sea lo más cómodo y profesional posible.</b>
+                Aca vas a encontrar todas las herramientas para <b>gestionar la planificacion de tus alumnos.</b> Nuestro software esta en continuo desarrollo, codo a codo junto a los entrenadores que la utilizan (podes ser uno), ya que nuestro objetivo es tu <b>comodidad</b>, un software hecho 100% para los entrenadores, para que planificar sea una tarea mucho mas <b>sencilla</b>. No nos interesa hacer un software y que cobres cuotas, o que gestiones turnos, <b>nos interesa que el trabajo que hagas, sea lo mas comodo y profesional posible.</b>
               </p>
             </div>
 
-            <h2 className="text-center my-5 tipografia-titulos">CARACTERÍSTICAS</h2>
+            <h2 className="text-center my-5 tipografia-titulos">CARACTERISTICAS</h2>
 
             <div className="row justify-content-center">
               <div ref={leftRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-left">
@@ -176,8 +176,8 @@ function HomePage() {
                   <IconButton>
                     <GroupIcon className='fs-1 colorMainAllText' />
                   </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Gestión de alumnos</h3>
-                  <p className="card-text">Contá con un panel de alumnos, donde podés agregar, buscar o eliminar alumnos de forma sencilla.</p>
+                  <h3 className="card-title tipografia-subtitulos">Gestion de alumnos</h3>
+                  <p className="card-text">Conta con un panel de alumnos, donde podes agregar, buscar o eliminar alumnos de forma sencilla.</p>
                 </div>
               </div>
 
@@ -186,8 +186,8 @@ function HomePage() {
                   <IconButton>
                     <LaptopChromebookIcon className='fs-1 colorMainAllText' />
                   </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Planificación</h3>
-                  <p className="card-text">Gestioná la planificación de cada alumno, donde podés agregar semanas, e ir guardando el progreso de cada uno.</p>
+                  <h3 className="card-title tipografia-subtitulos">Planificacion</h3>
+                  <p className="card-text">Gestiona la planificacion de cada alumno, donde podes agregar semanas, e ir guardando el progreso de cada uno.</p>
                 </div>
               </div>
 
@@ -197,7 +197,7 @@ function HomePage() {
                     <SettingsIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Versatilidad</h3>
-                  <p className="card-text">Crea semanas, días, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b className='d-block'>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
+                  <p className="card-text">Crea semanas, dias, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b className='d-block'>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
                 </div>
               </div>
 
@@ -206,7 +206,7 @@ function HomePage() {
                   <IconButton>
                     <MessageIcon className='fs-1 colorMainAllText' />
                   </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Comunicación con tus alumnos</h3>
+                  <h3 className="card-title tipografia-subtitulos">Comunicacion con tus alumnos</h3>
                   <p className="card-text">Tus alumnos te van a poder comentar sus sensaciones, tanto semanales, como en cada ejercicio.</p>
                 </div>
               </div>
@@ -217,7 +217,7 @@ function HomePage() {
                     <MenuBookIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Biblioteca de ejercicios</h3>
-                  <p className="card-text">Accedé a nuestra biblioteca de ejercicios, con subdivisiones en los básicos, y grupo musculares. También podrás cargar la tuya propia.</p>
+                  <p className="card-text">Accede a nuestra biblioteca de ejercicios, con subdivisiones en los basicos, y grupo musculares. Tambien podras cargar la tuya propia.</p>
                 </div>
               </div>
 
@@ -227,7 +227,7 @@ function HomePage() {
                     <WorkIcon className='fs-1 colorMainAllText' />
                   </IconButton>
                   <h3 className="card-title tipografia-subtitulos">Profesionalismo</h3>
-                  <p className="card-text">Es tu carta de presentación. Llevá tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificación en su celular.</p>
+                  <p className="card-text">Es tu carta de presentacion. Lleva tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificacion en su celular.</p>
                 </div>
               </div>
             </div>

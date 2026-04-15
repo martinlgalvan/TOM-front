@@ -1,41 +1,25 @@
+import { apiFetch } from './apiFetch.js'
+
 async function login(email, password) {
-    return fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-    })
-        .then(async response => {
-            if (response.ok) {
-                return response.json()
-            }
-            else {
-                throw Error('La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.')
-            }
-        })
+  const res = await apiFetch('/api/users/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+
+  if (!res.ok) {
+    throw Error('La contrasena o el email son incorrectos. Por favor ingrese una cuenta valida.')
+  }
+
+  return res.json()
 }
 
 async function logout() {
-    return fetch('https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/logout', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'auth-token': localStorage.getItem('token')
-        }
-    })
-
-        .then(response => {
-            if (response.ok) {
-                return response.json()
-            }
-            else {
-                throw new Error('No se pudo cerrar sesión')
-            }
-        })
+  const res = await apiFetch('/api/users/logout', {
+    method: 'POST'
+  })
+  if (!res.ok) throw new Error('No se pudo cerrar sesion')
+  return res.json()
 }
 
-export {
-    login,
-    logout
-}
+export { login, logout }

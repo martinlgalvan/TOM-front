@@ -53,10 +53,10 @@ function DatabaseCreateExercise({refresh}){
         setAnchoPagina(window.innerWidth);
       };
   
-      // Actualizar el ancho de la página cuando se monte el componente
+      // Actualizar el ancho de la pagina cuando se monte el componente
       actualizarAnchoPagina();
   
-      // Actualizar el ancho de la página cuando se redimensione la ventana
+      // Actualizar el ancho de la pagina cuando se redimensione la ventana
       window.onresize = actualizarAnchoPagina;
       // Limpiar el event handler cuando se desmonte el componente
       return () => {
@@ -77,13 +77,13 @@ function DatabaseCreateExercise({refresh}){
         <>
         <th> <input type="text" className="form-control rounded-0" placeholder='Peso muerto' onChange={changeName} /> </th>
         <th> <input type="text" className="form-control rounded-0" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/> </th>
-        <th> <button type='submit' className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} rounded-0 w-100`} style={{ "backgroundColor": `${color}` }} onClick={createExercise}>Añadir ejercicio</button> </th>
+        <th> <button type='submit' className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} rounded-0 w-100`} style={{ "backgroundColor": `${color}` }} onClick={createExercise}>Anadir ejercicio</button> </th>
         </>:
 
         <th colSpan={3}> 
             <input type="text" className="form-control rounded-0 mb-2" placeholder='Peso muerto' onChange={changeName} />
             <input type="text" className="form-control rounded-0 mb-2" placeholder='https://xxxxxxxxx.com' onChange={changeVideo}/>
-            <button type='submit' className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} rounded-0 w-100`} onClick={createExercise} style={{ "backgroundColor": `${color}` }}>Añadir ejercicio</button>
+            <button type='submit' className={`btn ${textColor == 'false' ? "bbb" : "blackColor"} rounded-0 w-100`} onClick={createExercise} style={{ "backgroundColor": `${color}` }}>Anadir ejercicio</button>
         </th>}
 
  </>

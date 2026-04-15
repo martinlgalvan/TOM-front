@@ -81,7 +81,7 @@ function BlocksListPage(props) {
             )
           })}
 
-          {/* AÑADIR BLOQUE */}
+          {/* ANADIR BLOQUE */}
           <div className="col-12">
             <button
               className="w-100 d-flex align-items-center justify-content-center py-3 border border-2 rounded-3"
@@ -89,7 +89,7 @@ function BlocksListPage(props) {
               onClick={handleAddNew} // 🔧 FIX: usa helper que limpia editData
             >
               <AddIcon className="me-2" />
-              <span>Añadir bloque</span>
+              <span>Anadir bloque</span>
             </button>
           </div>
         </div>

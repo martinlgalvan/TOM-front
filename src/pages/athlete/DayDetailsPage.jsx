@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+﻿import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Fragment } from 'react';
-import { Link, useParams, useNavigate } from "react-router-dom"; // Se agregó useNavigate
+import { Link, useParams, useNavigate } from "react-router-dom"; // Se agrego useNavigate
 import { Tour } from 'antd';
 
 import * as WeekService from "../../services/week.services.js";
@@ -40,10 +40,13 @@ import AddToDriveIcon from '@mui/icons-material/AddToDrive';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import EditNoteIcon from '@mui/icons-material/EditNote';
-import PercentIcon from '@mui/icons-material/Percent';
 import PercentageCalculator from "../../components/PercentageCalculator.jsx";
 import Formulas from "../../components/Formulas.jsx";
 import CountdownTimer from "../../components/CountdownTimer.jsx";
+import ExerciseComparisonChart from "../../components/ExerciseComparisonChart.jsx";
+import PlateCounterTool from "../../components/PlateCounterTool.jsx";
+import AttemptPlannerTool from "../../components/AttemptPlannerTool.jsx";
+import TechnicalLogTool from "../../components/TechnicalLogTool.jsx";
 import ImageIcon from '@mui/icons-material/Image';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -68,9 +71,82 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import SettingsIcon from '@mui/icons-material/Settings';
 
+import {
+  Video,
+  NotebookText,
+  Pencil,
+  ArrowUp10,
+  Ellipsis
+} from 'lucide-react';
+import { normalizeOpenersPlans } from "../../helpers/openersPlanner.js";
 
+const ATHLETE_TOOL_OPTIONS = [
+  { label: "Calculadora y contador", value: "calculator" },
+  { label: "Contador de discos", value: "plates" },
+  { label: "Estadisticas", value: "stats" },
+  { label: "1RM estimado", value: "pr" },
+  { label: "Plan de competencia", value: "openers" },
+  { label: "Bitacora tecnica", value: "technical_log" },
+];
 
-// Mantener pantalla despierta mientras el timer esté abierto
+const parseColorToRgb = (color) => {
+  if (!color || typeof color !== 'string') return null;
+  const value = color.trim();
+
+  const hex = value.replace('#', '');
+  if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+    return hex.split('').map((part) => parseInt(`${part}${part}`, 16));
+  }
+  if (/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return [
+      parseInt(hex.slice(0, 2), 16),
+      parseInt(hex.slice(2, 4), 16),
+      parseInt(hex.slice(4, 6), 16)
+    ];
+  }
+
+  const rgbMatch = value.match(/rgba?\(\s*(\d+)(?:,|\s)+(\d+)(?:,|\s)+(\d+)/i);
+  if (rgbMatch) {
+    return [rgbMatch[1], rgbMatch[2], rgbMatch[3]].map((part) =>
+      Math.max(0, Math.min(255, Number(part)))
+    );
+  }
+
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    const probe = document.createElement('span');
+    probe.style.color = value;
+    probe.style.display = 'none';
+    document.body.appendChild(probe);
+    const computed = window.getComputedStyle(probe).color;
+    document.body.removeChild(probe);
+
+    const computedMatch = computed.match(/rgba?\(\s*(\d+)(?:,|\s)+(\d+)(?:,|\s)+(\d+)/i);
+    if (computedMatch) {
+      return [computedMatch[1], computedMatch[2], computedMatch[3]].map((part) =>
+        Math.max(0, Math.min(255, Number(part)))
+      );
+    }
+  }
+
+  return null;
+};
+
+const getReadableTextColor = (backgroundColor, fallback = '#0f172a') => {
+  const rgb = parseColorToRgb(backgroundColor);
+  if (!rgb) return fallback;
+
+  const [r, g, b] = rgb.map((value) => {
+    const channel = value / 255;
+    return channel <= 0.03928
+      ? channel / 12.92
+      : Math.pow((channel + 0.055) / 1.055, 2.4);
+  });
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+  return luminance > 0.48 ? '#0f172a' : '#ffffff';
+};
+
+// Mantener pantalla despierta mientras el timer este abierto
 function useScreenWakeLock(enabled = true) {
   const lockRef = React.useRef(null);
 
@@ -87,7 +163,7 @@ function useScreenWakeLock(enabled = true) {
         lock.addEventListener?.('release', () => { lockRef.current = null; });
       }
     } catch (err) {
-      // Puede fallar sin gesto del usuario o si el doc no está visible: reintentamos en los listeners de abajo
+      // Puede fallar sin gesto del usuario o si el doc no esta visible: reintentamos en los listeners de abajo
       // console.warn('WakeLock error', err);
     }
   }, [enabled]);
@@ -127,22 +203,25 @@ function useScreenWakeLock(enabled = true) {
 
 function DayDetailsPage() {
     const { id, week_id, index } = useParams();
+
     const navigate = useNavigate(); // Se inicializa useNavigate
     const username = localStorage.getItem('name'); // Se obtiene el nombre del usuario
 
     const op = useRef(null);
 
+    const [idxDay, setIdxDay] = useState();
     const [day_id, setDay_id] = useState();
     const [allDays, setAllDays] = useState([]); 
     const [modifiedDay, setModifiedDay] = useState([]);
     const [nameWeek, setNameWeek] = useState();
     const [firstValue, setFirstValue] = useState();
     const [status, setStatus] = useState(false);
-    const [currentDay, setCurrentDay] = useState(null);
+    const [currentDay, setCurrentDay] = useState(0);
     const [editExerciseMobile, setEditExerciseMobile] = useState(false);
     const [completeExercise, setCompleteExercise] = useState();
     const [showToolsDialog, setShowToolsDialog] = useState(false);
     const [selectedTool, setSelectedTool] = useState("calculator");
+    const [selectedOpenersPlanId, setSelectedOpenersPlanId] = useState("");
     const [showUploadVideos, SetShowUploadVideos] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const [isRendered, setIsRendered] = useState();
@@ -167,23 +246,171 @@ function DayDetailsPage() {
     const [showPrepSettings, setShowPrepSettings] = useState(false);
     const lastWorkExRef = React.useRef(-1);
     const openTimerForCircuit = (c) => { setActiveCircuit(normalizeCircuit(c)); setShowTimerDialog(true); };
-      useScreenWakeLock(true);
-
-    // ⬇︎ NUEVO: diálogo informativo de circuitos
+    useScreenWakeLock(showTimerDialog);
+    const [dismissUnsavedBanner, setDismissUnsavedBanner] = useState(false);
+    // â¬‡ï¸Ž NUEVO: dialogo informativo de circuitos
     const [showCircuitInfo, setShowCircuitInfo] = useState(false);
     const [circuitInfoTitle, setCircuitInfoTitle] = useState('');
     const [circuitInfoText, setCircuitInfoText] = useState('');
 
+    const [modeLight, setModeLight] = useState('');
+
+    const athleteOpenersPlans = useMemo(
+      () =>
+        normalizeOpenersPlans(
+          userProfile?.openers_plans || userProfile?.openersPlans || []
+        ),
+      [userProfile]
+    );
+
+    const selectedOpenersPlan = useMemo(() => {
+      if (!athleteOpenersPlans.length) return null;
+      return (
+        athleteOpenersPlans.find((plan) => plan.id === selectedOpenersPlanId) ||
+        athleteOpenersPlans[0]
+      );
+    }, [athleteOpenersPlans, selectedOpenersPlanId]);
+
+
+    const weeklySnapshotRef = useRef(null);
+    const [weeklyDialogNonce, setWeeklyDialogNonce] = useState(0);
+    const isXS = typeof window !== 'undefined' && window.innerWidth < 576;
+    const openNextFrame = (fn) => (typeof window !== 'undefined'
+      ? requestAnimationFrame(() => setTimeout(fn, 0))
+      : fn());
+    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 576; 
+
+    const serverExercisesRef = useRef(null);
+    const serverWeeklyRef = useRef(null);
+    const serverDriveRef = useRef(null);
+    const serverTechnicalLogRef = useRef([]);
+    const technicalLogSaveTimeoutRef = useRef(null);
+    const offlineFlushInFlightRef = useRef(false);
+
+    const [exercisesPending, setExercisesPending] = useState(false);
+    const [weeklyPending, setWeeklyPending] = useState(false);
+    const [drivePending, setDrivePending] = useState(false);
+    const [technicalLogPending, setTechnicalLogPending] = useState(false);
+
+    const [exercisesLastFail, setExercisesLastFail] = useState('');
+    const [weeklyLastFail, setWeeklyLastFail] = useState('');
+    const [driveLastFail, setDriveLastFail] = useState('');
+    const [technicalLogLastFail, setTechnicalLogLastFail] = useState('');
+    const [technicalLogEntries, setTechnicalLogEntries] = useState([]);
+
+    const THEME_KEY = "theme"; // "dark" | "light"
+
+// lee: localStorage > prefers-color-scheme
+const readTheme = () => {
+  try {
+    const saved = (localStorage.getItem(THEME_KEY) || "").toLowerCase().trim();
+    if (saved === "dark") return true;
+    if (saved === "light") return false;
+  } catch {}
+  return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
+};
+
+const [isDark, setIsDark] = useState(() => {
+  if (typeof window === "undefined") return false;
+  return readTheme();
+});
+const athleteDialogClass = isDark ? "athlete-dialog-dark" : "";
+
+useEffect(() => {
+  if (!athleteOpenersPlans.length) {
+    setSelectedOpenersPlanId("");
+    return;
+  }
+  setSelectedOpenersPlanId((prev) => {
+    if (prev && athleteOpenersPlans.some((plan) => plan.id === prev)) return prev;
+    return athleteOpenersPlans[0].id;
+  });
+}, [athleteOpenersPlans]);
+
+useEffect(() => {
+  const apply = () => setIsDark(readTheme());
+
+  apply();
+
+  // Si cambias el theme en otra pestana
+  const onStorage = (e) => {
+    if (!e || e.key === THEME_KEY) apply();
+  };
+
+  // Si cambia el prefers-color-scheme del SO
+  const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+  const onMQ = () => apply();
+
+  window.addEventListener("storage", onStorage);
+  mq?.addEventListener?.("change", onMQ);
+
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    mq?.removeEventListener?.("change", onMQ);
+  };
+}, []);
+
+    useEffect(() => {
+      const read = () => {
+        const enabled = localStorage.getItem("mobileDarkMode") === "true";
+        const isMobile = window.matchMedia("(max-width: 991px)").matches; // si queres mobile-only
+        setIsDark(enabled /* && isMobile */);
+      };
+
+      read();
+      window.addEventListener("mobileDarkModeChange", read);
+      window.addEventListener("resize", read);
+
+      return () => {
+        window.removeEventListener("mobileDarkModeChange", read);
+        window.removeEventListener("resize", read);
+      };
+    }, []);
+
+    const exercisesDraftKey = React.useMemo(() => {
+      if (!id || !week_id || !day_id) return null;
+      return `draft:exercises:${id}:${week_id}:${day_id}`;
+    }, [id, week_id, day_id]);
+
+    const weeklyDraftKey = React.useMemo(() => {
+      if (!id) return null;
+      return `draft:weeklySummary:${id}`;
+    }, [id]);
+
+    const driveDraftKey = React.useMemo(() => {
+      if (!id) return null;
+      return `draft:driveLink:${id}`;
+    }, [id]);
+
+    const technicalLogDraftKey = React.useMemo(() => {
+      if (!id) return null;
+      return `draft:technicalLog:${id}`;
+    }, [id]);
+
      // Config de circuito libre (ajustable por el alumno)
   const [freeTimerConfig, setFreeTimerConfig] = useState({
     mode: 'timer',          // 'timer' (cuenta regresiva) | 'chrono' (cuenta ascendente)
-    schema: 'intermitente', // 'intermitente' (work/rest × rondas) | 'amrap' (duración continua)
+    schema: 'intermitente', // 'intermitente' (work/rest x rondas) | 'amrap' (duracion continua)
     workSec: 30,
     restSec: 30,
     totalRounds: 10,
     totalMinutes: 12
   });
   const [showFreeTimerSetup, setShowFreeTimerSetup] = useState(false);
+
+useEffect(() => {
+  if (!(exercisesPending || weeklyPending || drivePending || technicalLogPending)) {
+    setDismissUnsavedBanner(false);
+  }
+}, [exercisesPending, weeklyPending, drivePending, technicalLogPending]);
+
+useEffect(() => {
+  return () => {
+    if (technicalLogSaveTimeoutRef.current) {
+      clearTimeout(technicalLogSaveTimeoutRef.current);
+    }
+  };
+}, []);
 
 const CIRCUIT_EXPLANATIONS = {
   Libre: (
@@ -193,7 +420,7 @@ const CIRCUIT_EXPLANATIONS = {
         Trabajo <b>libre</b> sin estructura fija de intervalos.
       </div>
       <ul className="mb-2 ps-3">
-        <li>Seguí las indicaciones del entrenador sobre <b>series</b>, <b>reps</b> y <b>descansos</b>.</li>
+        <li>Segui las indicaciones del entrenador sobre <b>series</b>, <b>reps</b> y <b>descansos</b>.</li>
       </ul>
     </div>
   ),
@@ -206,7 +433,7 @@ const CIRCUIT_EXPLANATIONS = {
       </div>
       <ul className="mb-2 ps-3">
         <li><b>Objetivo:</b> completar la mayor cantidad de trabajo dentro del tiempo indicado.</li>
-        <li><b>Ejemplo:</b> En caso de que tengas 3 ejercicios, completá el ejercicio A, B, C, y luego, vuelve a empezar hasta cumplir el tiempo.</li>
+        <li><b>Ejemplo:</b> En caso de que tengas 3 ejercicios, completa el ejercicio A, B, C, y luego, vuelve a empezar hasta cumplir el tiempo.</li>
       </ul>
     </div>
   ),
@@ -217,8 +444,8 @@ const CIRCUIT_EXPLANATIONS = {
         <b className="d-block">Every Minute On the Minute</b><b>Cada minuto en el minuto</b>.
       </div>
       <ul className="mb-2 ps-3">
-        <li>Al inicio de <b>cada minuto</b> hacés lo indicado; <b>descansás</b> con el tiempo restante.</li>
-        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 30s, por lo tanto te quedan 30s de descanso.</li>
+        <li>Al inicio de <b>cada minuto</b> haces lo indicado; <b>descansas</b> con el tiempo restante.</li>
+        <li><b>Ejemplo:</b> Tenes 2 ejercicios. Logras realizar el ejercicio A y B en 30s, por lo tanto te quedan 30s de descanso.</li>
       </ul>
     </div>
   ),
@@ -229,8 +456,8 @@ const CIRCUIT_EXPLANATIONS = {
         <b className="d-block">Every 2 Minutes On the Minute</b><b>Cada 2 minutos en el minuto</b>.
       </div>
       <ul className="mb-2 ps-3">
-        <li>Al inicio de <b>cada 2 minutos</b> hacés lo indicado; <b>descansás</b> con el tiempo restante.</li>
-        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 1min, por lo tanto te queda 1min de descanso.</li>
+        <li>Al inicio de <b>cada 2 minutos</b> haces lo indicado; <b>descansas</b> con el tiempo restante.</li>
+        <li><b>Ejemplo:</b> Tenes 2 ejercicios. Logras realizar el ejercicio A y B en 1min, por lo tanto te queda 1min de descanso.</li>
       </ul>
     </div>
   ),
@@ -241,8 +468,8 @@ const CIRCUIT_EXPLANATIONS = {
         <b className="d-block">Every 3 Minutes On the Minute</b><b>Cada 3 minutos en el minuto</b>.
       </div>
       <ul className="mb-2 ps-3">
-        <li>Al inicio de <b>cada 3 minutos</b> hacés lo indicado; <b>descansás</b> con el tiempo restante.</li>
-        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 2min, por lo tanto te queda 1min de descanso.</li>
+        <li>Al inicio de <b>cada 3 minutos</b> haces lo indicado; <b>descansas</b> con el tiempo restante.</li>
+        <li><b>Ejemplo:</b> Tenes 2 ejercicios. Logras realizar el ejercicio A y B en 2min, por lo tanto te queda 1min de descanso.</li>
       </ul>
     </div>
   ),
@@ -253,7 +480,7 @@ const CIRCUIT_EXPLANATIONS = {
         Alternancia de <b>trabajo</b> (<b>WORK</b>) y <b>descanso</b> (<b>REST</b>) por tiempo.
       </div>
       <ul className="mb-2 ps-3">
-        <li>En <b>WORK</b> ejecutás; en <b>REST</b> recuperás y te preparás para el siguiente bloque.</li>
+        <li>En <b>WORK</b> ejecutas; en <b>REST</b> recuperas y te preparas para el siguiente bloque.</li>
                 <li className="mt-2"><b>Ejemplo:</b> En el caso de tener 30s de trabajo x 30s de descanso en 8 rondas, y tener 2 ejercicios, <b>debes realizar el ejercicio A durante 30s</b>, luego, <b>descansar 30s.</b> Al terminar el descanso, <b>continuas con el ejercicio B, hasta completar 8 rondas.</b></li>
       </ul>
     </div>
@@ -263,11 +490,11 @@ const CIRCUIT_EXPLANATIONS = {
     <div>
       <div className="mb-2">
         <span className="badge text-bg-dark me-2">FOR TIME</span>
-        Trabajo <b>contra reloj</b> hasta completar un objetivo, con posible <b>time cap</b> (límite).
+        Trabajo <b>contra reloj</b> hasta completar un objetivo, con posible <b>time cap</b> (limite).
       </div>
       <ul className="mb-2 ps-3">
         <li><b>Objetivo:</b> terminar todas las reps/metros en el menor tiempo posible.</li>
-        <li>Si hay <b>time cap</b>, debés completar antes del límite; si no, el tiempo final es tu <b>marca</b>.</li>
+        <li>Si hay <b>time cap</b>, debes completar antes del limite; si no, el tiempo final es tu <b>marca</b>.</li>
       </ul>
     </div>
   ),
@@ -305,7 +532,7 @@ const openCircuitInfo = (c) => {
     };
 
     const SAFE_PREP_KEY = 'timerPrepSec';
-const safeHasLS = () => (typeof window !== 'undefined' && !!window.localStorage);
+
 
 const readPrepSeconds = () => {
   try {
@@ -317,7 +544,7 @@ const readPrepSeconds = () => {
 
     const n = Math.floor(Number(raw));
 
-    // Si no es válido o es menor a 1, volver a 10 (default)
+    // Si no es valido o es menor a 1, volver a 10 (default)
     if (!Number.isFinite(n) || n < 1) return 10;
 
     // Limitar entre 1 y 300
@@ -348,13 +575,13 @@ useEffect(() => {
         setCurrentWeekIndex(newIndex);
         const newWeek = allWeeks[newIndex];
         if (newWeek) {
-            // Resetea al día 0 al navegar
+            // Resetea al dia 0 al navegar
             navigate(`/routine/${id}/day/0/${newWeek._id}/${newIndex}`);
         }
     };
 
   // === Superseries (parsing robusto) ===
-// Acepta: "12.1" (→ 12-A), "12-a", "12A", "12 a", "12,a", "12-A)", y "12" solo
+// Acepta: "12.1" (â†’ 12-A), "12-a", "12A", "12 a", "12,a", "12-A)", y "12" solo
 const parseSupersetTag = (val) => {
   if (val == null) return null;
   const str = String(val).trim();
@@ -363,13 +590,13 @@ const parseSupersetTag = (val) => {
   let m = str.match(/^(\d+)\.(\d+)$/);
   if (m) {
     const base = parseInt(m[1], 10);
-    const dec  = parseInt(m[2], 10); // 1→A, 2→B, 3→C...
+    const dec  = parseInt(m[2], 10); // 1â†’A, 2â†’B, 3â†’C...
     const letter = dec > 0 && dec <= 26 ? String.fromCharCode(64 + dec) : null;
     return { base, suffix: letter };
   }
 
-  // 2) Formato alfabético / separadores: "12-a", "12A", "12 a", "12,a", "12-A)"
-  m = str.match(/^(\d+)\s*[-–.,\s]?\s*([A-Za-z])?\)?$/);
+  // 2) Formato alfabetico / separadores: "12-a", "12A", "12 a", "12,a", "12-A)"
+  m = str.match(/^(\d+)\s*[--.,\s]?\s*([A-Za-z])?\)?$/);
   if (!m) return null;
   const base = parseInt(m[1], 10);
   const suffix = m[2] ? m[2].toUpperCase() : null; // puede ser null (solo "12")
@@ -377,10 +604,10 @@ const parseSupersetTag = (val) => {
 };
 
 /**
- * Agrupa ejercicios consecutivos con el mismo número base.
- * - Acepta decimales (1.1→A, 1.2→B...) y letras (1-a, 1b, 1,c...)
- * - Si el primero no trae letra/decimal y hay más con el mismo base, asigna A/B/C...
- * - No crea "superserie" si queda un único ejercicio.
+ * Agrupa ejercicios consecutivos con el mismo numero base.
+ * - Acepta decimales (1.1â†’A, 1.2â†’B...) y letras (1-a, 1b, 1,c...)
+ * - Si el primero no trae letra/decimal y hay mas con el mismo base, asigna A/B/C...
+ * - No crea "superserie" si queda un unico ejercicio.
  * - Guarda _origIndex / _origIndexInBlock para editar correctamente.
  */
 const groupSupersets = (items = [], { forBlock = false } = {}) => {
@@ -418,7 +645,7 @@ const groupSupersets = (items = [], { forBlock = false } = {}) => {
     }
 
     if (group.exercises.length < 2) {
-      out.push(group.exercises[0] ?? el); // si fue único, no mostrar como superserie
+      out.push(group.exercises[0] ?? el); // si fue unico, no mostrar como superserie
     } else {
       out.push(group);
     }
@@ -446,7 +673,7 @@ const renderLetterIcon = (letter) => (
       return <IconComp />;
     }
     // caso 1.2, 2.3, etc.
-    return <span className="bg-light btn p-1 fontNumberE m-0">{n}</span>;
+return <span className={`btn p-1 fontNumberE m-0 ${isDark ? "ddp-pill" : "bg-light"}`}>{n}</span>;
   }
 
     let sliderRef = useRef(null);
@@ -471,7 +698,7 @@ const renderLetterIcon = (letter) => (
       selection3: "",
       selection4: "",
       selection5: "",
-      pesoCorporal: "",     // ← nuevo campo
+      pesoCorporal: "",     // â† nuevo campo
       comments: "",         // ya usabas comments
       lastSaved: ""         // ya usabas lastSaved
     });
@@ -486,8 +713,8 @@ const isCurrentWeek = currentWeekIndex === 0;
         const weeks = await WeekService.findRoutineByUserId(id);
         const sortedWeeks = (weeks || []).sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        ); // última primero
-        // ⬇️ Mostrar solo semanas visibles (si no existe la prop, se considera visible)
+        ); // ultima primero
+        // â¬‡ï¸ Mostrar solo semanas visibles (si no existe la prop, se considera visible)
         const visibleWeeks = sortedWeeks.filter(
           (w) => !w?.visibility || w.visibility === 'visible'
         );
@@ -503,7 +730,7 @@ const isCurrentWeek = currentWeekIndex === 0;
         if (selectedIndex !== -1) {
           setCurrentWeekIndex(selectedIndex);
         } else {
-          // Si la semana actual está oculta, redirigimos a la primera visible
+          // Si la semana actual esta oculta, redirigimos a la primera visible
           setCurrentWeekIndex(0);
           navigate(`/routine/${id}/day/0/${visibleWeeks[0]._id}/0`, { replace: true });
         }
@@ -542,69 +769,114 @@ const redirectToPerfil = () => {
       if (!week_id) return;
       WeekService.findByWeekId(week_id).then((data) => {
         if (!data?.length) return;
-        console.log(data)
         setAllDays(data[0].routine);
         setNameWeek(data[0].name);
         setCurrentDay(prev => (prev === null ? 0 : prev));
       });
-    }, [week_id, status]); 
+    }, [week_id, status]); // ESTO NO ESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
 
-    useEffect(() => {
+   /* useeffect borrado "duplicado" useEffect(() => {
       if (allDays.length && currentDay !== null) {
         setDay_id(allDays[currentDay]._id);
         setModifiedDay(allDays[currentDay].exercises);
         setFirstValue(allDays[currentDay].name);
       }
-    }, [allDays, currentDay]);
+    }, [allDays, currentDay]);*/
 
-    useEffect(() => {
+useEffect(() => {
   const week = allWeeks[currentWeekIndex];
   if (!week) return;
 
   setNameWeek(week.name);
+
   const currentRoutine = week.routine || [];
-  setAllDays(currentRoutine);
 
-  const firstDay = currentRoutine[0];
-  if (firstDay) {
-    setDay_id(firstDay._id);
-    setModifiedDay(firstDay.exercises);
-    setFirstValue(firstDay.name);
-  }
-
+  // 2) Si hay semana previa, alineamos ejercicios (sin forzar dia 0)
   const prevWeek = allWeeks[currentWeekIndex + 1];
-  if (prevWeek) {
-    const alignedDays = currentRoutine.map((day, idx) => {
-      const previousDay = prevWeek.routine[idx];
-      if (!previousDay) return day;
-      return {
-        ...day,
-        exercises: compareExercises(day.exercises, previousDay.exercises)
-      };
-    });
-    setAllDays(alignedDays);
-    setModifiedDay(alignedDays[0]?.exercises || []);
-  }
+  const finalRoutine = prevWeek
+    ? currentRoutine.map((day, idx) => {
+        const previousDay = prevWeek.routine?.[idx];
+        if (!previousDay) return day;
+        return {
+          ...day,
+          exercises: compareExercises(day.exercises, previousDay.exercises),
+        };
+      })
+    : currentRoutine;
 
-  setCurrentDay(0);
-}, [allWeeks, currentWeekIndex]);
+  setAllDays(finalRoutine);
+
+
+
+      
+}, [allWeeks, currentWeekIndex, index]);
+
+
+
 
 
 useEffect(() => {
   UserService.getProfileById(id)
     .then((data) => {
       setUserProfile(data);
-      if (data.drive_link) setDriveLink(data.drive_link);
-      if (data.resumen_semanal) {
-        setWeeklySummary(data.resumen_semanal);
+
+      // ===== Drive snapshot + draft =====
+      const serverDrive = data?.drive_link || '';
+      serverDriveRef.current = serverDrive;
+
+      const driveDraft = driveDraftKey ? lsGetJSON(driveDraftKey, null) : null;
+      if (driveDraft?.data && typeof driveDraft.data === 'string' && driveDraft.data.trim() !== '' && driveDraft.data !== serverDrive) {
+        setDriveLink(driveDraft.data);
+        setDrivePending(true);
+        setDriveLastFail(driveDraft?.lastFail || '');
+      } else {
+        setDriveLink(serverDrive);
+        setDrivePending(false);
+        setDriveLastFail('');
+        if (driveDraftKey) lsRemove(driveDraftKey);
+      }
+
+      // ===== Weekly snapshot + draft =====
+      const serverWeekly = data?.resumen_semanal || {};
+      serverWeeklyRef.current = serverWeekly;
+
+      const weeklyDraft = weeklyDraftKey ? lsGetJSON(weeklyDraftKey, null) : null;
+      if (weeklyDraft?.data && typeof weeklyDraft.data === 'object' && !deepEqual(weeklyDraft.data, serverWeekly)) {
+        setWeeklySummary(weeklyDraft.data);
+        setWeeklyPending(true);
+        setWeeklyLastFail(weeklyDraft?.lastFail || '');
+      } else {
+        if (data?.resumen_semanal) setWeeklySummary(data.resumen_semanal);
+        setWeeklyPending(false);
+        setWeeklyLastFail('');
+        if (weeklyDraftKey) lsRemove(weeklyDraftKey);
+      }
+
+      const serverTechnicalLog = Array.isArray(data?.technical_log) ? data.technical_log : [];
+      serverTechnicalLogRef.current = serverTechnicalLog;
+
+      const technicalLogDraft = technicalLogDraftKey ? lsGetJSON(technicalLogDraftKey, null) : null;
+      if (
+        technicalLogDraft?.data &&
+        Array.isArray(technicalLogDraft.data) &&
+        !deepEqual(technicalLogDraft.data, serverTechnicalLog)
+      ) {
+        setTechnicalLogEntries(technicalLogDraft.data);
+        setTechnicalLogPending(true);
+        setTechnicalLogLastFail(technicalLogDraft?.lastFail || '');
+      } else {
+        setTechnicalLogEntries(serverTechnicalLog);
+        setTechnicalLogPending(false);
+        setTechnicalLogLastFail('');
+        if (technicalLogDraftKey) lsRemove(technicalLogDraftKey);
       }
     })
     .catch(() => setShowProfileMissingModal(true));
-}, [id]);
+}, [id, weeklyDraftKey, driveDraftKey, technicalLogDraftKey]);
     
 const saveDriveLink = async () => {
   if (!driveLink.startsWith("https://drive.google.com")) {
-    Notify.instantToast("Debe ser un link válido de Google Drive");
+    Notify.instantToast("Debe ser un link valido de Google Drive");
     return;
   }
 
@@ -614,7 +886,7 @@ const saveDriveLink = async () => {
     const {
       _id,
       id: ignoredId,
-      user_id, // 👈 evitar reenviar esto
+      user_id, // ðŸ‘ˆ evitar reenviar esto
       ...safeProfile
     } = currentProfile;
 
@@ -630,87 +902,148 @@ const saveDriveLink = async () => {
       drive_link: driveLink
     }));
 
+    serverDriveRef.current = driveLink;
+    setDrivePending(false);
+    setDriveLastFail('');
+    if (driveDraftKey) lsRemove(driveDraftKey);
+
     Notify.instantToast("Link de Drive actualizado");
     setEditingDriveLink(false);
     setShowDriveDialog(false);
   } catch (error) {
-    console.error("Error al guardar el link de Drive", error);
-    Notify.instantToast("Error al guardar el link de Drive");
-  }
+      console.error("Error al guardar el link de Drive", error);
+      Notify.instantToast("No se pudo guardar. El link quedo guardado localmente.");
+
+      setDrivePending(true);
+      setDriveLastFail(new Date().toISOString());
+
+      if (driveDraftKey) {
+        lsSetJSON(driveDraftKey, {
+          data: driveLink,
+          lastFail: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+    }
 };
+
+const persistTechnicalLog = React.useCallback(async (entries) => {
+  const safeEntries = Array.isArray(entries) ? entries : [];
+
+  try {
+    await UserService.editProfile(id, { technical_log: safeEntries });
+
+    setUserProfile((prev) => ({
+      ...(prev || {}),
+      technical_log: safeEntries
+    }));
+    setTechnicalLogEntries(safeEntries);
+    serverTechnicalLogRef.current = safeEntries;
+    setTechnicalLogPending(false);
+    setTechnicalLogLastFail('');
+    if (technicalLogDraftKey) lsRemove(technicalLogDraftKey);
+  } catch (error) {
+    console.error('Error al guardar la bitacora tecnica', error);
+    setTechnicalLogEntries(safeEntries);
+    setTechnicalLogPending(true);
+    const failAt = new Date().toISOString();
+    setTechnicalLogLastFail(failAt);
+
+    if (technicalLogDraftKey) {
+      lsSetJSON(technicalLogDraftKey, {
+        data: safeEntries,
+        lastFail: failAt,
+        updatedAt: failAt
+      });
+    }
+  }
+}, [id, technicalLogDraftKey]);
+
+const handleTechnicalLogChange = React.useCallback((entries) => {
+  const safeEntries = Array.isArray(entries) ? entries : [];
+  setTechnicalLogEntries(safeEntries);
+
+  if (technicalLogSaveTimeoutRef.current) {
+    clearTimeout(technicalLogSaveTimeoutRef.current);
+  }
+
+  technicalLogSaveTimeoutRef.current = setTimeout(() => {
+    persistTechnicalLog(safeEntries);
+  }, 450);
+}, [persistTechnicalLog]);
 
     useEffect(() => {
         setTourSteps([
             {
-                title: 'Número de serie',
-                description: 'Este número indica el orden de los ejercicios. También puede haber super series (3-A, por ejemplo)',
+                title: 'Numero de serie',
+                description: 'Este numero indica el orden de los ejercicios. Tambien puede haber super series (3-A, por ejemplo)',
                 target: () => document.getElementById('numeroSerie'),
                 placement: 'top',
-                nextButtonProps: { children: 'Siguiente »' }
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
                 title: 'Nombre del ejercicio',
                 description: 'Este es el ejercicio a realizar.',
                 target: () => document.getElementById('nombre'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: 'Siguiente »' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
                 title: 'Contador de series',
-                description: 'Este contador te servirá para no perderte entre tus series! Simplemente presionalo y llevá un conteo.',
+                description: 'Este contador te servira para no perderte entre tus series! Simplemente presionalo y lleva un conteo.',
                 target: () => document.getElementById('contador'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: 'Siguiente »' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
                 title: 'Series',
-                description: 'Número de series a realizar',
+                description: 'Numero de series a realizar',
                 target: () => document.getElementById('series'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: 'Siguiente »' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
                 title: 'Repeticiones',
-                description: 'Número de repeticiones a realizar. También pueden ser segundos.',
+                description: 'Numero de repeticiones a realizar. Tambien pueden ser segundos.',
                 target: () => document.getElementById('reps'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: 'Siguiente »' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
                 title: 'Peso',
                 description: 'Kilos ( o libras ) para realizar las series.',
                 target: () => document.getElementById('peso'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: 'Siguiente »' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
                 title: 'Descanso',
-                description: 'Descanso indicado por el entrenador entre series. El temporizador está con el tiempo correspondiente a cada ejercicio. ( indicado por el entrenador )',
+                description: 'Descanso indicado por el entrenador entre series. El temporizador esta con el tiempo correspondiente a cada ejercicio. ( indicado por el entrenador )',
                 target: () => document.getElementById('descanso'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: 'Siguiente »' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
                 title: 'Video/imagen',
-                description: 'Acá podes encontrar una imagen o video representativo del ejercicio',
+                description: 'Aca podes encontrar una imagen o video representativo del ejercicio',
                 target: () => document.getElementById('video'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: 'Siguiente »' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: 'Siguiente >>' }
             },
             {
-                title: 'Edición',
+                title: 'Edicion',
                 description: 'Esta es la forma de comunicarle a tu entrenador las cosas: tanto el peso, observaciones, o subir videos a su drive.',
                 target: () => document.getElementById('edicion'),
                 placement: 'top',
-                prevButtonProps: { children: '« Anterior' },
-                nextButtonProps: { children: '¡Finalizar!' }
+                prevButtonProps: { children: '<< Anterior' },
+                nextButtonProps: { children: '!Finalizar!' }
             },
         ]);
     }, []);
@@ -748,7 +1081,7 @@ const saveDriveLink = async () => {
       if (typeof nameData === 'object' && nameData !== null) {
         return (
           <div>
-            <span>{nameData.name}</span>
+            <span>{cleanUiText(nameData.name)}</span>
             {nameData.backoff && (
               <small
                 style={{
@@ -764,14 +1097,14 @@ const saveDriveLink = async () => {
           </div>
         );
       }
-      return <span>{nameData}</span>;
+      return <span>{cleanUiText(nameData)}</span>;
     };
 
     const getPlainName = (nameData) => {
       if (typeof nameData === 'object' && nameData !== null) {
-        return nameData.name ?? '';
+        return cleanUiText(nameData.name ?? '');
       }
-      return nameData ?? '';
+      return cleanUiText(nameData ?? '');
     };
 
     const getCols = peso => {
@@ -790,73 +1123,132 @@ const saveDriveLink = async () => {
 const handleUpdateExercise = () => {
   const newExercises = [...modifiedDay];
 
+  const patch = {
+    peso: completeExercise?.peso ?? '',
+    notas: completeExercise?.notas ?? ''
+  };
+
   if (blockEditIndices.blockIndex !== null) {
     // === DENTRO DE BLOQUE ===
     const b = blockEditIndices.blockIndex;
 
-    // Clonar el bloque y su array interno
     newExercises[b] = { ...newExercises[b], exercises: [...(newExercises[b].exercises || [])] };
 
-    // Buscar por ID dentro del bloque (más seguro que usar índice)
     const innerIdx = newExercises[b].exercises.findIndex(
       (ex) => ex?.exercise_id === completeExercise?.exercise_id
     );
 
     if (innerIdx >= 0) {
-      newExercises[b].exercises[innerIdx] = { ...newExercises[b].exercises[innerIdx], ...completeExercise };
+      newExercises[b].exercises[innerIdx] = { ...newExercises[b].exercises[innerIdx], ...patch };
     } else if (Number.isInteger(blockEditIndices.exerciseIndex)) {
-      // fallback por índice si no hay ID (raro, pero evita romper)
-      newExercises[b].exercises[blockEditIndices.exerciseIndex] = completeExercise;
+      newExercises[b].exercises[blockEditIndices.exerciseIndex] = {
+        ...newExercises[b].exercises[blockEditIndices.exerciseIndex],
+        ...patch
+      };
     }
-
   } else {
-    // === NIVEL TOP (normal o parte de superserie) ===
+    // === NIVEL TOP ===
     const realIdx = newExercises.findIndex(
       (ex) => ex?.exercise_id === completeExercise?.exercise_id
     );
 
     if (realIdx >= 0) {
-      newExercises[realIdx] = { ...newExercises[realIdx], ...completeExercise };
+      newExercises[realIdx] = { ...newExercises[realIdx], ...patch };
     } else if (Number.isInteger(indexOfExercise)) {
-      // fallback por índice si no hay ID
-      newExercises[indexOfExercise] = completeExercise;
+      newExercises[indexOfExercise] = { ...newExercises[indexOfExercise], ...patch };
     }
   }
 
   setModifiedDay(newExercises);
+
+  // âœ… SIEMPRE limpiar UI antes de enviar/guardar draft
+  const payload = cleanExercisesPayload(newExercises);
+
+  // âœ… Key correcta del dia actual (robusta)
+  const draftKey = getExercisesDraftKey();
+
   ExercisesService
-    .editExercise(week_id, day_id, newExercises)
+    // âœ… ENVIAR PAYLOAD LIMPIO, NO newExercises
+    .editExercise(week_id, day_id, payload)
     .then(() => {
-      Notify.instantToast('Rutina actualizada con éxito!');
+      Notify.instantToast('Rutina actualizada con exito!');
       setEditExerciseMobile(false);
       setBlockEditIndices({ blockIndex: null, exerciseIndex: null });
+
+      // âœ… Confirmado en server â†’ snapshot = payload
+      serverExercisesRef.current = payload;
+
+      // âœ… Limpiar pending + lastFail
+      setExercisesPending(false);
+      setExercisesLastFail('');
+
+      // âœ… Borrar draft si existia (ya guardo)
+      if (draftKey) lsRemove(draftKey);
+
+      // âœ… (Opcional pero recomendado) mantener allDays coherente para evitar re-hidrataciones raras
+      setAllDays((prev) => {
+        const copy = [...(prev || [])];
+        const idx = currentDay ?? 0;
+        if (copy[idx]) copy[idx] = { ...copy[idx], exercises: payload };
+        return copy;
+      });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('Error al actualizar rutina', err);
-      Notify.instantToast('Hubo un error al actualizar la rutina');
+
+      const failAt = new Date().toISOString();
+      setExercisesPending(true);
+      setExercisesLastFail(failAt);
+
+      Notify.instantToast(
+        'No se pudo guardar (sin conexion o error). Tus cambios quedaron guardados localmente.'
+      );
+
+      // âœ… Guardar draft con el payload limpio
+      if (draftKey) {
+        lsSetJSON(draftKey, {
+          data: payload,
+          lastFail: failAt,
+          updatedAt: failAt
+        });
+        console.log('[draft saved]', draftKey, lsGetJSON(draftKey));
+      } else {
+        console.warn('No se pudo generar key de draft (faltan id/week_id/dayId)', {
+          id,
+          week_id,
+          day_id,
+          currentDay
+        });
+      }
     });
 };
+
 
     const productTemplate = useCallback((exercise, idx, isWarmup) => {
         const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 450;
         const cardMaxWidth = isSmallScreen ? '380px' : '400px';
+        const isMovility = Boolean(isWarmup);
+        const headerClass = isMovility ? 'colorMovility' : 'colorWarmup';
+        const exerciseNumber = isMovility ? exercise.numberMovility : exercise.numberWarmup;
 
         return (
-            <div cla>
+            <div >
                 <div 
                     className="text-center pt-3 pb-4" 
                 >
-                  <div className="row justify-content-center backgroundCardsWarmMov  rounded-2 m-1 mb-3">
+                  <div className={`row justify-content-center backgroundCardsWarmMov shadow rounded-2 m-1 mb-3 ddp-card ${isDark ? "ddp-surface" : "bg-light"}`}>
 
-                                    <div className={`col-12 shadow ${exercise.numberWarmup ? 'colorWarmup' : 'colorMovility'} py-2`}>
+                    <div className={`col-12 ${headerClass} py-2 `}>
                                       <div className="row justify-content-center">
 
-                                        <div className="col-1 m-auto text-light">
-                                          {renderNumberIcon(exercise.numberWarmup ?? exercise.numberMovility)}
+                                        <div className={`col-1 m-auto ${isDark ? "text-light" : "text-dark"} `}>
+                                          {exerciseNumber != null && (
+                                            <span className="ddp-warmmov-number">{exerciseNumber}</span>
+                                          )}
+                                        </div>
                                         
-                                      </div>
                                         <div className="col-8 m-auto text-start">
-                                          <p className="stylesNameExercise text-light mb-0" id={idx === 0 ? 'nombre' : null}>
+                                          <p className={`stylesNameExercise mb-0 ${isDark ? "text-light" : "text-dark"}`} id={idx === 0 ? 'nombre' : null}>
                                             <span className="">{typeof exercise.name === 'object' ? exercise.name.name : exercise.name}</span>
                                           </p>
                                         </div>
@@ -869,102 +1261,113 @@ const handleUpdateExercise = () => {
                                             disabled={!exercise.video}
                                             onClick={() => handleButtonClick(exercise)}
                                         >
-                                            <YouTubeIcon className={exercise.video ? 'ytColor' : 'ytColor-disabled'} />
+                                            <Video className={exercise.video ? 'ytColor' : 'ytColor-disabled'} />
                                         </IconButton>
   
                                       </div>
                                        </div>
                                     </div>
-                                      <div className="col-4 pb-3 mt-4 mb-2">
-                                        <div>
-                                          <span className="stylesBadgesItemsExerciseSpan d-block">{exercise.sets}</span>
-                                          <p className="fontStylesSpan">Sets</p>
+                                    <div className="col-12">
+                                        <div className="row justify-content-center my-3 ">
+                                          <div className="col-4  ">
+                                            <div>
+                                              <p className="fontStylesSpan">Sets</p>
+                                            </div>
+                                          </div>
+                                          <div className="col-4 ">
+                                            <div>
+                                                <p className="fontStylesSpan ">Reps</p>
+                                            </div>
+                                          </div>
+                                          <div className="col-4 ">
+                                            <div>
+                                              <p className="fontStylesSpan ">Peso</p>
+                                            </div>
+                                          </div>
+                                          <div className="col-4 backItemsExercises ">
+                                            <div>
+                                              <span className="mt-1 d-block">{exercise.sets}</span>
+                                            </div>
+                                          </div>
+                                          <div className="col-4 backItemsExercises ">
+                                            <div>
+                                              <span className="mt-1 border-1 d-block">{exercise.reps}</span>
+                                            </div>
+                                          </div>
+                                          <div className="col-4  backItemsExercises">
+                                            <div>
+                                              <span className="mt-1 d-block">{exercise.peso ? cleanUiText(exercise.peso) : '-'}</span>
+                                            </div>
+                                          </div>
                                         </div>
-                                        
                                       </div>
-                                       <div className="col-4  p-0 mt-4 mb-2">
-                                        <div>
-                                           <span className="stylesBadgesItemsExerciseSpan border-1 d-block">{exercise.reps}</span>
-                                            <p className="fontStylesSpan ">Reps</p>
-                                        </div>
-                                       
-                                      </div>
-                                       <div className="col-4 p-0  mt-4 mb-2">
-                                        <div>
-                                          <span className="stylesBadgesItemsExerciseSpan d-block">{exercise.peso ? exercise.peso : '-'}</span>
-                                          <p className="fontStylesSpan ">Peso</p>
-                                        </div>
-                                      </div>
-
                                       {exercise.notas && exercise.notas.trim().length > 0 ? (
                                        <>
                                         <span className="styleInputsNote-back text-start">
                                           Notas / otros
                                         </span>
                                         <div
-                                          className="border mb-2 py-2 rounded-1 col-11 largoCarddds"
+                                          className={`mb-2 py-2 rounded-1 col-11 largoCarddds ${isDark ? "ddp-note" : "border"}`}
                                           style={{ whiteSpace: 'pre-wrap' }}
                                         >
-                                          <p className="pb-0 mb-0">{exercise.notas}</p>
+                                          <p className={`pb-0 mb-0 ${isDark ? "text-light" : ""}`}>{cleanUiText(exercise.notas)}</p>
                                         </div>
                                       </>
                                       ) : null}
                                       </div>
-
-                                
-
-                    <div>
-
-                    
-
+                      <div>
                     </div>
                 </div>
             </div>
         );
     }, []);
 
-    // Devuelve { title, meta } para el header del timer
+// Devuelve { title, meta } para el header del timer
 const headerInfo = (c0 = {}) => {
   const c = normalizeCircuit(c0);
   const k = c.circuitKind;
 
   switch (k) {
-case 'AMRAP': {
-  const d = fmtMMSS(getDurationSec(c) || 0);
-  return { title: 'AMRAP', meta: d };
-}
-    case 'EMOM': {
-      const rounds = c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0)/(c.intervalMin || 1)));
-      return { title: 'EMOM', meta: `${c.intervalMin || 1}:00 × ${rounds} min` };
+    case 'AMRAP': {
+      const d = fmtMMSS(getDurationSec(c) || 0);
+      return { title: 'AMRAP', meta: cleanUiText(d) };
     }
-    case 'E2MOM': return { title: 'E2MOM', meta: `2:00 × ${(c.totalRounds || 0)} min` };
-    case 'E3MOM': return { title: 'E3MOM', meta: `3:00 × ${(c.totalRounds || 0)} min` };
+    case 'EMOM': {
+      const rounds = c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0) / (c.intervalMin || 1)));
+      return { title: 'EMOM', meta: cleanUiText(`${c.intervalMin || 1}:00 x ${rounds} min`) };
+    }
+    case 'E2MOM':
+      return { title: 'E2MOM', meta: cleanUiText(`2:00 x ${c.totalRounds || 0} min`) };
+    case 'E3MOM':
+      return { title: 'E3MOM', meta: cleanUiText(`3:00 x ${c.totalRounds || 0} min`) };
     case 'Por tiempo': {
       const cap = fmtMMSS(getDurationSec(c) || 0);
-      return { title: 'For time', meta: `CAP ${cap}` };
+      return { title: 'For time', meta: cleanUiText(`CAP ${cap}`) };
     }
     case 'Intermitentes': {
-      const work = c.workSec ?? 30, rest = c.restSec ?? 30, r = c.totalRounds ?? 10;
-      return { title: 'Intermitente', meta: `${work}s / ${rest}s × ${r} rondas` };
+      const work = c.workSec ?? 30;
+      const rest = c.restSec ?? 30;
+      const rounds = c.totalRounds ?? 10;
+      return { title: 'Intermitente', meta: cleanUiText(`${work}s / ${rest}s x ${rounds} rondas`) };
     }
     case 'Tabata': {
-      const work = c.workSec ?? 20, rest = c.restSec ?? 10, r = c.totalRounds ?? 8;
-      return { title: 'Tabata', meta: `${work}s / ${rest}s × ${r} rondas` };
+      const work = c.workSec ?? 20;
+      const rest = c.restSec ?? 10;
+      const rounds = c.totalRounds ?? 8;
+      return { title: 'Tabata', meta: cleanUiText(`${work}s / ${rest}s x ${rounds} rondas`) };
     }
     default: {
-     // Libre: priorizar 'type' como título; si no, usar typeOfSets; si no, "Libre"
-     const title = (c.type && String(c.type).trim()) || c.typeOfSets || 'Libre';
-     const fc = c.freeConfig;
-     if (fc) {
-       if (fc.mode === 'chrono') return { title, meta: 'Cronómetro' };
-       if (fc.schema === 'amrap') return { title, meta: `AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00` };
-       return { title, meta: `${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}` };
-     }
-     return { title, meta: '' };
-   }
+      const title = cleanUiText((c.type && String(c.type).trim()) || c.typeOfSets || 'Libre');
+      const fc = c.freeConfig;
+      if (fc) {
+        if (fc.mode === 'chrono') return { title, meta: 'Cronometro' };
+        if (fc.schema === 'amrap') return { title, meta: cleanUiText(`AMRAP - ${String(fc.totalMinutes).padStart(2, '0')}:00`) };
+        return { title, meta: cleanUiText(`${fc.workSec}s / ${fc.restSec}s x ${fc.totalRounds}`) };
+      }
+      return { title, meta: '' };
+    }
   }
 };
-
 
 const TimerHeader = ({ circuit, onClose, onOpenSettings }) => {
   const { title, meta } = headerInfo(circuit || {});
@@ -997,7 +1400,7 @@ const TimerHeader = ({ circuit, onClose, onOpenSettings }) => {
           aria-label="Cerrar"
           title="Cerrar"
         >
-          ×
+          x
         </button>
       </div>
     </div>
@@ -1005,7 +1408,7 @@ const TimerHeader = ({ circuit, onClose, onOpenSettings }) => {
 };
 
 const renderExerciseHeader = () => (
-  <div className="row justify-content-center text-uppercase text-muted small fw-semibold mb-2">
+  <div className={`row justify-content-center text-uppercase small fw-semibold mb-2 timer-ex-header ${isDark ? 'timer-ex-header-dark' : ''}`}>
     <div className="col-6">Nombre</div>
     <div className="col-2 text-center">Reps</div>
     <div className="col-2 text-center">Peso</div>
@@ -1016,19 +1419,23 @@ const renderExerciseHeader = () => (
 // REEMPLAZAR COMPLETO
 const renderExerciseRow = (ex, i) => {
   const repsText  = Array.isArray(ex?.reps) ? ex.reps.join(' - ') : (ex?.reps ?? '-');
-  const pesoText  = ex?.peso ?? '-';
+  const pesoText  = cleanUiText(ex?.peso ?? '-');
   const notesText = (ex?.notas && String(ex.notas).trim()) || '-';
 
   return (
-    <div key={i} className="row justify-content-center align-items-center bg-white rounded-3 mb-2 py-2">
+    <div
+      key={i}
+      className={`row justify-content-center align-items-center rounded-3 mb-2 py-2 timer-ex-row ${isDark ? "ddp-surface timer-ex-row-dark" : "bg-white"}`}
+    >
+
       <div className="col-6 d-flex align-items-center">
         <span className="badge rounded-pill text-bg-dark me-3 px-2 py-2">{i + 1}</span>
-        <span className="fw-semibold">{ex?.name || '-'}</span>
+        <span className="fw-semibold timer-ex-name">{cleanUiText(ex?.name || '-')}</span>
       </div>
-      <div className="col-2 text-center fw-bold">{repsText}</div>
-      <div className="col-2 text-center fw-bold">{pesoText}</div>
+      <div className="col-2 text-center fw-bold timer-ex-value">{repsText}</div>
+      <div className="col-2 text-center fw-bold timer-ex-value">{pesoText}</div>
       <div
-        className="col-2 text-center small text-muted"
+        className="col-2 text-center small timer-ex-note"
         style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
         title={notesText}
       >
@@ -1041,8 +1448,8 @@ const renderExerciseRow = (ex, i) => {
 const parseMinutesFromTypeOfSets = (v) => {
   if (v == null) return null;
   const s = String(v).trim();
-  // Soporta: 14' | 14" | 14´ | 14m | 14 min | 14.5' | 14,5' | 14MIN
-  const m = s.match(/^(\d+(?:[.,]\d+)?)\s*(?:['"´m]|min(?:utos)?)?$/i);
+  // Soporta: 14' | 14" | 14Â´ | 14m | 14 min | 14.5' | 14,5' | 14MIN
+  const m = s.match(/^(\d+(?:[.,]\d+)?)\s*(?:['"Â´m]|min(?:utos)?)?$/i);
   if (!m) return null;
   const num = parseFloat(m[1].replace(',', '.'));
   return Number.isFinite(num) ? num : null; // minutos
@@ -1056,6 +1463,30 @@ const fmtMMSS = (sec = 0) => {
   const s = v % 60;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
+
+const cleanUiText = (value) =>
+  String(value ?? "")
+    .replace(/DÃ­a|DÃa/gi, "Dia")
+    .replace(/Ã¡/g, "a")
+    .replace(/Ã©/g, "e")
+    .replace(/Ã­/g, "i")
+    .replace(/Ã³/g, "o")
+    .replace(/Ãº/g, "u")
+    .replace(/Ã±/g, "n")
+    .replace(/Ã‘/g, "N")
+    .replace(/Ã—/g, " x ")
+    .replace(/×/g, " x ")
+    .replace(/Â·|·/g, " - ")
+    .replace(/Â´|´/g, "'")
+    .replace(/â€¢/g, "-")
+    .replace(/âœ…/g, "")
+    .replace(/â€“|–/g, "-")
+    .replace(/â€”|—/g, "-")
+    .replace(/â€˜|â€™|‘|’/g, "'")
+    .replace(/â€œ|â€�|“|”/g, '"')
+    .replace(/Ã/g, "A")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 
 const getDurationSec = (c = {}) => {
   // 1) Si ya viene duration/timeCap en segundos, usarlo.
@@ -1093,35 +1524,41 @@ const normalizeCircuit = (c = {}) => {
   return { ...c, circuitKind: kind };
 };
 
-// ==== Subtítulo corto ====
+// ==== Subtitulo corto ====
 const circuitSubtitle = (c = {}) => {
   const k = c?.circuitKind || c?.type || 'Libre';
   switch (k) {
-    case 'AMRAP':         return `AMRAP · ${fmtMMSS(getDurationSec(c) || 0)}`;
-    case 'EMOM':          return `EMOM · ${(c.intervalMin || 1)}:00 × ${(c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0)/(c.intervalMin || 1))))}`;
-    case 'E2MOM':         return `E2MOM · 2:00 × ${(c.totalRounds || 0)}`;
-    case 'E3MOM':         return `E3MOM · 3:00 × ${(c.totalRounds || 0)}`;
-    case 'Intermitentes': return `Intermitente · ${(c.workSec || 30)}s / ${(c.restSec || 30)}s × ${(c.totalRounds || 10)}`;
-    case 'Por tiempo':    return `For time · CAP ${fmtMMSS(getDurationSec(c) || 0)}`;
-    case 'Tabata':        return `Tabata · ${(c.workSec ?? 20)}s / ${(c.restSec ?? 10)}s × ${(c.totalRounds ?? 8)}`;
+    case 'AMRAP':
+      return cleanUiText(`AMRAP - ${fmtMMSS(getDurationSec(c) || 0)}`);
+    case 'EMOM':
+      return cleanUiText(`EMOM - ${(c.intervalMin || 1)}:00 x ${(c.totalRounds || Math.max(1, Math.round((c.totalMinutes || 0) / (c.intervalMin || 1))))}`);
+    case 'E2MOM':
+      return cleanUiText(`E2MOM - 2:00 x ${(c.totalRounds || 0)}`);
+    case 'E3MOM':
+      return cleanUiText(`E3MOM - 3:00 x ${(c.totalRounds || 0)}`);
+    case 'Intermitentes':
+      return cleanUiText(`Intermitente - ${(c.workSec || 30)}s / ${(c.restSec || 30)}s x ${(c.totalRounds || 10)}`);
+    case 'Por tiempo':
+      return cleanUiText(`For time - CAP ${fmtMMSS(getDurationSec(c) || 0)}`);
+    case 'Tabata':
+      return cleanUiText(`Tabata - ${(c.workSec ?? 20)}s / ${(c.restSec ?? 10)}s x ${(c.totalRounds ?? 8)}`);
     default: {
-    // Libre: si trae 'type', usarlo como etiqueta en lugar de "Libre"
-    const libreLabel = c?.type?.trim() ? c.type : 'Libre';
-    const fc = c.freeConfig;
-    if (fc) {
-      if (fc.mode === 'chrono') return `${libreLabel} · Cronómetro`;
-      if (fc.schema === 'amrap') return `${libreLabel} · AMRAP · ${String(fc.totalMinutes).padStart(2,'0')}:00`;
-      return `${libreLabel} · ${fc.workSec}s / ${fc.restSec}s × ${fc.totalRounds}`;
+      const libreLabel = cleanUiText(c?.type?.trim() ? c.type : 'Libre');
+      const fc = c.freeConfig;
+      if (fc) {
+        if (fc.mode === 'chrono') return `${libreLabel} - Cronometro`;
+        if (fc.schema === 'amrap') return cleanUiText(`${libreLabel} - AMRAP - ${String(fc.totalMinutes).padStart(2, '0')}:00`);
+        return cleanUiText(`${libreLabel} - ${fc.workSec}s / ${fc.restSec}s x ${fc.totalRounds}`);
+      }
+      return cleanUiText(libreLabel + (c.typeOfSets ? ` - ${c.typeOfSets}` : ''));
     }
-    return `${libreLabel}${c.typeOfSets ? ` · ${c.typeOfSets}` : ''}`;
-  }
   }
 };
 
 const CircuitHeader = ({ circuit, onStart, onAdjust }) => {
   const isLibre = normalizeCircuit(circuit).circuitKind === 'Libre';
   return (
-  <div className="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-2 px-3 py-2 mb-3">
+  <div className={`ddp-circuit-header d-flex flex-wrap align-items-center justify-content-between border rounded-2 px-3 py-2 mb-0 ${isDark ? "ddp-surface" : "bg-white"}`}>
     <div className="me-3">
       <div className="fw-semibold">{circuitSubtitle(circuit)}</div>
     </div>
@@ -1133,10 +1570,75 @@ const CircuitHeader = ({ circuit, onStart, onAdjust }) => {
   </div>
 )};
 
+const ensureAudio = React.useCallback(async () => {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
 
+  if (!audioCtxRef.current) {
+    audioCtxRef.current = new Ctx({ latencyHint: 'interactive' });
+  }
+  const ctx = audioCtxRef.current;
 
+  if (ctx.state !== 'running') {
+    try { await ctx.resume(); } catch {}
+  }
+  return ctx;
+}, []);
+
+// === Desbloqueo (unlock) de audio en el primer gesto ===
+function useUnlockAudioOnGesture(unlock, ensureAudioFn) {
+  React.useEffect(() => {
+    if (!unlock) return;
+
+    const ua = navigator.userAgent || '';
+    const isiOS = /iPad|iPhone|iPod/.test(ua);
+
+    const unlockAudio = async () => {
+      const ctx = await ensureAudioFn?.();
+      if (!ctx) return;
+      try {
+        // 1 frame silencioso: iOS marca el contexto como "habilitado"
+        const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+      } catch {}
+    };
+
+    const opts = { once: true, passive: true, capture: true };
+
+    // En iOS es critico, pero tambien lo hacemos cross-browser; no molesta.
+    window.addEventListener('pointerdown', unlockAudio, opts);
+    window.addEventListener('touchend',   unlockAudio, opts);
+    window.addEventListener('keydown',    unlockAudio, opts);
+
+    return () => {
+      window.removeEventListener('pointerdown', unlockAudio, opts);
+      window.removeEventListener('touchend',   unlockAudio, opts);
+      window.removeEventListener('keydown',    unlockAudio, opts);
+    };
+  }, [unlock, ensureAudioFn]);
+}
+
+const getCurrentDayId = React.useCallback(() => {
+  // prioridad: state day_id, si no existe, sacar desde allDays/currentDay
+  return day_id || allDays?.[currentDay ?? 0]?._id || null;
+}, [day_id, allDays, currentDay]);
+
+const getExercisesDraftKey = React.useCallback((overrideDayId) => {
+  const dId = overrideDayId || getCurrentDayId();
+  if (!id || !week_id || !dId) return null;
+  return `draft:exercises:${id}:${week_id}:${dId}`;
+}, [id, week_id, getCurrentDayId]);
+
+const audioCtxRef = React.useRef(null);
 
 const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
+
+  useUnlockAudioOnGesture(true, ensureAudio);
+
+
   const c = normalizeCircuit(circuit);
   const kind = c.circuitKind;
   const list = Array.isArray(c.circuit) ? c.circuit : [];
@@ -1167,7 +1669,7 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
           Math.max(1, Math.round((c.totalMinutes || intervalMin * 12) / intervalMin));
         const segs = [];
         for (let r = 0; r < rounds; r++) {
-          // ⬇️ NO rotamos ejercicios: cada minuto muestra la lista completa
+          // â¬‡ï¸ NO rotamos ejercicios: cada minuto muestra la lista completa
           segs.push({
             phase: 'interval',
             duration: intervalMin * 60,
@@ -1198,8 +1700,8 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
         // LIBRE
         if (!isLibre) return [];
         if (isChrono) {
-          // Cronómetro: sin plan de cuenta regresiva
-          return [{ phase: 'chrono', duration: 0, label: 'Cronómetro' }];
+          // Cronometro: sin plan de cuenta regresiva
+          return [{ phase: 'chrono', duration: 0, label: 'Cronometro' }];
         }
         // Temporizador configurable
         if (free.schema === 'amrap') {
@@ -1234,13 +1736,13 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
   const [prepLeft, setPrepLeft] = React.useState(safePrep);
 
 
-  // ---------- AUDIO (habilita en el toque de “Iniciar”) ----------
-  const audioRef = React.useRef(null);
+  // ---------- AUDIO (habilita en el toque de "Iniciar") ----------
+
   const lastBeepRef = React.useRef({ key: '', val: -1 });
   // NUEVO: referencias para tiempos absolutos (no dependen del tick del navegador)
-const prepEndAtRef = React.useRef(0);        // ms absolutos fin de preparación
+const prepEndAtRef = React.useRef(0);        // ms absolutos fin de preparacion
 const segEndAtRef = React.useRef(0);         // ms absolutos fin del segmento actual
-const chronoStartAtRef = React.useRef(0);    // ms cuando arrancó el cronómetro
+const chronoStartAtRef = React.useRef(0);    // ms cuando arranco el cronometro
 const pauseStartedAtRef = React.useRef(0);   // ms cuando pausaste
 const pausedAccumRef = React.useRef(0);      // ms acumulados en pausa
 const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilitychange
@@ -1254,21 +1756,10 @@ const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilit
    }
  }, [idx, plan, isInterTab]);
 
-  const ensureAudio = React.useCallback(async () => {
-    if (!audioRef.current) {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return null;
-      audioRef.current = new Ctx();
-    }
-    if (audioRef.current.state === 'suspended') {
-      await audioRef.current.resume();
-    }
-    return audioRef.current;
-  }, []);
-
+// === AudioContext unico y robusto para iOS ===
  const metronomeClick = React.useCallback(async (type = 'tick', long = false) => {
    const ctx = await ensureAudio();
-   if (!ctx) return;
+   if (!ctx || ctx.state !== 'running') return;
 
    // Master
    const master = ctx.createGain();
@@ -1276,7 +1767,7 @@ const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilit
    master.connect(ctx.destination);
 
    const now = ctx.currentTime;
-   const dur = long ? 5 : 0.5;           // el último suena el doble de largo
+   const dur = long ? 5 : 0.5;           // el ultimo suena el doble de largo
 
    // 1) Ataque: "click" de ruido filtrado (como madera)
    const noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate);
@@ -1289,7 +1780,7 @@ const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilit
    noise.buffer = noiseBuf;
    const hp = ctx.createBiquadFilter();
    hp.type = 'highpass';
-   hp.frequency.value = type === 'tock' ? 3333 : 2200; // tock más grave
+   hp.frequency.value = type === 'tock' ? 3333 : 2200; // tock mas grave
    noise.connect(hp);
    hp.connect(master);
    noise.start(now);
@@ -1298,7 +1789,7 @@ const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilit
    // 2) Cuerpo: oscilador con envolvente corta
    const osc = ctx.createOscillator();
    osc.type = 'triangle';
-   osc.frequency.value = type === 'tock' ? 1000 : 800; // tock más bajo; tick más agudo
+   osc.frequency.value = type === 'tock' ? 1000 : 800; // tock mas bajo; tick mas agudo
 
    const og = ctx.createGain();
    og.gain.setValueAtTime(0.0001, now);
@@ -1311,10 +1802,10 @@ const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilit
    osc.stop(now + dur);
  }, [ensureAudio]);
 
-  // ⬆️ volumen (más fuerte): mayor gain y dos tonos leves para “cuerpo”
+  // â¬†ï¸ volumen (mas fuerte): mayor gain y dos tonos leves para "cuerpo"
   const beep = React.useCallback(async (freq = 880, duration = 140, long = false) => {
     const ctx = await ensureAudio();
-    if (!ctx) return;
+    if (!ctx || ctx.state !== 'running') return;
     const main = ctx.createOscillator();
     const overtone = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -1324,7 +1815,7 @@ const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilit
     overtone.type = 'sine';
     overtone.frequency.value = Math.round(freq * 1.5);
 
-    // volumen más alto (antes ~0.15)
+    // volumen mas alto (antes ~0.15)
     const peak = long ? 0.4 : 0.3;
 
     gain.gain.value = 0.0001;
@@ -1360,6 +1851,25 @@ const runTickRef = React.useRef(() => {});   // para forzar un tick en visibilit
   }, [JSON.stringify(c), prepSeconds]);
 
 
+React.useEffect(() => {
+  const onVis = async () => {
+    if (document.visibilityState === 'visible') {
+      const ctx = await ensureAudio();
+      if (ctx && ctx.state !== 'running') {
+        try { await ctx.resume(); } catch {}
+      }
+    }
+  };
+
+  document.addEventListener('visibilitychange', onVis);
+  window.addEventListener('focus', onVis);
+
+  return () => {
+    document.removeEventListener('visibilitychange', onVis);
+    window.removeEventListener('focus', onVis);
+  };
+}, [ensureAudio]);
+
 // NUEVO: heartbeat anti-atrasos (250ms), usa Date.now()
 React.useEffect(() => {
   let intId;
@@ -1368,13 +1878,13 @@ React.useEffect(() => {
   const tick = () => {
     const now = Date.now();
 
-    // === PREPARACIÓN (respeta prepSeconds) ===
+    // === PREPARACION (respeta prepSeconds) ===
     if (isPreparing) {
       const left = Math.ceil((prepEndAtRef.current - now) / 1000);
       const safeLeft = Math.max(0, left);
       setPrepLeft(safeLeft);
 
-      // beeps 5-2 cortos, 1 largo (misma lógica que tenías)
+      // beeps 5-2 cortos, 1 largo (misma logica que tenias)
       if (safeLeft <= 5 && safeLeft > 1) {
         const key = 'prep-tick';
         if (!(lastBeepRef.current.key === key && lastBeepRef.current.val === safeLeft)) {
@@ -1387,7 +1897,7 @@ React.useEffect(() => {
         }
       }
 
-      // Fin de preparación → arranca primer segmento
+      // Fin de preparacion -> arranca primer segmento
       if (safeLeft <= 0) {
         setPrep(false);
         setRunning(true);
@@ -1401,10 +1911,10 @@ React.useEffect(() => {
       return;
     }
 
-    // Si no está corriendo, no hacemos nada
+    // Si no esta corriendo, no hacemos nada
     if (!running) return;
 
-    // === CRONÓMETRO (Libre/chrono) ===
+    // === CRONOMETRO (Libre/chrono) ===
     if (isChrono) {
       const ms = now - chronoStartAtRef.current - pausedAccumRef.current;
       setChronoElapsed(Math.max(0, Math.floor(ms / 1000)));
@@ -1420,7 +1930,7 @@ React.useEffect(() => {
     let end = segEndAtRef.current;
     let leftSec = Math.ceil((end - now) / 1000);
 
-    // Si se consumieron varios segmentos (por throttling), los “saltamos”
+    // Si se consumieron varios segmentos (por throttling), los "saltamos"
     if (leftSec <= 0) {
       let next = idx + 1;
       let accEnd = end;
@@ -1480,7 +1990,7 @@ React.useEffect(() => {
 
   
 
-  // ---------- TIEMPO / PRESENTACIÓN ----------
+  // ---------- TIEMPO / PRESENTACION ----------
   const totalSeconds = isPreparing ? prepLeft : (isChrono ? chronoElapsed : timeLeft);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
@@ -1492,13 +2002,13 @@ React.useEffect(() => {
 
   // Para Intermitentes/Tabata: ejercicio actual (rota por ronda)
  const showCurrent = isInterTab && phase === 'work' && list.length > 0;
- // En work uso el índice del segmento; en rest uso el último índice de work
+ // En work uso el indice del segmento; en rest uso el ultimo indice de work
  const currExIndex = showCurrent
    ? (currentSeg.exerciseIndex ?? 0)
    : lastWorkExRef.current;
  const currEx = showCurrent ? list[currExIndex] : null;
 
- // “Próximo”: si estoy en rest, parte desde el último work; si estoy en work, desde el actual
+ // "Proximo": si estoy en rest, parte desde el ultimo work; si estoy en work, desde el actual
  const nextEx = (isInterTab && list.length && currExIndex >= 0)
    ? list[(currExIndex + 1) % list.length]
    : null;
@@ -1519,67 +2029,67 @@ React.useEffect(() => {
     : (restBG ? { background: 'rgba(239, 68, 68, 0.25)', borderRadius: 16 } : {});
 
   // ---------- CONTROLES ----------
-  // REEMPLAZAR la función completa
+  // REEMPLAZAR la funcion completa
 const handleStartPause = async () => {
-  await ensureAudio();
+  try {
+    await ensureAudio();
+    const prep = Math.max(1, Number(prepSeconds) || safePrep);
 
-  // Si terminó: reset + volver a PREP al iniciar
-  if (phase === 'done') {
-    setIdx(0);
-    setPhase(plan[0]?.phase || 'idle');
-    setLeft(plan[0]?.duration || 0);
-    segDurationRef.current = plan[0]?.duration || 60;
-    setRunning(false);
-    setPrepLeft(prepSeconds);
-    setPrep(true);
-    prepEndAtRef.current = Date.now() + Math.max(1, prepSeconds) * 1000; 
-    lastBeepRef.current = { key: '', val: -1 };
-    // limpiar absolutos
-    // NUEVO: limpiar tiempos absolutos al reconstruir
-    segEndAtRef.current = 0;
-    prepEndAtRef.current = 0;
-    chronoStartAtRef.current = 0;
-    pauseStartedAtRef.current = 0;
-    pausedAccumRef.current = 0;
-    return;
-  }
-
-  // Pausa / cancelar preparación
-  if (running) {
-    setRunning(false);
-    if (isChrono) pauseStartedAtRef.current = Date.now();
-    return;
-  }
-  if (isPreparing) {
-    setPrep(false);
-    setPrepLeft(prepSeconds);
-    return;
-  }
-
-  // Inicio: si estamos al principio, pasar por PREP
-  const atStart = idx === 0 && (isChrono ? (chronoElapsed === 0) : (timeLeft === (plan[0]?.duration || 0)));
-  if (!isChrono && atStart) {
-    const prep = Math.max(1, prepSeconds);
-    setPrepLeft(prep);
-    prepEndAtRef.current = Date.now() + prep * 1000;
-    setPrep(true);
-    return;
-  }
-
-  // Reanudar
-  if (isChrono) {
-    if (!chronoStartAtRef.current) chronoStartAtRef.current = Date.now();
-    if (pauseStartedAtRef.current) {
-      pausedAccumRef.current += Date.now() - pauseStartedAtRef.current;
+    if (phase === 'done') {
+      setIdx(0);
+      setPhase(plan[0]?.phase || 'idle');
+      setLeft(plan[0]?.duration || 0);
+      segDurationRef.current = plan[0]?.duration || 60;
+      setRunning(false);
+      setPrepLeft(prep);
+      setPrep(true);
+      prepEndAtRef.current = Date.now() + prep * 1000;
+      lastBeepRef.current = { key: '', val: -1 };
+      segEndAtRef.current = 0;
+      chronoStartAtRef.current = 0;
       pauseStartedAtRef.current = 0;
+      pausedAccumRef.current = 0;
+      return;
     }
-  } else {
-    const baseLeft = timeLeft || segDurationRef.current || plan[idx]?.duration || 60;
-    segEndAtRef.current = Date.now() + baseLeft * 1000;
-  }
-  setRunning(true);
-};
 
+    if (running) {
+      setRunning(false);
+      if (isChrono) pauseStartedAtRef.current = Date.now();
+      return;
+    }
+
+    if (isPreparing) {
+      setPrep(false);
+      setPrepLeft(prep);
+      prepEndAtRef.current = 0;
+      return;
+    }
+
+    const atStart = idx === 0 && (isChrono ? (chronoElapsed === 0) : (timeLeft === (plan[0]?.duration || 0)));
+    if (!isChrono && atStart) {
+      setPrepLeft(prep);
+      prepEndAtRef.current = Date.now() + prep * 1000;
+      setPrep(true);
+      return;
+    }
+
+    if (isChrono) {
+      if (!chronoStartAtRef.current) chronoStartAtRef.current = Date.now();
+      if (pauseStartedAtRef.current) {
+        pausedAccumRef.current += Date.now() - pauseStartedAtRef.current;
+        pauseStartedAtRef.current = 0;
+      }
+    } else {
+      const baseLeft = timeLeft || segDurationRef.current || plan[idx]?.duration || 60;
+      segEndAtRef.current = Date.now() + baseLeft * 1000;
+    }
+
+    setRunning(true);
+  } catch (error) {
+    console.error('Timer start/pause error', error);
+    Notify.instantToast('No se pudo iniciar el timer.');
+  }
+};
 
 const reset = () => {
   setIdx(0);
@@ -1589,7 +2099,7 @@ const reset = () => {
   setRunning(false);
   setPrep(false);
   setChronoElapsed(0);
-  setPrepLeft(prepSeconds);
+  setPrepLeft(safePrep);
   lastBeepRef.current = { key: '', val: -1 };
 
   // limpiar tiempos absolutos
@@ -1609,7 +2119,7 @@ React.useEffect(() => {
 }, [running, isChrono, isPreparing, timeLeft, idx, plan]);
 
   return (
-    <div className="container-fluid px-0">
+    <div className={`container-fluid px-0 timer-dialog-body ${isDark ? 'timer-dialog-body-dark' : ''}`}>
       {/* TIMER (Min / Sec) */}
       <div className="d-flex justify-content-center align-items-end gap-3 my-2" style={timeAreaStyle}>
         {/* MIN */}
@@ -1671,18 +2181,18 @@ React.useEffect(() => {
         </button>
       </div>
 
-      {/* ===== CONTENIDO SEGÚN TIPO ===== */}
+      {/* ===== CONTENIDO SEGUN TIPO ===== */}
 
       {kind === 'AMRAP' && (
         <>
-          <div className="d-flex align-items-center mb-2">
+          <div className="d-flex align-items-center mb-2 timer-section-title">
             <span className="rounded-circle bg-primary me-2" style={{ width: 8, height: 8 }} />
             <div className="fw-bold text-uppercase small">Ejercicios </div>
           </div>
           <div className="mb-3">
             {renderExerciseHeader()}
             {list.length ? list.map((ex, i) => renderExerciseRow(ex, i)) : (
-              <div className="text-muted small">—</div>
+              <div className="text-muted small">-</div>
             )}
           </div>
         </>
@@ -1690,14 +2200,14 @@ React.useEffect(() => {
 
       {isLibre && (
          <>
-           <div className="d-flex align-items-center mb-2">
+           <div className="d-flex align-items-center mb-2 timer-section-title">
              <span className="rounded-circle bg-primary me-2" style={{ width: 8, height: 8 }} />
              <div className="fw-bold text-uppercase small">Ejercicios</div>
            </div>
            <div className="mb-3">
              {renderExerciseHeader()}
              {list.length ? list.map((ex, i) => renderExerciseRow(ex, i)) : (
-               <div className="text-muted small">—</div>
+               <div className="text-muted small">-</div>
              )}
            </div>
          </>
@@ -1705,20 +2215,20 @@ React.useEffect(() => {
 
       {isEMOMLike && (
         <>
-          <div className="d-flex align-items-center mb-2">
+          <div className="d-flex align-items-center mb-2 timer-section-title">
             <span className="rounded-circle bg-primary me-2" style={{ width: 8, height: 8 }} />
             <div className="fw-bold text-uppercase small">Ejercicios a realizar</div>
           </div>
           <div className="mb-3">
              {renderExerciseHeader()}
             {list.length ? list.map((ex, i) => renderExerciseRow(ex, i)) : (
-              <div className="text-muted small">—</div>
+              <div className="text-muted small">-</div>
             )}
           </div>
         </>
       )}
 
-      {/* Intermitentes / Tabata: EJERCICIO ACTUAL + PRÓXIMO */}
+      {/* Intermitentes / Tabata: EJERCICIO ACTUAL + PROXIMO */}
       {isInterTab && (
         <>
           <div className="d-flex align-items-center mb-2">
@@ -1735,7 +2245,7 @@ React.useEffect(() => {
              {showCurrent ? (
                <>
                  <div className="d-flex align-items-center justify-content-between">
-                   <div className="fw-bold fs-5">{currEx?.name}</div>
+                  <div className="fw-bold fs-5">{cleanUiText(currEx?.name)}</div>
                    <span className={`badge rounded-pill ${phase === 'work' ? 'text-bg-success' : 'text-bg-secondary'}`}>
                      {phase === 'work' ? 'WORK' : 'REST'}
                    </span>
@@ -1743,22 +2253,22 @@ React.useEffect(() => {
             
                  <div className="d-flex flex-wrap gap-2 mt-3">
                    <span className="badge text-bg-dark px-3 py-2">
-                     Reps: {Array.isArray(currEx?.reps) ? currEx.reps.join(' - ') : (currEx?.reps ?? '-')}
+                     Reps: {Array.isArray(currEx?.reps) ? cleanUiText(currEx.reps.join(' - ')) : cleanUiText(currEx?.reps ?? '-')}
                    </span>
                    <span className="badge text-bg-dark px-3 py-2">
-                     Peso: {currEx?.peso ?? '-'}
+                     Peso: {cleanUiText(currEx?.peso ?? '-')}
                    </span>
                  </div>
             
                  {currEx?.notas ? (
                    <div className="text-muted small mt-2" style={{ whiteSpace: 'pre-wrap' }}>
-                     {currEx.notas}
+                    {cleanUiText(currEx.notas)}
                    </div>
                  ) : null}
                </>
              ) : (
                <div className="text-muted d-flex align-items-center justify-content-center" style={{ minHeight: 74 }}>
-                 {phase === 'rest' ? 'Descanso' : '—'}
+                 {phase === 'rest' ? 'Descanso' : '-'}
                </div>
              )}
            </div>
@@ -1788,11 +2298,11 @@ React.useEffect(() => {
           className="btn btn-outline-secondary rounded-3 "
           style={{ lineHeight: 1, opacity: .95 }}
           onClick={() => onOpenInfo()}
-          aria-label="¿Qué es este formato?"
-          title={`¿Qué es un ${kind}?`}
+          aria-label="Que es este formato?"
+          title={`Que es un ${kind}?`}
         >
           <HelpOutlineIcon className="me-1" />
-          ¿Qué es un {kind}?
+          Que es un {kind}?
         </button>
         <button className="btn btn-outline-secondary rounded-3" onClick={onClose}>Cerrar</button>
       </div>
@@ -1801,14 +2311,17 @@ React.useEffect(() => {
 };
 
 
-
-
-
-
     const handleDayChange = (value) => {
-        const actualDay = allDays.find(item => item._id === value);
-        const idx = allDays.findIndex(item => item._id === actualDay._id);
-        setCurrentDay(idx);
+      
+
+      const actualDay = allDays.find(item => item._id === value);
+      const idx = allDays.findIndex(item => item._id === actualDay?._id);
+      if (idx < 0) return;
+      setCurrentDay(idx);
+      const wk = allWeeks[currentWeekIndex];
+      if (wk?._id) {
+        navigate(`/routine/${id}/day/${idx}/${wk._id}/${currentWeekIndex}`, { replace: true });
+      }
     };
 
 
@@ -1832,13 +2345,339 @@ React.useEffect(() => {
   });
 }
 
+// FUNCIONES PARA LOCALSTORAGE DE DATOS ----------------------------------------------------------//
+
+
+// ===== Draft / Offline helpers (localStorage) =====
+
+
+const lsGetJSON = (key, fallback = null) => {
+  try {
+    if (!safeHasLS()) return fallback;
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+};
+
+const lsSetJSON = (key, value) => {
+  try {
+    if (!safeHasLS()) return;
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // noop
+  }
+};
+
+const lsRemove = (key) => {
+  try {
+    if (!safeHasLS()) return;
+    window.localStorage.removeItem(key);
+  } catch {
+    // noop
+  }
+};
+
+// lodash ya esta importado como _, usamos _.isEqual
+const deepEqual = (a, b) => {
+  try { return _.isEqual(a, b); } catch { return false; }
+};
+
+// âœ… Limpia campos SOLO de UI para no enviarlos al backend
+const stripUI = (ex) => {
+  if (!ex || typeof ex !== 'object') return ex;
+  const { changed, supSuffix, _origIndex, _origIndexInBlock, ...rest } = ex;
+  return rest;
+};
+
+// âœ… Limpia todo el array de ejercicios (incluye blocks y circuitos)
+const cleanExercisesPayload = (arr = []) => {
+  return (arr || []).map((it) => {
+    if (!it || typeof it !== 'object') return it;
+
+    // Bloque con ejercicios internos
+    if (it?.type === 'block' && Array.isArray(it.exercises)) {
+      return { ...it, exercises: it.exercises.map(stripUI) };
+    }
+
+    // Circuito (si existiera)
+    if (Array.isArray(it?.circuit)) {
+      return { ...it, circuit: it.circuit.map(stripUI) };
+    }
+
+    // Ejercicio normal
+    return stripUI(it);
+  });
+};
+
+const getExerciseDraftEntries = React.useCallback(() => {
+  if (!safeHasLS() || !id || !week_id) return [];
+
+  const prefix = `draft:exercises:${id}:${week_id}:`;
+  const entries = [];
+
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (!key || !key.startsWith(prefix)) continue;
+
+    const draft = lsGetJSON(key, null);
+    const dayIdFromKey = key.slice(prefix.length);
+    if (draft?.data && Array.isArray(draft.data) && dayIdFromKey) {
+      entries.push({ key, dayId: dayIdFromKey, draft });
+    }
+  }
+
+  return entries;
+}, [id, week_id]);
+
+const flushPendingDrafts = React.useCallback(async ({ notify = false } = {}) => {
+  if (!id || offlineFlushInFlightRef.current) return;
+
+  offlineFlushInFlightRef.current = true;
+  const saved = [];
+
+  try {
+    if (weeklyDraftKey) {
+      const draft = lsGetJSON(weeklyDraftKey, null);
+      if (draft?.data && typeof draft.data === 'object' && !Array.isArray(draft.data)) {
+        try {
+          await UserService.editProfile(id, { resumen_semanal: draft.data });
+          serverWeeklyRef.current = draft.data;
+          setWeeklySummary(draft.data);
+          setUserProfile((prev) => ({ ...(prev || {}), resumen_semanal: draft.data }));
+          setWeeklyPending(false);
+          setWeeklyLastFail('');
+          lsRemove(weeklyDraftKey);
+          saved.push('resumen');
+        } catch {
+          setWeeklyPending(true);
+          setWeeklyLastFail(draft?.lastFail || new Date().toISOString());
+        }
+      }
+    }
+
+    if (driveDraftKey) {
+      const draft = lsGetJSON(driveDraftKey, null);
+      if (draft?.data && typeof draft.data === 'string') {
+        try {
+          const currentProfile = await UserService.getProfileById(id);
+          const { _id, id: ignoredId, user_id, ...safeProfile } = currentProfile || {};
+          const updatedProfile = { ...safeProfile, drive_link: draft.data };
+
+          await UserService.editProfile(id, updatedProfile);
+          serverDriveRef.current = draft.data;
+          setDriveLink(draft.data);
+          setUserProfile((prev) => ({ ...(prev || {}), drive_link: draft.data }));
+          setDrivePending(false);
+          setDriveLastFail('');
+          lsRemove(driveDraftKey);
+          saved.push('drive');
+        } catch {
+          setDrivePending(true);
+          setDriveLastFail(draft?.lastFail || new Date().toISOString());
+        }
+      }
+    }
+
+    if (technicalLogDraftKey) {
+      const draft = lsGetJSON(technicalLogDraftKey, null);
+      if (draft?.data && Array.isArray(draft.data)) {
+        try {
+          await UserService.editProfile(id, { technical_log: draft.data });
+          serverTechnicalLogRef.current = draft.data;
+          setTechnicalLogEntries(draft.data);
+          setUserProfile((prev) => ({ ...(prev || {}), technical_log: draft.data }));
+          setTechnicalLogPending(false);
+          setTechnicalLogLastFail('');
+          lsRemove(technicalLogDraftKey);
+          saved.push('bitacora');
+        } catch {
+          setTechnicalLogPending(true);
+          setTechnicalLogLastFail(draft?.lastFail || new Date().toISOString());
+        }
+      }
+    }
+
+    const exerciseDrafts = getExerciseDraftEntries();
+    if (exerciseDrafts.length) {
+      let failed = 0;
+
+      for (const { key, dayId: draftDayId, draft } of exerciseDrafts) {
+        try {
+          const cleaned = cleanExercisesPayload(draft.data);
+          await ExercisesService.editExercise(week_id, draftDayId, cleaned);
+
+          lsRemove(key);
+          saved.push(`dia:${draftDayId}`);
+
+          setAllDays((prev) =>
+            (prev || []).map((day) =>
+              String(day?._id) === String(draftDayId)
+                ? { ...day, exercises: cleaned }
+                : day
+            )
+          );
+
+          if (String(draftDayId) === String(getCurrentDayId())) {
+            serverExercisesRef.current = cleaned;
+            setModifiedDay(cleaned);
+          }
+        } catch {
+          failed += 1;
+          setExercisesLastFail(draft?.lastFail || new Date().toISOString());
+        }
+      }
+
+      setExercisesPending(failed > 0);
+      if (failed === 0) setExercisesLastFail('');
+    }
+
+    if (notify && saved.length) {
+      Notify.instantToast('Cambios pendientes guardados automatico');
+    }
+  } finally {
+    offlineFlushInFlightRef.current = false;
+  }
+}, [
+  id,
+  week_id,
+  weeklyDraftKey,
+  driveDraftKey,
+  technicalLogDraftKey,
+  getExerciseDraftEntries,
+  getCurrentDayId
+]);
+
+
+useEffect(() => {
+  if (allDays.length && currentDay !== null) {
+    const d = allDays[currentDay];
+    if (!d) return;
+
+    setDay_id(d._id);
+    setFirstValue(d.name);
+
+    const serverExercises = d.exercises || [];
+    serverExercisesRef.current = serverExercises;
+
+    // draft local por dia (si existe)
+    const key = (typeof window !== 'undefined') ? `draft:exercises:${id}:${week_id}:${d._id}` : null;
+    const draft = key ? lsGetJSON(key, null) : null;
+
+    if (draft?.data && Array.isArray(draft.data) && !deepEqual(draft.data, serverExercises)) {
+      setModifiedDay(draft.data);
+      setExercisesPending(true);
+      setExercisesLastFail(draft?.lastFail || '');
+    } else {
+      setModifiedDay(serverExercises);
+      setExercisesLastFail('');
+      if (key) lsRemove(key); // si era igual o invalido, limpiamos
+      setExercisesPending(getExerciseDraftEntries().length > 0);
+    }
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [allDays, currentDay]);
+
+useEffect(() => {
+  if (typeof window === 'undefined') return undefined;
+
+  const onOnline = () => flushPendingDrafts({ notify: true });
+  window.addEventListener('online', onOnline);
+
+  // Si el alumno reabre la pagina ya con internet, el evento online no se dispara.
+  if (window.navigator?.onLine !== false) {
+    flushPendingDrafts({ notify: true });
+  }
+
+  return () => window.removeEventListener('online', onOnline);
+}, [flushPendingDrafts]);
+
+
+
+const safeHasLS = () => {
+  try {
+    if (typeof window === 'undefined') return false;
+    if (!window.localStorage) return false;
+
+    // test write (algunos navegadores o modos lo bloquean)
+    const k = '__ls_test__';
+    window.localStorage.setItem(k, '1');
+    window.localStorage.removeItem(k);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+
+const renderMetricValue = (value) => {
+  if (Array.isArray(value)) {
+    return (
+      <span className="textWeightCards border-1 d-block">
+        {value.map((v, i) => (
+          <React.Fragment key={i}>
+            <span className="textWeightCards arrayBadge">{v}</span>
+            {i < value.length - 1 && <span>-</span>}
+          </React.Fragment>
+        ))}
+      </span>
+    );
+  }
+
+  return <span className="textWeightCards border-1 d-block">{value ?? '-'}</span>;
+};
+
+const renderMetricBox = (label, value, colClass, extraClass = '') => (
+  <div
+    className={`${colClass} p-0 ${extraClass} mt-4 pt-2 mb-2 d-flex flex-column ${
+      isDark ? "StyleDarkBox" : "StyleLightBox"
+    }`}
+  >
+    <div>
+      <p className="fontStylesSpan">{label}</p>
+    </div>
+    <div>{renderMetricValue(value)}</div>
+  </div>
+);
+
+
+const currentDayData = currentDay !== null ? allDays[currentDay] : null;
+const currentMovility = Array.isArray(currentDayData?.movility) ? currentDayData.movility : [];
+const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.warmup : [];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
     return (
         <>
     <div className="container-fluid p-0 ">
         <Logo />
     </div>
 
-    <section className="container-fluid p-0">
+    <section className={`container-fluid p-0 ddp ${isDark ? "ddp-dark" : "ddp-light"}`}>
 
         <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'alert alert-warning rounded-1 text-dark' : ''}`}>
           <div className="d-flex justify-content-center align-items-center">
@@ -1851,12 +2690,12 @@ React.useEffect(() => {
             </IconButton>
 
             <div className="d-flex flex-column align-items-center">
-        <h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
-              <small className="text-muted">
-                {allWeeks[currentWeekIndex]?.createdAt 
-                  ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
-                  : ''}
-              </small>
+              <h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
+                <small className="text-muted">
+                  {allWeeks[currentWeekIndex]?.createdAt 
+                    ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
+                    : ''}
+                </small>
             </div>
 
             <IconButton
@@ -1870,7 +2709,7 @@ React.useEffect(() => {
 
           {currentWeekIndex !== 0 && (
             <small className="d-block mt-1 mx-3 text-">
-              <span className=" shadow rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estás en una semana anterior. 
+              <span className=" shadow rounded-1 p-2 d-block mx-5 mb-2">Atencion!</span> Para que no te confundas, te avisamos que estas en una semana anterior. 
             </small>
           )}
         </div>
@@ -1890,7 +2729,7 @@ React.useEffect(() => {
                     )
                   };
                 })}
-                className="stylesSegmented"
+                className="stylesSegmented ddp-segmented"
                 value={day_id}
                 onChange={handleDayChange}
               />
@@ -1899,13 +2738,13 @@ React.useEffect(() => {
 
         {currentDay !== null && (
         <div className="row align-items-center text-center m-0 px-1 my-5">
-            <h2 className="text-center mb-4 colorNameAlumno rounded-2 fs-5 py-2">
+            <h2 className={`text-center mb-4 rounded-2 fs-5 py-2 ${isDark ? "ddp-dayTitle-dark" : "ddp-dayTitle-light"}`}>
                 {allDays[currentDay]?.name}
             </h2>
 
-            {allDays[currentDay]?.movility && (
+            {currentMovility.length > 0 && (
             <>
-              <div className="text-start"><span>Activación / movilidad</span></div>
+              <div className="text-start"><span>Activacion / movilidad</span></div>
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 loop
@@ -1922,7 +2761,7 @@ React.useEffect(() => {
                 }}
                 onSwiper={swiper => (movilitySwiper.current = swiper)}
                 className="mx-0 px-0">
-                    {allDays[currentDay].movility.map((exercise, idx) => (
+                    {currentMovility.map((exercise, idx) => (
                       <SwiperSlide key={idx}>
                         {productTemplate(exercise, idx, true)}
                       </SwiperSlide>
@@ -1932,7 +2771,7 @@ React.useEffect(() => {
                   </>
               )}
 
-            {allDays[currentDay]?.warmup && (
+            {currentWarmup.length > 0 && (
             <>
               <div className="text-start"><span>Entrada en calor</span></div>
               <Swiper
@@ -1951,7 +2790,7 @@ React.useEffect(() => {
                 }}
                 onSwiper={swiper => (movilitySwiper.current = swiper)}
                 className="mx-0 px-0">
-                    {allDays[currentDay].warmup.map((exercise, idx) => (
+                    {currentWarmup.map((exercise, idx) => (
                       <SwiperSlide key={idx}>
                         {productTemplate(exercise, idx, false)}
                       </SwiperSlide>
@@ -1964,97 +2803,153 @@ React.useEffect(() => {
             
               <div className="row m-auto px-0 ">
                 
-                <h2 className=" p-2 mb-0 text-start ">Rutina del día</h2>
+                <h2 className=" p-2 mb-0 text-start ">Rutina del dia</h2>
               
-                    {groupSupersets(modifiedDay).map((element, idx) => {
-  // ⚠️ Usar el peso del elemento para calcular columnas (antes estaba element.reps)
+                {groupSupersets(modifiedDay).map((element, idx) => {
+  
   const { setsCol, repsCol, pesoCol, restCol } = getCols(element.peso);
   const isExercise = element.type === 'exercise';
   const isBlock = element.type === 'block';
   const isSuperset = element.type === 'superset';
-const number = isSuperset
-  ? element.baseNumber
-  : (element.numberExercise || element.numberCircuit);
-  const name = typeof element.name === 'object' ? element.name.name : element.name;
-  const backoffLabel =
-    (element.name?.titleName && element.name.titleName.trim() !== "")
-      ? element.name.titleName
-      : "Back off";
-
+  const number = isSuperset
+    ? element.baseNumber
+    : (element.numberExercise || element.numberCircuit);
+    const name = typeof element.name === 'object' ? element.name.name : element.name;
+    const backoffLabel =
+      (element.name?.titleName && element.name.titleName.trim() !== "")
+        ? element.name.titleName
+        : "Back off";
+    const blockBgColor = isBlock && element.color ? element.color : null;
+    const blockTextColor = blockBgColor
+      ? getReadableTextColor(blockBgColor, '#ffffff')
+      : null;
+    const blockHeaderStyle = blockBgColor
+      ? {
+          backgroundColor: blockBgColor,
+          color: blockTextColor,
+          '--ddp-block-text-color': blockTextColor
+        }
+      : undefined;
+    const themedTextClass = blockTextColor ? '' : (isDark ? "text-light" : "text-dark");
+  console.log(element)      
   return (
     <div
       key={isSuperset ? `sup-${element.baseNumber}-${idx}` : `${element.exercise_id || element._id || idx}-${idx}`}
       ref={el => (cardRefs.current[idx] = el)}
       className="px-0 mb-3"
     >
-      <div className="row justify-content-center bg-light border rounded-2 m-0 mb-3">
-        {/* — CABECERA (número + nombre) — */}
-        <div
-          className={`col-12 ${element.type !== 'block' && element.type !== 'superset' ? 'widgetNumber' : 'widgetNumberSuperSet'} py-2`}
-          style={{ backgroundColor: element.type == 'block' && element.color }}
-        >
-          <div className="row justify-content-center">
-            <div className="col-1 m-auto text-light">
+      <div className={`row justify-content-center border rounded-2 m-0 mb-3 ddp-card ${isDark ? "ddp-surface" : "bg-light"}`}>
+        <div 
+          className={`col-12 ${blockBgColor ? 'ddp-block-colored-header' : ''}`}
+          style={blockHeaderStyle}
+        > 
+          <div className="row justify-content-center border-bottom">
+            <div className="col-1 m-auto colorIndexPrimarys" style={blockTextColor ? { color: blockTextColor } : undefined}>
               {renderNumberIcon(number)}
             </div>
 
-            <div className="col-10 m-auto text-start">
-              <p className="stylesNameExercise text-light mb-0" id={idx === 0 ? 'nombre' : null}>
+            <div className="col-9 m-auto">
+              <p
+                className={`stylesNameExercise text-start mb-0 py-2 ${themedTextClass}`}
+                style={blockTextColor ? { color: blockTextColor } : undefined}
+                id={idx === 0 ? 'nombre' : null}
+              >
                 {isExercise
-                  ? name
+                  ? cleanUiText(name)
                   : isBlock
-                    ? <span>{element.name}</span>
+                    ? <span>{cleanUiText(element.name)}</span>
                     : isSuperset
                       ? (
                         <span>
                           Superserie
                           <small className="ms-2">
-                            ({element.exercises.map(e => e.supSuffix).join(' · ')})
+                            ({element.exercises.map(e => e.supSuffix).join(' - ')})
                           </small>
                         </span>
                       )
                       : <span>Circuito</span>}
               </p>
             </div>
+
+              {isExercise && 
+              <div className="col-2">
+
+              <IconButton
+                id={idx === 0 ? 'edicion' : null}
+                aria-label="editar"
+                style={blockTextColor ? { color: blockTextColor } : undefined}
+                 
+                onClick={() => handleEditMobileExercise(element, idx)}
+              >
+                <Ellipsis size={23} />
+              </IconButton>
+              </div>
+            }
           </div>
         </div>
 
 {isExercise ? (
-  /* ====== EJERCICIO NORMAL (igual que lo tenías) ====== */
   <>
-    <div className={`${setsCol} p-0 mt-4 pt-2 mb-2`}>
-      <span className="stylesBadgesItemsExerciseSpan d-block">{element.sets}</span>
-      <p className="fontStylesSpan">Sets</p>
+    <div className={`${setsCol} p-0 mt-4 pt-2 mb-2 d-flex flex-column ${isDark ? "StyleDarkBox" : "StyleLightBox"} `}>
+      <div>
+        <p className="fontStylesSpan ">Sets</p>
+      </div>
+      <div>
+      {Array.isArray(element.sets) ? (
+        <span className="textWeightCards border-1 d-block ">
+          {element.sets.map((setValue, i) => (
+            <React.Fragment key={i}>
+              <span className="textWeightCards arrayBadge">{cleanUiText(setValue)}</span>
+              {i < element.sets.length - 1 && <span>-</span>}
+            </React.Fragment>
+          ))}
+        </span>
+      ) : (
+        <span className="textWeightCards border-1 d-block">{cleanUiText(element.sets)}</span>
+      )}
+      </div>
     </div>
 
-    <div className={`${repsCol} p-0 mt-4 pt-2 mb-2`}>
+    <div className={`${repsCol} p-0 mx-1 mt-4 pt-2 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
+      <div>
+         <p className="fontStylesSpan">Reps</p>
+      </div>
+      <div>
       {Array.isArray(element.reps) ? (
-        <span className="stylesBadgesItemsExerciseSpan border-1 d-block">
+        <span className="textWeightCards border-1 d-block">
           {element.reps.map((r, i) => (
             <React.Fragment key={i}>
-              <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
+              <span className="textWeightCards arrayBadge">{r}</span>
               {i < element.reps.length - 1 && <span>-</span>}
             </React.Fragment>
           ))}
         </span>
       ) : (
-        <span className="stylesBadgesItemsExerciseSpan border-1 d-block">{element.reps}</span>
+        <span className="textWeightCards border-1 d-block">{element.reps}</span>
       )}
-      <p className="fontStylesSpan">Reps</p>
+      </div>
     </div>
 
-    <div className={`${pesoCol} p-0 mt-4 pt-2 mb-2`}>
-      <span className="stylesBadgesItemsExerciseSpan d-block">{element.peso ? element.peso : '-'}</span>
-      <p className="fontStylesSpan">Peso</p>
+    <div className={`${pesoCol} p-0 me-1 mt-4 pt-2 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
+     <div>
+         <p className="fontStylesSpan ">Peso</p>
+      </div>
+      <div>
+        <span className="textWeightCards d-block">{element.peso ? cleanUiText(element.peso) : '-'}</span>
+      </div>
     </div>
 
-    <div className={`${restCol} p-0 mt-3 mb-2`}>
-      <CountdownTimer initialTime={element.rest} />
-      <p className="fontStylesSpan mt-2 mb-1">Descanso</p>
+    <div className={`${restCol} p-0 me-1 mt-4  mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
+      
+       <div>
+         <p className="fontStylesSpan mt-2 ">Descanso</p>
+      </div>
+      <div>
+        <CountdownTimer darkMode={isDark} initialTime={element.rest} />      
+        </div>
     </div>
   </>
 ) : isSuperset ? (
-  /* ====== SUPERSERIE A NIVEL TOPE ====== */
   <>
     {element.exercises.map((ex, j) => {
       const innerName = typeof ex.name === 'object' ? ex.name.name : ex.name;
@@ -2066,47 +2961,42 @@ const number = isSuperset
         <React.Fragment key={`sup-${element.baseNumber}-${j}`}>
           <div className="col-12 mb-2 mb-3 shadow-personalized">
             <div className="row justify-content-around rounded-2 p-2 align-items-center">
-              <div className="col-1 text-center">
+              <div className="col-2 text-center">
                 <span className="badge text-light border bg-dark">{ex.supSuffix}</span>
               </div>
-              <div className="col-11 text-start">{innerName}</div>
-
-              <div className={`${cols.setsCol} p-0 mt-3 mb-2`}>
-                <span className="stylesBadgesItemsExerciseSpan d-block">{ex.sets}</span>
-                <div className="fontStylesSpan">Sets</div>
+              <div className="col-8 text-start ">{innerName}</div>
+              <div className="col-2 text-center">
+                <IconButton aria-label="editar" onClick={() => handleEditMobileExercise(ex, ex._origIndex)}>
+                  <EditNoteIcon />
+                </IconButton>
               </div>
 
-              <div className={`${cols.repsCol} p-0 mt-3 mb-2`}>
-                {Array.isArray(ex.reps)
-                  ? ex.reps.map((r, k) => (
-                      <React.Fragment key={k}>
-                        <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
-                        {k < ex.reps.length - 1 && <span className="">-</span>}
-                      </React.Fragment>
-                    ))
-                  : <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>}
-                <div className="fontStylesSpan">Reps</div>
-              </div>
+              {renderMetricBox("Sets", ex.sets, cols.setsCol)}
+              {renderMetricBox("Reps", ex.reps, cols.repsCol, "mx-1")}
+              {renderMetricBox("Peso", ex.peso ? ex.peso : "-", cols.pesoCol, "me-1")}
 
-              <div className={`${cols.pesoCol} p-0 mt-3 mb-2`}>
-                <span className="stylesBadgesItemsExerciseSpan d-block">{ex.peso || '-'}</span>
-                <div className="fontStylesSpan">Peso</div>
-              </div>
-
-              <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
-                <CountdownTimer initialTime={ex.rest} />
-                <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
+              <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
+                <div>
+                  <p className="fontStylesSpan mt-2">Descanso</p>
+                </div>
+                <div>
+                  <CountdownTimer darkMode={isDark} initialTime={ex.rest} />
+                </div>
               </div>
             </div>
 
             {ex.name?.approximations?.length > 0 && (
               <>
-                <span className="styleInputsNote-back ">{ex.name.approxTitle ?? 'Aproximaciones'}</span>
+                <span className="styleInputsNote-back">{cleanUiText(ex.name.approxTitle ?? 'Aproximaciones')}</span>
                 <div className="colorNote3 py-2 rounded-1">
                   {ex.name.approximations.map((ap, i) => (
                     <div className="row my-1" key={i}>
-                      <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
-                      <p className="mb-0 col-5 text-start">{ap.reps} reps / {ap.peso}</p>
+                      <span className="fs07em text-muted col-6">
+                        <b>{i + 1}</b> aproximacion -
+                      </span>
+                      <p className="mb-0 col-5 text-start">
+                        {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -2115,10 +3005,12 @@ const number = isSuperset
 
             {ex.name?.backoff?.length > 0 && (
               <>
-                <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
+                <span className="styleInputsNote-back text-center">{cleanUiText(blockBackoffLabel)}</span>
                 <div className="colorNote2 py-2 rounded-1 mb-2">
                   {ex.name.backoff.map((line, i) => (
-                    <p key={i} className="mb-0 ">{line.sets}×{line.reps} / {line.peso}</p>
+                    <p key={i} className="mb-0">
+                      {line.sets}x{line.reps} / {line.peso}
+                    </p>
                   ))}
                 </div>
               </>
@@ -2133,19 +3025,17 @@ const number = isSuperset
               </>
             )}
 
-            {/* Edita usando índice real del array original */}
             <div className="row justify-content-between align-items-center mt-2 px-2">
-              <div className="col-auto"><Contador max={ex.sets} /></div>
               <div className="col-auto">
-                <IconButton aria-label="video" disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
-                  {ex.isImage
-                    ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
-                    : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />}
-                </IconButton>
+                <Contador
+                  key={`cnt:${day_id}:${element.exercise_id || element._id || idx}:${j}`}
+                  storageKey={`counter:sup:${id}:${week_id}:${day_id}:${element.exercise_id || element._id || idx}:${j}:${ex.exercise_id || ex._id || j}`}
+                  max={ex.sets}
+                />
               </div>
               <div className="col-auto">
-                <IconButton aria-label="editar" onClick={() => handleEditMobileExercise(ex, ex._origIndex)}>
-                  <EditNoteIcon />
+                <IconButton aria-label="video" disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
+                  <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />
                 </IconButton>
               </div>
             </div>
@@ -2159,11 +3049,11 @@ const number = isSuperset
   groupSupersets(element.exercises, { forBlock: true }).map((ex, j) => {
     const isInnerExercise = ex.type === 'exercise';
     const isInnerSuperset = ex.type === 'superset';
-    const innerNumber = ex.numberExercise ?? ex.numberCircuit;
+    const innerNumber = ex.numberExercise ?? ex.numberCircuit ?? ex.number;
     const innerName = isInnerExercise
       ? (typeof ex.name === 'object' ? ex.name.name : ex.name)
       : (ex.type || 'Circuito');
-  // 👇 Detecta si este item es un CIRCUITO dentro del bloque
+  // ðŸ‘‡ Detecta si este item es un CIRCUITO dentro del bloque
   const nc = normalizeCircuit(ex);                // normaliza AMRAP/EMOM/.../Libre
   const kind = nc.circuitKind;
   const isInnerCircuit =
@@ -2174,88 +3064,14 @@ const number = isSuperset
       ['AMRAP','EMOM','E2MOM','E3MOM','Intermitentes','Tabata','Por tiempo','Libre'].includes(kind)
     );
 
-    // 👇 Si es circuito dentro del bloque, lo pinto similar al "circuito suelto"
-    if (isInnerCircuit) {
-      return (
-        <div key={`blkcirc-${idx}-${j}`} className="col-12 mb-2 mb-4 shadow-personalized">
-          <div className="row justify-content-around rounded-2 p-2 align-items-center">
-            <div className="col-1 text-center">{renderNumberIcon(innerNumber)}</div>
-            <div className="col-7 text-start fw-semibold">
-              {circuitSubtitle(nc)}
-            </div>
-            <div className="col-4 text-end">
-              <button
-                className="btn btn-sm btn-dark"
-                onClick={() => openTimerForCircuit({ ...nc, freeConfig: { ...freeTimerConfig } })}
-              >
-                Iniciar
-              </button>
-            </div>
-          </div>
-
-          <table className="table border-0 mb-0">
-            <thead>
-              <tr>
-                <th className="border-0 text-start">Nombre</th>
-                <th className="border-0">Reps</th>
-                <th className="border-0">Peso</th>
-                <th className="border-0">Video</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(ex.circuit || []).map((cItem, k) => (
-                <tr key={cItem.idRefresh || k}>
-                  <td className="border-0 text-start">{cItem.name || '-'}</td>
-                  <td className="border-0">{cItem.reps ?? '-'}</td>
-                  <td className="border-0">{cItem.peso ?? '-'}</td>
-                  <td className="border-0 pt-0 pb-3">
-                  
-                      <IconButton
-                        id={idx === 0 ? 'video' : null}
-                        aria-label="video"
-                        disabled={!cItem.video}
-                        className="p-0"
-                        onClick={() => handleButtonClick(cItem)}
-                      >
-                        {cItem.isImage
-                          ? <ImageIcon className={!cItem.video ? 'imageIconDisabled' : 'imageIcon'} />
-                          : <YouTubeIcon className={cItem.video ? 'ytColor' : 'ytColor-disabled'} />
-                        }
-                      </IconButton>
-                   
-                  </td>
-                </tr>
-              ))}
-              <tr >
-                <td colSpan={3} className="border-0">
-                      {ex.notas && (
-                      <div className="rounded-2">
-                        <span className=" text-start mb-2 pb-2">Notas / otros</span>
-                        <div
-                          className="colorNote py-2 mb-2 pb-2 rounded-1 "
-                          style={{ whiteSpace: 'pre-wrap' }}
-                        >
-                          <p className="pb-0 mb-0">{ex.notas}</p>
-                        </div>
-                      </div>
-                    )}
-                </td>
-
-                </tr>
-            </tbody>
-          </table>
-        </div>
-      );
-    }
-
-    if (isInnerSuperset) {
-      // --- Superserie dentro de bloque ---
+    // ðŸ‘‡ Si es circuito dentro del bloque, lo pinto similar al "circuito suelto"
+        if (isInnerSuperset) {
       return (
         <div key={`blksup-${idx}-${j}`} className="col-12 mb-2 mb-4 shadow-personalized">
           <div className="row justify-content-between align-items-center mb-2 px-2">
             <div className="col text-start fw-semibold mt-2 widgetNumberSuperSet py-1 text-light rounded-1">
               Superserie
-              <small className="ms-2">({ex.exercises.map(s => s.supSuffix).join(' · ')})</small>
+              <small className="ms-2">({ex.exercises.map(s => s.supSuffix).join(' - ')})</small>
             </div>
           </div>
 
@@ -2263,52 +3079,45 @@ const number = isSuperset
             const cols = getCols(s.peso);
             const blockBackoffLabel =
               (s?.name?.titleName && s.name.titleName.trim() !== "") ? s.name.titleName : "Back off";
+            const supName = typeof s.name === 'object' ? s.name.name : s.name;
+
             return (
               <div key={`blksup-${idx}-${j}-${k}`} className="row justify-content-center rounded-2 py-2 align-items-center mb-2">
                 <div className="col-1 text-center">
                   <span className="badge rounded-1 bg-dark">{s.supSuffix}</span>
                 </div>
 
-                <div className="col-11  text-start">
-                  {typeof s.name === 'object' ? s.name.name : s.name}
+                <div className="col-9 text-start">{cleanUiText(supName)}</div>
+
+                <div className="col-2 text-end">
+                  <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(s, idx, s._origIndexInBlock)}>
+                    <EditNoteIcon />
+                  </IconButton>
                 </div>
 
-                <div className={`${cols.setsCol} p-0 mt-3 mb-2`}>
-                  <span className="stylesBadgesItemsExerciseSpan d-block">{s.sets}</span>
-                  <div className="fontStylesSpan">Sets</div>
+                {renderMetricBox("Sets", s.sets, cols.setsCol)}
+                {renderMetricBox("Reps", s.reps, cols.repsCol, "mx-1")}
+                {renderMetricBox("Peso", s.peso || "-", cols.pesoCol, "me-1")}
+
+                <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
+                  <div>
+                    <p className="fontStylesSpan mt-2">Descanso</p>
+                  </div>
+                  <div>
+                    <CountdownTimer darkMode={isDark} initialTime={s.rest} />
+                  </div>
                 </div>
 
-                <div className={`${cols.repsCol} p-0 mt-3 mb-2`}>
-                  {Array.isArray(s.reps)
-                    ? s.reps.map((r, kk) => (
-                        <React.Fragment key={kk}>
-                          <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
-                          {kk < s.reps.length - 1 && <span className="">-</span>}
-                        </React.Fragment>
-                      ))
-                    : <span className="stylesBadgesItemsExerciseSpan">{s.reps}</span>}
-                  <div className="fontStylesSpan">Reps</div>
-                </div>
-
-                <div className={`${cols.pesoCol} p-0 mt-3 mb-2`}>
-                  <span className="stylesBadgesItemsExerciseSpan d-block">{s.peso || '-'}</span>
-                  <div className="fontStylesSpan">Peso</div>
-                </div>
-
-                <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
-                  <CountdownTimer initialTime={s.rest} />
-                  <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
-                </div>
-
-                {/* Notas / backoff / aprox */}
                 {s.name?.approximations?.length > 0 && (
                   <>
-                    <span className="styleInputsNote-back ">{s.name.approxTitle ?? 'Aproximaciones'}</span>
+                    <span className="styleInputsNote-back">{cleanUiText(s.name.approxTitle ?? 'Aproximaciones')}</span>
                     <div className="colorNote3 py-2 rounded-1">
                       {s.name.approximations.map((ap, i) => (
                         <div className="row my-1" key={i}>
-                          <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
-                          <p className="mb-0 col-5 text-start">{ap.reps} reps / {ap.peso}</p>
+                          <span className="fs07em text-muted col-6">
+                            <b>{i + 1}</b> aproximacion -
+                          </span>
+                          <p className="mb-0 col-5 text-start">{cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}</p>
                         </div>
                       ))}
                     </div>
@@ -2317,37 +3126,48 @@ const number = isSuperset
 
                 {s.name?.backoff?.length > 0 && (
                   <>
-                    <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
+                    <span className="styleInputsNote-back m-auto">{cleanUiText(blockBackoffLabel)}</span>
                     <div className="colorNote2 py-2 rounded-1 mb-2">
                       {s.name.backoff.map((line, i) => (
-                        <p key={i} className="mb-0 ">{line.sets}×{line.reps} / {line.peso}</p>
+                        <p key={i} className="mb-0">{cleanUiText(line.sets)}x{cleanUiText(line.reps)} / {cleanUiText(line.peso)}</p>
                       ))}
                     </div>
                   </>
                 )}
 
-                {s.notas && (
-                  <>
-                    <span className="styleInputsNote-back text-start">Notas / otros</span>
-                    <div className="colorNote py-2 rounded-1" style={{ whiteSpace: 'pre-wrap' }}>
-                      <p className="pb-0 mb-0">{s.notas}</p>
-                    </div>
-                  </>
-                )}
+{s.notas && (   
+          <>
+          <span className={`${isDark ? "styleInputsNote-backDark" : "styleInputsNote-back"}  text-center  my-1`}>Notas</span>
+      
+            <div
+              className=" col-12 mb-2"
+              style={{ whiteSpace: 'pre-wrap' }}
+            >
+              <div className={`row justify-content-center ${isDark ? "colorNoteDark " : "colorNote"} `}>
+               
+                <div className="col-10">
+                  <p className={`pb-0 mb-0 ${isDark ? "text-light " : "text-dark"}`}>{cleanUiText(s.notas)}</p>
+                </div>
 
-                {/* Edita usando índice real dentro del bloque */}
+              </div>
+              
+            </div>
+        </>
+        )}
+
                 <div className="row justify-content-between align-items-center mt-2 px-2">
-                  <div className="col-auto"><Contador max={s.sets} /></div>
+                  <div className="col-auto">
+                    <Contador
+                      key={`cnt:block:${day_id}:${idx}:${j}:${k}:${s._origIndexInBlock ?? k}`}
+                      storageKey={`counter:blocksup:${id}:${week_id}:${day_id}:${idx}:${j}:${k}:${s.exercise_id || s._id || s._origIndexInBlock || k}`}
+                      max={s.sets}
+                    />
+                  </div>
                   <div className="col-auto">
                     <IconButton aria-label="video" disabled={!s.video} onClick={() => handleButtonClick(s)}>
                       {s.isImage
                         ? <ImageIcon className={s.video ? 'imageIcon' : 'imageIconDisabled'} />
                         : <YouTubeIcon className={s.video ? 'ytColor' : 'ytColor-disabled'} />}
-                    </IconButton>
-                  </div>
-                  <div className="col-auto">
-                    <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(s, idx, s._origIndexInBlock)}>
-                      <EditNoteIcon />
                     </IconButton>
                   </div>
                 </div>
@@ -2357,6 +3177,101 @@ const number = isSuperset
         </div>
       );
     }
+
+if (isInnerCircuit) {
+  const circuitItems = Array.isArray(nc.circuit) ? nc.circuit : [];
+
+  return (
+    <div key={`blkcirc-${idx}-${j}`} className="col-12 p-0 mt-2 mb-3">
+      <div className={`row justify-content-center border rounded-2 m-0 mb-3 ddp-card ddp-circuit-card ${isDark ? "ddp-surface" : "bg-light"}`}>
+        <div className="col-12">
+          <div className="row justify-content-center border-bottom align-items-center ddp-circuit-header">
+            <div className="col-1 m-auto colorIndexPrimarys">
+              {renderNumberIcon(innerNumber)}
+            </div>
+
+            <div className="col-8 m-auto">
+              <p className={`stylesNameExercise text-start mb-0 py-2 ${isDark ? "text-light" : "text-dark"}`}>
+                {cleanUiText(circuitSubtitle(nc))}
+              </p>
+            </div>
+
+            <div className="col-3 text-end py-2">
+              <button
+                className="btn btn-sm btn-dark"
+                onClick={() => openTimerForCircuit({ ...nc, freeConfig: { ...freeTimerConfig } })}
+              >
+                Iniciar
+              </button>
+            </div>
+          </div>
+
+          <table className={`table border-0 mb-0 ddp-circuit-table ${isDark ? "ddp-table ddp-surface" : ""}`}>
+            <thead>
+              <tr>
+                <th className="border-0 tableDark  text-start">Nombre</th>
+                <th className="border-0 tableDark ">Reps</th>
+                <th className="border-0 tableDark ">Peso</th>
+                <th className="border-0 tableDark ">Video</th>
+              </tr>
+            </thead>
+            <tbody>
+              {circuitItems.map((cItem, k) => (
+                <tr key={cItem.idRefresh || cItem.exercise_id || `${idx}-${j}-${k}`}>
+                  <td className="border-0 text-start tableDark ">
+                    {cleanUiText(getPlainName(cItem.name) || '-')}
+                  </td>
+                  <td className="border-0 tableDark ">
+                    {Array.isArray(cItem.reps)
+                      ? cleanUiText(cItem.reps.join(' - '))
+                      : cleanUiText(cItem.reps ?? '-')}
+                  </td>
+                  <td className="border-0 tableDark ">{cleanUiText(cItem.peso ?? '-')}</td>
+                  <td className="border-0 pt-0 pb-3 tableDark ">
+                    <IconButton
+                      aria-label="video"
+                      disabled={!cItem.video}
+                      className="p-0"
+                      onClick={() => handleButtonClick(cItem)}
+                    >
+                      {cItem.isImage
+                        ? <ImageIcon className={!cItem.video ? 'imageIconDisabled' : 'imageIcon'} />
+                        : <YouTubeIcon className={cItem.video ? 'ytColor' : 'ytColor-disabled'} />}
+                    </IconButton>
+                  </td>
+                </tr>
+              ))}
+
+              {ex.notas && (
+                <tr>
+                  <td colSpan={4} className="border-0">
+                    <div className="rounded-2">
+                      <span className="text-start mb-2 pb-2 d-block">Notas / otros</span>
+                      <div
+                        className="colorNote py-2 mb-2 pb-2 rounded-1"
+                        style={{ whiteSpace: 'pre-wrap' }}
+                      >
+                        <p className="pb-0 mb-0">{ex.notas}</p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {!circuitItems.length && (
+                <tr>
+                  <td colSpan={4} className="border-0 text-center text-muted py-3">
+                    Este circuito no tiene ejercicios cargados.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
     // --- Caso ejercicio normal dentro del bloque (lo tuyo de antes) ---
     const cols = isInnerExercise ? getCols(ex.peso) : null;
@@ -2368,47 +3283,44 @@ const number = isSuperset
         <div className="col-12 mb-2 mb-4 shadow-personalized">
           <div className="row justify-content-around rounded-2 p-2 align-items-center">
             <div className="col-1 text-center">{renderNumberIcon(innerNumber)}</div>
-            <div className="col-11 text-start">{innerName}</div>
+            <div className="col-9 text-start">{cleanUiText(innerName)}</div>
 
-            {/* métricas */}
+            <div className="col-2 text-end">
+              <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(ex, idx, j)}>
+                <EditNoteIcon />
+              </IconButton>
+            </div>
+
             {isInnerExercise && (
               <>
-                <div className={`${cols.setsCol} p-0 mt-4 mb-2`}>
-                  <span className="stylesBadgesItemsExerciseSpan d-block">{ex.sets}</span>
-                  <div className="fontStylesSpan">Sets</div>
-                </div>
-                <div className={`${cols.repsCol} p-0 mt-4 mb-2`}>
-                  {Array.isArray(ex.reps)
-                    ? ex.reps.map((r, k) => (
-                        <React.Fragment key={k}>
-                          <span className="stylesBadgesItemsExerciseSpan arrayBadge">{r}</span>
-                          {k < ex.reps.length - 1 && <span className="">-</span>}
-                        </React.Fragment>
-                      ))
-                    : <span className="stylesBadgesItemsExerciseSpan">{ex.reps}</span>}
-                  <div className="fontStylesSpan">Reps</div>
-                </div>
-                <div className={`${cols.pesoCol} p-0 mt-4 mb-2`}>
-                  <span className="stylesBadgesItemsExerciseSpan d-block">{ex.peso || '-'}</span>
-                  <div className="fontStylesSpan">Peso</div>
-                </div>
-                <div className={`${cols.restCol} p-0 mt-3 mb-2`}>
-                  <CountdownTimer initialTime={ex.rest} />
-                  <div className="fontStylesSpan mt-1 mb-1">Descanso</div>
+                {renderMetricBox("Sets", ex.sets, cols.setsCol)}
+                {renderMetricBox("Reps", ex.reps, cols.repsCol, "mx-1")}
+                {renderMetricBox("Peso", ex.peso || "-", cols.pesoCol, "me-1")}
+
+                <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
+                  <div>
+                    <p className="fontStylesSpan mt-2">Descanso</p>
+                  </div>
+                  <div>
+                    <CountdownTimer darkMode={isDark} initialTime={ex.rest} />
+                  </div>
                 </div>
               </>
             )}
           </div>
 
-          {/* Aproximaciones / Backoff / Notas */}
           {isInnerExercise && ex.name?.approximations?.length > 0 && (
             <>
-              <span className="styleInputsNote-back ">{ex.name.approxTitle ?? 'Aproximaciones'}</span>
-              <div className="colorNote3 py-2 rounded-1 ">
+              <span className="styleInputsNote-back">{cleanUiText(ex.name.approxTitle ?? 'Aproximaciones')}</span>
+              <div className="colorNote3 py-2 rounded-1">
                 {ex.name.approximations.map((ap, i) => (
                   <div className="row my-1" key={i}>
-                    <span className="fs07em text-muted col-6"><b>{i + 1}°</b> aproximación -</span>
-                    <p className="mb-0 col-5 text-start">{ap.reps} reps / {ap.peso}</p>
+                    <span className="fs07em text-muted col-6">
+                      <b>{i + 1}</b> aproximacion -
+                    </span>
+                    <p className="mb-0 col-5 text-start">
+                      {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -2417,10 +3329,12 @@ const number = isSuperset
 
           {isInnerExercise && ex.name?.backoff?.length > 0 && (
             <>
-              <span className="styleInputsNote-back m-auto">{blockBackoffLabel}</span>
+              <span className="styleInputsNote-back m-auto">{cleanUiText(blockBackoffLabel)}</span>
               <div className="colorNote2 py-2 rounded-1 mb-2">
                 {ex.name.backoff.map((line, i) => (
-                  <p key={i} className="mb-0 ">{line.sets}×{line.reps} / {line.peso}</p>
+                  <p key={i} className="mb-0">
+                    {cleanUiText(line.sets)}x{cleanUiText(line.reps)} / {cleanUiText(line.peso)}
+                  </p>
                 ))}
               </div>
             </>
@@ -2430,24 +3344,25 @@ const number = isSuperset
             <>
               <span className="styleInputsNote-back text-start">Notas / otros</span>
               <div className="colorNote py-2 rounded-1" style={{ whiteSpace: 'pre-wrap' }}>
-                <p className="pb-0 mb-0">{ex.notas}</p>
+                  <p className="pb-0 mb-0">{cleanUiText(ex.notas)}</p>
               </div>
             </>
           )}
 
           {isInnerExercise && (
             <div className="row justify-content-between align-items-center mt-2 px-2">
-              <div className="col-auto"><Contador max={ex.sets} /></div>
+              <div className="col-auto">
+                <Contador
+                  key={`cnt:block:${day_id}:${idx}:${j}:${ex.exercise_id || ex._id || 'exercise'}`}
+                  storageKey={`counter:block:${id}:${week_id}:${day_id}:${idx}:${j}:${ex.exercise_id || ex._id || 'exercise'}`}
+                  max={ex.sets}
+                />
+              </div>
               <div className="col-auto">
                 <IconButton aria-label="video" disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
                   {ex.isImage
                     ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
                     : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />}
-                </IconButton>
-              </div>
-              <div className="col-auto">
-                <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(ex, idx, j)}>
-                  <EditNoteIcon />
                 </IconButton>
               </div>
             </div>
@@ -2458,27 +3373,27 @@ const number = isSuperset
   })
 ) : (
   /* ====== CIRCUITO SUELTO ====== */
-  <div className="col-12 p-0 mt-4 mb-2">
+  <div className={`col-12 p-0 mt-4 mb-2 ddp-circuit-card ${isDark ? "ddp-surface" : ""}`}>
     <CircuitHeader
      circuit={normalizeCircuit(element)}
      onAdjust={() => setShowFreeTimerSetup(true)}
      onStart={(c) => openTimerForCircuit({ ...c, freeConfig: { ...freeTimerConfig } })} />
-    <table className="table border-0">
-      <thead>
-        <tr>
-          <th className="border-0 text-start">Nombre</th>
-          <th className="border-0">Reps</th>
-          <th className="border-0">Peso</th>
-          <th className="border-0">Video</th>
+    <table className={`table border-0 mb-0 ddp-circuit-table ${isDark ? "ddp-table ddp-surface " : ""}`}>
+      <thead >
+        <tr >
+          <th className="border-0 text-start tableDark">Nombre</th>
+          <th className="border-0 tableDark">Reps</th>
+          <th className="border-0 tableDark">Peso</th>
+          <th className="border-0 tableDark">Video</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody >
         {element.circuit.map(c => (
           <tr key={c.idRefresh}>
-            <td className="border-0 text-start">{c.name}</td>
-            <td className="border-0 px-0">{c.reps}</td>
-            <td className="border-0">{c.peso}</td>
-            <td className="border-0 pt-0 pb-3"> 
+            <td className="border-0 tableDark text-start">{cleanUiText(c.name)}</td>
+            <td className="border-0 tableDark px-0">{cleanUiText(c.reps)}</td>
+            <td className="border-0 tableDark">{cleanUiText(c.peso)}</td>
+            <td className="border-0 tableDark pt-0 pb-3"> 
                 <IconButton
                   id={idx === 0 ? 'video' : null}
                   aria-label="video"
@@ -2502,80 +3417,85 @@ const number = isSuperset
 
         {element.name?.approximations?.length > 0 && (
           <>
-            <span className="styleInputsNote-back">
-              {element.name.approxTitle ?? 'Aproximaciones'}
+            <span className={`${isDark ? "styleInputsNote-backDark" : "styleInputsNote-back"}  text-center mt-3`}>
+              {cleanUiText(element.name.approxTitle ?? "Aproximaciones")}
             </span>
-            <div className="colorNote3 py-2 rounded-1 col-11">
+            <div className=" col-12 mb-2">
               {element.name.approximations.map((ap, i) => (
-                <div className="row my-1" key={i}>
-                  <span className="fs07em text-muted col-6">
-                    <b>{i + 1}°</b> aproximación -
+                <div className={`row justify-content-around ${isDark ? "colorNote3Dark" : "colorNote3"} my-1`} key={i}>
+                  <span className="fs08em  text-start col-6">
+                    <b>{i + 1}</b> aproximacion
                   </span>
-                  <p className="mb-0 col-5 text-start">
-                    {ap.reps} reps / {ap.peso}
+                  <p className={`pb-0 mb-0 fs08em col-5 ${isDark ? "text-light " : "text-dark"}`}>
+                    {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
                   </p>
                 </div>
+
+                
               ))}
             </div>
           </>
         )}
 
-        {/* — BACKOFF y NOTAS (idéntico en ambos casos top-level) — */}
+        {/* - BACKOFF y NOTAS (identico en ambos casos top-level) - */}
         {element.name?.backoff?.length > 0 && (
           <>
-            <span className="styleInputsNote-back">{backoffLabel}</span>
-            <div className="colorNote2 py-2 rounded-1 col-11 mb-2">
+            <span className={`${isDark ? "styleInputsNote-backDark" : "styleInputsNote-back"}  text-center my-1`}>{cleanUiText(backoffLabel)}</span>
+            <div className=" col-12 mb-2">
               {element.name.backoff.map((line, i) => (
-                <p key={i} className="mb-0 ms-1">
-                  {line.sets}×{line.reps} / {line.peso}
-                </p>
+                <div className={`row justify-content-around ${isDark ? "colorNote2Dark" : "colorNote2"}  my-1`} key={i}>
+                <span className="fs08em  text-start col-6">
+                    <b>{i + 1}</b> back off
+                  </span>
+                  <p className={`pb-0 mb-0 fs08em col-5 ${isDark ? "text-light " : "text-dark"}`}>
+                    {cleanUiText(line.sets)}x{cleanUiText(line.reps)} / {cleanUiText(line.peso)}
+                  </p>
+                  </div>
               ))}
             </div>
           </>
         )}
 
-        {element.notas && (
+        {element.notas && (   
           <>
-            <span className="styleInputsNote-back text-start">Notas / otros</span>
+          <span className={`${isDark ? "styleInputsNote-backDark" : "styleInputsNote-back"}  text-center  my-1`}>Notas</span>
+      
             <div
-              className="colorNote py-2 rounded-1 col-11 largoCarddds"
+              className=" col-12 mb-2"
               style={{ whiteSpace: 'pre-wrap' }}
             >
-              <p className="pb-0 mb-0">{element.notas}</p>
+              <div className={`row justify-content-center ${isDark ? "colorNoteDark " : "colorNote"} `}>
+               
+                <div className="col-10">
+                  <p className={`pb-0 mb-0 ${isDark ? "text-light " : "text-dark"}`}>{cleanUiText(element.notas)}</p>
+                </div>
+
+              </div>
+              
             </div>
-          </>
+        </>
         )}
 
-        {/* — FOOTER: Contador + botones — */}
+        {/* - FOOTER: Contador + botones - */}
         {isExercise ? (
           <>
-            <div className="row justify-content-between">
-              <div className="col-6 text-start m-auto">
-                <Contador max={element.sets} />
+            <div className="row justify-content-between mt-3 mb-1">
+              <div className="col-6 ">
+                <Contador 
+                storageKey={`counter:${id}:${week_id}:${day_id}:${element.exercise_id || element._id || idx}`}
+                max={element.sets} />
               </div>
-
-              <div className="col-3">
                 <IconButton
                   id={idx === 0 ? 'video' : null}
                   aria-label="video"
                   disabled={!element.video}
+                  className="col-2 pt-0"
                   onClick={() => handleButtonClick(element)}
                 >
-                  {element.isImage
-                    ? <ImageIcon className={!element.video ? 'imageIconDisabled' : 'imageIcon'} />
-                    : <YouTubeIcon className={element.video ? 'ytColor' : 'ytColor-disabled'} />
-                  }
-                </IconButton>
-              </div>
 
-              <IconButton
-                id={idx === 0 ? 'edicion' : null}
-                aria-label="editar"
-                className="p-0 col-3"
-                onClick={() => handleEditMobileExercise(element, idx)}
-              >
-                <EditNoteIcon className="editStyle p-0" />
-              </IconButton>
+                  <YouTubeIcon className={element.video && isDark ? 'ytColor ' : element.video && !isDark ? "ytColorWhite" : 'ytColor-disabled '} />
+                
+                </IconButton>
             </div>
           </>
         ) : (
@@ -2646,28 +3566,79 @@ const number = isSuperset
           header="Herramientas"
           visible={showToolsDialog}
           style={{ width: '97vw', minHeight: '90%' }}
-          className="DialogCalculator"
+          className={`DialogCalculator ${athleteDialogClass}`}
           onHide={() => setShowToolsDialog(false)}
           draggable={true}
         >
-          <div className="mb-4 text-center">
-            <Segmented
-              block
-              options={[
-                { label: 'Calculadora & Contador', value: 'calculator' },
-                { label: '1RM Estimado', value: 'pr' }
-              ]}
-              value={selectedTool}
-              onChange={setSelectedTool}
-            />
+          <div className="mb-4">
+            <div className={`tools-grid ${isDark ? "tools-grid-dark" : ""}`}>
+              {ATHLETE_TOOL_OPTIONS.map((tool) => (
+                <button
+                  key={tool.value}
+                  type="button"
+                  onClick={() => setSelectedTool(tool.value)}
+                  className={`tools-grid-item ${
+                    selectedTool === tool.value ? "tools-grid-item-active" : ""
+                  }`}
+                >
+                  {tool.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mt-3">
-            {selectedTool === "calculator" && <PercentageCalculator />}
+            {selectedTool === "calculator" && <PercentageCalculator isDark={isDark} />}
+            {selectedTool === "plates" && <PlateCounterTool isDark={isDark} />}
+            {selectedTool === "stats" && (
+              <ExerciseComparisonChart
+                currentWeek={allWeeks[currentWeekIndex]}
+                previousWeek={allWeeks[currentWeekIndex + 1]}
+                isDark={isDark}
+              />
+            )}
             {selectedTool === "pr" && (
               <div className="text-center">
-                <Formulas />
+                <Formulas isDark={isDark} />
               </div>
+            )}
+            {selectedTool === "openers" && (
+              <div className="d-flex flex-column gap-2">
+                {athleteOpenersPlans.length > 1 ? (
+                  <select
+                    className="form-select form-select-sm"
+                    value={selectedOpenersPlanId}
+                    onChange={(e) => setSelectedOpenersPlanId(e.target.value)}
+                    style={{
+                      background: isDark ? "#111827" : "#ffffff",
+                      color: isDark ? "#e5e7eb" : "#111827",
+                      borderColor: isDark ? "rgba(255,255,255,0.2)" : "#cbd5e1",
+                    }}
+                  >
+                    {athleteOpenersPlans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {(plan.meetName || "Plan sin nombre")}{" "}
+                        {plan.meetDate ? `- ${new Date(plan.meetDate).toLocaleDateString()}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                ) : null}
+                <AttemptPlannerTool
+                  athleteId={id}
+                  isDark={isDark}
+                  initialData={selectedOpenersPlan}
+                  readOnly
+                />
+              </div>
+            )}
+            {selectedTool === "technical_log" && (
+              <TechnicalLogTool
+                athleteId={id}
+                isDark={isDark}
+                initialEntries={technicalLogEntries}
+                onChange={handleTechnicalLogChange}
+                saveState={{ pending: technicalLogPending, lastFail: technicalLogLastFail }}
+              />
             )}
           </div>
         </Dialog>
@@ -2676,6 +3647,7 @@ const number = isSuperset
                   header="Subir videos al drive"
                   visible={showUploadVideos}
                   style={{ width: '80vw' }}
+                  className={athleteDialogClass}
                   onHide={toggleUploadVideos}
                   draggable={true}
                 >
@@ -2683,7 +3655,7 @@ const number = isSuperset
                     <div className="row justify-content-center ">
                       <div className="col-10">
                         <p>
-                          Este es tu drive para subir los videos, una vez que los subas, marcá la casilla para avisarle a tu entrenador que ya están cargados.
+                          Este es tu drive para subir los videos, una vez que los subas, marca la casilla para avisarle a tu entrenador que ya estan cargados.
                         </p>
                         <div>
                           <input type="checkbox" className="d-block text-center form-check mb-3"/>
@@ -2705,6 +3677,7 @@ const number = isSuperset
                   header="Editar Ejercicio"
                   visible={editExerciseMobile}
                   style={{ width: '90vw', maxWidth: '600px' }}
+                  className={athleteDialogClass}
                   onHide={hideDialogEditExercises}
                   draggable={true}
                 >
@@ -2712,7 +3685,7 @@ const number = isSuperset
                     <div className="container-fluid">
                       {!isCurrentWeek && (
                         <div className="alert alert-warning text-center shadow">
-                          Recordá que estás en una semana anterior. No estás en la última semana designada por tu entrenador.
+                          Recorda que estas en una semana anterior. No estas en la ultima semana designada por tu entrenador.
                         </div>
                       )}
                       <div className="row">
@@ -2808,22 +3781,97 @@ const number = isSuperset
                   )}
                 </Dialog>
 
+         {/* ===== Banner cambios sin guardar (cerrable) ===== */}
+{(exercisesPending || weeklyPending || drivePending || technicalLogPending) && !dismissUnsavedBanner && (
+  <div
+    className="alert alert-warning m-0 rounded-0 border-top border-warning"
+    style={{
+      position: 'fixed',
+      left: 0,
+      right: 0,
+      bottom: 72,
+      zIndex: 1200
+    }}
+  >
+    <div className="d-flex align-items-start justify-content-between gap-3">
+      <div>
+        <div className="fw-semibold">Tenes cambios sin guardar.</div>
+        <div className="small">
+          {exercisesPending ? '- Rutina del dia (peso/notas) ' : ''}
+          {weeklyPending ? '- Resumen semanal ' : ''}
+          {drivePending ? '- Link de Drive ' : ''}
+          {technicalLogPending ? '- Bitacora tecnica ' : ''}
+        </div>
+        <div className="small text-muted mt-1">
+          Si fallo por conexion, tus cambios quedaron guardados localmente. Cuando puedas, volve a guardar.
+        </div>
+      </div>
+
+      <div className="d-flex flex-column align-items-end gap-2">
+        <button
+          className="btn btn-sm btn-outline-dark"
+          onClick={() => {
+            if (weeklyPending) setShowWeeklySummaryModal(true);
+            else if (drivePending) setShowDriveDialog(true);
+            else if (technicalLogPending) {
+              setSelectedTool('technical_log');
+              setShowToolsDialog(true);
+            }
+            else Notify.instantToast('Abri un ejercicio y toca "Guardar" para confirmar cambios.');
+          }}
+        >
+          Revisar
+        </button>
+
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => setDismissUnsavedBanner(true)}
+          title="Cerrar"
+          aria-label="Cerrar aviso"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
                 <nav
                   className="fixed-bottom d-flex justify-content-around align-items-center py-2 colorMainAll"
-                  style={{ backgroundColor: '#000' }}
                 >
-                <button
+                  <button
                     className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
                     onClick={() => setShowToolsDialog(true)}
                   >
                     <IconButton className="fs-1">
-                      <PercentIcon className="text-light small" />
+                      <SettingsIcon className="text-light small" />
                     </IconButton>
-                    <span className="text-light small">Calculadora</span>
+                    <span className="text-light small">Herramientas</span>
                   </button>
                   <button
                     className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
-                    onClick={() => setShowWeeklySummaryModal(true)}
+                    onClick={() => {
+                      const pendingDraft = weeklyDraftKey ? lsGetJSON(weeklyDraftKey, null) : null;
+                      const source =
+                        pendingDraft?.data && typeof pendingDraft.data === 'object' && !Array.isArray(pendingDraft.data)
+                          ? { ...pendingDraft.data }
+                          : userProfile?.resumen_semanal
+                            ? { ...userProfile.resumen_semanal }
+                            : {};
+
+                      weeklySnapshotRef.current = source;
+                      setWeeklySummary(source);
+                      // 3) forzar remount para limpiar posicion y estado interno del Dialog
+                      setWeeklyDialogNonce(n => n + 1);
+                      // 4) abrir en el proximo frame (evita calculos con layout viejo tras editar)
+                      openNextFrame(() => {
+                        // opcional: centrar viewport por si quedo scrolleado por el teclado
+                        window.scrollTo?.({ top: 0, behavior: 'instant' });
+                        setShowWeeklySummaryModal(true);
+                      });
+                    }}
                   >
                     <IconButton className="fs-1">
                       <CommitIcon className="text-light small" />
@@ -2847,13 +3895,14 @@ const number = isSuperset
                     header="Completa tu perfil"
                     visible={showProfileMissingModal}
                     style={{ width: '90vw' }}
+                    className={athleteDialogClass}
                     modal
                     dismissableMask={true}
                     onHide={() => setShowProfileMissingModal(false)}
                     footer={
                       <div className="row justify-content-center">
                        <div  className="col-6 text-center">
-                            <Button label="Más tarde" onClick={() => setShowProfileMissingModal(false)} className="p-button-primary text-light " />
+                            <Button label="Mas tarde" onClick={() => setShowProfileMissingModal(false)} className="p-button-primary text-light " />
                         </div>
                         <div className="col-6 text-center">
                             <Button label="Ir al perfil " onClick={redirectToPerfil} className="p-button-primary text-light " />
@@ -2861,11 +3910,11 @@ const number = isSuperset
                       </div>
                     }
                 >
-                    <p>Hola! {username}, por favor completa tu perfil asi tu entrenador tiene más datos sobre vos.</p>
+                    <p>Hola! {username}, por favor completa tu perfil asi tu entrenador tiene mas datos sobre vos.</p>
                 </Dialog>
 
 
-                <Dialog header="Tu carpeta de Google Drive" visible={showDriveDialog} style={{ width: '90vw' }} onHide={() => setShowDriveDialog(false)}>
+                <Dialog header="Tu carpeta de Google Drive" visible={showDriveDialog} style={{ width: '90vw' }} className={athleteDialogClass} onHide={() => setShowDriveDialog(false)}>
                   <div className="mb-3">
                     <label htmlFor="driveLink" className="form-label">Link de tu carpeta de google drive</label>
                     <input
@@ -2879,14 +3928,14 @@ const number = isSuperset
                   </div>
 
                   <div className="alert alert-info small">
-                    <strong>¿Cómo obtener tu link?</strong>
+                    <strong>?Como obtener tu link?</strong>
                     <ul className="mb-2 list-group list-group-flush">
-                      <li className="list-group-item bg-transparent">Ingresá a tu<button className="py-0 btn btn-primary ms-2 py-1"><AddToDriveIcon className="text-light" /> <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer">Google Drive</a></button></li>
-                      <li className="list-group-item bg-transparent">Creá una carpeta con tu nombre y apellido</li>
-                      <li className="list-group-item bg-transparent">Entrá a tu carpeta, presioná en este icono <IconButton className="py-0"><MoreVertIcon /></IconButton>y hacé click en “Compartir”</li>
-                      <li className="list-group-item bg-transparent">Presioná en administrar/gestionar acceso, luego, en acceso general y, si está en restringido, cambialo a “Cualquier persona que tenga el vinculo/enlace”</li>
-                      <li className="list-group-item bg-transparent">Lo importante es que no sea privado, así tu entrenador puede ver tu carpeta.</li>
-                      <li className="list-group-item bg-transparent">Apretá en el icono <IconButton className="py-0"><LinkIcon /></IconButton> copia el vinculo, y pegalo acá.</li>
+                      <li className="list-group-item bg-transparent">Ingresa a tu<button className="py-0 btn btn-primary ms-2 py-1"><AddToDriveIcon className="text-light" /> <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer">Google Drive</a></button></li>
+                      <li className="list-group-item bg-transparent">Crea una carpeta con tu nombre y apellido</li>
+                      <li className="list-group-item bg-transparent">Entra a tu carpeta, presiona en este icono <IconButton className="py-0"><MoreVertIcon /></IconButton>y hace click en "Compartir"</li>
+                      <li className="list-group-item bg-transparent">Presiona en administrar/gestionar acceso, luego, en acceso general y, si esta en restringido, cambialo a "Cualquier persona que tenga el vinculo/enlace"</li>
+                      <li className="list-group-item bg-transparent">Lo importante es que no sea privado, asi tu entrenador puede ver tu carpeta.</li>
+                      <li className="list-group-item bg-transparent">Apreta en el icono <IconButton className="py-0"><LinkIcon /></IconButton> copia el vinculo, y pegalo aca.</li>
                     </ul>
                   </div>
 
@@ -2898,113 +3947,139 @@ const number = isSuperset
 
 
                <Dialog
+                  key={weeklyDialogNonce}              // ðŸ‘‰ remount en cada apertura
                   header="Resumen Semanal"
-                  className="paddingDialog"
+                  className={`paddingDialog ${athleteDialogClass}`}
                   visible={showWeeklySummaryModal}
+                  modal                                  // aseguro modal
+                  blockScroll                            // evita scroll del body al abrir
+                  appendTo={document.body}               // saca el dialogo del flujo del contenedor
+                  baseZIndex={1100}                      // por si compite con Sidebar/Tour
+                  draggable={!isSmallScreen}             // ðŸ‘‰ sin draggable en movil (evita que se "pierda")
                   style={{ width: '95vw' }}
-                  onHide={() => setShowWeeklySummaryModal(false)}
-                  draggable
+                    onHide={() => {
+                      // Restaura lo que habia al abrir (o vacio si no habia nada)
+                      setWeeklySummary(weeklySnapshotRef.current ?? {});
+                      setShowWeeklySummaryModal(false);
+                    }}
+            
                 >
-                  <div className="calc-container">
-                    <div className="card-dark mb-3">
-                      <span className="label"><strong>Última actualización:</strong> {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}</span>
+                  <div className={`weekly-summary-shell ${isDark ? "weekly-summary-shell-dark" : ""}`}>
+                    <div className="weekly-summary-updated text-center">
+                      <span className="fs09em">
+                        <strong>Ultima actualizacion:</strong>{" "}
+                        {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : "-"}
+                      </span>
                     </div>
 
-                    {[
-                      { label: 'Alimentación', key: 'selection1' },
-                      { label: 'NEAT', key: 'selection2', tooltip: 'NEAT se refiere a la energía que gastas en tus actividades cotidianas...' },
-                      { label: 'Sensaciones del entrenamiento', key: 'selection3' },
-                      { label: 'Descanso / sueño', key: 'selection4' },
-                      { label: 'Niveles de estrés', key: 'selection5' }
-                    ].map(({ label, key, tooltip }) => (
-                      <div key={key} className="card-dark mb-3">
-                        <label className="label d-flex align-items-center">
-                          {label}
-                          {tooltip && (
-                            <Tooltip title={tooltip} arrow enterTouchDelay={0} leaveTouchDelay={8000}>
-                              <IconButton size="small" className="ms-2 text-light">
-                                <HelpOutlineIcon fontSize="inherit" className="text-light" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </label>
-                        <select
-                          value={weeklySummary[key]}
-                          onChange={(e) => setWeeklySummary(prev => ({ ...prev, [key]: e.target.value }))}
-                          className="input-dark"
-                        >
-                          <option value="">Seleccionar...</option>
-                          {['Muy mal', 'Mal', 'Regular', 'Bien', 'Muy bien'].map(opt => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-
-                    
-                        <div className="card-dark mb-3">
-                          <label className="label">Peso corporal (kg)</label>
-                          <input
-                            type="number"
-                            step="0.1"
-                            className="input-dark "
-                            value={weeklySummary.pesoCorporal}
-                            onChange={e =>
-                              setWeeklySummary(prev => ({
-                                ...prev,
-                                pesoCorporal: e.target.value
-                              }))
-                            }
-                          />
+                    <div className="weekly-summary-grid">
+                      {[
+                        { label: "Alimentacion", key: "selection1" },
+                        {
+                          label: "NEAT",
+                          key: "selection2",
+                          tooltip:
+                            "NEAT se refiere a la energia que gastas en tus actividades cotidianas.",
+                        },
+                        { label: "Sensaciones", key: "selection3" },
+                        { label: "Descanso / sueno", key: "selection4" },
+                        { label: "Niveles de estres", key: "selection5" },
+                      ].map(({ label, key, tooltip }) => (
+                        <div key={key} className="weekly-summary-card">
+                          <label className="weekly-summary-label">
+                            {label}
+                            {tooltip && (
+                              <Tooltip title={tooltip} arrow enterTouchDelay={0} leaveTouchDelay={8000}>
+                                <IconButton size="small" className="ms-2 py-0">
+                                  <HelpOutlineIcon fontSize="inherit" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </label>
+                          <select
+                            value={weeklySummary[key]}
+                            onChange={(e) => setWeeklySummary((prev) => ({ ...prev, [key]: e.target.value }))}
+                            className="form-select fs09em"
+                          >
+                            <option value="form-options">Seleccionar...</option>
+                            {["Muy mal", "Mal", "Regular", "Bien", "Muy bien"].map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
                         </div>
+                      ))}
 
-                    <div className="card-dark mb-3">
-                      <label className="label">Comentarios sobre la semana</label>
-                      <InputTextarea
-                        autoResize
-                        value={weeklySummary.comments || ""}
-                        onChange={(e) => setWeeklySummary(prev => ({ ...prev, comments: e.target.value }))}
-                        className="input-dark"
-                        placeholder="Escribí acá tus comentarios..."
-                      />
-                      <div className="d-flex justify-content-center mt-3">
-                        <Button
-                          label="Vaciar comentarios"
-                          icon="pi pi-trash"
-                          className="btn btn-outline-light"
-                          onClick={() =>
-                            setWeeklySummary(prev => ({ ...prev, comments: "" }))
+                      <div className="weekly-summary-card">
+                        <label className="weekly-summary-label">Peso corporal (kg)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          className="form-control fs09em"
+                          value={weeklySummary.pesoCorporal}
+                          onChange={(e) =>
+                            setWeeklySummary((prev) => ({
+                              ...prev,
+                              pesoCorporal: e.target.value,
+                            }))
                           }
                         />
                       </div>
                     </div>
 
-
-
-                    <div className="row justify-content-end">
-                      <div className="col-5">
+                    <div className="mt-3">
+                      <label className="weekly-summary-label mb-2">Comentarios sobre la semana</label>
+                      <InputTextarea
+                        autoResize
+                        value={weeklySummary.comments || ""}
+                        onChange={(e) => setWeeklySummary((prev) => ({ ...prev, comments: e.target.value }))}
+                        className="form-control fs09em weekly-summary-textarea"
+                        placeholder="Escribi aca tus comentarios..."
+                      />
+                      <div className="weekly-summary-actions">
                         <Button
-                          label="Cancelar"
-                          className="btn btn-outline-light w-100"
-                          onClick={() => setShowWeeklySummaryModal(false)}
+                          label="Vaciar comentarios"
+                          icon="pi pi-trash"
+                          className="btn btn-outline-dark fs09em"
+                          onClick={() => setWeeklySummary((prev) => ({ ...prev, comments: "" }))}
                         />
                       </div>
-                      <div className="col-5">
+                    </div>
+
+                    <div className="row justify-content-center mt-3">
+                      <div className="col-12">
                         <Button
-                          label="Guardar"
-                          className="btn text-light w-100"
-                          style={{ background: 'linear-gradient(to right, #f97316, #ef4444)' }}
+                          label="Guardar resumen semanal"
+                          className="btn modeWhite-Button py-2 w-100"
                           onClick={() => {
                             const updatedSummary = { ...weeklySummary, lastSaved: new Date().toISOString() };
+
                             UserService.editProfile(id, { resumen_semanal: updatedSummary })
                               .then(() => {
                                 setWeeklySummary(updatedSummary);
                                 setShowWeeklySummaryModal(false);
                                 Notify.instantToast("Resumen semanal guardado");
+
+                                serverWeeklyRef.current = updatedSummary;
+                                setWeeklyPending(false);
+                                setWeeklyLastFail('');
+                                if (weeklyDraftKey) lsRemove(weeklyDraftKey);
                               })
                               .catch((err) => {
                                 console.error("Error al guardar el resumen semanal", err);
-                                Notify.instantToast("Error al guardar el resumen semanal");
+
+                                setWeeklyPending(true);
+                                setWeeklyLastFail(new Date().toISOString());
+                                Notify.instantToast("No se pudo guardar. Se mantuvieron tus cambios y quedaron guardados localmente.");
+
+                                if (weeklyDraftKey) {
+                                  lsSetJSON(weeklyDraftKey, {
+                                    data: updatedSummary,
+                                    lastFail: new Date().toISOString(),
+                                    updatedAt: new Date().toISOString()
+                                  });
+                                }
                               });
                           }}
                         />
@@ -3017,7 +4092,7 @@ const number = isSuperset
                       visible={showTimerDialog}
                       onHide={() => setShowTimerDialog(false)}
                       style={{ width: '95vw', maxWidth: '820px' }}
-                      className="timerDialog "
+                      className={`timerDialog ${athleteDialogClass}`}
                       closable={false}   // ocultamos la X por defecto: usamos la de TimerHeader
                       draggable
                       header={
@@ -3046,12 +4121,13 @@ const number = isSuperset
   header="Ajustes del temporizador"
   visible={showPrepSettings}
   style={{ width: '90vw', maxWidth: 420 }}
+  className={`timerSettingsDialog ${athleteDialogClass}`}
   modal
   onHide={() => setShowPrepSettings(false)}
   draggable
 >
   <div className="mb-3">
-    <label className="form-label">Segundos de preparación</label>
+    <label className="form-label">Segundos de preparacion</label>
     <input
       type="number"
       min={1}
@@ -3065,13 +4141,13 @@ const number = isSuperset
       }}
       onFocus={(e) => { e.target.dataset.pending = String(prepSeconds); }}
     />
-    <small className="text-muted d-block mt-1">Por defecto: 10s. Rango permitido: 1–300s.</small>
+    <small className="text-muted d-block mt-1">Por defecto: 10s. Rango permitido: 1-300s.</small>
   </div>
 
   { (activeCircuit?.circuitKind === 'Libre') && (
       <>
         <hr />
-        <div className="mb-2 fw-semibold">Libre · Ajustar valores</div>
+        <div className="mb-2 fw-semibold">Libre - Ajustar valores</div>
 
         <div className="mb-3">
           <label className="form-label d-block">Modo</label>
@@ -3085,7 +4161,7 @@ const number = isSuperset
               type="button"
               className={`btn btn-sm ${freeTimerConfig.mode === 'chrono' ? 'btn-dark' : 'btn-outline-secondary'}`}
               onClick={() => setFreeTimerConfig(v => ({ ...v, mode: 'chrono' }))}
-            >Cronómetro</button>
+            >Cronometro</button>
           </div>
         </div>
 
@@ -3103,7 +4179,7 @@ const number = isSuperset
                   type="button"
                   className={`btn btn-sm ${freeTimerConfig.schema === 'amrap' ? 'btn-dark' : 'btn-outline-secondary'}`}
                   onClick={() => setFreeTimerConfig(v => ({ ...v, schema: 'amrap' }))}
-                >AMRAP (duración)</button>
+                >AMRAP (duracion)</button>
               </div>
             </div>
 
@@ -3166,9 +4242,10 @@ const number = isSuperset
 </Dialog>
 
 <Dialog
-  header={`¿Qué es un ${circuitInfoTitle}?`}
+  header={`Que es un ${circuitInfoTitle}?`}
   visible={showCircuitInfo}
   style={{ width: '90vw', maxWidth: 520 }}
+  className={athleteDialogClass}
   modal
   onHide={() => setShowCircuitInfo(false)}
   draggable
@@ -3187,6 +4264,7 @@ const number = isSuperset
     header="Ajustar valores (Libre)"
     visible={showFreeTimerSetup}
     style={{ width: '90vw', maxWidth: 520 }}
+    className={athleteDialogClass}
     modal
     onHide={() => setShowFreeTimerSetup(false)}
     draggable
@@ -3204,7 +4282,7 @@ const number = isSuperset
           className={`btn btn-sm ${freeTimerConfig.mode === 'chrono' ? 'btn-dark' : 'btn-outline-secondary'}`}
           onClick={() => setFreeTimerConfig(v => ({ ...v, mode: 'chrono' }))}
         >
-          Cronómetro
+          Cronometro
         </button>
       </div>
     </div>
@@ -3224,7 +4302,7 @@ const number = isSuperset
               className={`btn btn-sm ${freeTimerConfig.schema === 'amrap' ? 'btn-dark' : 'btn-outline-secondary'}`}
               onClick={() => setFreeTimerConfig(v => ({ ...v, schema: 'amrap' }))}
             >
-              AMRAP (duración)
+              AMRAP (duracion)
             </button>
           </div>
         </div>
@@ -3281,3 +4359,4 @@ const number = isSuperset
 }
 
 export default DayDetailsPage;
+

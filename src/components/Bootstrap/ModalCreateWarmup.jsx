@@ -29,7 +29,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   const [filteredExercises, setFilteredExercises] = useState(null);
   const [exercisesDatabase, setExercisesDatabase] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [dataWeek, setDataweek] = useState(false); // Estado para el "Modo Edición"
+  const [dataWeek, setDataweek] = useState(false); // Estado para el "Modo Edicion"
   const [statusCancel, setStatusCancel] = useState(1); // Manejo de renderizado
 
   const [color, setColor] = useState(localStorage.getItem("color"));
@@ -38,7 +38,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [firstWidth, setFirstWidth] = useState(); // Variables para las modales de PrimeReact
 
-  // Nuevo estado para las opciones agrupadas, siguiendo la lógica de DayEditDetailsPage
+  // Nuevo estado para las opciones agrupadas, siguiendo la logica de DayEditDetailsPage
   const [groupedOptions, setGroupedOptions] = useState([]);
 
   let idRefresh = RefreshFunction.generateUUID();
@@ -61,16 +61,17 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
 
   useEffect(() => {
     setExercisesDatabase(JSON.parse(localStorage.getItem("DATABASE_USER")) || []);
-    if (week) {
-      const indexWarmup = week.findIndex((day) => day._id === day_id);
-      setIndexWarmupA(indexWarmup);
-      const dayData = week[indexWarmup];
+    if (Array.isArray(week)) {
+      const indexWarmup = week.findIndex((day) => String(day?._id) === String(day_id));
+      const safeIndex = indexWarmup >= 0 ? indexWarmup : (week.length > 0 ? 0 : -1);
+      setIndexWarmupA(safeIndex);
+      const dayData = safeIndex >= 0 ? week[safeIndex] : null;
       const warmupDayName = dayData?.name || "";
       setWarmupName(warmupDayName);
       setModifiedWarmup(week); // Array de objetos inicial (los ejercicios)
       setWarmup(week);
     } else {
-      console.log("La semana o la rutina no están disponibles");
+      console.log("La semana o la rutina no estan disponibles");
     }
   }, [week, day_id, statusCancel]);
 
@@ -79,35 +80,48 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
     setFirstWidth(window.innerWidth);
   }, []);
 
-  // Función genérica para manejar los cambios en los inputs
+  const hasValidWarmupDay =
+    Number.isInteger(indexWarmupA) &&
+    indexWarmupA >= 0 &&
+    indexWarmupA < modifiedWarmup.length;
+
+  // Funcion generica para manejar los cambios en los inputs
   const handleInputChange = (index, value, field) => {
+    if (!hasValidWarmupDay) return;
     setIsEditing(true);
-    const updatedWarmup = [...warmup];
+    const updatedWarmup = [...modifiedWarmup];
+    updatedWarmup[indexWarmupA].warmup = updatedWarmup[indexWarmupA].warmup || [];
+    if (!updatedWarmup[indexWarmupA].warmup[index]) return;
     updatedWarmup[indexWarmupA].warmup[index] = {
       ...updatedWarmup[indexWarmupA].warmup[index],
       [field]: value,
     };
     setModifiedWarmup(updatedWarmup);
+    setWarmup(updatedWarmup);
   };
 
   const applyChanges = () => {
+      if (!hasValidWarmupDay) {
+        Notify.instantToast("No hay dia seleccionado para editar warmup.");
+        return;
+      }
       WeekService.editWeek(week_id, modifiedWarmup)
         .then(() => {
           setWarmup(modifiedWarmup);
           setIsEditing(false);
           editAndClose();
-          Notify.instantToast("Guardado con éxito");
+          Notify.instantToast("Guardado con exito");
         })
         .catch((error) => {
           console.error("Error al guardar cambios:", error);
         });
    
     /* else {
-         // Lógica para PAR en caso de ser necesario
+         // Logica para PAR en caso de ser necesario
        } */
   };
 
-  // Función para renderizar los inputs, adaptada según el campo
+  // Funcion para renderizar los inputs, adaptada segun el campo
   const customInputEditWarmup = (data, index, field) => {
     if (field === "numberWarmup") {
       // Usamos el Dropdown de primereact con las opciones agrupadas
@@ -142,23 +156,23 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
             isNotNeedProp={true}
             onChange={(value) => handleInputChange(index, value, field)}
             isRep={field === "reps"}
-            className={`margin-custom`}
+            className={'margin-custom'}
           /> 
         </div>
       );
     } else if (field === "notas") {
       return (
-        <div className="row">
+        <div className='row'>
           <InputTextarea
             ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-            className={`w-100`}
+            className={'w-100'}
             autoResize
             defaultValue={data}
             onChange={(e) => handleInputChange(index, e.target.value, field)}
           />
         </div>
       );
-    } else if (field === "video") {
+    } else if (field === 'video') {
       return (
         <>
           <IconButton
@@ -170,7 +184,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
           >
             <YouTubeIcon className="colorIconYoutube" />
           </IconButton>
-          <OverlayPanel ref={(el) => (productRefs.current[index] = el)}>
+          <OverlayPanel ref={(el) => (productRefs.current[index] = el)} className="dayEditLightOverlayPanel">
             <input
               ref={(el) =>
                 (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })
@@ -198,8 +212,12 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
     }
   };
 
-  // Función para agregar un nuevo ejercicio de warmup
+  // Funcion para agregar un nuevo ejercicio de warmup
   const addNewWarmupExercise = () => {
+    if (!hasValidWarmupDay) {
+      Notify.instantToast("No hay dia seleccionado para agregar warmup.");
+      return;
+    }
     setIsEditing(true);
     const updatedWarmup = [...modifiedWarmup];
     if (!updatedWarmup[indexWarmupA].warmup) {
@@ -219,9 +237,10 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
     updatedWarmup[indexWarmupA].warmup.push(newExercise);
     inputRefs.current.push({});
     setModifiedWarmup(updatedWarmup);
+    setWarmup(updatedWarmup);
   };
 
-  // Función para generar un UUID
+  // Funcion para generar un UUID
   const generateUUID = () => {
     let d = new Date().getTime();
     let uuid = "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -232,13 +251,14 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
     return uuid;
   };
 
-  // Función para confirmar eliminación
+  // Funcion para confirmar eliminacion
   const deleteWarmup = (event, index, name) => {
     confirmDialog({
-      message: `¿Estás seguro de que deseas eliminar este ejercicio?`,
-      header: "Confirmación",
+      className: "coachConfirmDialog",
+      message: "Estas seguro de que deseas eliminar este ejercicio?",
+      header: "Confirmacion",
       icon: "pi pi-exclamation-triangle",
-      acceptLabel: "Sí, eliminar",
+      acceptLabel: "Si, eliminar",
       rejectLabel: "No",
       acceptClassName: "p-button-danger",
       accept: () => acceptDeleteWarmup(index),
@@ -246,6 +266,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   };
 
   const acceptDeleteWarmup = (index) => {
+    if (!hasValidWarmupDay) return;
     Notify.instantToast(); // Notificar al eliminar
     setIsEditing(true);
     const updatedWarmup = [...modifiedWarmup];
@@ -255,6 +276,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
     }
     inputRefs.current = inputRefs.current.filter((_, i) => i !== index);
     setModifiedWarmup(updatedWarmup);
+    setWarmup(updatedWarmup);
   };
 
   const confirmCancel = () => {
@@ -271,10 +293,9 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       <div className="p-0 bg-light">
 
           <div>
-            {modifiedWarmup[indexWarmupA] &&
-              modifiedWarmup[indexWarmupA].warmup &&
+            {modifiedWarmup[indexWarmupA]?.warmup &&
               modifiedWarmup[indexWarmupA].warmup.map((exercise, i) => (
-                                <div className="shadowCards py-2 mt-5" key={exercise.movility_id}>
+                                <div className="shadowCards py-2 mt-5" key={exercise.warmup_id || i}>
                                   <div className="row justify-content-center p-0">
                                     <div className="col-10 text-start ">
                                       <span className="styleInputsSpan ms-3">Nombre</span>
@@ -331,7 +352,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
                                         <div className="row justify-content-center marginDropDown ">
                                           <div className="col-6 ">
                                           <Dropdown
-                                              value={exercise.numberMovility}
+                                              value={exercise.numberWarmup}
                                               options={groupedOptions}
                                               onChange={(e) =>
                                                 handleInputChange(i, e.target.value, "numberWarmup")
@@ -348,7 +369,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
                                               <IconButton
                                                 aria-label="video"
                                                 className="styleButtonsEdit rounded-0"
-                                                onClick={() => deleteWarmup(i, exercise.name)}
+                                                onClick={(e) => deleteWarmup(e, i, exercise.name)}
                                               >
                                                 <CancelIcon className="bbbbb" />
                                               </IconButton>
@@ -378,7 +399,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
               onClick={() => addNewWarmupExercise()}
             >
               <AddIcon className="" />
-              <span className="font-icons me-1">Añadir ejercicio</span>
+              <span className="font-icons me-1">Anadir ejercicio</span>
             </IconButton>
           </div>
         </article>
@@ -402,7 +423,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
               </tr>
             </thead>
             <tbody>
-              {modifiedWarmup[indexWarmupA].warmup &&
+              {modifiedWarmup[indexWarmupA]?.warmup &&
                 modifiedWarmup[indexWarmupA].warmup.map((item, index) => (
                   <tr key={item.warmup_id}>
                     <td>{customInputEditWarmup(item.numberWarmup, index, "numberWarmup")}</td>
@@ -446,16 +467,18 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       <ConfirmDialog
         visible={showCancelDialog}
         onHide={() => setShowCancelDialog(false)}
-        message="¿Estás seguro de que deseas cancelar los cambios? Se perderán todos los cambios no guardados."
-        header="Confirmación"
+        message="Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+        header="Confirmacion"
         icon="pi pi-exclamation-triangle"
-        acceptLabel="Sí"
+        acceptLabel="Si"
         rejectLabel="No"
         accept={() => handleCancel()}
         reject={() => setShowCancelDialog(false)}
+        className="coachConfirmDialog"
       />
     </>
   );
 }
 
 export default ModalCreateWarmup;
+

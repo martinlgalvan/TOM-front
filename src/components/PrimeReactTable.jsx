@@ -12,6 +12,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { ProgressSpinner } from "primereact/progressspinner";
+import { Accordion, AccordionTab } from "primereact/accordion";
 import { Link } from "react-router-dom";
 
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -27,6 +28,13 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
+
+import OpenersPlanEditor from "./OpenersPlanEditor.jsx";
+import {
+  createEmptyOpenersPlan,
+  normalizeOpenersPlan,
+  normalizeOpenersPlans
+} from "../helpers/openersPlanner.js";
 
 export default function PrimeReactTable({ id, users, refresh, collapsed /* , usersLoading = false */ }) {
   const [qrDialogVisible, setQrDialogVisible] = useState(false);
@@ -47,7 +55,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
   // bandera de carga local cuando hacemos refresh desde la tabla
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Preferencias de orden/búsqueda
+  // Preferencias de orden/busqueda
   let initSearchText = "";
   let initSortField = null;           // 'name' | 'email' | 'category' | 'lastEdited' | null
   let initSortOrder = "asc";          // 'asc' | 'desc'
@@ -155,9 +163,56 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
         category: profileData?.category || null,
         isEditable: profileData?.isEditable ? "true" : "false",
         events: profileData?.events || null,
+        openers_plans: normalizeOpenersPlans(
+          profileData?.openers_plans || profileData?.openersPlans || []
+        ),
       });
     }
   }, [profileData]);
+
+  const getEditedOpenersPlans = React.useCallback(() => {
+    return normalizeOpenersPlans(editedProfile?.openers_plans || editedProfile?.openersPlans || []);
+  }, [editedProfile]);
+
+  const setEditedOpenersPlans = React.useCallback((plans) => {
+    setEditedProfile((prev) => ({
+      ...prev,
+      openers_plans: normalizeOpenersPlans(plans)
+    }));
+  }, []);
+
+  const addOpenersPlan = React.useCallback(() => {
+    const now = new Date().toISOString();
+    setEditedOpenersPlans([
+      createEmptyOpenersPlan({ created_at: now, updated_at: now }),
+      ...getEditedOpenersPlans()
+    ]);
+  }, [getEditedOpenersPlans, setEditedOpenersPlans]);
+
+  const updateOpenersPlan = React.useCallback(
+    (planId, nextPlan) => {
+      const next = getEditedOpenersPlans().map((plan) =>
+        plan.id === planId
+          ? normalizeOpenersPlan({
+              ...nextPlan,
+              id: planId,
+              created_at: plan.created_at,
+              updated_at: new Date().toISOString(),
+            })
+          : plan
+      );
+      setEditedOpenersPlans(next);
+    },
+    [getEditedOpenersPlans, setEditedOpenersPlans]
+  );
+
+  const removeOpenersPlan = React.useCallback(
+    (planId) => {
+      const next = getEditedOpenersPlans().filter((plan) => plan.id !== planId);
+      setEditedOpenersPlans(next);
+    },
+    [getEditedOpenersPlans, setEditedOpenersPlans]
+  );
 
   useEffect(() => {
     if (isRefreshing && Array.isArray(users)) {
@@ -191,7 +246,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
         setSelectedProfileId(user._id);
         setSelectedProfileName(user.name);
         setProfileDialogVisible(true);
-        Notify.instantToast("Perfil cargado con éxito!");
+        Notify.instantToast("Perfil cargado con exito!");
       })
       .catch(async () => {
         setProfileData({});
@@ -209,7 +264,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     UserServices.editProfile(selectedProfileId, updatedProfile)
       .then(() => ChangePropertyService.changeProperty(selectedProfileId, updatedProfile.category))
       .then(() => {
-        Notify.instantToast("Perfil actualizado con éxito!");
+        Notify.instantToast("Perfil actualizado con exito!");
         setProfileDialogVisible(false);
         refresh();
       })
@@ -249,7 +304,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
 
   const categoryPill = (user) => {
     const pal = categoryPalette[user.category] || categoryPalette.default;
-    const label = user.category || "Sin categoría";
+    const label = user.category || "Sin categoria";
     return (
       <div
         onClick={() => openProfileDialog(user)}
@@ -305,7 +360,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
         })
         .catch(() => {
           setIsRefreshing(false);
-          Notify.instantToast("Ocurrió un error al eliminar el usuario.");
+          Notify.instantToast("Ocurrio un error al eliminar el usuario.");
         });
     }
   };
@@ -315,19 +370,19 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     hideDialog();
   };
 
-  // ---------- Semáforo de frescura ----------
+  // ---------- Semaforo de frescura ----------
   const freshnessPalette = {
-    good: { // 0–5 días
+    good: { // 0-5 dias
       cellBg: "#ECFDF3", cellBorder: "#A6F4C5", text: "#027A48",
       badgeBg: "#D1FADF", badgeText: "#026C3E", badgeBorder: "#ABEFC6",
       icon: "#12B76A"
     },
-    warn: { // 6 días
+    warn: { // 6 dias
       cellBg: "#FFFAEB", cellBorder: "#FEDF89", text: "#B54708",
       badgeBg: "#FEEFC6", badgeText: "#B54708", badgeBorder: "#FCD34D",
       icon: "#F59E0B"
     },
-    bad: { // ≥7 días
+    bad: { // ≥7 dias
       cellBg: "#FEE2E2", cellBorder: "#FECDD3", text: "#B42318",
       badgeBg: "#FECACA", badgeText: "#991B1B", badgeBorder: "#FCA5A5",
       icon: "#EF4444"
@@ -426,16 +481,19 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
   const headerCategory = categoryOrder[categoryFilterIndex];
 
   const tableHeader = (
-    <div className="d-flex  align-items-center p-3">
-      <Search size={18} className="me-3" />
-      <span className="p-input-icon-left text-start" style={{ maxWidth: 400 }}>
-        <InputText value={searchText} onChange={onSearchChange} placeholder="Buscar alumno..." className=" rounded-pill" />
-      </span>
+    <div className="row align-items-center justify-content-between">
+      <div className="col-3 col-lg-2">
+        <span className="p-input-icon-left text-start fs09em p-1" >
+          <InputText value={searchText} onChange={onSearchChange} style={{ width: 150 }} placeholder="Buscar alumno..." className="rounded-3" />
+        </span>
+      </div>
 
-      <button id={"crearAlumno"} className="btn btn-dark rounded-3 ms-auto " onClick={() => setDialogg(true)}>
-        <Plus size={18} className="me-2" />
-        Crear alumno
-      </button>
+      <div className="col-6 col-lg-3 text-center">
+        <button id={"crearAlumno"} className="btn btn-dark rounded-3 py-2 ps-1  fs09em" onClick={() => setDialogg(true)}>
+          <Plus size={16} className="me-2" />
+          Crear alumno
+        </button>
+      </div>
     </div>
   );
 
@@ -456,7 +514,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
     <div style={{ height: 670 }} />
   );
 
-  // ===== Celda "Últ. vez editado" (solo fecha + icono + tooltip MUI con delay) =====
+  // ===== Celda "Ult. vez editado" (solo fecha + icono + tooltip MUI con delay) =====
   const lastEditedCell = (row) => {
     const f = getFreshness(row);
 
@@ -468,10 +526,10 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
 
     const dateStr = f.iso
       ? new Date(f.iso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
-      : "—";
+      : "-";
 
-    const ageStr = f.days == null ? "" : (f.days === 0 ? "hoy" : `hace ${f.days} día${f.days > 1 ? "s" : ""}`);
-    const tooltip = f.iso ? `Última edición: ${dateStr} • ${ageStr}` : "Sin planificación registrada";
+    const ageStr = f.days == null ? "" : (f.days === 0 ? "hoy" : `hace ${f.days} dia${f.days > 1 ? "s" : ""}`);
+    const tooltip = f.iso ? `Ultima edicion: ${dateStr} • ${ageStr}` : "Sin planificacion registrada";
 
     return (
       <Tooltip title={tooltip} arrow placement="top" enterDelay={200} enterNextDelay={200}>
@@ -484,7 +542,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
             borderRadius: 12,
             padding: "6px 10px",
             minHeight: 36
-            // ❌ sin cursor: "help" para evitar el ícono de "?"
+            // ❌ sin cursor: "help" para evitar el icono de "?"
           }}
         >
           <Icon size={16} color={f.ui.icon} strokeWidth={2} />
@@ -522,7 +580,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
           showGridlines={false}
           sortMode="single"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          paginatorLeft={<span className="ms-2 ">{report}</span>}
           loading={tableLoading}
           scrollable
           scrollHeight="670px"
@@ -570,8 +627,8 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
               body={(row) => categoryPill(row)}
               header={
                 <div className="d-flex align-items-center justify-content-start">
-                  <span className="fw-semibold me-2">Categoría</span>
-                  <button className="btn p-0" onClick={sortByCategory} style={{ background: "none", border: "none" }} title="Cambiar categoría prioritaria">
+                  <span className="fw-semibold me-2">Categoria</span>
+                  <button className="btn p-0" onClick={sortByCategory} style={{ background: "none", border: "none" }} title="Cambiar categoria prioritaria">
                     <span
                       style={{
                         display: "inline-block",
@@ -591,14 +648,14 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
             />
           )}
 
-          {/* NUEVO: columna "Últ. vez editado" (lee del backend) */}
+          {/* NUEVO: columna "Ult. vez editado" (lee del backend) */}
           {widthPage > 600 && (
             <Column
               field="lastEdited"
               header={
                 <div className="d-flex align-items-center justify-content-start">
-                  <span className="fw-semibold">Últ. vez editado</span>
-                  <button className="btn" onClick={sortByLastEdited} style={{ background: "none", border: "none" }} title="Ordenar por última edición">
+                  <span className="fw-semibold">Ult. vez editado</span>
+                  <button className="btn" onClick={sortByLastEdited} style={{ background: "none", border: "none" }} title="Ordenar por ultima edicion">
                     <ArrowUpDown size={16} />
                   </button>
                 </div>
@@ -615,7 +672,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
       {/* ---- Crear alumno ---- */}
       <UserRegister dialogg={dialogg} refresh={refresh} parentId={id} onClose={() => setDialogg(false)} />
 
-      {/* ---- Eliminar usuario (confirmación simple) ---- */}
+      {/* ---- Eliminar usuario (confirmacion simple) ---- */}
       <dialog id="deleteUserModal" style={{ padding: 0, border: "none", borderRadius: 12, maxWidth: 520, width: "90%" }}>
         <div className="p-4">
           <h6 className="mb-3">{nameUser}</h6>
@@ -641,7 +698,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
 
       {/* ---- QR ---- */}
       <Dialog
-        header={`Código QR - ${currentQrUser?.name || ""}`}
+        header={`Codigo QR - ${currentQrUser?.name || ""}`}
         visible={qrDialogVisible}
         onHide={() => setQrDialogVisible(false)}
         style={{ width: widthPage > 900 ? "30%" : "90%" }}
@@ -651,10 +708,10 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
           {error && <p style={{ color: "red" }}>{error}</p>}
           {qrImage && (
             <div>
-              <p className="text-light">
-                Este es el código QR para que <b>{currentQrUser?.name}</b> inicie sesión.
+              <p className="text-dark">
+                Este es el codigo QR para que <b>{currentQrUser?.name}</b> inicie sesion.
               </p>
-              <img src={qrImage} alt="Código QR" style={{ width: "200px", height: "200px" }} />
+              <img src={qrImage} alt="Codigo QR" style={{ width: "200px", height: "200px" }} />
               <div className="mt-3">
                 <a href={qrImage} download={`QR-${currentQrUser?.name || "usuario"}.png`} style={{ textDecoration: "none" }}>
                   <button aria-label="download" className="btn btn-primary p-2">
@@ -747,10 +804,10 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
                 </div>
               </div>
 
-              {/* CATEGORÍA */}
+              {/* CATEGORIA */}
               <div className="mb-3">
                 <label className="form-label fw-semibold d-flex align-items-center">
-                  <LocalOfferOutlinedIcon className="me-2" /> Categoría
+                  <LocalOfferOutlinedIcon className="me-2" /> Categoria
                 </label>
                 <div className="border rounded-4 p-1">
                   <Dropdown
@@ -842,6 +899,58 @@ export default function PrimeReactTable({ id, users, refresh, collapsed /* , use
                     </button>
                   </div>
                 ))}
+
+              <div className="mt-4">
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                  <label className="form-label fw-semibold mb-0 d-flex align-items-center">
+                    <CalendarMonthIcon className="me-2" /> Calendario deportivo
+                  </label>
+                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={addOpenersPlan}>
+                    Nuevo plan
+                  </button>
+                </div>
+
+                {getEditedOpenersPlans().length === 0 ? (
+                  <div className="border rounded-3 p-3 text-muted small">
+                    Sin planes cargados para este alumno.
+                  </div>
+                ) : (
+                  <Accordion multiple activeIndex={[0]}>
+                    {getEditedOpenersPlans().map((plan) => {
+                      const headerName = String(plan?.meetName || "").trim() || "Plan sin nombre";
+                      const headerDate = plan?.meetDate
+                        ? new Date(plan.meetDate).toLocaleDateString()
+                        : "Sin fecha";
+                      return (
+                        <AccordionTab
+                          key={plan.id}
+                          header={
+                            <div className="d-flex justify-content-between align-items-center w-100 pe-2">
+                              <span>{headerName}</span>
+                              <small className="text-muted">{headerDate}</small>
+                            </div>
+                          }
+                        >
+                          <OpenersPlanEditor
+                            value={plan}
+                            onChange={(nextPlan) => updateOpenersPlan(plan.id, nextPlan)}
+                            title="Plan del alumno"
+                          />
+                          <div className="d-flex justify-content-end mt-2">
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() => removeOpenersPlan(plan.id)}
+                            >
+                              Eliminar plan
+                            </button>
+                          </div>
+                        </AccordionTab>
+                      );
+                    })}
+                  </Accordion>
+                )}
+              </div>
 
               {/* FOOTER */}
               <div className="d-flex justify-content-between mt-4">

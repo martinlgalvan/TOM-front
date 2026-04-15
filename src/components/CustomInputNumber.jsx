@@ -16,9 +16,19 @@ const CustomInputNumber = React.forwardRef(
       return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // 🔧 NUEVO: funcion helper para soltar el foco actual (el que puede estar "anclado" arriba)
+    const blurActiveElement = () => {
+      if (
+        typeof document !== 'undefined' &&
+        document.activeElement instanceof HTMLElement
+      ) {
+        document.activeElement.blur();
+      }
+    };
+
     // Default mode:
-    // - Reps: 'multiple' si array, 'text' si string, si no null (numérico)
-    // - Sets: 'text' si string, si no null (numérico). Nunca 'multiple' en sets.
+    // - Reps: 'multiple' si array, 'text' si string, si no null (numerico)
+    // - Sets: 'text' si string, si no null (numerico). Nunca 'multiple' en sets.
     const defaultMode = isRep
       ? (Array.isArray(initialValue) ? 'multiple'
         : (typeof initialValue === 'string' ? 'text' : null))
@@ -39,7 +49,7 @@ const CustomInputNumber = React.forwardRef(
         : [{ reps: typeof initialValue === 'number' ? initialValue : 0 }]
     );
 
-    // Sincronización al cambiar initialValue o mode
+    // Sincronizacion al cambiar initialValue o mode
     useEffect(() => {
       if (mode === 'text') {
         setTextValue(typeof initialValue === 'string' ? initialValue : '');
@@ -63,8 +73,15 @@ const CustomInputNumber = React.forwardRef(
       onChange && onChange(raw);
     };
 
-    const handleSingleChange = newVal => {
+    // 🔧 CAMBIO: anadimos segundo parametro opcional { blurActive }
+    const handleSingleChange = (newVal, { blurActive } = {}) => {
       if (disabled) return;
+
+      // 🔧 NUEVO: si viene desde botones + / -, soltamos el foco previo
+      if (blurActive) {
+        blurActiveElement();
+      }
+
       const n = parseInt(newVal, 10) || 0;
       setValue(n);
       onChange && onChange(n);
@@ -84,6 +101,9 @@ const CustomInputNumber = React.forwardRef(
 
     const handleAddRep = () => {
       if (disabled) return;
+      // 🔧 NUEVO: si sumas una rep en modo Multiple, tambien soltamos foco del input anterior
+      blurActiveElement();
+
       const newList = [...repsList, { reps: 0 }];
       setRepsList(newList);
       onChange && onChange(newList.map(o => o.reps));
@@ -91,6 +111,9 @@ const CustomInputNumber = React.forwardRef(
 
     const handleRemoveLast = () => {
       if (disabled || repsList.length <= 1) return;
+      // 🔧 NUEVO: idem, soltamos foco antes de modificar
+      blurActiveElement();
+
       const newList = repsList.slice(0, -1);
       setRepsList(newList);
       onChange && onChange(newList.map(o => o.reps));
@@ -111,7 +134,7 @@ const CustomInputNumber = React.forwardRef(
       // Defensa sets: nunca permitir 'multiple'
       if (!isRep && nextMode === 'multiple') nextMode = 'text';
 
-      // Si clickean el modo activo, volvemos a null (numérico)
+      // Si clickean el modo activo, volvemos a null (numerico)
       const finalMode = (mode === nextMode) ? null : nextMode;
       setMode(finalMode);
       onActivate && onActivate(true);
@@ -121,7 +144,7 @@ const CustomInputNumber = React.forwardRef(
       } else if (finalMode === 'multiple') {
         onChange && onChange(repsList.map(o => o.reps));
       } else {
-        onChange && onChange(value); // numérico
+        onChange && onChange(value); // numerico
       }
     };
 
@@ -143,7 +166,7 @@ const CustomInputNumber = React.forwardRef(
             disabled={disabled}
             onClick={() => handleModeToggle('multiple')}
           >
-            Múltiple
+            Multiple
           </button>
         </div>
       ) : (
@@ -167,7 +190,7 @@ const CustomInputNumber = React.forwardRef(
             isRep && !isNotNeedProp && firstWidth < 992 && 'mb-2'
           } ${isRep && firstWidth > 992 && 'mt-4'}`}
         >
-          {/* Render según modo */}
+          {/* Render segun modo */}
           {mode === 'text' ? (
             <div className={`largoTextMode ${!isRep ? 'mx-auto' : ''}`}>
               <input
@@ -215,7 +238,8 @@ const CustomInputNumber = React.forwardRef(
             <div className="input-number-container">
               <IconButton
                 className="buttonRight"
-                onClick={() => handleSingleChange(value - 1)}
+                // 🔧 CAMBIO: pasamos { blurActive: true } para soltar foco del campo anterior
+                onClick={() => handleSingleChange(value - 1, { blurActive: true })}
                 disabled={disabled || value <= 0}
               >
                 <RemoveIcon className="fontIconsButtonsInputNumber" />
@@ -224,6 +248,7 @@ const CustomInputNumber = React.forwardRef(
                 ref={ref}
                 type="number"
                 value={value}
+                // 🔧 OJO: aqui NO pasamos blurActive, para no romper la experiencia al tipear
                 onChange={e => handleSingleChange(e.target.value)}
                 disabled={disabled}
                 onKeyDown={handleKeyDown}
@@ -231,7 +256,8 @@ const CustomInputNumber = React.forwardRef(
               />
               <IconButton
                 className="buttonLeft"
-                onClick={() => handleSingleChange(value + 1)}
+                // 🔧 CAMBIO: idem, blurActive solo cuando usamos el boton +
+                onClick={() => handleSingleChange(value + 1, { blurActive: true })}
                 disabled={disabled}
               >
                 <AddIcon className="fontIconsButtonsInputNumber" />
@@ -250,3 +276,4 @@ const CustomInputNumber = React.forwardRef(
 );
 
 export default CustomInputNumber;
+

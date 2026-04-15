@@ -1,6 +1,8 @@
+import { API_BASE } from './apiFetch.js'
+
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function find(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/${id}`, {
+    return fetch(`${API_BASE}/api/users/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -19,7 +21,7 @@ async function find(id) {
 
 //Crea alumnos
 async function createAlumno(id, user) {
-  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/${id}`, {
+  const response = await fetch(`${API_BASE}/api/users/${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -29,25 +31,25 @@ async function createAlumno(id, user) {
   });
 
   const text = await response.text();           // 1) leo siempre como texto
-  if (!response.ok) {                           // 2) si no está OK, propago el texto
-    // puedes inspeccionar aquí text para logs:
+  if (!response.ok) {                           // 2) si no esta OK, propago el texto
+    // puedes inspeccionar aqui text para logs:
     console.error('createAlumno -> Error response:', text);
     throw new Error(
       response.status === 403
-        ? (JSON.parseSafe(text)?.message || 'Límite de usuarios alcanzado.')
+        ? (JSON.parseSafe(text)?.message || 'Limite de usuarios alcanzado.')
         : response.status === 400
           ? (JSON.parseSafe(text)?.message.includes('email')
-              ? 'El email ya existe. Usá otro.'
-              : (JSON.parseSafe(text)?.message || 'Error de validación.'))
-          : (JSON.parseSafe(text)?.message || 'Ocurrió un error inesperado.')
+              ? 'El email ya existe. Usa otro.'
+              : (JSON.parseSafe(text)?.message || 'Error de validacion.'))
+          : (JSON.parseSafe(text)?.message || 'Ocurrio un error inesperado.')
     );
   }
 
-  // 3) si está OK, parseo JSON con control de errores
+  // 3) si esta OK, parseo JSON con control de errores
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error('El servidor devolvió una respuesta no-JSON.');
+    throw new Error('El servidor devolvio una respuesta no-JSON.');
   }
 }
 
@@ -56,7 +58,7 @@ JSON.parseSafe = s => { try { return JSON.parse(s) } catch { return {} } };
 
 //Elimino alumnos
 async function deleteUser(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${id}`, {
+    return fetch(`${API_BASE}/api/user/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -67,7 +69,7 @@ async function deleteUser(id) {
 }
 
  async function findWithLastWeek(id) {
-  const url = `https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/${id}?withLastWeek=true`;
+  const url = `${API_BASE}/api/users/${id}?withLastWeek=true`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -89,7 +91,7 @@ async function deleteUser(id) {
 //Busca a un alumno
 async function findUserById(id) {
     try {
-        const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${id}`, {
+        const response = await fetch(`${API_BASE}/api/user/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -117,9 +119,9 @@ async function findUserById(id) {
 
 
 
-//Encontrar días
+//Encontrar dias
 async function findDays(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/users/routine/${id}/createDay`, {
+    return fetch(`${API_BASE}/api/users/routine/${id}/createDay`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -131,7 +133,7 @@ async function findDays(id) {
                 return response.json()
             }
             else {
-                throw new Error('No se pudo obtener los días')
+                throw new Error('No se pudo obtener los dias')
             }
         })
 }
@@ -141,7 +143,7 @@ async function findDays(id) {
 //Obtiene todos los ejercicios
 
 /*async function findExercises(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/day/${id}/exercise`, {
+    return fetch(`${API_BASE}/api/day/${id}/exercise`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -158,10 +160,10 @@ async function findDays(id) {
         })
 }*/
 
-//Agrega un ejercicio a un día 
+//Agrega un ejercicio a un dia 
 
 async function addExerciseToDay(id, exercise) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/day/${id}/exercise`, {
+    return fetch(`${API_BASE}/api/day/${id}/exercise`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -172,9 +174,9 @@ async function addExerciseToDay(id, exercise) {
         .then(response => response.json())
 }
 
-//Elimina un ejercicio dependiendo el día y el ejercicio
+//Elimina un ejercicio dependiendo el dia y el ejercicio
 async function deleteExercise(idDay, idExercise) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/day/${idDay}/exercise/${idExercise}`, {
+    return fetch(`${API_BASE}/api/day/${idDay}/exercise/${idExercise}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -186,7 +188,7 @@ async function deleteExercise(idDay, idExercise) {
 
 
 async function editExercise(idDay, idExercise, exercise) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/day/${idDay}/exercise/${idExercise}`, {
+    return fetch(`${API_BASE}/api/day/${idDay}/exercise/${idExercise}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -207,7 +209,7 @@ async function editExercise(idDay, idExercise, exercise) {
 
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function findRoutineById(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${id}/routine`, {
+    return fetch(`${API_BASE}/api/user/${id}/routine`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -227,7 +229,7 @@ async function findRoutineById(id) {
 
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function getProfileById(id) {
-    return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${id}/routine/clon`, {
+    return fetch(`${API_BASE}/api/user/${id}/routine/clon`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -247,7 +249,7 @@ async function getProfileById(id) {
 
 
 async function editProfile(user_id, data) {
-    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${user_id}/routine`, {
+    const response = await fetch(`${API_BASE}/api/user/${user_id}/routine`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -259,7 +261,7 @@ async function editProfile(user_id, data) {
     if (response.ok) {
       return response.json();
     } else {
-      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      // Intentamos parsear la respuesta en JSON para obtener mas detalles
       let errorData;
       try {
         errorData = await response.json();
@@ -274,7 +276,7 @@ async function editProfile(user_id, data) {
   }
 
     async function getAnnouncementsByCreator(id) {
-    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/creator/${id}`, {
+    const response = await fetch(`${API_BASE}/api/announcements/creator/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -285,7 +287,7 @@ async function editProfile(user_id, data) {
     if (response.ok) {
       return response.json();
     } else {
-      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      // Intentamos parsear la respuesta en JSON para obtener mas detalles
       let errorData;
       try {
         errorData = await response.json();
@@ -300,7 +302,7 @@ async function editProfile(user_id, data) {
   }
 
   async function createAnnouncement(data) {
-    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements`, {
+    const response = await fetch(`${API_BASE}/api/announcements`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -312,7 +314,7 @@ async function editProfile(user_id, data) {
     if (response.ok) {
       return response.json();
     } else {
-      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      // Intentamos parsear la respuesta en JSON para obtener mas detalles
       let errorData;
       try {
         errorData = await response.json();
@@ -328,7 +330,7 @@ async function editProfile(user_id, data) {
 
   
   async function editAnnouncement(id, updates) {
-    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${id}`, {
+    const response = await fetch(`${API_BASE}/api/announcements/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -340,7 +342,7 @@ async function editProfile(user_id, data) {
     if (response.ok) {
       return response.json();
     } else {
-      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      // Intentamos parsear la respuesta en JSON para obtener mas detalles
       let errorData;
       try {
         errorData = await response.json();
@@ -355,7 +357,7 @@ async function editProfile(user_id, data) {
   }
 
     async function deleteAnnouncement(id) {
-    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${id}`, {
+    const response = await fetch(`${API_BASE}/api/announcements/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -366,7 +368,7 @@ async function editProfile(user_id, data) {
     if (response.ok) {
       return response.json();
     } else {
-      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      // Intentamos parsear la respuesta en JSON para obtener mas detalles
       let errorData;
       try {
         errorData = await response.json();
@@ -383,7 +385,7 @@ async function editProfile(user_id, data) {
 
 
   async function getUnreadAnnouncements(id) {
-    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/user/${id}`, {
+    const response = await fetch(`${API_BASE}/api/announcements/user/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -394,7 +396,7 @@ async function editProfile(user_id, data) {
     if (response.ok) {
       return response.json();
     } else {
-      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      // Intentamos parsear la respuesta en JSON para obtener mas detalles
       let errorData;
       try {
         errorData = await response.json();
@@ -410,7 +412,7 @@ async function editProfile(user_id, data) {
 
 
     async function markAnnouncementRead(announcementId, userId) {
-    const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${announcementId}/read/${userId}`, {
+    const response = await fetch(`${API_BASE}/api/announcements/${announcementId}/read/${userId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -421,7 +423,7 @@ async function editProfile(user_id, data) {
     if (response.ok) {
       return response.json();
     } else {
-      // Intentamos parsear la respuesta en JSON para obtener más detalles
+      // Intentamos parsear la respuesta en JSON para obtener mas detalles
       let errorData;
       try {
         errorData = await response.json();
@@ -436,7 +438,7 @@ async function editProfile(user_id, data) {
   }
 
   async function getAnnouncementsHistory(userId) {
-  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/user/${userId}/history`, {
+  const response = await fetch(`${API_BASE}/api/announcements/user/${userId}/history`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -448,7 +450,7 @@ async function editProfile(user_id, data) {
 }
 
   async function getAnnouncementViewsWithNames(announcementId) {
-  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${announcementId}/viewers`, {
+  const response = await fetch(`${API_BASE}/api/announcements/${announcementId}/viewers`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -460,7 +462,7 @@ async function editProfile(user_id, data) {
 }
 
   async function getAnnouncementViewCounts(creatorId) {
-  const response = await fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/announcements/${creatorId}/views-count`, {
+  const response = await fetch(`${API_BASE}/api/announcements/${creatorId}/views-count`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -472,7 +474,7 @@ async function editProfile(user_id, data) {
 }
 
 async function updatePaymentInfo(userId, paymentInfo) {
-  return fetch(`https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app/api/user/${userId}/payment-info`, {
+  return fetch(`${API_BASE}/api/user/${userId}/payment-info`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -483,6 +485,81 @@ async function updatePaymentInfo(userId, paymentInfo) {
     if (!res.ok) throw new Error('Error al guardar el pago');
     return res.json();
   });
+}
+
+async function getOpenersProfileData(userId) {
+  const profile = await getProfileById(userId).catch(() => ({}));
+
+  const [plansResponse, templatesResponse] = await Promise.all([
+    fetch(`${API_BASE}/api/user/${userId}/openers/plans`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      }
+    }).then(async (response) => (response.ok ? response.json() : null)).catch(() => null),
+    fetch(`${API_BASE}/api/coach/${userId}/openers/templates`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token': localStorage.getItem('token')
+      }
+    }).then(async (response) => (response.ok ? response.json() : null)).catch(() => null)
+  ]);
+
+  const openersPlans = Array.isArray(plansResponse?.plans)
+    ? plansResponse.plans
+    : Array.isArray(profile?.openers_plans)
+    ? profile.openers_plans
+    : Array.isArray(profile?.openersPlans)
+    ? profile.openersPlans
+    : [];
+
+  const openersTemplates = Array.isArray(templatesResponse?.templates)
+    ? templatesResponse.templates
+    : Array.isArray(profile?.openers_templates)
+    ? profile.openers_templates
+    : Array.isArray(profile?.openersTemplates)
+    ? profile.openersTemplates
+    : [];
+
+  return { profile, openersPlans, openersTemplates };
+}
+
+async function saveOpenersPlans(userId, plans) {
+  const response = await fetch(`${API_BASE}/api/user/${userId}/openers/plans`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    },
+    body: JSON.stringify({ plans: Array.isArray(plans) ? plans : [] })
+  });
+
+  if (!response.ok) {
+    throw new Error('No se pudieron guardar los planes de competencia');
+  }
+
+  return response.json();
+}
+
+async function saveOpenersTemplates(userId, templates) {
+  const response = await fetch(`${API_BASE}/api/coach/${userId}/openers/templates`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    },
+    body: JSON.stringify({
+      templates: Array.isArray(templates) ? templates : []
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error('No se pudieron guardar las plantillas de competencia');
+  }
+
+  return response.json();
 }
 
 
@@ -512,6 +589,10 @@ export {
     getAnnouncementViewsWithNames,
     getAnnouncementViewCounts,
 
-    updatePaymentInfo
+    updatePaymentInfo,
+    getOpenersProfileData,
+    saveOpenersPlans,
+    saveOpenersTemplates
     
 }
+

@@ -2,13 +2,13 @@ function NavBarAppMobile(){
 
     return(
         <nav className="fixed-bottom colorNavBar  d-flex justify-content-around" style={{ borderTop: '1px solid #ccc' }}>
-          {/* Botón de volver atrás */}
+          {/* Boton de volver atras */}
 
             <div>
                 <Link
-                    className=""
+                    className=''
                     to={`/routine/${id}`}
-                    rel="noopener noreferrer"
+                    rel='noopener noreferrer'
                 >
 
                     <IconButton  className=" my-2 buttonsNav"  >
@@ -16,7 +16,7 @@ function NavBarAppMobile(){
                     </IconButton>
 
                 </Link>
-                <span>Atrás</span>
+                <span>Atras</span>
             </div>
 
             <div>

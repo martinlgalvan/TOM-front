@@ -6,14 +6,14 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
   // Paleta clara: buen contraste con texto negro
   const PALETTE = [
     '#4ab8fdff', '#fd2f40ff', '#47e29fff', '#ffb01cff', '#9471f1ff',
-    '#27c7e7ff', '#ff8521ff', '#99da29ff', '#ff338fff', `#9471f1ff`,
+    '#27c7e7ff', '#ff8521ff', '#99da29ff', '#ff338fff', '#9471f1ff',
   ]
 
   const DEFAULT_FORM = { name: '', color: PALETTE[0] }
 
   const [form, setForm] = useState(DEFAULT_FORM)
 
-  // 🔧 FIX: sincronizar modo/valores cada vez que cambian props
+  // - FIX: sincronizar modo/valores cada vez que cambian props
   useEffect(() => {
     if (isEditMode && initialData) {
       setForm({
@@ -38,7 +38,7 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
       } else {
         await BlockService.createBlock(id, form)
       }
-      onSaved && onSaved() // 🔧 refresca lista y cierra modal
+      onSaved && onSaved() // - refresca lista y cierra modal
     } catch (e) {
       console.error(e)
     }
@@ -47,7 +47,7 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
   const handleDelete = async () => {
     try {
       await BlockService.deleteBlock(initialData._id)
-      onSaved && onSaved() // 🔧 refresca lista y cierra modal
+      onSaved && onSaved() // - refresca lista y cierra modal
     } catch (e) {
       console.error(e)
     }
@@ -92,7 +92,7 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
             return (
               <button
                 key={hex}
-                type="button"
+                type='button'
                 aria-label={`Elegir color ${hex}`}
                 onClick={() => handleChange('color', hex)}
                 style={swatchStyle(hex, selected)}
@@ -102,7 +102,7 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
         </div>
       </div>
 
-      <div className="d-flex align-items-center justify-content-between mt-4">
+      <div className='d-flex align-items-center justify-content-between mt-4'>
         {isEditMode ? (
           <button className="btn btn-outline-danger" onClick={handleDelete}>
             Eliminar
@@ -111,7 +111,7 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
           <button
             className="btn btn-link text-muted px-0"
             type="button"
-            onClick={onCancel}            // 🔧 FIX: cerrar modal (no navegar)
+            onClick={onCancel}            // - FIX: cerrar modal (no navegar)
           >
             Cancelar
           </button>

@@ -51,7 +51,7 @@ export default function PrimeReactTable_Routines({
 
   const modeOptions = [
     { label: "Modo libre", value: "free" },
-    { label: "Modo días", value: "days" },
+    { label: "Modo dias", value: "days" },
   ];
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function PrimeReactTable_Routines({
 
   const buildOptions = (currentBlock) => {
     const base = [
-      { name: "Añadir/editar bloques", _id: "add-new-block" },
+      { name: "Anadir/editar bloques", _id: "add-new-block" },
       { name: "Sin bloque", _id: null },
     ];
     const extra =
@@ -131,7 +131,7 @@ export default function PrimeReactTable_Routines({
     const backgroundColor = currentBlock?.color || "#ffffff";
     const textColor = getContrastYIQ(backgroundColor);
 
-    // El dropdown no ocupa 100% para dejar márgenes clicables que sigan navegando
+    // El dropdown no ocupa 100% para dejar margenes clicables que sigan navegando
     return (
       <div style={{ display: "flex", justifyContent: "center" }}>
         <div
@@ -163,20 +163,21 @@ export default function PrimeReactTable_Routines({
     try {
       const payload = block === null ? { block: null } : block;
       await RoutineService.assignBlockToRoutine(routineId, payload);
+      const selectedBlock = block?._id ? { ...block, _id: String(block._id) } : null;
 
       setRoutine((prev) =>
         prev.map((r) =>
           r._id === routineId
             ? {
                 ...r,
-                block: blocks.find((b) => b._id === block?._id) || null,
-                block_id: block?._id || null,
+                block: selectedBlock,
+                block_id: selectedBlock?._id || null,
               }
             : r
         )
       );
 
-      NotifyHelper.instantToast("Bloque asignado con éxito");
+      NotifyHelper.instantToast("Bloque asignado con exito");
     } catch (err) {
       console.error("Error actualizando bloque", err);
       NotifyHelper.instantToast("Error al guardar el bloque");
@@ -216,8 +217,8 @@ export default function PrimeReactTable_Routines({
 
   const getVisibilityTooltip = (isHidden) =>
     isHidden
-      ? "Al apretar este botón, volverás a mostrar esta semana al alumno. También, le aparecerá la fecha de cuando hiciste visible la rutina, no cuando la creaste. También, respetará el orden que vos ves en las semanas. Así tal cual, las verá tu alumno."
-      : "Al apretar este botón, tu alumno no verá la rutina cargada. Sin embargo, podrás trabajar libremente sobre ella.";
+      ? "Al apretar este boton, volveras a mostrar esta semana al alumno. Tambien, le aparecera la fecha de cuando hiciste visible la rutina, no cuando la creaste. Tambien, respetara el orden que vos ves en las semanas. Asi tal cual, las vera tu alumno."
+      : "Al apretar este boton, tu alumno no vera la rutina cargada. Sin embargo, podras trabajar libremente sobre ella.";
 
   const getContrastYIQ = (hexcolor) => {
     if (!hexcolor) return "black";
@@ -233,7 +234,7 @@ export default function PrimeReactTable_Routines({
     navigate(`/routine/user/${id}/week/${routineId}/day/${dayId}/${username}`);
   };
 
-  // === Abrir diálogo de comentarios ===
+  // === Abrir dialogo de comentarios ===
   const handleOpenComments = (row) => {
     setCommentsWeekId(row._id);
     setCommentsTitle(row.comments?.title || "Comentarios semanales");
@@ -243,14 +244,14 @@ export default function PrimeReactTable_Routines({
     const initialMode = row.comments?.mode === "days" ? "days" : "free";
     setCommentsMode(initialMode);
 
-    // meta de días (label por día)
+    // meta de dias (label por dia)
     const daysMeta = (row.routine || []).map((d, idx) => ({
       _id: String(d._id),
-      label: d?.name || d?.title || `Día ${idx + 1}`,
+      label: d?.name || d?.title || `Dia ${idx + 1}`,
     }));
     setCommentsDaysMeta(daysMeta);
 
-    // valores por día (si vienen del server)
+    // valores por dia (si vienen del server)
     let initialByDay = {};
     // admite array (nuevo), objeto plano (viejo) y daysMap (compatible)
     const fromServer =
@@ -325,7 +326,7 @@ export default function PrimeReactTable_Routines({
       const payload = buildCommentsPayload();
       await RoutineService.updateWeekProperties(commentsWeekId, payload);
 
-      // update optimista (asignamos comments explícitamente)
+      // update optimista (asignamos comments explicitamente)
       setRoutine((prev) =>
         prev.map((w) =>
           w._id === commentsWeekId ? { ...w, comments: payload.comments } : w
@@ -333,7 +334,7 @@ export default function PrimeReactTable_Routines({
       );
 
       setShowCommentsDialog(false);
-      NotifyHelper.instantToast("Comentarios guardados con éxito");
+      NotifyHelper.instantToast("Comentarios guardados con exito");
     } catch (err) {
       console.error("Error guardando comentarios", err);
       NotifyHelper.instantToast("Error al guardar los comentarios");
@@ -375,8 +376,8 @@ export default function PrimeReactTable_Routines({
               <div style={{ maxWidth: 260, lineHeight: 1.2 }}>
                 <strong>Agregar comentarios</strong>
                 <div className="mt-1">
-                  Esta sección permite agregar comentarios sobre la semana. Podés
-                  usar modo libre o por día. Tu alumno lo verá antes de entrar a
+                  Esta seccion permite agregar comentarios sobre la semana. Podes
+                  usar modo libre o por dia. Tu alumno lo vera antes de entrar a
                   la semana.
                 </div>
               </div>
@@ -429,7 +430,7 @@ export default function PrimeReactTable_Routines({
       localStorage.setItem("userWeek", JSON.stringify(data));
       setCopyWeekStorage(JSON.stringify(data));
       copyRoutine(data);
-      NotifyHelper.instantToast("Copiado con éxito!");
+      NotifyHelper.instantToast("Copiado con exito!");
     } catch (err) {
       console.error("Error al guardar en localStorage: ", err);
     }
@@ -490,17 +491,17 @@ export default function PrimeReactTable_Routines({
     return option.name;
   };
 
-  // Últ. vez modificado + visible desde
+  // Ult. vez modificado + visible desde
   const modificationTemplate = (rowData) => {
     const fmtEntrenador = () => {
-      const fecha = rowData.created_at?.fecha || "—";
+      const fecha = rowData.created_at?.fecha || "-";
       const hora = rowData.created_at?.hora || "";
       return `${fecha} ${hora}`.trim();
     };
     const fmtAlumno = () =>
       rowData.updated_user_at
         ? new Date(rowData.updated_user_at).toLocaleString()
-        : "—";
+        : "-";
 
     return (
       <div className="text-start">
@@ -557,7 +558,7 @@ export default function PrimeReactTable_Routines({
           {firstWidth > 768 && (
             <Column
               body={modificationTemplate}
-              header="Últ. vez modificado"
+              header="Ult. vez modificado"
               bodyClassName="js-nav-cell hover-nav"
               style={{ width: "30%" }}
             />
@@ -581,7 +582,7 @@ export default function PrimeReactTable_Routines({
       />
 
       <Dialog
-        header="Gestión de bloques"
+        header="Gestion de bloques"
         visible={showBlockDialog}
         style={{ width: "50vw" }}
         onHide={() => setShowBlockDialog(false)}
@@ -589,7 +590,7 @@ export default function PrimeReactTable_Routines({
         <BlocksListPage id={trainer_id} />
       </Dialog>
 
-      {/* Diálogo de comentarios */}
+      {/* Dialogo de comentarios */}
       <Dialog
         header="Comentarios de la semana"
         visible={showCommentsDialog}
@@ -606,11 +607,11 @@ export default function PrimeReactTable_Routines({
           </div>
         }
       >
-        {/* Título + Modo (select al lado) */}
+        {/* Titulo + Modo (select al lado) */}
         <div className="row g-3 align-items-end mb-3">
           <div className="col-12 col-md">
             <label htmlFor="comments-title" className="form-label d-block mb-2">
-              Título
+              Titulo
             </label>
             <InputText
               id="comments-title"
@@ -636,7 +637,7 @@ export default function PrimeReactTable_Routines({
           </div>
         </div>
 
-        {/* Contenido según modo */}
+        {/* Contenido segun modo */}
         {commentsMode === "free" ? (
           <div>
             <label htmlFor="comments-body" className="form-label d-block mb-2">
@@ -649,7 +650,7 @@ export default function PrimeReactTable_Routines({
               className="w-100 text-dark"
               rows={5}
               autoResize
-              placeholder="Escribí aquí los comentarios para tu alumno…"
+              placeholder="Escribi aqui los comentarios para tu alumno..."
             />
           </div>
         ) : (
@@ -669,13 +670,13 @@ export default function PrimeReactTable_Routines({
                     className="w-100 text-dark"
                     rows={1}
                     autoResize
-                    placeholder={`Comentario para ${d.label}…`}
+                    placeholder={`Comentario para ${d.label}...`}
                   />
                 </div>
               ))
             ) : (
               <div className="text-muted">
-                Esta semana no tiene días cargados todavía.
+                Esta semana no tiene dias cargados todavia.
               </div>
             )}
           </div>

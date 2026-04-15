@@ -25,7 +25,7 @@ const AddUserProfile = ({ user_id }) => {
     
     let idRefresh = RefreshFunction.generateUUID();
 
-    const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 
     const handleDayToggle = (day) => {
         setSelectedDay(day);
@@ -85,7 +85,7 @@ const AddUserProfile = ({ user_id }) => {
             .then((data) => {
                 setIsEditing(false);
                 setStatus(idRefresh);
-                NotifyHelper.instantToast("Perfil actualizado con éxito!")
+                NotifyHelper.instantToast("Perfil actualizado con exito!")
             })
             .catch((error) => {
                 console.error('Error updating profile:', error);
@@ -120,7 +120,7 @@ const AddUserProfile = ({ user_id }) => {
                         />
                     </div>
                     <div className="col-10 text-center p-2">
-                        <label className='mb-2' htmlFor={`${day}-sleepHours`}>Horas de Sueño <span className='ms-1'>{dayDetails.sleepHours || 0}</span></label>
+                        <label className='mb-2' htmlFor={`${day}-sleepHours`}>Horas de Sueno <span className='ms-1'>{dayDetails.sleepHours || 0}</span></label>
                         <Slider
                             id={`${day}-sleepHours`}
                             value={dayDetails.sleepHours || 0}
@@ -152,7 +152,7 @@ const AddUserProfile = ({ user_id }) => {
                         />
                     </div>
                     <div className="col-10 text-center p-2">
-                        <label className='d-block' htmlFor={`${day}-stressLevel`}>Estrés</label>
+                        <label className='d-block' htmlFor={`${day}-stressLevel`}>Estres</label>
                         <Dropdown
                             id={`${day}-stressLevel`}
                             value={dayDetails.stressLevel}
@@ -163,7 +163,7 @@ const AddUserProfile = ({ user_id }) => {
                         />
                     </div>
                     <div className="col-10 text-center p-2">
-                        <label className='d-block' htmlFor={`${day}-nutrition`}>Alimentación</label>
+                        <label className='d-block' htmlFor={`${day}-nutrition`}>Alimentacion</label>
                         <Dropdown
                             id={`${day}-nutrition`}
                             value={dayDetails.nutrition}
@@ -241,30 +241,7 @@ const AddUserProfile = ({ user_id }) => {
 
         </div>
 
-                    {/*<Dialog header={`Preguntas Frecuentes`} visible={visible} style={{ width: '90vw' }} modal onHide={closeDialog}>
-                    <div>
-                        <div>
-                            <h3>¿Qué es la fatiga?</h3>
-                            <p>Es la sensación de cansancio, determinada por la disminución del rendimiento deportivo.</p>
-                        </div>
-                        <div>
-                            <h3>¿Qué es el NEAT?</h3>
-                            <p>El NEAT, por sus siglas en inglés, significa non-exercise activity thermogenesis (termogénesis producida por actividad fuera del ejercicio) y se refiere al gasto energético que resulta de todas las acciones, más o menos rutinarias, que no se consideran deportivas, pero que requieren un esfuerzo físico.</p>
-                        </div>
-                        <div>
-                            <h3>¿Qué son los DOMS?</h3>
-                            <p>Los DOMS, o "Agujetas", es la aparición de un tipo de molestia muscular que empieza aproximadamente a las 24 horas después de la realización de un ejercicio.</p>
-                        </div>
-                        <div>
-                            <h3>¿Qué es el estrés?</h3>
-                            <p>El estrés es un sentimiento de tensión física o emocional. Puede provenir de cualquier situación o pensamiento que lo haga sentir a uno frustrado, furioso o nervioso. El estrés es la reacción de su cuerpo a un desafío o demanda. Cada persona tiene un umbral distinto de estrés, por ello, dependiendo la situación por la que se atraviese, lo considerará algo más grave o leve.</p>
-                        </div>
-                        <div>
-                            <h3>¿Qué es la "alimentación"?</h3>
-                            <p>Por alimentación, se refiere a la calidad de alimento que se ingiere, brindando la energía necesaria para entrenar, y ayudar a cumplir los objetivos tanto estéticos como competitivos.</p>
-                        </div>
-                    </div>
-                    </Dialog>*/}
+                    
     );
 };
 
