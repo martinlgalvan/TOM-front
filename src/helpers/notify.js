@@ -1,14 +1,22 @@
 import { ToastContainer, toast } from 'react-toastify';
 const TOASTID = "LOADER_ID"
 
+const getToastPosition = () => {
+  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+    return "bottom-center";
+  }
+  return "top-right";
+};
+
 const notifyA = (message) => {
 
   toast.loading(message, {
-      position:           "top-right",
+      position:           getToastPosition(),
       toastId:            TOASTID, 
       autoClose:          false, 
       hideProgressBar:    true,
       pauseOnFocusLoss:   false,
+      draggable:          false,
       limit: 1 
   })
 };
@@ -31,7 +39,7 @@ const updateToast = () =>
 
 const instantToast = (message) => 
   toast.success(message, {
-    position: "top-right",
+    position: getToastPosition(),
     autoClose:          300, 
     hideProgressBar: true,
     closeOnClick: true,
