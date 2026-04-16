@@ -1,8 +1,8 @@
-import { API_BASE } from './apiFetch.js'
+import { API_BASE, apiFetch } from './apiFetch.js'
 
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function find(id) {
-    return fetch(`${API_BASE}/api/users/${id}`, {
+    return apiFetch(`${API_BASE}/api/users/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ async function find(id) {
 
 //Crea alumnos
 async function createAlumno(id, user) {
-  const response = await fetch(`${API_BASE}/api/users/${id}`, {
+  const response = await apiFetch(`${API_BASE}/api/users/${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ JSON.parseSafe = s => { try { return JSON.parse(s) } catch { return {} } };
 
 //Elimino alumnos
 async function deleteUser(id) {
-    return fetch(`${API_BASE}/api/user/${id}`, {
+    return apiFetch(`${API_BASE}/api/user/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ async function deleteUser(id) {
 
  async function findWithLastWeek(id) {
   const url = `${API_BASE}/api/users/${id}?withLastWeek=true`;
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ async function deleteUser(id) {
 //Busca a un alumno
 async function findUserById(id) {
     try {
-        const response = await fetch(`${API_BASE}/api/user/${id}`, {
+        const response = await apiFetch(`${API_BASE}/api/user/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ async function findUserById(id) {
 
 //Encontrar dias
 async function findDays(id) {
-    return fetch(`${API_BASE}/api/users/routine/${id}/createDay`, {
+    return apiFetch(`${API_BASE}/api/users/routine/${id}/createDay`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ async function findDays(id) {
 //Obtiene todos los ejercicios
 
 /*async function findExercises(id) {
-    return fetch(`${API_BASE}/api/day/${id}/exercise`, {
+    return apiFetch(`${API_BASE}/api/day/${id}/exercise`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -163,7 +163,7 @@ async function findDays(id) {
 //Agrega un ejercicio a un dia 
 
 async function addExerciseToDay(id, exercise) {
-    return fetch(`${API_BASE}/api/day/${id}/exercise`, {
+    return apiFetch(`${API_BASE}/api/day/${id}/exercise`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ async function addExerciseToDay(id, exercise) {
 
 //Elimina un ejercicio dependiendo el dia y el ejercicio
 async function deleteExercise(idDay, idExercise) {
-    return fetch(`${API_BASE}/api/day/${idDay}/exercise/${idExercise}`, {
+    return apiFetch(`${API_BASE}/api/day/${idDay}/exercise/${idExercise}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ async function deleteExercise(idDay, idExercise) {
 
 
 async function editExercise(idDay, idExercise, exercise) {
-    return fetch(`${API_BASE}/api/day/${idDay}/exercise/${idExercise}`, {
+    return apiFetch(`${API_BASE}/api/day/${idDay}/exercise/${idExercise}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ async function editExercise(idDay, idExercise, exercise) {
 
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function findRoutineById(id) {
-    return fetch(`${API_BASE}/api/user/${id}/routine`, {
+    return apiFetch(`${API_BASE}/api/user/${id}/routine`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -229,7 +229,7 @@ async function findRoutineById(id) {
 
 //Busca los alumnos del entrenador(que tienen entrenador_id)
 async function getProfileById(id) {
-    return fetch(`${API_BASE}/api/user/${id}/routine/clon`, {
+    return apiFetch(`${API_BASE}/api/user/${id}/routine/clon`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -249,7 +249,7 @@ async function getProfileById(id) {
 
 
 async function editProfile(user_id, data) {
-    const response = await fetch(`${API_BASE}/api/user/${user_id}/routine`, {
+    const response = await apiFetch(`${API_BASE}/api/user/${user_id}/routine`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -276,7 +276,7 @@ async function editProfile(user_id, data) {
   }
 
     async function getAnnouncementsByCreator(id) {
-    const response = await fetch(`${API_BASE}/api/announcements/creator/${id}`, {
+    const response = await apiFetch(`${API_BASE}/api/announcements/creator/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -302,7 +302,7 @@ async function editProfile(user_id, data) {
   }
 
   async function createAnnouncement(data) {
-    const response = await fetch(`${API_BASE}/api/announcements`, {
+    const response = await apiFetch(`${API_BASE}/api/announcements`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -330,7 +330,7 @@ async function editProfile(user_id, data) {
 
   
   async function editAnnouncement(id, updates) {
-    const response = await fetch(`${API_BASE}/api/announcements/${id}`, {
+    const response = await apiFetch(`${API_BASE}/api/announcements/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -357,7 +357,7 @@ async function editProfile(user_id, data) {
   }
 
     async function deleteAnnouncement(id) {
-    const response = await fetch(`${API_BASE}/api/announcements/${id}`, {
+    const response = await apiFetch(`${API_BASE}/api/announcements/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -385,7 +385,7 @@ async function editProfile(user_id, data) {
 
 
   async function getUnreadAnnouncements(id) {
-    const response = await fetch(`${API_BASE}/api/announcements/user/${id}`, {
+    const response = await apiFetch(`${API_BASE}/api/announcements/user/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -412,7 +412,7 @@ async function editProfile(user_id, data) {
 
 
     async function markAnnouncementRead(announcementId, userId) {
-    const response = await fetch(`${API_BASE}/api/announcements/${announcementId}/read/${userId}`, {
+    const response = await apiFetch(`${API_BASE}/api/announcements/${announcementId}/read/${userId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -438,7 +438,7 @@ async function editProfile(user_id, data) {
   }
 
   async function getAnnouncementsHistory(userId) {
-  const response = await fetch(`${API_BASE}/api/announcements/user/${userId}/history`, {
+  const response = await apiFetch(`${API_BASE}/api/announcements/user/${userId}/history`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -450,7 +450,7 @@ async function editProfile(user_id, data) {
 }
 
   async function getAnnouncementViewsWithNames(announcementId) {
-  const response = await fetch(`${API_BASE}/api/announcements/${announcementId}/viewers`, {
+  const response = await apiFetch(`${API_BASE}/api/announcements/${announcementId}/viewers`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -462,7 +462,7 @@ async function editProfile(user_id, data) {
 }
 
   async function getAnnouncementViewCounts(creatorId) {
-  const response = await fetch(`${API_BASE}/api/announcements/${creatorId}/views-count`, {
+  const response = await apiFetch(`${API_BASE}/api/announcements/${creatorId}/views-count`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -474,7 +474,7 @@ async function editProfile(user_id, data) {
 }
 
 async function updatePaymentInfo(userId, paymentInfo) {
-  return fetch(`${API_BASE}/api/user/${userId}/payment-info`, {
+  return apiFetch(`${API_BASE}/api/user/${userId}/payment-info`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -491,14 +491,14 @@ async function getOpenersProfileData(userId) {
   const profile = await getProfileById(userId).catch(() => ({}));
 
   const [plansResponse, templatesResponse] = await Promise.all([
-    fetch(`${API_BASE}/api/user/${userId}/openers/plans`, {
+    apiFetch(`${API_BASE}/api/user/${userId}/openers/plans`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'auth-token': localStorage.getItem('token')
       }
     }).then(async (response) => (response.ok ? response.json() : null)).catch(() => null),
-    fetch(`${API_BASE}/api/coach/${userId}/openers/templates`, {
+    apiFetch(`${API_BASE}/api/coach/${userId}/openers/templates`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -527,7 +527,7 @@ async function getOpenersProfileData(userId) {
 }
 
 async function saveOpenersPlans(userId, plans) {
-  const response = await fetch(`${API_BASE}/api/user/${userId}/openers/plans`, {
+  const response = await apiFetch(`${API_BASE}/api/user/${userId}/openers/plans`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -544,7 +544,7 @@ async function saveOpenersPlans(userId, plans) {
 }
 
 async function saveOpenersTemplates(userId, templates) {
-  const response = await fetch(`${API_BASE}/api/coach/${userId}/openers/templates`, {
+  const response = await apiFetch(`${API_BASE}/api/coach/${userId}/openers/templates`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

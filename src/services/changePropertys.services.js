@@ -1,9 +1,9 @@
-﻿import { API_BASE } from './apiFetch.js'
+import { API_BASE, apiFetch } from './apiFetch.js'
 
  async function changeProperty(userId, category) {
   const token = localStorage.getItem('token');
 
-  const res = await fetch(`${API_BASE}/api/user/${userId}`, {
+  const res = await apiFetch(`${API_BASE}/api/user/${userId}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

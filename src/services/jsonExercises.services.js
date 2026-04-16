@@ -1,7 +1,7 @@
-﻿import { API_BASE } from './apiFetch.js'
+import { API_BASE, apiFetch } from './apiFetch.js'
 
 async function findExercises(id) {
-    return fetch(`${API_BASE}/api/exercises/${id}`, {
+    return apiFetch(`${API_BASE}/api/exercises/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ async function findExercises(id) {
 
 //Crea alumnos
 async function createExercise(id, user) {
-    return fetch(`${API_BASE}/api/exercises/${id}`, {
+    return apiFetch(`${API_BASE}/api/exercises/${id}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ async function createExercise(id, user) {
 //Editar un dia
 
 async function editExercise(exercise_id, exercise) {
-    return fetch(`${API_BASE}/api/exercises/${exercise_id}`, {
+    return apiFetch(`${API_BASE}/api/exercises/${exercise_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ async function editExercise(exercise_id, exercise) {
 
 //Eliminar un dia por su ID
 async function deleteExercise(id) {
-    return fetch(`${API_BASE}/api/exercises/${id}`, {
+    return apiFetch(`${API_BASE}/api/exercises/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

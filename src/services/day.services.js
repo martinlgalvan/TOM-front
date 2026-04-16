@@ -1,8 +1,8 @@
-﻿import { API_BASE } from './apiFetch.js'
+import { API_BASE, apiFetch } from './apiFetch.js'
 
 //Crea un dia
 async function createDay(name, week_id) {
-    return fetch(`${API_BASE}/api/week/${week_id}/day`, {
+    return apiFetch(`${API_BASE}/api/week/${week_id}/day`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ async function createDay(name, week_id) {
 //Editar un dia
 
 async function editDay(week_id, day_id, name) {
-    return fetch(`${API_BASE}/api/week/${week_id}/day/${day_id}`, {
+    return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ async function editDay(week_id, day_id, name) {
 }
 
 async function deleteDay(week_id, day_id) {
-    return fetch(`${API_BASE}/api/week/${week_id}/day/${day_id}`, {
+    return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

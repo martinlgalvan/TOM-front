@@ -19,6 +19,8 @@ export function authJsonHeaders(extra = {}) {
   }
 }
 
+let refreshPromise = null
+
 async function refreshAccessToken() {
   const res = await fetch(buildApiUrl('/api/auth/refresh'), {
     method: 'POST',
@@ -31,6 +33,21 @@ async function refreshAccessToken() {
     return data.token
   }
   return null
+}
+
+function getRefreshPromise() {
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = null
+    })
+  }
+  return refreshPromise
+}
+
+function emitAuthExpired() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('tom-auth-expired'))
+  }
 }
 
 export async function apiFetch(path, options = {}) {
@@ -51,8 +68,11 @@ export async function apiFetch(path, options = {}) {
   if (first.status !== 401) return first
 
   // intento refresh
-  const newToken = await refreshAccessToken()
-  if (!newToken) return first
+  const newToken = await getRefreshPromise()
+  if (!newToken) {
+    emitAuthExpired()
+    return first
+  }
 
   // reintento request original con token nuevo
   const headers2 = {

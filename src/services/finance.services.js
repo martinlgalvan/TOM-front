@@ -1,6 +1,6 @@
 // services/finance.services.js
 
-import { API_BASE } from './apiFetch.js'
+import { API_BASE, apiFetch } from './apiFetch.js'
 
 function authHeaders() {
   return {
@@ -49,7 +49,7 @@ async function getFinanceLedger({
   if (!ownerId) throw new Error('ownerId no disponible');
   const query = buildQuery({ from, to, limit, sort });
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/ledger${query}`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/ledger${query}`, {
     method: 'GET',
     headers: authHeaders()
   });
@@ -73,7 +73,7 @@ async function listFinanceItems({
   if (!ownerId) throw new Error('ownerId no disponible');
   const query = buildQuery({ tipo, from, to, page, limit, sort });
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/items${query}`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/items${query}`, {
     method: 'GET',
     headers: authHeaders()
   });
@@ -92,7 +92,7 @@ async function getFinanceSummary({
   if (!ownerId) throw new Error('ownerId no disponible');
   const query = buildQuery({ from, to });
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/summary${query}`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/summary${query}`, {
     method: 'GET',
     headers: authHeaders()
   });
@@ -111,7 +111,7 @@ async function getFinanceSummary({
 async function createFinanceExpense(payload, ownerId = getOwnerId()) {
   if (!ownerId) throw new Error('ownerId no disponible');
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/expense`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/expense`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify(payload)
@@ -127,7 +127,7 @@ async function createFinanceExpense(payload, ownerId = getOwnerId()) {
 async function createFinanceCashflow(payload, ownerId = getOwnerId()) {
   if (!ownerId) throw new Error('ownerId no disponible');
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/cashflow`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/cashflow`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify(payload)
@@ -143,7 +143,7 @@ async function createFinanceCashflow(payload, ownerId = getOwnerId()) {
 async function createFinanceExtraSale(payload, ownerId = getOwnerId()) {
   if (!ownerId) throw new Error('ownerId no disponible');
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/extrasale`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/extrasale`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify(payload)
@@ -164,7 +164,7 @@ async function updateFinanceItem(itemId, patch, ownerId = getOwnerId()) {
   if (!ownerId) throw new Error('ownerId no disponible');
   if (!itemId) throw new Error('itemId requerido');
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/${itemId}`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/${itemId}`, {
     method: 'PUT',
     headers: authHeaders(),
     body: JSON.stringify(patch)
@@ -180,7 +180,7 @@ async function deleteFinanceItem(itemId, ownerId = getOwnerId()) {
   if (!ownerId) throw new Error('ownerId no disponible');
   if (!itemId) throw new Error('itemId requerido');
 
-  const res = await fetch(`${API_BASE}/api/finance/${ownerId}/${itemId}`, {
+  const res = await apiFetch(`${API_BASE}/api/finance/${ownerId}/${itemId}`, {
     method: 'DELETE',
     headers: authHeaders()
   });

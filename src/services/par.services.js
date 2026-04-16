@@ -1,7 +1,7 @@
-﻿import { API_BASE } from './apiFetch.js'
+import { API_BASE, apiFetch } from './apiFetch.js'
 
 async function getPAR(user_id) {
-    return fetch(`${API_BASE}/api/user/${user_id}/routine/par`, {
+    return apiFetch(`${API_BASE}/api/user/${user_id}/routine/par`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ async function getPAR(user_id) {
 
 //Crea un papr
 async function createPAR(routine, user_id) {
-    return fetch(`${API_BASE}/api/user/${user_id}/routine/par`, {
+    return apiFetch(`${API_BASE}/api/user/${user_id}/routine/par`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ async function createPAR(routine, user_id) {
 }
 
 async function updatePAR(id, updatedPAR) {
-    return fetch(`${API_BASE}/api/par/${id}`, {
+    return apiFetch(`${API_BASE}/api/par/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ async function updatePAR(id, updatedPAR) {
 }
 
 async function deletePAR(id) {
-    return fetch(`${API_BASE}/api/par/${id}`, {
+    return apiFetch(`${API_BASE}/api/par/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ async function deletePAR(id) {
 
 
 async function createPARroutine(routine, user_id) {
-    return fetch(`${API_BASE}/api/user/${user_id}/routine/par/week`, {
+    return apiFetch(`${API_BASE}/api/user/${user_id}/routine/par/week`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ async function createPARroutine(routine, user_id) {
 }
 
 async function createProgressionsPARToUsers(template, userIds) {
-    return fetch(`${API_BASE}/api/routine/progression/multi`, {
+    return apiFetch(`${API_BASE}/api/routine/progression/multi`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ async function createProgressionsPARToUsers(template, userIds) {
 }
 
 async function createProgressionFromPAR(par_id) {
-    return fetch(`${API_BASE}/api/par/${par_id}/progression`, {
+    return apiFetch(`${API_BASE}/api/par/${par_id}/progression`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

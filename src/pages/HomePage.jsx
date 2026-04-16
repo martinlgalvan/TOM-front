@@ -144,7 +144,7 @@ function HomePage() {
                     </IconButton>
                   </div>
                   <div class="blog-slider__content ">
-                    <div class="blog-slider__title">?Sos entrenador?</div>
+                    <div class="blog-slider__title">Sos entrenador?</div>
                     <div class="blog-slider__text">Ingresa y mira las caracteristicas de nuestro software. </div>
                     <button  class="blog-slider__button" onClick={() => handleUserType('entrenador')}>Ver</button>
                   </div>

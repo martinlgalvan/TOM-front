@@ -18,7 +18,7 @@ async function generateQR(user_id) {
 }
 
  async function loginWithQR(qrToken) {
-  const res = await fetch(`${API_BASE}/api/qr-login`, {
+  const res = await apiFetch(`${API_BASE}/api/qr-login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

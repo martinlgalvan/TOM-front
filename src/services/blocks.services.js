@@ -1,9 +1,9 @@
-﻿import { API_BASE } from './apiFetch.js'
+import { API_BASE, apiFetch } from './apiFetch.js'
 
 const BASE_URL = `${API_BASE}/api/users`;
 
 export async function getBlocks(userId) {
-  const response = await fetch(`${API_BASE}/api/users/${userId}?blocks=true`, {
+  const response = await apiFetch(`${API_BASE}/api/users/${userId}?blocks=true`, {
     method: 'GET', // CORREGIDO
     headers: {
       'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ export async function getBlocks(userId) {
 }
 
   export async function createBlock(userId, blockData) {
-    const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+    const response = await apiFetch(`${API_BASE}/api/users/${userId}`, {
       method: 'POST', // CORREGIDO
       headers: {
         'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export async function getBlocks(userId) {
   }
 
 export async function cloneBlock(userId, blockId) {
-  const res = await fetch(`${BASE_URL}/${userId}`, {
+  const res = await apiFetch(`${BASE_URL}/${userId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ export async function cloneBlock(userId, blockId) {
 }
 
 export async function updateBlock(blockId, blockData) {
-    const res = await fetch(`${API_BASE}/api/block/${blockId}`, {
+    const res = await apiFetch(`${API_BASE}/api/block/${blockId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export async function updateBlock(blockId, blockData) {
   }
 
   export async function deleteBlock(blockId) {
-    const res = await fetch(`${API_BASE}/api/block/${blockId}`, {
+    const res = await apiFetch(`${API_BASE}/api/block/${blockId}`, {
       method: 'DELETE',
       headers: {
         'auth-token': localStorage.getItem('token')

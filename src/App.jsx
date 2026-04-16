@@ -370,6 +370,32 @@ const handleDismissAnnouncement = async () => {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      if (!localStorage.getItem('token')) return;
+
+      setOpenDialogLogout(false);
+      setMenuSidebar(false);
+      setIsAutenticated(false);
+
+      document.documentElement.dataset.theme = 'light';
+      document.body.classList.remove('mobile-dark-mode');
+      document.body.style.backgroundColor = '';
+      document.body.style.color = '';
+
+      localStorage.clear();
+      toast.info('Tu sesion expiro. Volve a iniciar sesion.', {
+        position: 'bottom-center',
+        autoClose: 2500,
+        hideProgressBar: true,
+      });
+      navigate('/login');
+    };
+
+    window.addEventListener('tom-auth-expired', handleAuthExpired);
+    return () => window.removeEventListener('tom-auth-expired', handleAuthExpired);
+  }, [navigate]);
+
   // ---- Title dinamico (solo en contexto de usuario y no excluido) ----
   useEffect(() => {
     const baseTitle = "TOM - Planificacion digital";
