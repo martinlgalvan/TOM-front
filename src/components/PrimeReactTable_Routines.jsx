@@ -161,8 +161,7 @@ export default function PrimeReactTable_Routines({
 
   const handleAssignBlock = async (routineId, block) => {
     try {
-      const payload = block === null ? { block: null } : block;
-      await RoutineService.assignBlockToRoutine(routineId, payload);
+      await RoutineService.assignBlockToRoutine(routineId, block || null);
       const selectedBlock = block?._id ? { ...block, _id: String(block._id) } : null;
 
       setRoutine((prev) =>

@@ -348,10 +348,9 @@ function UserRoutineEditPage() {
    : option.name;
 
  // === ACTUALIZADO: tambien refresca el bloque mostrado dentro del dialogo
- const handleAssignBlock = async (routineId, block) => {
+  const handleAssignBlock = async (routineId, block) => {
    try {
-      const payload = block === null ? { block: null } : block;
-      await WeekService.assignBlockToRoutine(routineId, payload);
+      await WeekService.assignBlockToRoutine(routineId, block || null);
       const selectedBlock = block?._id ? { ...block, _id: String(block._id) } : null;
 
       // actualizar lista de semanas

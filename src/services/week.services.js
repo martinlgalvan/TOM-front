@@ -100,20 +100,22 @@ async function editWeek(week_id, routine) {
 }
 
 async function assignBlockToRoutine(weekId, block) {
-    return apiFetch(`${API_BASE}/api/week/${weekId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'auth-token': localStorage.getItem('token')
-      },
-      body: JSON.stringify({
-        week_id: weekId, // necesario para que el backend lo reconozca
-        block
-      })
+    const normalizedBlock = block?.block === null && !block?._id ? null : block;
+
+    return apiFetch(`${API_BASE}/api/week/${weekId}/properties`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify({
+            block: normalizedBlock || null,
+            block_id: normalizedBlock?._id || null
+        })
     })
     .then(res => {
-      if (!res.ok) throw new Error("Error actualizando bloque");
-      return res.json();
+        if (!res.ok) throw new Error("Error actualizando bloque");
+        return res.json();
     });
 }
 

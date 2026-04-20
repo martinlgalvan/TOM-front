@@ -12,8 +12,6 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 
 export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
   const [name, setName] = useState("");
@@ -210,25 +208,21 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
                   <CategoryOutlinedIcon fontSize="small" />
                 </span>
 
-                <div className="flex-grow-1">
-                  <TextField
-                    select
-                    fullWidth
-                    variant="outlined"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    onBlur={() => setTouched(prev => ({ ...prev, category: true }))}
-                    error={touched.category && !category}
-                    placeholder="Seleccione una categoria"
-                    size="small"
-                  >
-                    {nivelOptions.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </div>
+                <select
+                  id="category"
+                  className={`form-select border-start-0 ${touched.category && !category ? 'is-invalid' : ''}`}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  onBlur={() => setTouched(prev => ({ ...prev, category: true }))}
+                  required
+                >
+                  <option value="" disabled>Seleccione una categoria</option>
+                  {nivelOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {touched.category && !category && (
