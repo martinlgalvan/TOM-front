@@ -3974,7 +3974,7 @@ function colorItemTemplate(option) {
                             </th>
                               
                           
-                            <th className="pb-1 pb-1 mx-0  "  >
+                            <th className="pb-1 pb-1 mx-0  " colSpan={2}  >
 
                               <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => incrementAllReps()} >
                                 <Tooltip placement="top" arrow title={ "Sumaras una repeticion a todos los ejercicios." } enterDelay={0} leaveDelay={0}>
@@ -3987,7 +3987,7 @@ function colorItemTemplate(option) {
 
                             </th>
 
-                              <th className="pb-1 pb-1 mx-0  " colSpan={2}  >
+                              <th className="pb-1 pb-1 mx-0  " colSpan={3}  >
 
                                 <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={AddBlock}>
                                   <Tooltip placement="top" arrow title={ "En vez de agregar un ejercicio, primero agregas un bloque para luego crear los ejercicios que desees dentro de el. Tu alumno vera el bloque. Por ejemplo, podes agregar un bloque de fuerza y luego otro de auxiliares." } enterDelay={0} leaveDelay={0}>
@@ -4000,7 +4000,7 @@ function colorItemTemplate(option) {
 
                             </th>
 
-                            <th className="pb-1 pb-1 mx-0  " colSpan={3}  >
+                            <th className="pb-1 pb-1 mx-0  " colSpan={2}  >
                                 <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => setDialogAllWeeks(true)}>
                                   <Tooltip placement="top" arrow title={ "Podras ver de manera rapida todas las semanas anteriores de este alumno." } enterDelay={0} leaveDelay={0}>
                                     <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">

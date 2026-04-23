@@ -463,6 +463,20 @@ p {
     box-shadow: none !important;
   }
 
+  .dayEditDesktopTable thead tr:first-child .bulkAdjustHeaderBtn{
+    flex-wrap: nowrap;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .dayEditDesktopTable thead tr:first-child .bulkAdjustHeaderBtn span{
+    white-space: nowrap;
+  }
+
+  .dayEditDesktopTable thead tr:first-child .bulkAdjustHeaderIcon{
+    flex: 0 0 auto;
+  }
+
   .bulkAdjustHeaderBtn:hover,
   .bulkAdjustHeaderBtn:focus,
   .bulkAdjustHeaderBtn:active{
