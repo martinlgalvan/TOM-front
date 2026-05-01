@@ -1,8 +1,8 @@
-const DEV_API_BASE = (import.meta.env.VITE_API_BASE || '').trim()
+const ENV_API_BASE = (import.meta.env.VITE_API_BASE || '').trim().replace(/\/+$/, '')
 
-// En produccion usamos siempre /api sobre el mismo dominio para no depender
-// de cookies cross-site. En desarrollo podes overridear con VITE_API_BASE.
-export const API_BASE = import.meta.env.DEV ? DEV_API_BASE : ''
+// Si existe VITE_API_BASE, lo usamos tanto en desarrollo como en produccion.
+// Si no existe, caemos a mismo dominio.
+export const API_BASE = ENV_API_BASE || ''
 
 export function buildApiUrl(path = '') {
   if (!path) return API_BASE
