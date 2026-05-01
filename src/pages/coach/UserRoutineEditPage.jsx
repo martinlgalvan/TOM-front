@@ -194,14 +194,57 @@ function UserRoutineEditPage() {
       return next;
     });
   };
-  
+
+  const getContrastYIQ = (hexcolor) => {
+ if (!hexcolor) return "black";
+ const h = hexcolor.replace("#", "");
+ const r = parseInt(h.substr(0, 2), 16);
+ const g = parseInt(h.substr(2, 2), 16);
+ const b = parseInt(h.substr(4, 2), 16);
+ const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+ return yiq >= 150 ? "black" : "white";
+  };
+
+  const resolveWeekBlock = React.useCallback((week, availableBlocks = blocks) => {
+   if (!week) return week;
+
+   const blockId = week.block?._id?.toString() || week.block_id?.toString() || null;
+   if (!blockId) {
+     return week.block || week.block_id ? { ...week, block: null, block_id: null } : week;
+   }
+
+   const resolvedBlock =
+     availableBlocks.find((block) => String(block._id) === String(blockId)) ||
+     (week.block ? { ...week.block, _id: String(blockId) } : null);
+
+   return {
+     ...week,
+     block: resolvedBlock,
+     block_id: String(blockId)
+   };
+  }, [blocks]);
+
+  const loadBlocks = React.useCallback(async () => {
+    if (!trainer_id) {
+      setBlocks([]);
+      return;
+    }
+
+    try {
+      const raw = await BlockService.getBlocks(trainer_id);
+      const normalized = Array.isArray(raw)
+        ? raw.map((block) => ({ ...block, _id: block._id.toString() }))
+        : [];
+      setBlocks(normalized);
+    } catch (error) {
+      console.error("Error cargando bloques", error);
+      setBlocks([]);
+    }
+  }, [trainer_id]);
 
   useEffect(() => {
-    BlockService.getBlocks(trainer_id).then((raw) => {
-      const normalized = raw.map((b) => ({ ...b, _id: b._id.toString() }));
-      setBlocks(normalized);
-    });
-  }, [trainer_id]);
+    loadBlocks();
+  }, [loadBlocks]);
 
   useEffect(() => {
     setTourSteps([
@@ -272,7 +315,7 @@ function UserRoutineEditPage() {
 
           const effectiveIso = effectiveMs ? new Date(effectiveMs).toISOString() : null;
 
-          return {
+          return resolveWeekBlock({
             ...w,
             // Normalizaciones previas
             block_id: w.block_id ? w.block_id.toString() : null,
@@ -287,7 +330,7 @@ function UserRoutineEditPage() {
 
             created_at: effectiveIso || w.created_at || null,
             created_label: effectiveLabel
-          };
+          });
         })
         .sort((a, b) => {
           const aT = a.effectiveDate ? Date.parse(a.effectiveDate) : 0;
@@ -300,7 +343,14 @@ function UserRoutineEditPage() {
         setLoading(false);
         NotifyHelper.updateToast();
       });
-  }, [status, id]);
+  }, [status, id, resolveWeekBlock]);
+
+  useEffect(() => {
+    if (!blocks.length) return;
+
+    setRoutine((prev) => prev.map((week) => resolveWeekBlock(week)));
+    setBlockDialogWeek((prev) => (prev ? resolveWeekBlock(prev) : prev));
+  }, [blocks, resolveWeekBlock]);
 
   useEffect(() => {
     UserServices.getProfileById(id)
@@ -321,17 +371,7 @@ function UserRoutineEditPage() {
       });
   }, [id]);
 
-  const getContrastYIQ = (hexcolor) => {
- if (!hexcolor) return "black";
- const h = hexcolor.replace("#", "");
- const r = parseInt(h.substr(0, 2), 16);
- const g = parseInt(h.substr(2, 2), 16);
- const b = parseInt(h.substr(4, 2), 16);
- const yiq = (r * 299 + g * 587 + b * 114) / 1000;
- return yiq >= 150 ? "black" : "white";
- };
-
- const buildOptions = (currentBlock) => {
+  const buildOptions = (currentBlock) => {
  const base = [
    { name: "Anadir/editar bloques", _id: "add-new-block" },
    { name: "Sin bloque", _id: null },
@@ -1058,8 +1098,9 @@ function FabMenu({ id, items, position = "left" }) {
   };
 
 const handleEditBlock = (w) => {
-   const blockId = w.block_id?.toString() || w.block?._id?.toString() || null;
-   setBlockDialogWeek(w);
+   const resolvedWeek = resolveWeekBlock(w);
+   const blockId = resolvedWeek.block_id?.toString() || resolvedWeek.block?._id?.toString() || null;
+   setBlockDialogWeek(resolvedWeek);
    setSelectedBlockId(blockId);
    setShowBlockDialog(true);
  };
@@ -1405,11 +1446,12 @@ const rightDialItems = [
             <div className='col-12'>
               <div className='row justify-content-center g-3'>
                 {routine.map((w) => {
+                  const resolvedWeek = resolveWeekBlock(w);
                   const isOpen = expanded.has(w._id);
                   const isHidden = (w?.visibility || 'visible') === 'hidden';
 
-                  const blockColor = w?.block?.color || w?.block?.colorHex || '#6c757d';
-                  const blockName = w?.block?.name || 'Sin bloque';
+                  const blockColor = resolvedWeek?.block?.color || resolvedWeek?.block?.colorHex || '#6c757d';
+                  const blockName = resolvedWeek?.block?.name || 'Sin bloque';
 
                   const trainerDateLabel = formatTrainerCreatedDate(w);
                   const athleteDateLabel = formatAthleteDate(w);
@@ -1529,7 +1571,7 @@ const rightDialItems = [
                           <button
                             type="button"
                             className="week-mobile-edit-block"
-                            onClick={() => handleEditBlock(w)}
+                            onClick={() => handleEditBlock(resolvedWeek)}
                             title="Editar bloque"
                           >
                             <Pencil size={14} className="me-1" /> Editar bloque
@@ -1915,6 +1957,8 @@ const rightDialItems = [
 <Dialog
   header="Asignar bloque a la semana"
   visible={showBlockDialog}
+  appendTo={document.body}
+  className="coachRoutineAuxDialog"
   style={{ width: '90vw', maxWidth: 520 }}
   onHide={() => setShowBlockDialog(false)}
 >
@@ -1940,6 +1984,9 @@ const rightDialItems = [
         dataKey="_id"
         optionLabel="name"
         optionValue="_id"
+        appendTo={document.body}
+        panelClassName="coachRoutineBlockDropdownPanel"
+        scrollHeight="280px"
         className="w-100"
         placeholder="Seleccionar bloque"
         onChange={(e) => handleBlockDropdownChange(blockDialogWeek._id, e.value)}
@@ -1961,14 +2008,12 @@ const rightDialItems = [
 <Dialog
   header="Gestion de bloques"
   visible={showManageBlocksDialog}
+  appendTo={document.body}
+  className="coachRoutineAuxDialog"
   style={{ width: '90vw', maxWidth: 900 }}
   onHide={() => {
     setShowManageBlocksDialog(false);
-    // refrescamos lista de bloques por si el usuario creo/edito colores/nombres
-    BlockService.getBlocks(trainer_id).then((raw) => {
-      const normalized = raw.map((b) => ({ ...b, _id: b._id.toString() }));
-      setBlocks(normalized);
-    });
+    loadBlocks();
   }}
 >
   <BlocksListPage id={trainer_id} />

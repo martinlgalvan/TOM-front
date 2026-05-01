@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import * as RoutineService from "../services/week.services.js";
@@ -54,15 +54,30 @@ export default function PrimeReactTable_Routines({
     { label: "Modo dias", value: "days" },
   ];
 
-  useEffect(() => {
-    BlockService.getBlocks(trainer_id).then((raw) => {
-      const normalized = raw.map((b) => ({
-        ...b,
-        _id: b._id.toString(),
-      }));
+  const loadBlocks = useCallback(async () => {
+    if (!trainer_id) {
+      setBlocks([]);
+      return;
+    }
+
+    try {
+      const raw = await BlockService.getBlocks(trainer_id);
+      const normalized = Array.isArray(raw)
+        ? raw.map((block) => ({
+            ...block,
+            _id: block._id.toString(),
+          }))
+        : [];
       setBlocks(normalized);
-    });
+    } catch (error) {
+      console.error("Error cargando bloques", error);
+      setBlocks([]);
+    }
   }, [trainer_id]);
+
+  useEffect(() => {
+    loadBlocks();
+  }, [loadBlocks]);
 
   // estilos: colores de bloque + hover de celdas navegables
   useEffect(() => {
@@ -146,6 +161,9 @@ export default function PrimeReactTable_Routines({
             optionValue="_id"
             placeholder="Seleccionar bloque"
             onChange={(e) => handleBlockDropdownChange(rowData._id, e.value)}
+            appendTo={document.body}
+            panelClassName="coachRoutineBlockDropdownPanel"
+            scrollHeight="280px"
             style={{ width: "100%", backgroundColor }}
             className={`ms-1 borderDropdown rounded-3 ${
               textColor === "white"
@@ -583,8 +601,13 @@ export default function PrimeReactTable_Routines({
       <Dialog
         header="Gestion de bloques"
         visible={showBlockDialog}
-        style={{ width: "50vw" }}
-        onHide={() => setShowBlockDialog(false)}
+        appendTo={document.body}
+        className="coachRoutineAuxDialog"
+        style={{ width: "90vw", maxWidth: 900 }}
+        onHide={() => {
+          setShowBlockDialog(false);
+          loadBlocks();
+        }}
       >
         <BlocksListPage id={trainer_id} />
       </Dialog>

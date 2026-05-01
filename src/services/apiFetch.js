@@ -1,8 +1,8 @@
-const PROD_API_BASE = 'https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app'
+const DEV_API_BASE = (import.meta.env.VITE_API_BASE || '').trim()
 
-export const API_BASE =
-  import.meta.env.VITE_API_BASE ||
-  (import.meta.env.DEV ? 'http://localhost:2022' : PROD_API_BASE)
+// En produccion usamos siempre /api sobre el mismo dominio para no depender
+// de cookies cross-site. En desarrollo podes overridear con VITE_API_BASE.
+export const API_BASE = import.meta.env.DEV ? DEV_API_BASE : ''
 
 export function buildApiUrl(path = '') {
   if (!path) return API_BASE
