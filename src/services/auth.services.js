@@ -1,4 +1,4 @@
-import { apiFetch } from './apiFetch.js'
+import { apiFetch, requestRefreshSession } from './apiFetch.js'
 
 async function login(email, password) {
   const res = await apiFetch('/api/users/login', {
@@ -22,4 +22,10 @@ async function logout() {
   return res.json()
 }
 
-export { login, logout }
+async function refreshSession() {
+  const data = await requestRefreshSession()
+  if (!data?.token || !data?.user) return null
+  return data
+}
+
+export { login, logout, refreshSession }

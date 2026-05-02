@@ -1,8 +1,8 @@
 const ENV_API_BASE = (import.meta.env.VITE_API_BASE || '').trim().replace(/\/+$/, '')
 
-// Si existe VITE_API_BASE, lo usamos tanto en desarrollo como en produccion.
-// Si no existe, caemos a mismo dominio.
-export const API_BASE = ENV_API_BASE || ''
+// En produccion forzamos mismo dominio para que la refresh cookie no dependa de third-party cookies.
+// En desarrollo permitimos override explicito o proxy local.
+export const API_BASE = import.meta.env.PROD ? '' : (ENV_API_BASE || '')
 
 export function buildApiUrl(path = '') {
   if (!path) return API_BASE
@@ -22,7 +22,7 @@ export function authJsonHeaders(extra = {}) {
 let refreshPromise = null
 let refreshPromiseToken = null
 
-async function refreshAccessToken(expectedToken) {
+export async function requestRefreshSession(expectedToken) {
   const res = await fetch(buildApiUrl('/api/auth/refresh'), {
     method: 'POST',
     credentials: 'include'
@@ -34,9 +34,14 @@ async function refreshAccessToken(expectedToken) {
     if (!expectedToken || !currentToken || currentToken === expectedToken) {
       localStorage.setItem('token', data.token)
     }
-    return data.token
+    return data
   }
   return null
+}
+
+async function refreshAccessToken(expectedToken) {
+  const data = await requestRefreshSession(expectedToken)
+  return data?.token || null
 }
 
 function getRefreshPromise(expectedToken) {

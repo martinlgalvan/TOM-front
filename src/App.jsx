@@ -358,16 +358,103 @@ const handleDismissAnnouncement = async () => {
     if (showInstallPopup) showInstallToast();
   }, [showInstallPopup]);
 
+  function isJwtExpired(token) {
+    if (!token) return true;
+
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) return true;
+
+      const normalized = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+      const payload = JSON.parse(window.atob(padded));
+
+      if (!payload?.exp) return true;
+      return payload.exp * 1000 <= Date.now();
+    } catch {
+      return true;
+    }
+  }
+
+  function persistSession(userData, token) {
+    if (!userData || !token) return;
+
+    setUser(userData);
+    setIsAutenticated(true);
+
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', userData.role);
+    localStorage.setItem('_id', userData._id);
+    localStorage.setItem('name', userData.name);
+
+    if (userData.drive !== undefined) localStorage.setItem('drive', userData.drive);
+    else localStorage.removeItem('drive');
+
+    if (userData.email !== undefined) localStorage.setItem('email', userData.email);
+    else localStorage.removeItem('email');
+
+    if (userData.entrenador_id !== undefined) localStorage.setItem('entrenador_id', userData.entrenador_id);
+    else localStorage.removeItem('entrenador_id');
+
+    if (userData.logo !== undefined) localStorage.setItem('logo', userData.logo);
+    else localStorage.removeItem('logo');
+
+    localStorage.setItem('color', userData.color || '#1a1a1a');
+    localStorage.setItem('textColor', userData.textColor || false);
+
+    if (userData.role !== 'admin') {
+      const paidState = userData?.payment_info?.isPaid;
+      if (paidState === null || paidState === undefined) {
+        localStorage.removeItem('state');
+      } else {
+        localStorage.setItem('state', String(paidState));
+      }
+    }
+
+    registerServiceWorker();
+  }
+
   // Auth init
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      setIsAutenticated(true)
-      registerServiceWorker()
-    } else {
-      setIsAutenticated(false)
-    }
-    setIsLoading(false);
+    let isMounted = true;
+
+    const initAuth = async () => {
+      const token = localStorage.getItem('token');
+
+      if (token && !isJwtExpired(token)) {
+        if (!isMounted) return;
+        setIsAutenticated(true);
+        registerServiceWorker();
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const session = await authService.refreshSession();
+        if (!isMounted) return;
+
+        if (session?.token && session?.user) {
+          persistSession(session.user, session.token);
+        } else {
+          setIsAutenticated(false);
+        }
+      } catch (error) {
+        console.error('No se pudo restaurar la sesion', error);
+        if (isMounted) {
+          setIsAutenticated(false);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -407,35 +494,8 @@ const handleDismissAnnouncement = async () => {
   }, [inUserContext, currentUsername, excludedForTitle]);
 
   async function onLogin(user, token) {
-    setUser(user);
-    setIsAutenticated(true);
-
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', user.role);
-    localStorage.setItem('_id', user._id);
-    localStorage.setItem('name', user.name);
-
+    persistSession(user, token);
     localStorage.setItem('noShowPopup', 'false');
-    if (user.drive != undefined) localStorage.setItem('drive', user.drive);
-
-    localStorage.setItem('email', user.email);
-    localStorage.setItem('entrenador_id', user.entrenador_id);
-    localStorage.setItem('logo', user.logo);
-    localStorage.setItem('color', user.color || '#1a1a1a');
-    localStorage.setItem('textColor', user.textColor || false);
-
-    if (user.role !== 'admin') {
-      const paidState = user?.payment_info?.isPaid;
-      if (paidState === null || paidState === undefined) {
-        localStorage.removeItem('state');
-      } else {
-        localStorage.setItem('state', String(paidState));
-      }
-    }
-
-    // Si NO es admin, dejamos la preferencia de darkmode tal cual estaba en localStorage
-    // (si queres que al login siempre arranque en light en mobile, aca podrias setearlo)
-    navigate(`/`);
   }
 
   function onLogout() {
