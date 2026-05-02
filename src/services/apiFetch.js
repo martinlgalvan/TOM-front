@@ -1,8 +1,10 @@
 const ENV_API_BASE = (import.meta.env.VITE_API_BASE || '').trim().replace(/\/+$/, '')
+const PROD_API_FALLBACK = 'https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app'
 
-// En produccion forzamos mismo dominio para que la refresh cookie no dependa de third-party cookies.
-// En desarrollo permitimos override explicito o proxy local.
-export const API_BASE = import.meta.env.PROD ? '' : (ENV_API_BASE || '')
+// Si existe VITE_API_BASE, lo usamos tanto en desarrollo como en produccion.
+// En produccion, si falta esa env, usamos un fallback explicito a la API publicada.
+// En desarrollo, si falta, caemos a mismo dominio/proxy local.
+export const API_BASE = ENV_API_BASE || (import.meta.env.PROD ? PROD_API_FALLBACK : '')
 
 export function buildApiUrl(path = '') {
   if (!path) return API_BASE
