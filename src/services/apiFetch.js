@@ -25,15 +25,17 @@ let refreshPromise = null
 let refreshPromiseToken = null
 
 export async function requestRefreshSession(expectedToken) {
+  const currentToken = expectedToken || localStorage.getItem('token')
   const res = await fetch(buildApiUrl('/api/auth/refresh'), {
     method: 'POST',
+    headers: currentToken ? { 'auth-token': currentToken } : undefined,
     credentials: 'include'
   })
   if (!res.ok) return null
   const data = await res.json()
   if (data?.token) {
-    const currentToken = localStorage.getItem('token')
-    if (!expectedToken || !currentToken || currentToken === expectedToken) {
+    const storedToken = localStorage.getItem('token')
+    if (!expectedToken || !storedToken || storedToken === expectedToken) {
       localStorage.setItem('token', data.token)
     }
     return data
