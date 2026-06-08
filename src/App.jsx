@@ -281,7 +281,10 @@ function App() {
 
 const handleDismissAnnouncement = async () => {
   const currentAnnouncement = pendingAnnouncements[currentAnnouncementIndex];
-  if (!currentAnnouncement) return;
+  if (!currentAnnouncement) {
+    setShowAnnouncementDialog(false);
+    return;
+  }
 
   try {
     await UserService.markAnnouncementRead(currentAnnouncement._id, id);
@@ -1022,7 +1025,7 @@ const handleDismissAnnouncement = async () => {
       <Dialog
         header={pendingAnnouncements[currentAnnouncementIndex]?.title}
         visible={showAnnouncementDialog}
-        onHide={() => setShowAnnouncementDialog(false)}
+        onHide={handleDismissAnnouncement}
         className='col-10 col-lg-6 text-light '
         footer={
           <button

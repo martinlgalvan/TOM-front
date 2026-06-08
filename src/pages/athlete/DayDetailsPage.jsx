@@ -71,7 +71,6 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 import {
-  Video,
   NotebookText,
   Pencil,
   ArrowUp10,
@@ -616,7 +615,11 @@ const groupSupersets = (items = [], { forBlock = false } = {}) => {
   while (i < items.length) {
     const el = items[i];
 
-    if (el?.type !== 'exercise') { out.push(el); i++; continue; }
+    if (el?.type !== 'exercise') {
+      out.push({ ...el, _origIndex: i });
+      i++;
+      continue;
+    }
 
     const tag = parseSupersetTag(el.numberExercise ?? el.number ?? el.numberCircuit);
     if (!tag) { out.push(el); i++; continue; }
@@ -1065,13 +1068,49 @@ const handleTechnicalLogChange = React.useCallback((entries) => {
         setEditExerciseMobile(false);
     };
 
+    const getExerciseVideo = (object) => {
+      if (!object) return '';
+      return object.video || object.videoUrl || object.linkVideo || object.urlVideo || object.name?.video || object.name?.videoUrl || '';
+    };
+
+    const getExerciseIsImage = (object) => {
+      const video = getExerciseVideo(object);
+      return Boolean(object?.isImage) || /\.(png|jpe?g|webp|gif|avif)(\?.*)?$/i.test(String(video));
+    };
+
+    const withResolvedVideo = (object) => ({
+      ...object,
+      video: getExerciseVideo(object),
+      isImage: getExerciseIsImage(object)
+    });
+
     const handleButtonClick = (object) => {
-        setSelectedObject(object);
+        setSelectedObject(withResolvedVideo(object));
         setVisible(true);
+    };
+
+    const renderExerciseVideoButton = (object, props = {}) => {
+      const resolved = withResolvedVideo(object);
+      const hasVideo = Boolean(resolved.video);
+      const isImage = getExerciseIsImage(resolved);
+
+      return (
+        <IconButton
+          aria-label="video"
+          disabled={!hasVideo}
+          onClick={() => handleButtonClick(resolved)}
+          {...props}
+        >
+          {isImage
+            ? <ImageIcon className={hasVideo ? 'imageIcon' : 'imageIconDisabled'} />
+            : <YouTubeIcon className={hasVideo ? (isDark ? 'ytColor' : 'ytColorWhite') : 'ytColor-disabled'} />}
+        </IconButton>
+      );
     };
 
     function handleEditMobileExercise(elementsExercise, index){
         setIndexOfExercise(index);
+        setBlockEditIndices({ blockIndex: null, exerciseIndex: null });
         setCompleteExercise(elementsExercise);
         setEditExerciseMobile(true);
     }
@@ -1123,7 +1162,7 @@ const handleUpdateExercise = () => {
   const newExercises = [...modifiedDay];
 
   const patch = {
-    peso: completeExercise?.peso ?? '',
+    athleteRpeRir: completeExercise?.athleteRpeRir ?? '',
     notas: completeExercise?.notas ?? ''
   };
 
@@ -1253,16 +1292,7 @@ const handleUpdateExercise = () => {
                                         </div>
                                      
                                       <div className="col-2">
-                                      
-                                         <IconButton
-                                            aria-label="video"
-                                            className="p-0"
-                                            disabled={!exercise.video}
-                                            onClick={() => handleButtonClick(exercise)}
-                                        >
-                                            <Video className={exercise.video ? 'ytColor' : 'ytColor-disabled'} />
-                                        </IconButton>
-  
+                                        {renderExerciseVideoButton(exercise, { className: 'p-0' })}
                                       </div>
                                        </div>
                                     </div>
@@ -1515,11 +1545,12 @@ const normalizeCircuit = (c = {}) => {
     return null;
   };
 
-  // PRIORIDAD: si `type` nombra un circuito conocido, usarlo aunque circuitKind diga "Libre".
+  // Si circuitKind ya trae un modo estructurado, manda ese valor.
+  // Para rutinas viejas, si circuitKind falta/Libre pero type dice EMOM/AMRAP/etc., se migra visualmente.
   const fromType = pick(rawType);
   const fromKind = pick(rawKind);
 
-  const kind = fromType || fromKind || 'Libre';
+  const kind = (fromKind && fromKind !== 'Libre') ? fromKind : (fromType || fromKind || 'Libre');
   return { ...c, circuitKind: kind };
 };
 
@@ -2334,6 +2365,7 @@ React.useEffect(() => {
       exercise.sets !== previous.sets ||
       exercise.reps !== previous.reps ||
       exercise.peso !== previous.peso ||
+      exercise.athleteRpeRir !== previous.athleteRpeRir ||
       JSON.stringify(exercise?.name?.backoff) !== JSON.stringify(previous?.name?.backoff)
     );
 
@@ -2391,24 +2423,24 @@ const stripUI = (ex) => {
   return rest;
 };
 
+const cleanExerciseItem = (item) => {
+  const cleanItem = stripUI(item);
+  if (!cleanItem || typeof cleanItem !== 'object') return cleanItem;
+
+  if (cleanItem?.type === 'block' && Array.isArray(cleanItem.exercises)) {
+    return { ...cleanItem, exercises: cleanItem.exercises.map(cleanExerciseItem) };
+  }
+
+  if (Array.isArray(cleanItem?.circuit)) {
+    return { ...cleanItem, circuit: cleanItem.circuit.map(cleanExerciseItem) };
+  }
+
+  return cleanItem;
+};
+
 // âœ… Limpia todo el array de ejercicios (incluye blocks y circuitos)
 const cleanExercisesPayload = (arr = []) => {
-  return (arr || []).map((it) => {
-    if (!it || typeof it !== 'object') return it;
-
-    // Bloque con ejercicios internos
-    if (it?.type === 'block' && Array.isArray(it.exercises)) {
-      return { ...it, exercises: it.exercises.map(stripUI) };
-    }
-
-    // Circuito (si existiera)
-    if (Array.isArray(it?.circuit)) {
-      return { ...it, circuit: it.circuit.map(stripUI) };
-    }
-
-    // Ejercicio normal
-    return stripUI(it);
-  });
+  return (arr || []).map(cleanExerciseItem);
 };
 
 const getExerciseDraftEntries = React.useCallback(() => {
@@ -2805,7 +2837,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                 <h2 className=" p-2 mb-0 text-start ">Rutina del dia</h2>
               
                 {groupSupersets(modifiedDay).map((element, idx) => {
-  
+  const sourceIndex = element._origIndex ?? idx;
   const { setsCol, repsCol, pesoCol, restCol } = getCols(element.peso);
   const isExercise = element.type === 'exercise';
   const isBlock = element.type === 'block';
@@ -2878,7 +2910,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                 aria-label="editar"
                 style={blockTextColor ? { color: blockTextColor } : undefined}
                  
-                onClick={() => handleEditMobileExercise(element, idx)}
+                onClick={() => handleEditMobileExercise(element, sourceIndex)}
               >
                 <Ellipsis size={23} />
               </IconButton>
@@ -2938,6 +2970,8 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
       </div>
     </div>
 
+    {element.rpeRir ? renderMetricBox("Alumno", cleanUiText(element.rpeRir), "col-3", "me-1") : null}
+
     <div className={`${restCol} p-0 me-1 mt-4  mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
       
        <div>
@@ -2973,6 +3007,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
               {renderMetricBox("Sets", ex.sets, cols.setsCol)}
               {renderMetricBox("Reps", ex.reps, cols.repsCol, "mx-1")}
               {renderMetricBox("Peso", ex.peso ? ex.peso : "-", cols.pesoCol, "me-1")}
+              {ex.rpeRir ? renderMetricBox("Alumno", cleanUiText(ex.rpeRir), "col-3", "me-1") : null}
 
               <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
                 <div>
@@ -3033,9 +3068,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                 />
               </div>
               <div className="col-auto">
-                <IconButton aria-label="video" disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
-                  <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />
-                </IconButton>
+                {renderExerciseVideoButton(ex)}
               </div>
             </div>
           </div>
@@ -3089,7 +3122,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                 <div className="col-9 text-start">{cleanUiText(supName)}</div>
 
                 <div className="col-2 text-end">
-                  <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(s, idx, s._origIndexInBlock)}>
+                  <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(s, sourceIndex, s._origIndexInBlock)}>
                     <EditNoteIcon />
                   </IconButton>
                 </div>
@@ -3097,6 +3130,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                 {renderMetricBox("Sets", s.sets, cols.setsCol)}
                 {renderMetricBox("Reps", s.reps, cols.repsCol, "mx-1")}
                 {renderMetricBox("Peso", s.peso || "-", cols.pesoCol, "me-1")}
+                {s.rpeRir ? renderMetricBox("Alumno", cleanUiText(s.rpeRir), "col-3", "me-1") : null}
 
                 <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
                   <div>
@@ -3163,11 +3197,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                     />
                   </div>
                   <div className="col-auto">
-                    <IconButton aria-label="video" disabled={!s.video} onClick={() => handleButtonClick(s)}>
-                      {s.isImage
-                        ? <ImageIcon className={s.video ? 'imageIcon' : 'imageIconDisabled'} />
-                        : <YouTubeIcon className={s.video ? 'ytColor' : 'ytColor-disabled'} />}
-                    </IconButton>
+                    {renderExerciseVideoButton(s)}
                   </div>
                 </div>
               </div>
@@ -3227,16 +3257,7 @@ if (isInnerCircuit) {
                   </td>
                   <td className="border-0 tableDark ">{cleanUiText(cItem.peso ?? '-')}</td>
                   <td className="border-0 pt-0 pb-3 tableDark ">
-                    <IconButton
-                      aria-label="video"
-                      disabled={!cItem.video}
-                      className="p-0"
-                      onClick={() => handleButtonClick(cItem)}
-                    >
-                      {cItem.isImage
-                        ? <ImageIcon className={!cItem.video ? 'imageIconDisabled' : 'imageIcon'} />
-                        : <YouTubeIcon className={cItem.video ? 'ytColor' : 'ytColor-disabled'} />}
-                    </IconButton>
+                    {renderExerciseVideoButton(cItem, { className: 'p-0' })}
                   </td>
                 </tr>
               ))}
@@ -3285,7 +3306,7 @@ if (isInnerCircuit) {
             <div className="col-9 text-start">{cleanUiText(innerName)}</div>
 
             <div className="col-2 text-end">
-              <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(ex, idx, j)}>
+              <IconButton aria-label="editar" onClick={() => handleEditMobileBlockExercise(ex, sourceIndex, j)}>
                 <EditNoteIcon />
               </IconButton>
             </div>
@@ -3295,6 +3316,7 @@ if (isInnerCircuit) {
                 {renderMetricBox("Sets", ex.sets, cols.setsCol)}
                 {renderMetricBox("Reps", ex.reps, cols.repsCol, "mx-1")}
                 {renderMetricBox("Peso", ex.peso || "-", cols.pesoCol, "me-1")}
+                {ex.rpeRir ? renderMetricBox("Alumno", cleanUiText(ex.rpeRir), "col-3", "me-1") : null}
 
                 <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
                   <div>
@@ -3358,11 +3380,7 @@ if (isInnerCircuit) {
                 />
               </div>
               <div className="col-auto">
-                <IconButton aria-label="video" disabled={!ex.video} onClick={() => handleButtonClick(ex)}>
-                  {ex.isImage
-                    ? <ImageIcon className={ex.video ? 'imageIcon' : 'imageIconDisabled'} />
-                    : <YouTubeIcon className={ex.video ? 'ytColor' : 'ytColor-disabled'} />}
-                </IconButton>
+                {renderExerciseVideoButton(ex)}
               </div>
             </div>
           )}
@@ -3393,18 +3411,7 @@ if (isInnerCircuit) {
             <td className="border-0 tableDark px-0">{cleanUiText(c.reps)}</td>
             <td className="border-0 tableDark">{cleanUiText(c.peso)}</td>
             <td className="border-0 tableDark pt-0 pb-3"> 
-                <IconButton
-                  id={idx === 0 ? 'video' : null}
-                  aria-label="video"
-                  disabled={!c.video}
-                  className="p-0"
-                  onClick={() => handleButtonClick(c)}
-                >
-                  {c.isImage
-                    ? <ImageIcon className={!c.video ? 'imageIconDisabled' : 'imageIcon'} />
-                    : <YouTubeIcon className={c.video ? 'ytColor' : 'ytColor-disabled'} />
-                  }
-                </IconButton>
+                {renderExerciseVideoButton(c, { id: idx === 0 ? 'video' : null, className: 'p-0' })}
             </td>
           </tr>
         ))}
@@ -3484,17 +3491,7 @@ if (isInnerCircuit) {
                 storageKey={`counter:${id}:${week_id}:${day_id}:${element.exercise_id || element._id || idx}`}
                 max={element.sets} />
               </div>
-                <IconButton
-                  id={idx === 0 ? 'video' : null}
-                  aria-label="video"
-                  disabled={!element.video}
-                  className="col-2 pt-0"
-                  onClick={() => handleButtonClick(element)}
-                >
-
-                  <YouTubeIcon className={element.video && isDark ? 'ytColor ' : element.video && !isDark ? "ytColorWhite" : 'ytColor-disabled '} />
-                
-                </IconButton>
+                {renderExerciseVideoButton(element, { id: idx === 0 ? 'video' : null, className: 'col-2 pt-0' })}
             </div>
           </>
         ) : (
@@ -3735,12 +3732,23 @@ if (isInnerCircuit) {
                           <input
                             type="text"
                             className="form-control"
-                            disabled={userProfile && userProfile.isEditable}
+                            disabled={true}
                             value={completeExercise.peso || ''}
+                          />
+                        </div>
+
+                        <div className="col-12 mb-3">
+                          <label>Peso realizado</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            disabled={userProfile && userProfile.isEditable}
+                            value={completeExercise.athleteRpeRir || ''}
+                            placeholder="Ej: 120 kg"
                             onChange={(e) =>
                               setCompleteExercise({
                                 ...completeExercise,
-                                peso: e.target.value,
+                                athleteRpeRir: e.target.value,
                               })
                             }
                           />
@@ -3761,11 +3769,14 @@ if (isInnerCircuit) {
                               })
                             }
                           />
+                          <div className="athletePerformedWeightHint">
+                            Podes cargar tu peso en el campo "Peso realizado", para que tu entrenador vea tu progreso. En caso de no ser necesario, dejalo vacio.
+                          </div>
                         </div>
 
-                        <div className="col-12 text-center">
+                        <div className="col-12 d-flex justify-content-end gap-2">
                           <button
-                            className="btn btn-outline-light me-3"
+                            className="btn btn-outline-secondary"
                             onClick={hideDialogEditExercises}
                           >
                             Cancelar

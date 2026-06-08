@@ -112,6 +112,51 @@ const dayEditSegmentedTheme = {
 
 const dayEditDarkTokens = antdTheme.getDesignToken(dayEditTokenTheme);
 
+const DAY_EDIT_COLUMN_CONFIG_VERSION = 13;
+
+const DAY_EDIT_COLUMNS = [
+  { id: "name", label: "Nombre", defaultVisible: true, defaultWidth: 200, minWidth: 170, maxWidth: 420, className: "dayEditColName" },
+  { id: "sets", label: "Series", defaultVisible: true, defaultWidth: 82, minWidth: 72, maxWidth: 160, className: "dayEditColSets" },
+  { id: "reps", label: "Reps", defaultVisible: true, defaultWidth: 58, minWidth: 54, maxWidth: 180, className: "dayEditColReps" },
+  { id: "peso", label: "Peso", defaultVisible: true, defaultWidth: 72, minWidth: 64, maxWidth: 180, className: "dayEditColPeso" },
+  { id: "rpeRir", label: "Alumno", defaultVisible: true, defaultWidth: 82, minWidth: 76, maxWidth: 180, className: "dayEditColRpeRir" },
+  { id: "rest", label: "Rest", defaultVisible: true, defaultWidth: 80, minWidth: 72, maxWidth: 150, className: "dayEditColRest" },
+  { id: "video", label: "Video", defaultVisible: true, defaultWidth: 48, minWidth: 42, maxWidth: 100, className: "dayEditColVideo" },
+  { id: "notas", label: "Notas", defaultVisible: true, defaultWidth: 112, minWidth: 92, maxWidth: 320, className: "dayEditColNotes" },
+];
+
+const DAY_EDIT_COLUMN_DEFAULTS = DAY_EDIT_COLUMNS.reduce((acc, column) => {
+  acc[column.id] = {
+    visible: column.defaultVisible,
+    width: column.defaultWidth,
+  };
+  return acc;
+}, {});
+
+const DAY_EDIT_CIRCUIT_COLUMN_CLASS = {
+  name: "dayEditCircuitColName",
+  reps: "dayEditCircuitColReps",
+  peso: "dayEditCircuitColPeso",
+  rpeRir: "dayEditCircuitColRpeRir",
+  video: "dayEditCircuitColVideo",
+};
+
+function normalizeDayEditColumnConfig(raw = {}) {
+  return DAY_EDIT_COLUMNS.reduce((acc, column) => {
+    const current = raw?.[column.id] || {};
+    const parsedWidth = Number(current.width);
+    const width = Number.isFinite(parsedWidth)
+      ? Math.min(column.maxWidth, Math.max(column.minWidth, parsedWidth))
+      : column.defaultWidth;
+
+    acc[column.id] = {
+      visible: current.visible !== undefined ? Boolean(current.visible) : column.defaultVisible,
+      width,
+    };
+    return acc;
+  }, {});
+}
+
 function DayEditDetailsPage() {
   const { week_id } = useParams();
   const { day_id } = useParams();
@@ -156,6 +201,7 @@ function DayEditDetailsPage() {
   const [glowVideo, setGlowVideo] = useState({});
   const [tourSteps, setTourSteps] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isMobileReorderMode, setIsMobileReorderMode] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [tourVisible, setTourVisible] = useState(false);
   const [movilityVisible, setMovilityVisible] = useState(false);
@@ -361,6 +407,110 @@ function DayEditDetailsPage() {
   const canDeleteDay =
     (Array.isArray(modifiedDay) && modifiedDay.length > 1) ||
     (Array.isArray(allDays) && allDays.length > 1);
+  const currentWarmupItemsCount = Array.isArray(currentDay?.warmup) ? currentDay.warmup.length : 0;
+  const currentMovilityItemsCount = Array.isArray(currentDay?.movility) ? currentDay.movility.length : 0;
+  const hasCurrentWarmup = currentWarmupItemsCount > 0;
+  const hasCurrentMovility = currentMovilityItemsCount > 0;
+  const columnConfigStorageKey = useMemo(() => {
+    const trainerId = localStorage.getItem("_id") || id || "default";
+    return `dayEditColumnConfig:${trainerId}`;
+  }, [id]);
+  const [showColumnConfigDialog, setShowColumnConfigDialog] = useState(false);
+  const [showStudentPreviewDialog, setShowStudentPreviewDialog] = useState(false);
+  const [studentPreviewDayId, setStudentPreviewDayId] = useState("");
+  const [studentPreviewAuxSlide, setStudentPreviewAuxSlide] = useState({});
+  const [showDesktopMoreActions, setShowDesktopMoreActions] = useState(false);
+  const [columnConfig, setColumnConfig] = useState(() => {
+    try {
+      const trainerId = localStorage.getItem("_id") || id || "default";
+      const savedConfig = localStorage.getItem(`dayEditColumnConfig:${trainerId}`);
+      const parsedConfig = savedConfig ? JSON.parse(savedConfig) : {};
+      return parsedConfig?.__version === DAY_EDIT_COLUMN_CONFIG_VERSION
+        ? normalizeDayEditColumnConfig(parsedConfig)
+        : normalizeDayEditColumnConfig();
+    } catch {
+      return normalizeDayEditColumnConfig();
+    }
+  });
+  const displayedCurrentDay = useMemo(() => {
+    const list = Array.isArray(modifiedDay) ? modifiedDay : [];
+    if (currentDay?._id) {
+      const fromList = list.find((dayItem) => String(dayItem?._id || "") === String(currentDay._id));
+      if (fromList) return fromList;
+    }
+    return list[indexDay] || currentDay;
+  }, [modifiedDay, currentDay, indexDay]);
+  const visibleExerciseColumns = useMemo(
+    () => DAY_EDIT_COLUMNS.filter((column) => columnConfig[column.id]?.visible),
+    [columnConfig]
+  );
+  const visibleCircuitColumns = useMemo(
+    () => visibleExerciseColumns.filter((column) => ["name", "reps", "peso", "video"].includes(column.id)),
+    [visibleExerciseColumns]
+  );
+  const desktopColumnSpan = 2 + visibleExerciseColumns.length + 1;
+  const circuitColumnSpan = 1 + visibleCircuitColumns.length + 1;
+  const isColumnVisible = useCallback((columnId) => Boolean(columnConfig[columnId]?.visible), [columnConfig]);
+  const setColumnVisible = useCallback((columnId, visible) => {
+    setColumnConfig((prev) => normalizeDayEditColumnConfig({
+      ...prev,
+      [columnId]: {
+        ...prev[columnId],
+        visible,
+      },
+    }));
+  }, []);
+  const setColumnWidth = useCallback((columnId, width) => {
+    setColumnConfig((prev) => normalizeDayEditColumnConfig({
+      ...prev,
+      [columnId]: {
+        ...prev[columnId],
+        width,
+      },
+    }));
+  }, []);
+  const resetColumnConfig = useCallback(() => {
+    setColumnConfig(normalizeDayEditColumnConfig());
+  }, []);
+
+  const getStudentPreviewDayKey = useCallback((dayItem, dayIndex) => {
+    return String(dayItem?._id || `day-${dayIndex}`);
+  }, []);
+
+  const studentPreviewDays = useMemo(
+    () => (Array.isArray(modifiedDay) ? modifiedDay : []),
+    [modifiedDay]
+  );
+
+  const studentPreviewDay = useMemo(() => {
+    if (!studentPreviewDays.length) return currentDay;
+    return (
+      studentPreviewDays.find((dayItem, dayIndex) => getStudentPreviewDayKey(dayItem, dayIndex) === studentPreviewDayId) ||
+      currentDay ||
+      studentPreviewDays[0]
+    );
+  }, [studentPreviewDays, studentPreviewDayId, currentDay, getStudentPreviewDayKey]);
+
+  useEffect(() => {
+    if (!showStudentPreviewDialog) return;
+    const list = Array.isArray(modifiedDay) ? modifiedDay : [];
+    const currentIndex = list.findIndex((dayItem) => String(dayItem?._id || "") === String(currentDay?._id || ""));
+    const fallbackIndex = currentIndex >= 0 ? currentIndex : Math.max(0, indexDay || 0);
+    const fallbackDay = list[fallbackIndex] || currentDay;
+    setStudentPreviewDayId(fallbackDay ? getStudentPreviewDayKey(fallbackDay, fallbackIndex) : "");
+    setStudentPreviewAuxSlide({});
+  }, [showStudentPreviewDialog, modifiedDay, currentDay, indexDay, getStudentPreviewDayKey]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        columnConfigStorageKey,
+        JSON.stringify({ __version: DAY_EDIT_COLUMN_CONFIG_VERSION, ...columnConfig })
+      );
+    } catch (error) {
+      console.warn("No se pudo guardar la configuracion de columnas", error);
+    }
+  }, [columnConfigStorageKey, columnConfig]);
 
 const weeksForGrid = useMemo(() => {
    const weeks = Array.isArray(seeAllWeeks) ? seeAllWeeks : [];
@@ -786,6 +936,15 @@ useEffect(() => {
     }
     setCurrentDay(null);
   }, [modifiedDay, indexDay]);   
+
+  const getActiveDayIndex = useCallback((days = modifiedDay) => {
+    const list = Array.isArray(days) ? days : [];
+    if (currentDay?._id) {
+      const byId = list.findIndex((dayItem) => String(dayItem?._id || "") === String(currentDay._id));
+      if (byId !== -1) return byId;
+    }
+    return Number.isInteger(indexDay) && indexDay >= 0 && indexDay < list.length ? indexDay : -1;
+  }, [currentDay?._id, indexDay, modifiedDay]);
    
 
 
@@ -1010,18 +1169,10 @@ const hasBackoff = ex =>
     }
   };
 
-  const propiedades = [
-    "",
-    "#",
-    "Nombre",
-    "Series",
-    "Reps",
-    "Peso",
-    "Rest",
-    "Video",
-    "Notas",
-    "#",
-  ];
+  const propiedades = useMemo(
+    () => ["", "#", ...visibleExerciseColumns.map((column) => column.label), "#"],
+    [visibleExerciseColumns]
+  );
 
   const inputRefs = useRef([]);
 
@@ -1148,15 +1299,22 @@ function RestInputDropdown({ value = "03:15", onChange }) {
   );
 }
 
-function CircuitTimeInput({ value = "", onCommit, placeholder = "10", options = [] }) {
+function CircuitTimeInput({ value = "", onCommit, placeholder = "10", commitOnChange = false }) {
   const [draft, setDraft] = useState(String(value ?? ""));
+  const [isFocused, setIsFocused] = useState(false);
+  const draftRef = useRef(String(value ?? ""));
 
   useEffect(() => {
-    setDraft(String(value ?? ""));
-  }, [value]);
+    if (!isFocused) {
+      const nextValue = String(value ?? "");
+      draftRef.current = nextValue;
+      setDraft(nextValue);
+    }
+  }, [value, isFocused]);
 
   const commit = (rawValue) => {
     const nextValue = String(rawValue ?? "").trim();
+    draftRef.current = nextValue;
     setDraft(nextValue);
     onCommit(nextValue);
   };
@@ -1165,38 +1323,100 @@ function CircuitTimeInput({ value = "", onCommit, placeholder = "10", options = 
     <div className="dayEditCircuitTimeCombo">
       <input
         type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         className="form-control form-control-sm dayEditCircuitTextInput dayEditCircuitTimeInput"
         value={draft}
         placeholder={placeholder}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => commit(draft)}
+        onChange={(e) => {
+          const nextValue = e.target.value.replace(/[^\d]/g, "");
+          draftRef.current = nextValue;
+          setDraft(nextValue);
+          if (commitOnChange) {
+            onCommit(nextValue);
+          }
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+          if (!commitOnChange) {
+            commit(draftRef.current);
+          }
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
-            commit(e.currentTarget.value);
+            commit(draftRef.current);
             e.currentTarget.blur();
           }
         }}
       />
-
-      <select
-        className="form-select form-select-sm dayEditCircuitTimeSelect"
-        defaultValue=""
-        onChange={(e) => {
-          if (!e.target.value) return;
-          commit(e.target.value);
-          e.target.value = "";
-        }}
-        aria-label="Seleccionar tiempo"
-      >
-        <option value=""></option>
-        {options.map((option) => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
     </div>
   );
 }
+
+function CircuitSmallNumberInput({ value, onChange, min = 1, title }) {
+  const [draft, setDraft] = useState(String(value ?? min));
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) {
+      setDraft(String(value ?? min));
+    }
+  }, [value, min, focused]);
+
+  const commit = (rawValue) => {
+    const parsed = parseInt(String(rawValue || "").trim(), 10);
+    const nextValue = Math.max(min, Number.isFinite(parsed) ? parsed : min);
+    setDraft(String(nextValue));
+    onChange(nextValue);
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      className="form-control form-control-sm text-center"
+      style={{ width: 64 }}
+      value={draft}
+      title={title}
+      onFocus={() => setFocused(true)}
+      onChange={(e) => setDraft(e.target.value.replace(/[^\d]/g, ""))}
+      onBlur={() => {
+        setFocused(false);
+        commit(draft);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commit(draft);
+          e.currentTarget.blur();
+        }
+      }}
+    />
+  );
+}
+
+const normalizeCircuitKindValue = (rawValue) => {
+  const cleanValue = String(rawValue ?? "").trim();
+  if (!cleanValue) return "Libre";
+  const matchedKind = CIRCUIT_KINDS.find((item) => {
+    const label = String(item.label || "").toLowerCase();
+    const value = String(item.value || "").toLowerCase();
+    const current = cleanValue.toLowerCase();
+    return current === label || current === value;
+  });
+  return matchedKind?.value || null;
+};
+
+const inferCircuitKind = (circuit = {}) => {
+  const fromKind = normalizeCircuitKindValue(circuit?.circuitKind);
+  const fromType = normalizeCircuitKindValue(circuit?.type);
+  if (fromKind && fromKind !== "Libre") return fromKind;
+  if (fromType && fromType !== "Libre") return fromType;
+  return fromKind || "Libre";
+};
 
 const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
   .flatMap(m => [15,30,45].map(s => {
@@ -1283,7 +1503,7 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
 
              <div className={`text-center px-0`}>
                               <SelectButton
-                                className={`styleSelectButton px-0`}
+                                className="styleSelectButton dayEditRepsModeSelect px-0"
                                 options={[
                                   { label: 'Texto', value: 'text' },
                                   { label: 'Multiple', value: 'multiple' }
@@ -1350,13 +1570,36 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
           onChange={applyChange}
         />
       );
+    } else if (field === "rpeRir") {
+      const studentValue = data ?? "";
+      return (
+        <div className="row justify-content-center text-center">
+          <Tooltip
+            placement="top"
+            arrow
+            title={studentValue ? `${studentValue} - Este campo solo puede ser llenado por el alumno.` : "Este campo solo puede ser llenado por el alumno."}
+            enterDelay={0}
+            leaveDelay={0}
+          >
+            <span className="dayEditReadOnlyStudentFieldWrap">
+              <input
+                ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
+                className={`form-control dayEditFieldInput dayEditReadOnlyStudentField ${firstWidth > 992 ? 'stylePesoInput' : 'stylePesoInputMobile'} text-center`}
+                type="text"
+                defaultValue={studentValue}
+                disabled
+              />
+            </span>
+          </Tooltip>
+        </div>
+      );
     } else {
       return (
         <div className="row justify-content-center text-center">
         <input
           ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
           className={`form-control dayEditFieldInput ${firstWidth > 992 ? 'stylePesoInput' : 'stylePesoInputMobile'} text-center`}
-          placeholder={ field === 'rest' ? `2...`: "kg..."}
+          placeholder={field === "peso" ? "kg..." : ""}
           type="text"
           defaultValue={data}
           onChange={e => applyChange(e.target.value)}
@@ -1372,6 +1615,7 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
         Notify.instantToast("Rutina guardada con exito!");
         setStatus(idRefresh);
         setIsEditing(false);
+        setIsMobileReorderMode(false);
       });
   };
 
@@ -1478,6 +1722,7 @@ const handleDeleteConfirm = () => {
       reps: 1,
       sets: 1,
       peso: '',
+      rpeRir: '',
       rest: '',
       video: '',
       notas: '',
@@ -1883,7 +2128,7 @@ const AddNewCircuit = (blockIndex = null, kind = 'Libre') => {
     type: '',          // sigue disponible para "Libre" (titulo)
     typeOfSets: '',
     notas: '',
-    circuit: [{ name: "", reps: 1, peso: "0", video: "", idRefresh: RefreshFunction.generateUUID() }],
+    circuit: [{ name: "", reps: 1, peso: "0", rpeRir: "", video: "", idRefresh: RefreshFunction.generateUUID() }],
     ...base
   };
 
@@ -1950,20 +2195,9 @@ const CircuitHeaderEditor = ({
   numberOptions = []
 }) => {
   const circuitKindOptions = useMemo(() => CIRCUIT_KINDS.map((item) => item.value), []);
-  const minuteChoiceOptions = useMemo(() => Array.from({ length: 15 }, (_, idx) => String(idx + 1)), []);
-  const normalizeCircuitKind = (rawValue) => {
-    const cleanValue = String(rawValue ?? "").trim();
-    if (!cleanValue) return "Libre";
-    const matchedKind = CIRCUIT_KINDS.find((item) => {
-      const label = String(item.label || "").toLowerCase();
-      const value = String(item.value || "").toLowerCase();
-      const current = cleanValue.toLowerCase();
-      return current === label || current === value;
-    });
-    return matchedKind?.value || cleanValue;
-  };
-  const kind = normalizeCircuitKind(circuit?.circuitKind ?? 'Libre');
+  const kind = inferCircuitKind(circuit);
   const set = (k, v) => onField(k, v);
+  const setFields = (values) => onField("__merge", values);
   const formatCircuitTime = (totalSeconds) => {
     const safeSeconds = Math.max(1, Number(totalSeconds) || 60);
     const minutes = Math.floor(safeSeconds / 60);
@@ -2001,30 +2235,17 @@ const CircuitHeaderEditor = ({
     set('typeOfSets', trimmed);
   };
 
-  const renderTimeInput = ({ value, onCommit, placeholder = '10' }) => (
+  const renderTimeInput = ({ value, onCommit, placeholder = '10', commitOnChange = false }) => (
     <CircuitTimeInput
       value={value}
       onCommit={onCommit}
       placeholder={placeholder}
-      options={minuteChoiceOptions}
+      commitOnChange={commitOnChange}
     />
   );
 
   // ============= Inline editors (compactos) =============
   const DesktopInline = () => {
-    // inputs cortos reutilizables
-    const SmallNum = ({ value, onChange, min = 1, title }) => (
-      <input
-        type="number"
-        min={min}
-        className="form-control form-control-sm text-center"
-        style={{ width: 64 }}
-        value={value}
-        title={title}
-        onChange={(e) => onChange(Math.max(min, parseInt(e.target.value || `${min}`, 10)))}
-      />
-    );
-
     switch (kind) {
       case 'AMRAP':
         return (
@@ -2045,30 +2266,32 @@ const CircuitHeaderEditor = ({
         const interval =
           kind === 'EMOM' ? (circuit.intervalMin || 1) : (kind === 'E2MOM' ? 2 : 3);
         return (
-          <div className="d-flex align-items-center gap-2">
+          <div className="dayEditCircuitEmomInline">
             {kind === 'EMOM' && (
               <>
-            <div>
-              <span className="small text-muted fs07em">Intervalo</span>
-                  <SmallNum
+            <div className="dayEditCircuitInlinePair">
+              <span className="dayEditCircuitInlineLabel">Intervalo</span>
+                  <CircuitSmallNumberInput
                     value={interval}
                     onChange={(v) => set('intervalMin', v)}
                     min={1}
                     title="Intervalo (min)"
                   />
               </div>
-              <span className="small text-muted fs07em mt-3">x</span>
+              <span className="dayEditCircuitInlineSymbol">x</span>
               </>
             )}
-            <div>
-              <span className="small text-muted fs07em">Mins</span>
+            <div className="dayEditCircuitInlinePair">
+              <span className="dayEditCircuitInlineLabel">Mins</span>
               {renderTimeInput({
                 value: formatCircuitTime((Number(circuit.totalMinutes) || interval * (circuit.totalRounds || 1)) * 60),
                 onCommit: (rawValue) => {
                   const totalSeconds = parseCircuitTime(rawValue);
                   const totalMinutes = totalSeconds / 60;
-                  set('totalMinutes', totalMinutes);
-                  set('totalRounds', Math.max(1, Math.round(totalMinutes / interval)));
+                  setFields({
+                    totalMinutes,
+                    totalRounds: Math.max(1, Math.round(totalMinutes / interval))
+                  });
                 }
               })}
             </div>
@@ -2082,7 +2305,7 @@ const CircuitHeaderEditor = ({
             <div className="m-auto">
               
             <span className="small fs07em text-muted">Work</span>
-            <SmallNum
+            <CircuitSmallNumberInput
               value={circuit.workSec || 30}
               onChange={(v) => set('workSec', v)}
               title="Trabajo (s)"
@@ -2092,7 +2315,7 @@ const CircuitHeaderEditor = ({
             <span className="mt-3">/</span>
             <div>
               <span className="small fs07em text-muted">Rest</span>
-              <SmallNum
+              <CircuitSmallNumberInput
                 value={circuit.restSec || 30}
                 onChange={(v) => set('restSec', v)}
                 title="Descanso (s)"
@@ -2101,7 +2324,7 @@ const CircuitHeaderEditor = ({
             <span className="small text-muted mt-3">x</span>
             <div>
               <span className="small fs07em text-muted">Rounds</span>
-              <SmallNum
+              <CircuitSmallNumberInput
                 value={circuit.totalRounds || 10}
                 onChange={(v) => set('totalRounds', v)}
                 title="Rondas"
@@ -2127,7 +2350,7 @@ const CircuitHeaderEditor = ({
           <div className="d-flex align-items-center gap-2">
            <div>
             <span className="small text-muted fs07em">Work</span>
-              <SmallNum
+              <CircuitSmallNumberInput
                 value={circuit.workSec ?? 20}
                 onChange={(v) => set('workSec', v)}
                 title="Trabajo (s)"
@@ -2136,7 +2359,7 @@ const CircuitHeaderEditor = ({
             <span className="mt-3">/</span>
             <div>
             <span className="small text-muted fs07em">Rest</span>
-              <SmallNum
+              <CircuitSmallNumberInput
                 value={circuit.restSec ?? 10}
                 onChange={(v) => set('restSec', v)}
                 title="Descanso (s)"
@@ -2145,7 +2368,7 @@ const CircuitHeaderEditor = ({
             <span className="small text-muted mt-3">x</span>
             <div>
             <span className="small text-muted fs07em">Rounds</span>
-              <SmallNum
+              <CircuitSmallNumberInput
                 value={circuit.totalRounds ?? 8}
                 onChange={(v) => set('totalRounds', v)}
                 title="Rondas"
@@ -2161,9 +2384,9 @@ const CircuitHeaderEditor = ({
               <span className="small text-muted fs07em">Nombre</span>
               <input
                 className="form-control form-control-sm"
-                defaultValue={circuit.type || ''}
+                value={circuit.type || ''}
                 placeholder="Nombre del circuito"
-                onBlur={(e) => set('type', e.target.value)}
+                onChange={(e) => set('type', e.target.value)}
                 style={{ width: 200 }}
               />
             </div>
@@ -2172,7 +2395,8 @@ const CircuitHeaderEditor = ({
               {renderTimeInput({
                 value: circuit.typeOfSets || '',
                 onCommit: commitFreeTimeText,
-                placeholder: '10'
+                placeholder: '10',
+                commitOnChange: true
               })}
             </div>
           </div>
@@ -2208,7 +2432,7 @@ const CircuitHeaderEditor = ({
           <Dropdown
             value={kind}
             options={circuitKindOptions}
-            onChange={(e) => set('circuitKind', normalizeCircuitKind(e.value))}
+            onChange={(e) => set('circuitKind', normalizeCircuitKindValue(e.value) || "Libre")}
             appendTo={document.body}
             className="dayEditCircuitControl dayEditCircuitTypeSelect"
             panelClassName="dayEditCircuitDropdownPanel p-dropdown-panel"
@@ -2226,8 +2450,8 @@ const CircuitHeaderEditor = ({
           <input
             className="form-control form-control-sm"
             placeholder="Notas"
-            defaultValue={circuit.notas || ''}
-            onBlur={(e) => onField('notas', e.target.value)}
+            value={circuit.notas || ''}
+            onChange={(e) => onField('notas', e.target.value)}
           />
         </div>
       </div>
@@ -2254,7 +2478,7 @@ const CircuitHeaderEditor = ({
       <Dropdown
         value={kind}
         options={circuitKindOptions}
-        onChange={(e) => onField('circuitKind', normalizeCircuitKind(e.value))}
+        onChange={(e) => onField('circuitKind', normalizeCircuitKindValue(e.value) || "Libre")}
         appendTo={document.body}
         className="w-100 dayEditCircuitControl dayEditCircuitTypeSelect"
         panelClassName="dayEditCircuitDropdownPanel p-dropdown-panel"
@@ -2269,7 +2493,7 @@ const CircuitHeaderEditor = ({
     <InputTextarea
       autoResize
       placeholder="Notas"
-      defaultValue={circuit.notas || ''}
+      value={circuit.notas || ''}
       onChange={(e) => onField('notas', e.target.value)}
       className="w-100"
     />
@@ -2289,7 +2513,7 @@ const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
   const updated = [...day];
   const dayCopy = updated[indexDay];
 
-  const newExercise = { name:"", reps:0, peso:"0", video:"", idRefresh:RefreshFunction.generateUUID() };
+  const newExercise = { name:"", reps:0, peso:"0", rpeRir:"", video:"", idRefresh:RefreshFunction.generateUUID() };
 
   if (blockIndex == null) {
     dayCopy.exercises[circuitIndex].circuit.push(newExercise);
@@ -2361,7 +2585,10 @@ const changeCircuitData = (circuitIndex, field, value) => {
   setIsEditing(true);
 
   const updated = [...day];
-  const dayCopy = { ...updated[indexDay] };
+  const activeIndex = getActiveDayIndex(updated);
+  if (activeIndex === -1 || !updated[activeIndex]) return;
+
+  const dayCopy = { ...updated[activeIndex] };
   const exs = [...dayCopy.exercises];
   const circuit = { ...exs[circuitIndex] };
 
@@ -2369,23 +2596,29 @@ const changeCircuitData = (circuitIndex, field, value) => {
 
   if (field === 'circuitKind') {
     next = applyCircuitKindChange(circuit, value);
+  } else if (field === "__merge" && value && typeof value === "object") {
+    next = { ...circuit, ...value };
   } else {
     next = { ...circuit, [field]: value };
   }
 
   exs[circuitIndex] = next;
-  updated[indexDay] = { ...dayCopy, exercises: exs, lastEdited: new Date().toISOString() };
+  updated[activeIndex] = { ...dayCopy, exercises: exs, lastEdited: new Date().toISOString() };
 
   setDay(updated);
   setModifiedDay(updated);
-  setCurrentDay(updated[indexDay]);
+  setIndexDay(activeIndex);
+  setCurrentDay(updated[activeIndex]);
 };
 
 const changeBlockCircuitData = (blockIndex, circuitIndex, field, value) => {
   setIsEditing(true);
 
   const updated = [...day];
-  const dayCopy = { ...updated[indexDay] };
+  const activeIndex = getActiveDayIndex(updated);
+  if (activeIndex === -1 || !updated[activeIndex]) return;
+
+  const dayCopy = { ...updated[activeIndex] };
   const blocks = [...dayCopy.exercises];
   const block = { ...blocks[blockIndex] };
   const inner = [...block.exercises];
@@ -2395,6 +2628,8 @@ const changeBlockCircuitData = (blockIndex, circuitIndex, field, value) => {
 
   if (field === 'circuitKind') {
     next = applyCircuitKindChange(circuit, value);
+  } else if (field === "__merge" && value && typeof value === "object") {
+    next = { ...circuit, ...value };
   } else {
     next = { ...circuit, [field]: value };
   }
@@ -2403,11 +2638,12 @@ const changeBlockCircuitData = (blockIndex, circuitIndex, field, value) => {
   block.exercises = inner;
   blocks[blockIndex] = block;
 
-  updated[indexDay] = { ...dayCopy, exercises: blocks, lastEdited: new Date().toISOString() };
+  updated[activeIndex] = { ...dayCopy, exercises: blocks, lastEdited: new Date().toISOString() };
 
   setDay(updated);
   setModifiedDay(updated);
-  setCurrentDay(updated[indexDay]);
+  setIndexDay(activeIndex);
+  setCurrentDay(updated[activeIndex]);
 };
 
 // === CAMPOS ESPECIFICOS POR MODO ===
@@ -2431,11 +2667,13 @@ const stripKindSpecificFields = (obj = {}) => {
 
 // Aplica cambio de modo: limpia campos + setea defaults del modo nuevo
 const applyCircuitKindChange = (circuit = {}, nextKind = 'Libre') => {
+  const normalizedKind = normalizeCircuitKindValue(nextKind) || 'Libre';
   const base = stripKindSpecificFields(circuit);
   return {
     ...base,
-    circuitKind: nextKind,
-    ...(circuitDefaults(nextKind) || {})
+    type: normalizedKind === 'Libre' ? (base.type || '') : '',
+    circuitKind: normalizedKind,
+    ...(circuitDefaults(normalizedKind) || {})
   };
 };
 
@@ -2528,13 +2766,39 @@ const changeExerciseInCircuit = (circuitIndex, exIndex, field, value) => {
     );
   }
 
-  // peso u otros
+  if (field === "rpeRir") {
+    const studentValue = data ?? "";
+    return (
+      <div className="row justify-content-center text-center">
+        <Tooltip
+          placement="top"
+          arrow
+          title={studentValue ? `${studentValue} - Este campo solo puede ser llenado por el alumno.` : "Este campo solo puede ser llenado por el alumno."}
+          enterDelay={0}
+          leaveDelay={0}
+        >
+          <span className="dayEditReadOnlyStudentFieldWrap">
+            <input
+              ref={el => inputRefs.current[key] = el}
+              className="form-control ellipsis-input text-center stylePesoInput dayEditFieldInput dayEditReadOnlyStudentField"
+              type="text"
+              defaultValue={studentValue}
+              disabled
+            />
+          </span>
+        </Tooltip>
+      </div>
+    );
+  }
+
+  // peso, RPE/RIR u otros textos
   return (
     <div className="row justify-content-center text-center">
     <input
       ref={el => inputRefs.current[key] = el}
       className="form-control ellipsis-input text-center stylePesoInput dayEditFieldInput"
       type="text"
+      placeholder={field === "peso" ? "kg..." : ""}
       defaultValue={data}
       onBlur={e => apply(e.target.value)}
     />
@@ -2620,9 +2884,13 @@ const ensureCircuitItems = (items = []) =>
 const upgradeCircuitShape = (c) => {
   if (!c || typeof c !== 'object') return c;
   if (!Array.isArray(c?.circuit)) return c;
+  const kind = inferCircuitKind(c);
+  const typeIsLegacyKind = Boolean(normalizeCircuitKindValue(c?.type));
   return {
-    circuitKind: 'Libre',
+    ...(circuitDefaults(kind) || {}),
     ...c,
+    circuitKind: kind,
+    type: kind === 'Libre' ? (c.type || '') : (typeIsLegacyKind ? '' : (c.type || '')),
     exercise_id: ensurePlainId(c.exercise_id),
     circuit: ensureCircuitItems(c.circuit)
   };
@@ -2842,6 +3110,7 @@ const addExerciseToBlock = (blockIndex) => {
     reps: 1,
     sets: 1,
     peso: '',
+    rpeRir: '',
     rest: '',
     video: '',
     notas: '',
@@ -2981,6 +3250,558 @@ const getDeltaIfNumeric = (current, previous) => {
   return c - p;
 };
 
+const getMobileReorderTitle = (exercise) => {
+  if (!exercise || typeof exercise !== "object") return "Sin nombre";
+  if (exercise.type === "block") return exercise.name || "Bloque sin nombre";
+  if (Array.isArray(exercise.circuit)) return circuitSubtitle(exercise);
+  if (typeof exercise.name === "object") return exercise.name?.name || "Ejercicio sin nombre";
+  return exercise.name || "Ejercicio sin nombre";
+};
+
+const getMobileReorderMeta = (exercise) => {
+  if (!exercise || typeof exercise !== "object") return "";
+  if (exercise.type === "block") {
+    const count = Array.isArray(exercise.exercises) ? exercise.exercises.length : 0;
+    return `${count} ejercicio${count === 1 ? "" : "s"}`;
+  }
+  if (Array.isArray(exercise.circuit)) {
+    const count = Array.isArray(exercise.circuit) ? exercise.circuit.length : 0;
+    return `Circuito - ${count} ejercicio${count === 1 ? "" : "s"}`;
+  }
+  return "Ejercicio";
+};
+
+const parseStudentPreviewSupersetTag = (value) => {
+  if (value == null) return null;
+  const str = String(value).trim();
+  let match = str.match(/^(\d+)\.(\d+)$/);
+  if (match) {
+    const base = parseInt(match[1], 10);
+    const decimal = parseInt(match[2], 10);
+    const suffix = decimal > 0 && decimal <= 26 ? String.fromCharCode(64 + decimal) : null;
+    return { base, suffix };
+  }
+
+  match = str.match(/^(\d+)\s*[--.,\s]?\s*([A-Za-z])?\)?$/);
+  if (!match) return null;
+  return {
+    base: parseInt(match[1], 10),
+    suffix: match[2] ? match[2].toUpperCase() : null,
+  };
+};
+
+const groupStudentPreviewSupersets = (items = [], { forBlock = false } = {}) => {
+  const grouped = [];
+  let index = 0;
+
+  while (index < items.length) {
+    const item = items[index];
+    if (item?.type !== "exercise") {
+      grouped.push(item);
+      index += 1;
+      continue;
+    }
+
+    const tag = parseStudentPreviewSupersetTag(item.numberExercise ?? item.number ?? item.numberCircuit);
+    if (!tag) {
+      grouped.push(item);
+      index += 1;
+      continue;
+    }
+
+    const superset = { type: "superset", baseNumber: tag.base, exercises: [] };
+    while (index < items.length) {
+      const current = items[index];
+      if (current?.type !== "exercise") break;
+      const currentTag = parseStudentPreviewSupersetTag(current.numberExercise ?? current.number ?? current.numberCircuit);
+      if (!currentTag || currentTag.base !== tag.base) break;
+
+      superset.exercises.push({
+        ...current,
+        supSuffix: currentTag.suffix || String.fromCharCode(65 + superset.exercises.length),
+        ...(forBlock ? { _origIndexInBlock: index } : { _origIndex: index }),
+      });
+      index += 1;
+    }
+
+    grouped.push(superset.exercises.length < 2 ? (superset.exercises[0] ?? item) : superset);
+  }
+
+  return grouped;
+};
+
+const getStudentPreviewName = (exercise) => {
+  if (!exercise || typeof exercise !== "object") return "Ejercicio sin nombre";
+  if (typeof exercise.name === "object" && exercise.name !== null) {
+    return sanitizeBrokenText(exercise.name?.name || "Ejercicio sin nombre");
+  }
+  return sanitizeBrokenText(exercise.name || "Ejercicio sin nombre");
+};
+
+const getStudentPreviewValue = (value) => {
+  if (value === null || value === undefined || value === "") return "-";
+  if (Array.isArray(value)) return value.filter((item) => item !== "" && item !== null && item !== undefined).join(" / ") || "-";
+  return sanitizeBrokenText(value);
+};
+
+const getStudentPreviewCols = (weight) => {
+  const isLong = String(weight ?? "").length > 7;
+  return {
+    setsCol: isLong ? "col-1" : "col-2",
+    repsCol: "col-3",
+    pesoCol: isLong ? "col-4" : "col-3",
+    restCol: "col-3",
+  };
+};
+
+const getStudentPreviewReadableTextColor = (backgroundColor) => {
+  const hex = String(backgroundColor || "").trim().replace("#", "");
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return "#ffffff";
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.58 ? "#0f172a" : "#ffffff";
+};
+
+const renderStudentPreviewNumberIcon = (number) => {
+  const parsedNumber = Number(number);
+  const numberIconMap = {
+    1: LooksOneIcon,
+    2: LooksTwoIcon,
+    3: Looks3Icon,
+    4: Looks4Icon,
+    5: Looks5Icon,
+    6: Looks6Icon,
+  };
+
+  if (Number.isInteger(parsedNumber) && numberIconMap[parsedNumber]) {
+    const IconComponent = numberIconMap[parsedNumber];
+    return <IconComponent />;
+  }
+
+  return <span className="btn p-1 fontNumberE m-0 bg-light">{getStudentPreviewValue(number)}</span>;
+};
+
+const renderStudentPreviewMetricValue = (value) => {
+  if (Array.isArray(value)) {
+    return (
+      <span className="textWeightCards border-1 d-block">
+        {value.map((item, index) => (
+          <React.Fragment key={index}>
+            <span className="textWeightCards arrayBadge">{getStudentPreviewValue(item)}</span>
+            {index < value.length - 1 && <span>-</span>}
+          </React.Fragment>
+        ))}
+      </span>
+    );
+  }
+
+  return <span className="textWeightCards border-1 d-block">{getStudentPreviewValue(value)}</span>;
+};
+
+const renderStudentPreviewMetric = (label, value, colClass, extraClass = "") => (
+  <div className={`${colClass} p-0 ${extraClass} mt-4 pt-2 mb-2 d-flex flex-column text-center StyleLightBox`}>
+    <div>
+      <p className="fontStylesSpan">{label}</p>
+    </div>
+    <div>{renderStudentPreviewMetricValue(value)}</div>
+  </div>
+);
+
+const renderStudentPreviewTimer = (value) => (
+  <div className={`dayEditStudentPreviewTimer ${value ? "" : "dayEditStudentPreviewTimerEmpty"}`}>
+    <span>{value ? getStudentPreviewValue(value) : "No especifica"}</span>
+    <button type="button" disabled aria-label="Timer bloqueado">
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M4 2.8v10.4L12.4 8 4 2.8z" />
+      </svg>
+    </button>
+  </div>
+);
+
+const renderStudentPreviewCounter = (sets) => (
+  <button type="button" className="contador dayEditStudentPreviewCounter" disabled>
+    Contador de series <span>{Array.isArray(sets) ? getStudentPreviewValue(sets[0]) : "0"}</span>
+  </button>
+);
+
+const renderStudentPreviewNotes = (notes, label = "Notas") => {
+  if (!notes) return null;
+  return (
+    <>
+      <span className="styleInputsNote-back text-center my-1">{label}</span>
+      <div className="col-12 mb-2" style={{ whiteSpace: "pre-wrap" }}>
+        <div className="row justify-content-center colorNote">
+          <div className="col-10">
+            <p className="pb-0 mb-0 text-dark">{sanitizeBrokenText(notes)}</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+const renderStudentPreviewExerciseExtras = (exercise) => {
+  const backoffLabel =
+    exercise?.name?.titleName && exercise.name.titleName.trim() !== ""
+      ? exercise.name.titleName
+      : "Back off";
+
+  return (
+    <>
+      {exercise?.name?.approximations?.length > 0 && (
+        <>
+          <span className="styleInputsNote-back text-center mt-3">
+            {sanitizeBrokenText(exercise.name.approxTitle ?? "Aproximaciones")}
+          </span>
+          <div className="col-12 mb-2">
+            {exercise.name.approximations.map((approximation, index) => (
+              <div className="row justify-content-around colorNote3 my-1" key={index}>
+                <span className="fs08em text-start col-6">
+                  <b>{index + 1}</b> aproximacion
+                </span>
+                <p className="pb-0 mb-0 fs08em col-5 text-dark">
+                  {getStudentPreviewValue(approximation.reps)} reps / {getStudentPreviewValue(approximation.peso)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {exercise?.name?.backoff?.length > 0 && (
+        <>
+          <span className="styleInputsNote-back text-center my-1">{sanitizeBrokenText(backoffLabel)}</span>
+          <div className="col-12 mb-2">
+            {exercise.name.backoff.map((line, index) => (
+              <div className="row justify-content-around colorNote2 my-1" key={index}>
+                <span className="fs08em text-start col-6">
+                  <b>{index + 1}</b> back off
+                </span>
+                <p className="pb-0 mb-0 fs08em col-5 text-dark">
+                  {getStudentPreviewValue(line.sets)}x{getStudentPreviewValue(line.reps)} / {getStudentPreviewValue(line.peso)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {renderStudentPreviewNotes(exercise?.notas)}
+    </>
+  );
+};
+
+const renderStudentPreviewExercise = (exercise, key, fallbackNumber) => {
+  const cols = getStudentPreviewCols(exercise?.peso);
+
+  return (
+    <div className="px-0 mb-3" key={key}>
+      <div className="row justify-content-center border rounded-2 m-0 mb-3 ddp-card bg-light">
+        <div className="col-12">
+          <div className="row justify-content-center border-bottom">
+            <div className="col-1 m-auto colorIndexPrimarys">
+              {renderStudentPreviewNumberIcon(exercise?.numberExercise || fallbackNumber)}
+            </div>
+            <div className="col-9 m-auto">
+              <p className="stylesNameExercise text-start mb-0 py-2 text-dark">
+                {getStudentPreviewName(exercise)}
+              </p>
+            </div>
+            <div className="col-2">
+              <IconButton aria-label="editar bloqueado" disabled>
+                <RectangleEllipsis size={20} />
+              </IconButton>
+            </div>
+          </div>
+        </div>
+
+        {renderStudentPreviewMetric("Sets", exercise?.sets, cols.setsCol)}
+        {renderStudentPreviewMetric("Reps", exercise?.reps, cols.repsCol, "mx-1")}
+        {renderStudentPreviewMetric("Peso", exercise?.peso || "-", cols.pesoCol, "me-1")}
+        {exercise?.rpeRir ? renderStudentPreviewMetric("Alumno", exercise.rpeRir, "col-3", "me-1") : null}
+        <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 StyleLightBox`}>
+          <div>
+            <p className="fontStylesSpan mt-2">Descanso</p>
+          </div>
+          <div>{renderStudentPreviewTimer(exercise?.rest)}</div>
+        </div>
+
+        {renderStudentPreviewExerciseExtras(exercise)}
+
+        <div className="row justify-content-between mt-3 mb-1">
+          <div className="col-6">{renderStudentPreviewCounter(exercise?.sets)}</div>
+          <IconButton aria-label="video bloqueado" disabled={!exercise?.video} className="col-2 pt-0">
+            <YouTubeIcon className={exercise?.video ? "ytColorWhite" : "ytColor-disabled"} />
+          </IconButton>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderStudentPreviewCircuit = (circuit, key, fallbackNumber) => (
+  <div className="col-12 p-0 mt-4 mb-2 ddp-circuit-card" key={key}>
+    <div className="ddp-circuit-header d-flex flex-wrap align-items-center justify-content-between border rounded-2 px-3 py-2 mb-0 bg-white">
+      <div>
+        <div className="fw-semibold">{circuitSubtitle(circuit || {})}</div>
+      </div>
+      <button className="btn btn-sm btn-dark" disabled>Iniciar</button>
+    </div>
+    <table className="table border-0 mb-0 ddp-circuit-table">
+      <thead>
+        <tr>
+          <th className="border-0 text-start tableDark">Nombre</th>
+          <th className="border-0 tableDark">Reps</th>
+          <th className="border-0 tableDark">Peso</th>
+          <th className="border-0 tableDark">Video</th>
+        </tr>
+      </thead>
+      <tbody>
+        {(Array.isArray(circuit?.circuit) ? circuit.circuit : []).map((item, itemIndex) => (
+          <tr key={item?.idRefresh || item?.exercise_id || itemIndex}>
+            <td className="border-0 tableDark text-start">{getStudentPreviewName(item)}</td>
+            <td className="border-0 tableDark px-0">{getStudentPreviewValue(item?.reps)}</td>
+            <td className="border-0 tableDark">{getStudentPreviewValue(item?.peso)}</td>
+            <td className="border-0 tableDark pt-0 pb-3">
+              <IconButton aria-label="video bloqueado" disabled={!item?.video} className="p-0">
+                <YouTubeIcon className={item?.video ? "ytColorWhite" : "ytColor-disabled"} />
+              </IconButton>
+            </td>
+          </tr>
+        ))}
+        {circuit?.notas && (
+          <tr>
+            <td colSpan={4} className="border-0">
+              <div className="rounded-2">
+                <span className="text-start mb-2 pb-2 d-block">Notas / otros</span>
+                <div className="colorNote py-2 mb-2 pb-2 rounded-1" style={{ whiteSpace: "pre-wrap" }}>
+                  <p className="pb-0 mb-0">{sanitizeBrokenText(circuit.notas)}</p>
+                </div>
+              </div>
+            </td>
+          </tr>
+        )}
+        {!Array.isArray(circuit?.circuit) || circuit.circuit.length === 0 ? (
+          <tr>
+            <td colSpan={4} className="border-0 text-center text-muted py-3">
+              Este circuito no tiene ejercicios cargados.
+            </td>
+          </tr>
+        ) : null}
+      </tbody>
+    </table>
+  </div>
+);
+
+const renderStudentPreviewSuperset = (superset, key) => (
+  <div className="px-0 mb-3" key={key}>
+    <div className="row justify-content-center border rounded-2 m-0 mb-3 ddp-card bg-light">
+      <div className="col-12">
+        <div className="row justify-content-center border-bottom">
+          <div className="col-1 m-auto colorIndexPrimarys">
+            {renderStudentPreviewNumberIcon(superset.baseNumber)}
+          </div>
+          <div className="col-9 m-auto">
+            <p className="stylesNameExercise text-start mb-0 py-2 text-dark">
+              Superserie <small className="ms-2">({superset.exercises.map((item) => item.supSuffix).join(" - ")})</small>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {superset.exercises.map((exercise, index) => {
+        const cols = getStudentPreviewCols(exercise?.peso);
+        return (
+          <div className="col-12 mb-2 mb-3 shadow-personalized" key={exercise?.exercise_id || index}>
+            <div className="row justify-content-around rounded-2 p-2 align-items-center">
+              <div className="col-2 text-center">
+                <span className="badge text-light border bg-dark">{exercise.supSuffix}</span>
+              </div>
+              <div className="col-8 text-start">{getStudentPreviewName(exercise)}</div>
+              <div className="col-2 text-center">
+                <IconButton aria-label="editar bloqueado" disabled>
+                  <RectangleEllipsis size={20} />
+                </IconButton>
+              </div>
+
+              {renderStudentPreviewMetric("Sets", exercise?.sets, cols.setsCol)}
+              {renderStudentPreviewMetric("Reps", exercise?.reps, cols.repsCol, "mx-1")}
+              {renderStudentPreviewMetric("Peso", exercise?.peso || "-", cols.pesoCol, "me-1")}
+              {exercise?.rpeRir ? renderStudentPreviewMetric("Alumno", exercise.rpeRir, "col-3", "me-1") : null}
+              <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 StyleLightBox`}>
+                <div>
+                  <p className="fontStylesSpan mt-2">Descanso</p>
+                </div>
+                <div>{renderStudentPreviewTimer(exercise?.rest)}</div>
+              </div>
+            </div>
+            {renderStudentPreviewExerciseExtras(exercise)}
+            <div className="row justify-content-between align-items-center mt-2 px-2">
+              <div className="col-auto">{renderStudentPreviewCounter(exercise?.sets)}</div>
+              <div className="col-auto">
+                <IconButton aria-label="video bloqueado" disabled={!exercise?.video}>
+                  <YouTubeIcon className={exercise?.video ? "ytColor" : "ytColor-disabled"} />
+                </IconButton>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
+
+const renderStudentPreviewBlock = (block, index) => (
+  <div className="px-0 mb-3" key={block?.block_id || index}>
+    <div className="row justify-content-center border rounded-2 m-0 mb-3 ddp-card bg-light">
+      <div
+        className="col-12 ddp-block-colored-header"
+        style={{
+          backgroundColor: block?.color || "#334155",
+          color: getStudentPreviewReadableTextColor(block?.color || "#334155"),
+          "--ddp-block-text-color": getStudentPreviewReadableTextColor(block?.color || "#334155"),
+        }}
+      >
+        <div className="row justify-content-center border-bottom">
+          <div className="col-1 m-auto colorIndexPrimarys">
+            <span className="fontNumberE">•</span>
+          </div>
+          <div className="col-9 m-auto">
+            <p className="stylesNameExercise text-start mb-0 py-2">
+              {sanitizeBrokenText(block?.name || "Bloque sin nombre")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {groupStudentPreviewSupersets(Array.isArray(block?.exercises) ? block.exercises : [], { forBlock: true }).map((inner, innerIndex) => {
+        if (inner?.type === "superset") return renderStudentPreviewSuperset(inner, `block-sup-${index}-${innerIndex}`);
+        if (Array.isArray(inner?.circuit)) return renderStudentPreviewCircuit(inner, `block-circuit-${index}-${innerIndex}`, innerIndex + 1);
+        return renderStudentPreviewExercise(inner, inner?.exercise_id || innerIndex, innerIndex + 1);
+      })}
+      {!Array.isArray(block?.exercises) || block.exercises.length === 0 ? (
+        <div className="dayEditStudentPreviewEmpty">Este bloque no tiene ejercicios.</div>
+      ) : null}
+    </div>
+  </div>
+);
+
+const renderStudentPreviewItem = (item, index) => {
+  if (item?.type === "block") return renderStudentPreviewBlock(item, index);
+  if (item?.type === "superset") return renderStudentPreviewSuperset(item, `superset-${index}`);
+  if (Array.isArray(item?.circuit)) return renderStudentPreviewCircuit(item, item?.exercise_id || index, index + 1);
+  return renderStudentPreviewExercise(item, item?.exercise_id || index, index + 1);
+};
+
+const renderStudentPreviewAuxList = (label, items) => {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  const sliderKey = label.includes("Activacion") ? "movility" : "warmup";
+  const activeIndex = Math.min(studentPreviewAuxSlide[sliderKey] || 0, items.length - 1);
+  const moveAuxSlide = (direction) => {
+    setStudentPreviewAuxSlide((prev) => {
+      const current = Math.min(prev[sliderKey] || 0, items.length - 1);
+      const next = (current + direction + items.length) % items.length;
+      return { ...prev, [sliderKey]: next };
+    });
+  };
+
+  return (
+    <div className="dayEditStudentPreviewAuxSection">
+      <div className="text-start mb-2 dayEditStudentPreviewAuxTitle">
+        <span>{label}</span>
+      </div>
+      <div className="dayEditStudentPreviewSlider">
+        {items.length > 1 && (
+          <button
+            type="button"
+            className="dayEditStudentPreviewSliderNav dayEditStudentPreviewSliderPrev"
+            onClick={() => moveAuxSlide(-1)}
+            aria-label={`Anterior ${label}`}
+          >
+            {"<"}
+          </button>
+        )}
+        <div className="dayEditStudentPreviewSliderTrack">
+          {items.map((exercise, index) => (
+            <div
+              className="dayEditStudentPreviewSlide"
+              key={exercise?.warmup_id || exercise?.movility_id || index}
+              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+            >
+              <div className="text-center pt-1 pb-2">
+                <div className="row justify-content-center backgroundCardsWarmMov shadow rounded-2 m-1 mb-3 ddp-card bg-light">
+                  <div className={`col-12 ${label.includes("Activacion") ? "colorMovility" : "colorWarmup"} py-2`}>
+                    <div className="row justify-content-center">
+                      <div className="col-1 m-auto text-dark">
+                        <span className="ddp-warmmov-number">{exercise?.numberMovility || exercise?.numberWarmup || index + 1}</span>
+                      </div>
+                      <div className="col-8 m-auto text-start">
+                        <p className="stylesNameExercise mb-0 text-dark">{getStudentPreviewName(exercise)}</p>
+                      </div>
+                      <div className="col-2">
+                        <IconButton aria-label="video bloqueado" className="p-0" disabled={!exercise?.video}>
+                          <YouTubeIcon className={exercise?.video ? "ytColor" : "ytColor-disabled"} />
+                        </IconButton>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="row justify-content-center my-3">
+                      {renderStudentPreviewMetric("Sets", exercise?.sets, "col-4", "dayEditStudentPreviewAuxMetric")}
+                      {renderStudentPreviewMetric("Reps", exercise?.reps, "col-4", "dayEditStudentPreviewAuxMetric")}
+                      {renderStudentPreviewMetric("Peso", exercise?.peso || "-", "col-4", "dayEditStudentPreviewAuxMetric")}
+                    </div>
+                  </div>
+                  {renderStudentPreviewNotes(exercise?.notas, "Notas / otros")}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {items.length > 1 && (
+          <button
+            type="button"
+            className="dayEditStudentPreviewSliderNav dayEditStudentPreviewSliderNext"
+            onClick={() => moveAuxSlide(1)}
+            aria-label={`Siguiente ${label}`}
+          >
+            {">"}
+          </button>
+        )}
+        {items.length > 1 && (
+          <div className="dayEditStudentPreviewSliderDots" aria-hidden="true">
+            {items.map((_, index) => (
+              <span className={index === activeIndex ? "active" : ""} key={index} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const renderStudentOnlyFieldLabel = (className = "fs07em text-muted text-center m-auto") => (
+  <span className={`${className} dayEditStudentOnlyFieldLabel`}>
+    Alumno
+    <Tooltip
+      placement="top"
+      arrow
+      title="Este campo solo puede ser editado por el alumno."
+      enterDelay={0}
+      leaveDelay={0}
+      enterTouchDelay={0}
+    >
+      <button
+        type="button"
+        className="dayEditStudentOnlyInfoBtn"
+        aria-label="Informacion del campo Alumno"
+      >
+        <HelpOutlineIcon fontSize="inherit" />
+      </button>
+    </Tooltip>
+  </span>
+);
+
 
 function colorItemTemplate(option) {
   return (
@@ -3020,6 +3841,15 @@ function colorItemTemplate(option) {
             <Eye /> Ver semanas
           </button>
          </div>
+
+        <div className="col-5 mt-2">
+          <button
+            className="btn stylesHerramientasButtons w-100 py-2 px-2 fs08em d-flex align-items-center justify-content-center gap-1"
+            onClick={() => setShowColumnConfigDialog(true)}
+          >
+            <RectangleEllipsis size={18} /> Columnas
+          </button>
+        </div>
 
          <div className="col-5 mt-2 ">
            <button
@@ -3061,32 +3891,76 @@ function colorItemTemplate(option) {
           </button>
         </div>
 
+        <div className="col-5 mt-2">
+          <button
+            className={`btn stylesHerramientasButtons w-100 py-1 px-1 fs08em ${isMobileReorderMode ? "dayEditMobileReorderActiveBtn" : ""}`}
+            onClick={() => setIsMobileReorderMode((prev) => !prev)}
+          >
+            <DragIndicatorIcon /> {isMobileReorderMode ? "Listo" : "Reordenar"}
+          </button>
+        </div>
+
+        <div className="col-10 mt-2 pt-2">
+          <button
+            className="btn stylesHerramientasButtons w-100 py-2 px-2 fs08em d-flex align-items-center justify-content-center gap-1"
+            onClick={() => setShowStudentPreviewDialog(true)}
+          >
+            <Eye size={18} /> Ver como alumno
+          </button>
+        </div>
+
 
        </div>
      )}
 
         <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="exercises-mobile">
+        <Droppable droppableId="exercises-mobile" type="MAIN">
           {(provided) => (
             <div
               className="div div-bordered p-0"
               ref={provided.innerRef}
               {...provided.droppableProps}
             >
-              {currentDay?.exercises.map((exercise, i) => (
+              {isMobileReorderMode && (
+                <div className="dayEditMobileReorderHint">
+                  Mantene apretado el ejercicio que quieras mover y arrastralo a la posicion correcta.
+                </div>
+              )}
+              {displayedCurrentDay?.exercises.map((exercise, i) => (
                 <Draggable 
                   key={exercise.type === 'block' ? exercise.block_id : exercise.exercise_id}
                   draggableId={exercise.type === 'block' ? exercise.block_id : exercise.exercise_id}
                   index={i}
-                  type={exercise.type === 'block' ? 'MAIN' : 'MAIN'}
+                  isDragDisabled={!isMobileReorderMode}
                 >
                   {(providedDrag) => (
                     <div
-                      className="mb-4 shadowCards p-2"
+                      className={`mb-4 shadowCards p-2 ${isMobileReorderMode ? "dayEditMobileReorderCard" : ""}`}
                       ref={providedDrag.innerRef}
                       {...providedDrag.draggableProps}
-                      {...providedDrag.dragHandleProps}
                     >
+                      {isMobileReorderMode ? (
+                        <div className="dayEditMobileReorderItem">
+                          <button
+                            type="button"
+                            className="dayEditMobileReorderHandle"
+                            {...providedDrag.dragHandleProps}
+                            aria-label="Arrastrar para reordenar"
+                          >
+                            <DragIndicatorIcon />
+                          </button>
+                          <div className="dayEditMobileReorderNumber">{i + 1}</div>
+                          <div className="dayEditMobileReorderInfo">
+                            <div className="dayEditMobileReorderTitle">
+                              {getMobileReorderTitle(exercise)}
+                            </div>
+                            <div className="dayEditMobileReorderMeta">
+                              {getMobileReorderMeta(exercise)}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                      <>
                       {/* --- BLOQUE --- */}
                       {exercise.type === 'block' ? (
                         <>
@@ -3164,11 +4038,13 @@ function colorItemTemplate(option) {
                                     <div className="mt-4 col-12">
                                       <div className="row justify-content-center">
                                         <div className="col-4 m-auto"><b>Ejercicio {k + 1}</b></div>
+                                        {isColumnVisible("video") && (
                                         <div className="col-4">
                                           {customInputEditExerciseInCircuit(
                                             item.video, j, k, 'video', item.video, i
                                           )}
                                         </div>
+                                        )}
                                         <div className="col-4 text-end">
                                           <IconButton
                                             onClick={() => handleDeleteExerciseInCircuit(i, j, k, item.name)}
@@ -3178,11 +4054,14 @@ function colorItemTemplate(option) {
                                         </div>
                                       </div>
                                     </div>
+                                    {isColumnVisible("name") && (
                                     <div className="col-11 mb-2">
                                       {customInputEditExerciseInCircuit(
                                         item.name, j, k, 'name', item.name, i
                                       )}
                                     </div>
+                                    )}
+                                    {isColumnVisible("peso") && (
                                     <div className="col-5 text-start">
                                       <span className="styleInputsSpan">Peso</span>
                                       <div className="largoInput">
@@ -3191,6 +4070,8 @@ function colorItemTemplate(option) {
                                         )}
                                       </div>
                                     </div>
+                                    )}
+                                    {isColumnVisible("reps") && (
                                     <div className="col-5 text-start">
                                       <span className="styleInputsSpan">Reps</span>
                                       <div className="largoInput">
@@ -3199,6 +4080,7 @@ function colorItemTemplate(option) {
                                         )}
                                       </div>
                                     </div>
+                                    )}
                                   </div>
                                 ))}
                               </div>
@@ -3258,6 +4140,7 @@ function colorItemTemplate(option) {
                               {/* Numero + Nombre + Botones */}
                               <div className="d-flex justify-content-between align-items-center mb-1">
                                 <span>{ex.numberExercise}.</span>
+                                {isColumnVisible("name") && (
                                 <div className="flex-grow-1 mx-2 mb-3">
                                   <div className="d-flex align-items-center mb-1">
                                     <button className="btn colorAproximations py-0 m-0"
@@ -3300,41 +4183,72 @@ function colorItemTemplate(option) {
                                   
                                 </div>
                                 </div>
+                                )}
                                 
                               </div>
                               {/* Controles sets / reps / peso / rest */}
-                              <div className="row justify-content-center text-center">
+                              <div className="row justify-content-center text-center g-3 dayEditMobileFieldGrid">
                                
+                                  {isColumnVisible("sets") && (
                                   <div className="col-4 ">
                                     <span className="fs07em text-muted ms-2">Sets</span>
                                     {customInputEditDay(ex.sets, j, 'sets', i)}
                                   </div>
+                                  )}
                                
+                                {isColumnVisible("reps") && (
                                 <div className={`col-7`}>
                                   <span className="fs07em text-muted me-5 d-block ">Reps</span>
                                     {customInputEditDay(ex.reps, j, 'reps', i)}
                                  
                                 </div>
-                                <div className="col-5 ">
-                                  <span className="fs07em text-muted ms-2">Rest</span>
-                                  {customInputEditDay(ex.rest, j, 'rest', i)}
-                                </div>
+                                )}
+                                {isColumnVisible("peso") && (
                                 <div className="col-5 ">
                                   <span className="fs07em text-muted text-center m-auto">Peso</span>
                                   <div>{customInputEditDay(ex.peso, j, 'peso', i)}</div>
                                 </div>
+                                )}
+                                {isColumnVisible("rpeRir") && (
+                                <div className="col-5 ">
+                                  {renderStudentOnlyFieldLabel()}
+                                  <div>{customInputEditDay(ex.athleteRpeRir, j, 'rpeRir', i)}</div>
+                                </div>
+                                )}
+                                {isColumnVisible("rest") && (
+                                <div className="col-5 ">
+                                  <span className="fs07em text-muted ms-2">Rest</span>
+                                  {customInputEditDay(ex.rest, j, 'rest', i)}
+                                </div>
+                                )}
 
+                                  {isColumnVisible("notas") && (
                                   <div className="col-11 ">
                                   <span className="fs07em text-muted text-center m-auto">Notas</span>
                                   <div>{customInputEditDay(ex.notas, j, 'notas', i)}</div>
                                 </div>
+                                  )}
 
                               </div>
-                              {/* YouTube + Editar */}
-                              <div className="d-flex justify-content-between align-items-center mt-2">
-                                <IconButton onClick={(e) => mobileVideoRefs.current[`block-mobile-${i}-${j}`]?.toggle(e)}>
-                                  <YouTubeIcon />
-                                </IconButton>
+                              <div className="row align-items-center justify-content-between text-center mt-2">
+                                <div className="col-4">
+                                  <Dropdown
+                                    value={ex.numberExercise}
+                                    options={options}
+                                    onChange={(e) => changeBlockExerciseData(i, j, 'numberExercise', e.value)}
+                                    placeholder="#"
+                                    optionLabel="label"
+                                    className="p-dropdown-group w-100"
+                                  />
+                                </div>
+                                <div className="col-4">
+                                  {isColumnVisible("video") && (
+                                  <IconButton onClick={(e) => mobileVideoRefs.current[`block-mobile-${i}-${j}`]?.toggle(e)}>
+                                    <YouTubeIcon />
+                                  </IconButton>
+                                  )}
+                                </div>
+                                {isColumnVisible("video") && (
                                 <OverlayPanel
                                   ref={(el) => (mobileVideoRefs.current[`block-mobile-${i}-${j}`] = el)}
                                   className="dayEditLightOverlayPanel"
@@ -3347,13 +4261,16 @@ function colorItemTemplate(option) {
                                     onChange={(e) => changeBlockExerciseData(i, j, 'video', e.target.value)}
                                   />
                                 </OverlayPanel>
+                                )}
 
-                                <IconButton
-                                  onClick={() => handleDeleteExerciseInBlockClick(i, ex)}
-                                  aria-label="delete-exercise-in-block"
-                                >
-                                  <DeleteIcon className="text-danger" />
-                                </IconButton>
+                                <div className="col-4 text-end">
+                                  <IconButton
+                                    onClick={() => handleDeleteExerciseInBlockClick(i, ex)}
+                                    aria-label="delete-exercise-in-block"
+                                  >
+                                    <DeleteIcon className="text-danger" />
+                                  </IconButton>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -3377,6 +4294,7 @@ function colorItemTemplate(option) {
                         /* --- EJERCICIO SUELTO --- */
                         <>
                           <div className="d-flex justify-content-between align-items-center mb-2">
+                            {isColumnVisible("name") && (
                             <div className="flex-grow-1">
                               <div className="d-flex align-items-center mb-1">
                                     <button className="btn colorAproximations py-0 m-0"
@@ -3419,38 +4337,68 @@ function colorItemTemplate(option) {
                                   
                                 </div>
                               </div>
+                            )}
                               </div>
                           {/* Controles sets / reps / peso / rest */}
-                          <div className="row justify-content-center text-center">
+                          <div className="row justify-content-center text-center g-3 dayEditMobileFieldGrid">
+                              {isColumnVisible("sets") && (
                               <div className="col-5 mb-2 ms-3">
                                 <span className="fs07em text-muted text-start ">Sets</span>
                                 {customInputEditDay(exercise.sets, i, 'sets')}
                               </div>
+                              )}
                             
+                            {isColumnVisible("reps") && (
                             <div className={`col-6 mb-2`}>
                               <span className="fs07em text-muted text-start ">Reps</span>
                               {customInputEditDay(exercise.reps, i, 'reps')}
                             </div>
-                            <div className="col-5">
-                              <span className="fs07em text-muted text-start ">Rest</span>
-                              {customInputEditDay(exercise.rest, i, 'rest')}
-                            </div>
-
+                            )}
+                            {isColumnVisible("peso") && (
                             <div className="col-5">
                               <span className="fs07em text-muted text-start ">Peso</span>
                               {customInputEditDay(exercise.peso, i, 'peso')}
                             </div>
+                            )}
+                            {isColumnVisible("rpeRir") && (
+                            <div className="col-5">
+                              {renderStudentOnlyFieldLabel("fs07em text-muted text-start")}
+                              {customInputEditDay(exercise.athleteRpeRir, i, 'rpeRir')}
+                            </div>
+                            )}
+                            {isColumnVisible("rest") && (
+                            <div className="col-5">
+                              <span className="fs07em text-muted text-start ">Rest</span>
+                              {customInputEditDay(exercise.rest, i, 'rest')}
+                            </div>
+                            )}
                      
+                            {isColumnVisible("notas") && (
                             <div className="col-11 text-center mt-2">
                               <span className="fs07em text-muted text-center ">Notas</span>
                               {customInputEditDay(exercise.notas, i, 'notas')}
                             </div>
+                            )}
                           </div>
-                          {/* YouTube + Editar */}
-                          <div className="d-flex justify-content-between align-items-center mt-2">
-                            <IconButton onClick={(e) => mobileVideoRefs.current[`root-mobile-${i}`]?.toggle(e)}>
-                              <YouTubeIcon />
-                            </IconButton>
+                          <div className="row align-items-center justify-content-between text-center mt-2">
+                            <div className="col-4">
+                              <Dropdown
+                                value={exercise.numberExercise}
+                                options={options}
+                                onChange={(e) => changeModifiedData(i, e.value, 'numberExercise')}
+                                placeholder="#"
+                                optionLabel="label"
+                                className="p-dropdown-group w-100"
+                              />
+                            </div>
+                            <div className="col-4">
+                              {isColumnVisible("video") && (
+                              <IconButton onClick={(e) => mobileVideoRefs.current[`root-mobile-${i}`]?.toggle(e)}>
+                                <YouTubeIcon />
+                              </IconButton>
+                              )}
+                            </div>
+                            {isColumnVisible("video") && (
                             <OverlayPanel
                               ref={(el) => (mobileVideoRefs.current[`root-mobile-${i}`] = el)}
                               className="dayEditLightOverlayPanel"
@@ -3463,14 +4411,16 @@ function colorItemTemplate(option) {
                                 onChange={(e) => changeModifiedData(i, e.target.value, 'video')}
                               />
                             </OverlayPanel>
+                            )}
 
-                            {/*  ELIMINAR (en lugar del lapiz) */}
-                            <IconButton
-                              onClick={() => handleDeleteClick(exercise)}
-                              aria-label="delete-exercise"
-                            >
-                              <DeleteIcon className="text-danger" />
-                            </IconButton>
+                            <div className="col-4 text-end">
+                              <IconButton
+                                onClick={() => handleDeleteClick(exercise)}
+                                aria-label="delete-exercise"
+                              >
+                                <DeleteIcon className="text-danger" />
+                              </IconButton>
+                            </div>
                           </div>
                         </>
                       ) : (
@@ -3493,7 +4443,9 @@ function colorItemTemplate(option) {
                                         <div className="mt-4 col-12">
                                           <div className="row justify-content-center">
                                             <div className="col-4 m-auto"><b>Ejercicio {j + 1}</b></div>
+                                            {isColumnVisible("video") && (
                                             <div className="col-4">{customInputEditExerciseInCircuit(item.video, i, j, 'video')}   </div>
+                                            )}
                                             <div className="col-4">
                                               <span className="text-end ">
                                                 <IconButton
@@ -3511,22 +4463,28 @@ function colorItemTemplate(option) {
                                       
                                         </div>
                                         </div>
+                                        {isColumnVisible("name") && (
                                         <div className="col-11  mb-2">
                                           
                                           {customInputEditExerciseInCircuit(item.name, i, j, 'name')}
                                         </div>
+                                        )}
+                                        {isColumnVisible("peso") && (
                                         <div className="col-5 text-start ">
                                         <span className="styleInputsSpan">Peso</span>
                                           <div className="largoInput">
                                           {customInputEditExerciseInCircuit(item.peso, i, j, 'peso')}
                                           </div>
                                         </div>
+                                        )}
+                                        {isColumnVisible("reps") && (
                                         <div className="col-5 text-start">
                                           <span className="styleInputsSpan">Reps</span>
                                           <div className="largoInput">
                                             {customInputEditExerciseInCircuit(item.reps, i, j, 'reps')}
                                           </div>
                                         </div>
+                                        )}
                                       </div>
                                     ))}
                                   </div>
@@ -3580,6 +4538,8 @@ function colorItemTemplate(option) {
                                 </div> 
                             </>
                           )}
+                      </>
+                      )}
                     </div>
                   )}
                 </Draggable>
@@ -3791,6 +4751,15 @@ function colorItemTemplate(option) {
                       <div className='text-center col-10'><strong>Pegar dia</strong></div>
                     </div>
 
+                    <div
+                      id="verComoAlumno"
+                      className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3"
+                      onClick={() => setShowStudentPreviewDialog(true)}
+                    >
+                      <div className=' col-1'><Eye size={18} /></div>
+                      <div className='text-center col-10'><strong>Ver como alumno</strong></div>
+                    </div>
+
                   </div>
 
                     <div className="text-muted small mt-5">
@@ -3831,19 +4800,83 @@ function colorItemTemplate(option) {
           <div  className={`row dayEditTopBlocksRow ${firstWidth > 992 && 'mb-3'} justify-content-around align-middle align-center align-items-center`}>
 
             <div className=" col-lg-6   mt-3">
-                  <div id="movility" className="ps-3  bgItemsDropdown py-3" onClick={handleShowMovility}>
-                    <CircleIcon  className="me-2 badgeMovility" />
-                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activacion/movilidad</strong> <span className="small">- {sanitizeBrokenText(currentDay && currentDay.name)} </span> </span>
-                    <span className="d-block stylesSpanBloqs">Haz click para editar</span>
+                  <div
+                    id="movility"
+                    className={`ps-3 bgItemsDropdown py-3 dayEditPreparationCard ${hasCurrentMovility ? "dayEditPreparationCardLoaded" : ""}`}
+                    onClick={handleShowMovility}
+                  >
+                    <div className="dayEditPreparationHeader">
+                      <div className="dayEditPreparationTitle">
+                        <CircleIcon  className="me-2 badgeMovility" />
+                        <span className=" me-1 stylesSpanTitles">Bloque de <strong>activacion/movilidad</strong> <span className="small">- {sanitizeBrokenText(currentDay && currentDay.name)} </span> </span>
+                      </div>
+                      <span className={`dayEditPreparationStatus ${hasCurrentMovility ? "dayEditPreparationStatusLoaded" : ""}`}>
+                        {hasCurrentMovility ? (
+                          <>
+                            <CheckCircleIcon fontSize="inherit" />
+                            Cargado
+                          </>
+                        ) : (
+                          <>
+                            <PanoramaFishEyeIcon fontSize="inherit" />
+                            Sin cargar
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <span className="d-block stylesSpanBloqs">
+                      {hasCurrentMovility ? (
+                        <>
+                          <span>{currentMovilityItemsCount} ejercicio{currentMovilityItemsCount === 1 ? "" : "s"} cargado{currentMovilityItemsCount === 1 ? "" : "s"}.</span>
+                          <span className="dayEditPreparationSubline">Haz click para editar</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Todavia no hay activacion/movilidad cargada</span>
+                        </>
+                      )}
+                    </span>
                   </div>
                
               </div>
 
               <div className=" col-lg-6  mt-3">
-                  <div id="warmup" className="ps-3 bgItemsDropdown py-3" onClick={handleShowWarmup}>
-                    <CircleIcon  className="me-2 badgeWarmup" />
-                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>entrada en calor</strong> <span className="small">- {sanitizeBrokenText(currentDay && currentDay.name)} </span></span>
-                    <span className="d-block stylesSpanBloqs">Haz click para editar</span>
+                  <div
+                    id="warmup"
+                    className={`ps-3 bgItemsDropdown py-3 dayEditPreparationCard ${hasCurrentWarmup ? "dayEditPreparationCardLoaded" : ""}`}
+                    onClick={handleShowWarmup}
+                  >
+                    <div className="dayEditPreparationHeader">
+                      <div className="dayEditPreparationTitle">
+                        <CircleIcon  className="me-2 badgeWarmup" />
+                        <span className=" me-1 stylesSpanTitles">Bloque de <strong>entrada en calor</strong> <span className="small">- {sanitizeBrokenText(currentDay && currentDay.name)} </span></span>
+                      </div>
+                      <span className={`dayEditPreparationStatus ${hasCurrentWarmup ? "dayEditPreparationStatusLoaded" : ""}`}>
+                        {hasCurrentWarmup ? (
+                          <>
+                            <CheckCircleIcon fontSize="inherit" />
+                            Cargado
+                          </>
+                        ) : (
+                          <>
+                            <PanoramaFishEyeIcon fontSize="inherit" />
+                            Sin cargar
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <span className="d-block stylesSpanBloqs">
+                      {hasCurrentWarmup ? (
+                        <>
+                          <span>{currentWarmupItemsCount} ejercicio{currentWarmupItemsCount === 1 ? "" : "s"} cargado{currentWarmupItemsCount === 1 ? "" : "s"}.</span>
+                          <span className="dayEditPreparationSubline">Haz click para editar</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Todavia no hay entrada en calor cargada</span>
+                        </>
+                      )}
+                    </span>
                 </div>
               </div>
 
@@ -3946,23 +4979,22 @@ function colorItemTemplate(option) {
                         <colgroup>
                           <col className="dayEditColDrag" />
                           <col className="dayEditColOrder" />
-                          <col className="dayEditColName" />
-                          <col className="dayEditColSets" />
-                          <col className="dayEditColReps" />
-                          <col className="dayEditColPeso" />
-                          <col className="dayEditColRest" />
-                          <col className="dayEditColVideo" />
-                          <col className="dayEditColNotes" />
+                          {visibleExerciseColumns.map((column) => (
+                            <col
+                              key={column.id}
+                              className={column.className}
+                              style={{ width: `${columnConfig[column.id]?.width || column.defaultWidth}px` }}
+                            />
+                          ))}
                           <col className="dayEditColDelete" />
                         </colgroup>
                         <thead className=" ">
                           <tr className=" ">
-                            <th className="px-0 mx-0 pt-0 bg-transparent" colSpan={2}>
-                              <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn justify-content-center w-100">
-                                Acciones:
-                              </div>
-                            </th>
-                            <th className="pb-1 pb-1 mx-0  ">
+                            <th className="px-0 mx-0 pt-0 bg-transparent" colSpan={desktopColumnSpan}>
+                              <div className="dayEditBulkActionBar">
+                                <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn justify-content-center">
+                                  Acciones:
+                                </div>
                               <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => incrementAllSeries()} >
                                 <Tooltip placement="top" arrow title={ "Sumaras una serie a todos los ejercicios." } enterDelay={0} leaveDelay={0}>
                                   <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
@@ -3971,10 +5003,6 @@ function colorItemTemplate(option) {
                                   </div>
                                 </Tooltip>
                               </button>
-                            </th>
-                              
-                          
-                            <th className="pb-1 pb-1 mx-0  " colSpan={2}  >
 
                               <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => incrementAllReps()} >
                                 <Tooltip placement="top" arrow title={ "Sumaras una repeticion a todos los ejercicios." } enterDelay={0} leaveDelay={0}>
@@ -3985,10 +5013,6 @@ function colorItemTemplate(option) {
                                 </Tooltip>
                               </button>
 
-                            </th>
-
-                              <th className="pb-1 pb-1 mx-0  " colSpan={3}  >
-
                                 <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={AddBlock}>
                                   <Tooltip placement="top" arrow title={ "En vez de agregar un ejercicio, primero agregas un bloque para luego crear los ejercicios que desees dentro de el. Tu alumno vera el bloque. Por ejemplo, podes agregar un bloque de fuerza y luego otro de auxiliares." } enterDelay={0} leaveDelay={0}>
                                     <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
@@ -3998,17 +5022,45 @@ function colorItemTemplate(option) {
                                   </Tooltip>
                                 </button>
 
-                            </th>
-
-                            <th className="pb-1 pb-1 mx-0  " colSpan={2}  >
-                                <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => setDialogAllWeeks(true)}>
-                                  <Tooltip placement="top" arrow title={ "Podras ver de manera rapida todas las semanas anteriores de este alumno." } enterDelay={0} leaveDelay={0}>
-                                    <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
-                                      <Eye className="bulkAdjustHeaderIcon" />
-                                      <span>Ver semanas anteriores</span>
+                                <div className="dayEditMoreActionsWrap">
+                                  <button
+                                    className="bulkAdjustTriggerBtn rounded-2 text-start"
+                                    onClick={() => setShowDesktopMoreActions((prev) => !prev)}
+                                    type="button"
+                                  >
+                                    <Tooltip placement="top" arrow title="Ver acciones secundarias." enterDelay={0} leaveDelay={0}>
+                                      <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
+                                        <RectangleEllipsis className="bulkAdjustHeaderIcon" />
+                                        <span>Mas acciones</span>
+                                      </div>
+                                    </Tooltip>
+                                  </button>
+                                  {showDesktopMoreActions && (
+                                    <div className="dayEditMoreActionsMenu">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setDialogAllWeeks(true);
+                                          setShowDesktopMoreActions(false);
+                                        }}
+                                      >
+                                        <Eye size={16} />
+                                        <span>Ver semanas anteriores</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setShowColumnConfigDialog(true);
+                                          setShowDesktopMoreActions(false);
+                                        }}
+                                      >
+                                        <RectangleEllipsis size={16} />
+                                        <span>Columnas</span>
+                                      </button>
                                     </div>
-                                  </Tooltip>
-                                </button>
+                                  )}
+                                </div>
+                              </div>
                             </th>
                             
                           </tr>
@@ -4030,7 +5082,7 @@ function colorItemTemplate(option) {
                         </thead>
            
                         <tbody>
-                          {currentDay && currentDay.exercises.map((exercise, i) => (
+                          {displayedCurrentDay && displayedCurrentDay.exercises.map((exercise, i) => (
                             <Draggable 
                                 key={exercise.type === 'block' ? exercise.block_id : exercise.exercise_id}
                                 draggableId={exercise.type === 'block' ? exercise.block_id : exercise.exercise_id}
@@ -4044,7 +5096,7 @@ function colorItemTemplate(option) {
                                     <React.Fragment key={exercise.block_id}>
                                       {/* Fila encabezado bloque */}
                                       <tr ref={providedDrag.innerRef} {...providedDrag.draggableProps}>
-  <td colSpan={propiedades.length} className="p-0 border-0">
+  <td colSpan={desktopColumnSpan} className="p-0 border-0">
     <div
       className="rounded-3"
       style={{
@@ -4125,16 +5177,22 @@ function colorItemTemplate(option) {
       </div>
 
       {/* SUB-ENCABEZADO DE COLUMNAS (fondo claro) */}
-      <div className="px-3 py-2 small text-muted dayEditBlockColumns">
-        <div className="row g-0 fw-semibold">
-          <div className="col-1">#</div>
-          <div className="col-3 text-start">Ejercicio</div>
-          <div className="col-1">Series</div>
-          <div className="col-1">Reps</div>
-          <div className="col-2">Peso</div>
-          <div className="col-1">Rest</div>
-          <div className="col-1">Video</div>
-          <div className="col-2">Notas</div>
+      <div className="px-0 py-2 small text-muted dayEditBlockColumns">
+        <div
+          className="dayEditBlockColumnsGrid fw-semibold"
+          style={{
+            gridTemplateColumns: `106px ${visibleExerciseColumns
+              .map((column) => `${columnConfig[column.id]?.width || column.defaultWidth}px`)
+              .join(" ")} 46px`
+          }}
+        >
+          <div>#</div>
+          {visibleExerciseColumns.map((column) => (
+            <div key={column.id} className={column.id === "name" || column.id === "notas" ? "text-start" : ""}>
+              {column.label}
+            </div>
+          ))}
+          <div></div>
         </div>
       </div>
     </div>
@@ -4172,6 +5230,7 @@ function colorItemTemplate(option) {
                                             className="p-dropdown-group w-100 dayEditBlockOrderDropdown"
                                           />
                                         </td>
+                                        {isColumnVisible("name") && (
                                         <td>
                                         <div className="">
                                                           <div className="d-flex align-items-center mb-1">
@@ -4216,24 +5275,42 @@ function colorItemTemplate(option) {
                                                           </div>
                                                         </div>
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("sets") && (
                                                         <td>
                                                         {customInputEditDay(ex.sets, j, "sets", i)}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("reps") && (
                                                         <td>
                                                           {customInputEditDay(ex.reps, j, "reps", i)}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("peso") && (
                                                         <td>
                                                           {customInputEditDay(ex.peso, j, "peso", i)}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("rpeRir") && (
+                                                        <td>
+                                                          {customInputEditDay(ex.athleteRpeRir, j, "rpeRir", i)}
+                                                        </td>
+                                                        )}
+                                                        {isColumnVisible("rest") && (
                                                         <td>
                                                           {customInputEditDay(ex.rest, j, "rest", i)}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("video") && (
                                                         <td>
                                                           {customInputEditDay(ex.video, j, "video", i)}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("notas") && (
                                                         <td>
                                                           {customInputEditDay(ex.notas, j, "notas", i)}
                                                         </td>
+                                                        )}
                                                         <td>
                                                           <IconButton
                                                               onClick={() => handleDeleteExerciseInBlockClick(i, ex)}
@@ -4248,19 +5325,22 @@ function colorItemTemplate(option) {
                                   return (
                                     <React.Fragment key={ex.exercise_id}>
                                       <tr>
-                                        <td colSpan={propiedades.length} className="p-0 border-0">
+                                        <td colSpan={desktopColumnSpan} className="p-0 border-0">
                                           <table className="table text-center align-middle dayEditCircuitNestedTable">
                                             <colgroup>
                                               <col className="dayEditCircuitColIndex" />
-                                              <col className="dayEditCircuitColName" />
-                                              <col className="dayEditCircuitColReps" />
-                                              <col className="dayEditCircuitColPeso" />
-                                              <col className="dayEditCircuitColVideo" />
+                                              {visibleCircuitColumns.map((column) => (
+                                                <col
+                                                  key={column.id}
+                                                  className={DAY_EDIT_CIRCUIT_COLUMN_CLASS[column.id]}
+                                                  style={{ width: `${columnConfig[column.id]?.width || column.defaultWidth}px` }}
+                                                />
+                                              ))}
                                               <col className="dayEditCircuitColDelete" />
                                             </colgroup>
                                             <thead>
                                               <tr>
-                                                <td colSpan={5} className="text-start">
+                                                <td colSpan={Math.max(1, circuitColumnSpan - 1)} className="text-start">
                                                   <CircuitHeaderEditor
                                                     circuit={ex}
                                                     onField={(field, value) => changeBlockCircuitData(i, j, field, value)}
@@ -4278,10 +5358,9 @@ function colorItemTemplate(option) {
                                               </tr>
                                               <tr>
                                                 <th>#</th>
-                                                <th>Nombre</th>
-                                                <th>Reps</th>
-                                                <th>Peso</th>
-                                                <th>Video</th>
+                                                {visibleCircuitColumns.map((column) => (
+                                                  <th key={column.id}>{column.label}</th>
+                                                ))}
                                                 <th></th>
                                               </tr>
                                             </thead>
@@ -4291,18 +5370,26 @@ function colorItemTemplate(option) {
                                                   <td className="dayEditCircuitIndexCell">
                                                     <span>{k + 1}</span>
                                                   </td>
+                                                  {isColumnVisible("name") && (
                                                   <td className="text-start">
                                                     {customInputEditExerciseInCircuit(ce.name, j, k, 'name', ce.name, i)}
                                                   </td>
+                                                  )}
+                                                  {isColumnVisible("reps") && (
                                                   <td className="text-center">
                                                     {customInputEditExerciseInCircuit(ce.reps, j, k, 'reps', ce.reps, i)}
                                                   </td>
+                                                  )}
+                                                  {isColumnVisible("peso") && (
                                                   <td className="text-center">
                                                     {customInputEditExerciseInCircuit(ce.peso, j, k, 'peso', ce.peso, i)}
                                                   </td>
+                                                  )}
+                                                  {isColumnVisible("video") && (
                                                   <td className="text-center">
                                                     {customInputEditExerciseInCircuit(ce.video, j, k, 'video', ce.video, i)}
                                                   </td>
+                                                  )}
                                                   <td className="dayEditCircuitDeleteCell">
                                                     <IconButton onClick={() => handleDeleteExerciseInCircuit(i, j, k, ce.name)}>
                                                       <CancelIcon className="colorIconDeleteExercise" />
@@ -4311,7 +5398,7 @@ function colorItemTemplate(option) {
                                                 </tr>
                                               ))}
                                               <tr>
-                                                <td colSpan={6} className="text-center py-4">
+                                                <td colSpan={circuitColumnSpan} className="text-center py-4">
                                                   <button
                                                     className="btn circuitAddExerciseBtn"
                                                     onClick={() => AddExerciseToCircuit(j, i)}
@@ -4335,7 +5422,7 @@ function colorItemTemplate(option) {
 
                                       {/* Fila para anadir ejercicio al bloque */}
                                       <tr>
-                                        <td colSpan={propiedades.length} className="text-center rounded-bottom-3" style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}>
+                                        <td colSpan={desktopColumnSpan} className="text-center rounded-bottom-3" style={{ backgroundColor: exercise.type == 'block' ? exercise.color : exercise.color , transition: 'background-color 0.2s' }}>
                                           <button
                                             className="btn btn-light mx-3"
                                             onClick={() => addExerciseToBlock(i)}
@@ -4388,6 +5475,7 @@ function colorItemTemplate(option) {
                                                     </td>
                                                     {exercise.type === "exercise" ? (
                                                       <>
+                                                        {isColumnVisible("name") && (
                                                         <td >
                                                         <div className="">
                                                           <div className="d-flex align-items-center mb-1">
@@ -4436,6 +5524,8 @@ function colorItemTemplate(option) {
                                                           </div>
                                                         </div>
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("sets") && (
                                                         <td>
                                                           {customInputEditDay(
                                                             exercise.sets,
@@ -4443,6 +5533,8 @@ function colorItemTemplate(option) {
                                                             "sets"
                                                           )}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("reps") && (
                                                         <td>
                                                           <div className="marginRepsNew">
                                                           {customInputEditDay(
@@ -4451,6 +5543,8 @@ function colorItemTemplate(option) {
                                                             "reps"
                                                           )}</div>
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("peso") && (
                                                         <td>
                                                           {customInputEditDay(
                                                             exercise.peso,
@@ -4458,6 +5552,17 @@ function colorItemTemplate(option) {
                                                             "peso"
                                                           )}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("rpeRir") && (
+                                                        <td>
+                                                          {customInputEditDay(
+                                                            exercise.athleteRpeRir,
+                                                            i,
+                                                            "rpeRir"
+                                                          )}
+                                                        </td>
+                                                        )}
+                                                        {isColumnVisible("rest") && (
                                                         <td>
                                                           {customInputEditDay(
                                                             exercise.rest,
@@ -4465,6 +5570,8 @@ function colorItemTemplate(option) {
                                                             "rest"
                                                           )}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("video") && (
                                                         <td>
                                                           {customInputEditDay(
                                                             exercise.video,
@@ -4472,6 +5579,8 @@ function colorItemTemplate(option) {
                                                             "video"
                                                           )}
                                                         </td>
+                                                        )}
+                                                        {isColumnVisible("notas") && (
                                                         <td>
                                                           {customInputEditDay(
                                                             exercise.notas,
@@ -4479,6 +5588,7 @@ function colorItemTemplate(option) {
                                                             "notas"
                                                           )}
                                                         </td>
+                                                        )}
                                                         <td>
                                                           <div className="row justify-content-center">
                                                             <IconButton
@@ -4493,20 +5603,23 @@ function colorItemTemplate(option) {
                                                       </>
                                                     ) : (
                                                       <>
-                                                        <td colSpan={propiedades.length - 2}>
+                                                        <td colSpan={desktopColumnSpan - 2}>
                                                           <table className="table text-center align-middle dayEditCircuitNestedTable">
                                                             <colgroup>
                                                               <col className="dayEditCircuitColIndex" />
-                                                              <col className="dayEditCircuitColName" />
-                                                              <col className="dayEditCircuitColReps" />
-                                                              <col className="dayEditCircuitColPeso" />
-                                                              <col className="dayEditCircuitColVideo" />
+                                                              {visibleCircuitColumns.map((column) => (
+                                                                <col
+                                                                  key={column.id}
+                                                                  className={DAY_EDIT_CIRCUIT_COLUMN_CLASS[column.id]}
+                                                                  style={{ width: `${columnConfig[column.id]?.width || column.defaultWidth}px` }}
+                                                                />
+                                                              ))}
                                                               <col className="dayEditCircuitColDelete" />
                                                             </colgroup>
                                                             <thead>
                                                               <tr>
 
-                                                                <td colSpan={5} className="text-start">
+                                                                <td colSpan={Math.max(1, circuitColumnSpan - 1)} className="text-start">
                                                                <CircuitHeaderEditor
                                                                   circuit={exercise}
                                                                   onField={(field, value) => changeCircuitData(i, field, value)}
@@ -4528,10 +5641,9 @@ function colorItemTemplate(option) {
 
                                                               <tr >
                                                                 <th>#</th>
-                                                                <th>Nombre</th>
-                                                                <th>Reps</th>
-                                                                <th>Peso</th>
-                                                                <th>Video</th>
+                                                                {visibleCircuitColumns.map((column) => (
+                                                                  <th key={column.id}>{column.label}</th>
+                                                                ))}
                                                                 <th></th>
                                                               </tr>
                                                             </thead>
@@ -4541,20 +5653,28 @@ function colorItemTemplate(option) {
                                                                   <td className="dayEditCircuitIndexCell">
                                                                     <span>{j + 1}</span>
                                                                   </td>
+                                                                  {isColumnVisible("name") && (
                                                                   <td className="text-start" >
                                                                     {customInputEditExerciseInCircuit(circuitExercise.name, i, j, 'name')}
                                                                   </td>
+                                                                  )}
+                                                                  {isColumnVisible("reps") && (
                                                                   <td className="text-center td-3" >
                                                                     <div className="marginRepsNew">
                                                                     {customInputEditExerciseInCircuit(circuitExercise.reps, i, j, 'reps')}
                                                                     </div>
                                                                   </td>
+                                                                  )}
+                                                                  {isColumnVisible("peso") && (
                                                                   <td className="text-center" >
                                                                     {customInputEditExerciseInCircuit(circuitExercise.peso, i, j, 'peso')}
                                                                   </td>
+                                                                  )}
+                                                                  {isColumnVisible("video") && (
                                                                   <td className="text-center">
                                                                     {customInputEditExerciseInCircuit(circuitExercise.video, i, j, 'video')}
                                                                   </td>
+                                                                  )}
                                                                   <td className="dayEditCircuitDeleteCell">
                                                                     <IconButton
                                                                       aria-label="delete-circuit-exercise"
@@ -4567,7 +5687,7 @@ function colorItemTemplate(option) {
                                                                 </tr>
                                                               ))}
                                                               <tr>
-                                                                <td colSpan={6}>
+                                                                <td colSpan={circuitColumnSpan}>
                                                                   <button
                                                                     aria-label="video"
                                                                     className="btn circuitAddExerciseBtn my-4"
@@ -4678,6 +5798,120 @@ function colorItemTemplate(option) {
 
 
           {/* Ajustamos estilos de dialog para que se desplacen segun collapsed */}
+          <Dialog
+            header="Ver como alumno"
+            className={`coachModalDialog dayEditStudentPreviewDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            visible={showStudentPreviewDialog}
+            style={{ width: firstWidth > 991 ? "440px" : "94vw" }}
+            modal
+            draggable={false}
+            resizable={false}
+            onHide={() => setShowStudentPreviewDialog(false)}
+          >
+            <div className="dayEditStudentPreviewIntro">
+              Asi lo ve tu alumno. Esto te puede servir para guiarlo, o para entender alguna pregunta que te haga.
+            </div>
+            {studentPreviewDays.length > 1 && (
+              <label className="dayEditStudentPreviewDayPicker">
+                <span>Dia a previsualizar</span>
+                <select
+                  value={studentPreviewDayId}
+                  onChange={(event) => {
+                    setStudentPreviewDayId(event.target.value);
+                    setStudentPreviewAuxSlide({});
+                  }}
+                >
+                  {studentPreviewDays.map((dayItem, dayIndex) => (
+                    <option key={getStudentPreviewDayKey(dayItem, dayIndex)} value={getStudentPreviewDayKey(dayItem, dayIndex)}>
+                      {sanitizeBrokenText(dayItem?.name || `Dia ${dayIndex + 1}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <div className="dayEditStudentPreviewPhone ddp ddp-light">
+              <div className="dayEditStudentPreviewDayTitle">
+                {sanitizeBrokenText(studentPreviewDay?.name || "Dia sin nombre")}
+              </div>
+              {renderStudentPreviewAuxList("Activacion / movilidad", studentPreviewDay?.movility)}
+              {renderStudentPreviewAuxList("Entrada en calor", studentPreviewDay?.warmup)}
+              <h2 className="p-2 mb-0 text-start">Rutina del dia</h2>
+              <div className="dayEditStudentPreviewList">
+                {groupStudentPreviewSupersets(Array.isArray(studentPreviewDay?.exercises) ? studentPreviewDay.exercises : []).map((item, index) =>
+                  renderStudentPreviewItem(item, index)
+                )}
+                {!Array.isArray(studentPreviewDay?.exercises) || studentPreviewDay.exercises.length === 0 ? (
+                  <div className="dayEditStudentPreviewEmpty">Este dia no tiene ejercicios cargados.</div>
+                ) : null}
+              </div>
+            </div>
+          </Dialog>
+
+          <Dialog
+            header="Columnas del planificador"
+            className={`coachModalDialog dayEditColumnDialog ${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
+            visible={showColumnConfigDialog}
+            style={{ width: firstWidth > 991 ? "520px" : "92vw" }}
+            modal
+            onHide={() => setShowColumnConfigDialog(false)}
+          >
+            <div className="dayEditColumnConfigIntro">
+              Elegi que columnas usar y ajusta el ancho de la tabla de escritorio.
+            </div>
+            <div className="dayEditColumnConfigList">
+              {DAY_EDIT_COLUMNS.map((column) => {
+                const current = columnConfig[column.id] || DAY_EDIT_COLUMN_DEFAULTS[column.id];
+                return (
+                  <div className="dayEditColumnConfigRow" key={column.id}>
+                    <label className="dayEditColumnToggle">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(current.visible)}
+                        onChange={(event) => setColumnVisible(column.id, event.target.checked)}
+                      />
+                      <span>{column.label}</span>
+                    </label>
+                    <div className="dayEditColumnWidthControl">
+                      <input
+                        type="range"
+                        min={column.minWidth}
+                        max={column.maxWidth}
+                        step="4"
+                        value={current.width}
+                        disabled={!current.visible}
+                        onChange={(event) => setColumnWidth(column.id, event.target.value)}
+                      />
+                      <input
+                        type="number"
+                        min={column.minWidth}
+                        max={column.maxWidth}
+                        value={current.width}
+                        disabled={!current.visible}
+                        onChange={(event) => setColumnWidth(column.id, event.target.value)}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="dayEditColumnDialogActions">
+              <button
+                type="button"
+                className="coachDialogBtn coachDialogBtnSecondary"
+                onClick={resetColumnConfig}
+              >
+                Restablecer
+              </button>
+              <button
+                type="button"
+                className="coachDialogBtn coachDialogBtnPrimary"
+                onClick={() => setShowColumnConfigDialog(false)}
+              >
+                Listo
+              </button>
+            </div>
+          </Dialog>
+
           <ConfirmDialog
             visible={showDeleteDayDialog}
             onHide={() => setShowDeleteDayDialog(false)}
@@ -5128,7 +6362,7 @@ function colorItemTemplate(option) {
         {/* Cada linea con su numero de aproximacion */}
         { approxData.map((line, idx) => (
           <div key={idx} className="mb-2">
-            <div className="small text-muted fs07em mb-0">
+            <div className="small text-muted fs07em mb-0 dayEditApproxLineLabel">
               {`${idx+1} aproximacion`}
             </div>
             <div className="row g-1 align-items-end">

@@ -151,7 +151,7 @@ const CustomInputNumber = React.forwardRef(
     // UI del selector (manual, chico y consistente)
     const ModeSelector = () => {
       return isRep ? (
-        <div className="seg " role="group" aria-label="Modo reps">
+        <div className="seg customInputModeSelector customInputModeSelectorReps" role="group" aria-label="Modo reps">
           <button
             type="button"
             className={`seg-btn ${mode === 'text' ? 'active' : ''}`}
@@ -170,7 +170,7 @@ const CustomInputNumber = React.forwardRef(
           </button>
         </div>
       ) : (
-        <div className="seg" role="group" aria-label="Modo sets">
+        <div className="seg customInputModeSelector" role="group" aria-label="Modo sets">
           <button
             type="button"
             className={`seg-btn ${mode === 'text' ? 'active' : ''}`}
@@ -186,7 +186,7 @@ const CustomInputNumber = React.forwardRef(
     return (
       <>
         <div
-          className={`row justify-content-center text-center align-middle mt-4 align-center ${
+          className={`row customInputNumberRoot justify-content-center text-center align-middle mt-4 align-center ${
             isRep && !isNotNeedProp && firstWidth < 992 && 'mb-2'
           } ${isRep && firstWidth > 992 && 'mt-4'}`}
         >
@@ -266,7 +266,7 @@ const CustomInputNumber = React.forwardRef(
           )}
 
           {/* Selector de modo manual, centrado */}
-          <div className={`${!isRep ? 'w-100 d-flex justify-content-center' : 'text-center'} mt-1 px-0`}>
+          <div className={`${!isRep ? 'w-100 d-flex justify-content-center' : 'text-center'} customInputModeSelectorWrap mt-1 px-0`}>
             <ModeSelector />
           </div>
         </div>

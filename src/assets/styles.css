@@ -1623,6 +1623,32 @@ font-weight: 550;
   border-radius: 12px !important;
 }
 
+.dayEditDarkPage #agregarDia.bgItemsDropdown,
+.dayEditDarkPage #editarDia.bgItemsDropdown,
+.dayEditDarkPage #reordenarDias.bgItemsDropdown,
+.dayEditDarkPage #eliminarDia.bgItemsDropdown,
+.dayEditDarkPage #copiarDia.bgItemsDropdown,
+.dayEditDarkPage #pegarDia.bgItemsDropdown,
+.dayEditDarkPage #addEjercicio.bgItemsDropdown,
+.dayEditDarkPage #addCircuit.bgItemsDropdown{
+  min-height: 36px;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  margin-bottom: 8px !important;
+  align-items: center;
+}
+
+.dayEditDarkPage #agregarDia.bgItemsDropdown .MuiSvgIcon-root,
+.dayEditDarkPage #editarDia.bgItemsDropdown .MuiSvgIcon-root,
+.dayEditDarkPage #reordenarDias.bgItemsDropdown .MuiSvgIcon-root,
+.dayEditDarkPage #eliminarDia.bgItemsDropdown .MuiSvgIcon-root,
+.dayEditDarkPage #copiarDia.bgItemsDropdown .MuiSvgIcon-root,
+.dayEditDarkPage #pegarDia.bgItemsDropdown .MuiSvgIcon-root,
+.dayEditDarkPage #addEjercicio.bgItemsDropdown .MuiSvgIcon-root,
+.dayEditDarkPage #addCircuit.bgItemsDropdown .MuiSvgIcon-root{
+  font-size: 1rem !important;
+}
+
 .dayEditDarkPage .bgItemsDropdown:hover{
   background: var(--dayedit-surface-hover, #262626) !important;
 }
@@ -1649,6 +1675,156 @@ font-weight: 550;
 .dayEditDarkPage #movility.bgItemsDropdown:hover,
 .dayEditDarkPage #warmup.bgItemsDropdown:hover{
   background: #1a2435 !important;
+}
+
+.dayEditDarkPage .dayEditPreparationCard{
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.dayEditDarkPage .dayEditPreparationCardLoaded{
+  border-color: rgba(73, 170, 25, 0.55) !important;
+}
+
+.dayEditDarkPage .dayEditPreparationHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dayEditDarkPage .dayEditPreparationTitle{
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.dayEditDarkPage .dayEditPreparationStatus{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.16);
+  color: #cbd5e1 !important;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dayEditDarkPage .dayEditPreparationStatusLoaded{
+  background: rgba(73, 170, 25, 0.18);
+  color: #86efac !important;
+}
+
+.dayEditDarkPage .dayEditPreparationCard .stylesSpanBloqs{
+  display: block;
+  line-height: 1.35;
+}
+
+.dayEditDarkPage .dayEditPreparationCard .stylesSpanBloqs > span:first-child{
+  display: inline;
+}
+
+.dayEditPreparationSubline{
+  display: inline;
+  margin-left: 4px;
+  font-size: inherit;
+  color: inherit;
+}
+
+.dayEditPreparationMobileOnly{
+  display: none;
+}
+
+.dayEditStudentOnlyFieldLabel{
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dayEditStudentOnlyInfoBtn{
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.dayEditStudentOnlyInfoBtn svg{
+  width: 15px;
+  height: 15px;
+}
+
+.dayEditApproxLineLabel{
+  font-size: 0.64rem !important;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.dayEditStudentPreviewDialog .colorNote3 .fs08em,
+.ddp.ddp-light .colorNote3 .fs08em{
+  font-size: 0.68rem !important;
+  line-height: 1.05;
+}
+
+.dayEditStudentPreviewDialog .colorNote3 span,
+.ddp.ddp-light .colorNote3 span{
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px){
+  .dayEditDarkPage .dayEditPreparationCard{
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dayEditDarkPage .dayEditPreparationHeader{
+    display: contents;
+  }
+
+  .dayEditDarkPage .dayEditPreparationTitle{
+    order: 1;
+  }
+
+  .dayEditDarkPage .dayEditPreparationCard .stylesSpanBloqs{
+    order: 2;
+    margin-top: 4px;
+  }
+
+  .dayEditDarkPage .dayEditPreparationStatus{
+    order: 3;
+    align-self: flex-start;
+    margin-top: 8px;
+  }
+
+  .dayEditDarkPage .dayEditPreparationCard .stylesSpanBloqs > span:first-child,
+  .dayEditPreparationSubline,
+  .dayEditPreparationMobileOnly{
+    display: block;
+  }
+
+  .dayEditPreparationSubline{
+    margin-left: 0;
+    margin-top: 1px;
+    font-size: 0.78rem;
+    color: #cbd5e1;
+  }
+
+  .dayEditDarkPage .dayEditPreparationHeader{
+    align-items: flex-start;
+  }
+
+  .dayEditDarkPage .dayEditPreparationTitle{
+    display: block;
+  }
 }
 
 .dayEditDarkPage .colorNameAlumno{
@@ -1778,7 +1954,7 @@ font-weight: 550;
   border: 1px solid #e5e7eb;
   border-radius: 18px;
   box-shadow: none;
-  padding: 12px 16px 0;
+  padding: 8px 8px 0;
   width: calc(100% - 12px);
   max-width: calc(100% - 12px);
   box-sizing: border-box;
@@ -1787,44 +1963,116 @@ font-weight: 550;
   margin: 0 6px;
 }
 
+.dayEditDarkPage .dayEditBulkActionBar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.dayEditDarkPage .dayEditBulkActionBar .bulkAdjustHeaderBtn{
+  min-height: 44px;
+}
+
+.dayEditMoreActionsWrap{
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.dayEditMoreActionsMenu{
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 12;
+  min-width: 210px;
+  padding: 6px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+}
+
+.dayEditMoreActionsMenu button{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #102132;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 8px 9px;
+  text-align: left;
+}
+
+.dayEditMoreActionsMenu button:hover,
+.dayEditMoreActionsMenu button:focus{
+  background: #eef4fb;
+}
+
 .dayEditDarkPage .dayEditColDrag{
-  width: 44px;
+  width: 34px;
 }
 
 .dayEditDarkPage .dayEditColOrder{
-  width: 84px;
+  width: 72px;
 }
 
 .dayEditDarkPage .dayEditColName{
-  width: 240px;
+  width: 200px;
 }
 
 .dayEditDarkPage .dayEditColSets{
-  width: 108px;
+  width: 82px;
 }
 
 .dayEditDarkPage .dayEditColReps{
-  width: 118px;
+  width: 58px;
 }
 
 .dayEditDarkPage .dayEditColPeso{
-  width: 110px;
+  width: 72px;
+}
+
+.dayEditDarkPage .dayEditColRpeRir{
+  width: 82px;
 }
 
 .dayEditDarkPage .dayEditColRest{
-  width: 98px;
+  width: 80px;
 }
 
 .dayEditDarkPage .dayEditColVideo{
-  width: 56px;
+  width: 48px;
 }
 
 .dayEditDarkPage .dayEditColNotes{
-  width: 170px;
+  width: 112px;
 }
 
 .dayEditDarkPage .dayEditColDelete{
-  width: 46px;
+  width: 36px;
+}
+
+.dayEditDarkPage .dayEditBlockColumnsGrid{
+  display: grid;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.dayEditDarkPage .dayEditBlockColumnsGrid > div{
+  padding: 0 4px;
+  text-align: center;
+}
+
+.dayEditDarkPage .dayEditBlockColumnsGrid > div.text-start{
+  text-align: left;
 }
 
 .dayEditDarkPage .ddp-table,
@@ -1842,6 +2090,11 @@ font-weight: 550;
   background: #ffffff !important;
   color: #102132 !important;
   box-shadow: none !important;
+}
+
+.dayEditDarkPage .dayEditDesktopTable > :not(caption) > * > *{
+  padding-left: 0.3rem !important;
+  padding-right: 0.3rem !important;
 }
 
 .dayEditDarkPage .ddp-table thead th{
@@ -2321,6 +2574,85 @@ font-weight: 550;
   height: 26px !important;
 }
 
+@media (min-width: 993px) and (max-width: 1500px){
+  .dayEditDarkPage .dayEditTableShell .input-number-container{
+    display: grid !important;
+    grid-template-columns: 32px;
+    grid-template-rows: 18px 26px 18px;
+    align-items: stretch;
+    width: 32px !important;
+    max-width: 32px !important;
+    height: 62px !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .input-number-container .buttonLeft,
+  .dayEditDarkPage .dayEditTableShell .input-number-container .buttonRight{
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 18px !important;
+    min-height: 18px !important;
+    padding: 0 !important;
+    border: 1px solid #12263f !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .input-number-container .buttonLeft{
+    grid-row: 1;
+    grid-column: 1;
+    border-radius: 8px 8px 0 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .input-number-container input{
+    grid-row: 2;
+    grid-column: 1;
+    width: 32px !important;
+    flex: 0 0 32px !important;
+    height: 26px !important;
+    border: 1px solid #cfdae6 !important;
+    border-radius: 0 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .input-number-container .buttonRight{
+    grid-row: 3;
+    grid-column: 1;
+    border-radius: 0 0 8px 8px !important;
+    border-top: 0 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .input-number-container .MuiSvgIcon-root{
+    font-size: 0.86rem !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .seg{
+    margin-top: 3px;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .styleSelectButton{
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .styleSelectButton .p-button,
+  .dayEditDarkPage .dayEditTableShell .styleSelectButton .p-togglebutton{
+    width: 44px !important;
+    min-width: 44px !important;
+    justify-content: center !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    font-size: 0.56rem !important;
+    line-height: 1 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .styleSelectButton .p-button + .p-button,
+  .dayEditDarkPage .dayEditTableShell .styleSelectButton .p-togglebutton + .p-togglebutton{
+    border-left-width: 1px !important;
+    border-top-width: 0 !important;
+  }
+}
+
 .dayEditDarkPage .dayEditTableShell .fontInputCustomNumber{
   font-size: 0.8rem;
 }
@@ -2494,6 +2826,10 @@ font-weight: 550;
   width: 18%;
 }
 
+.dayEditDarkPage .dayEditCircuitColRpeRir{
+  width: 14%;
+}
+
 .dayEditDarkPage .dayEditCircuitColVideo{
   width: 10%;
 }
@@ -2527,6 +2863,570 @@ font-weight: 550;
 .dayEditDarkPage .dayEditCircuitIndexCell{
   text-align: center;
   vertical-align: middle;
+}
+
+.dayEditColumnDialog .p-dialog-content{
+  color: #102132;
+}
+
+.dayEditColumnConfigIntro{
+  color: #475569;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+
+.dayEditColumnConfigList{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dayEditColumnConfigRow{
+  display: grid;
+  grid-template-columns: minmax(120px, 150px) 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.dayEditColumnToggle{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.dayEditColumnWidthControl{
+  display: grid;
+  grid-template-columns: 1fr 72px;
+  align-items: center;
+  gap: 10px;
+}
+
+.dayEditColumnWidthControl input[type="number"]{
+  min-width: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.dayEditColumnWidthControl input:disabled{
+  opacity: 0.45;
+}
+
+.dayEditColumnDialogActions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.dayEditStudentPreviewDialog .p-dialog-content{
+  color: #0f172a;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.dayEditStudentPreviewIntro{
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.dayEditStudentPreviewDayPicker{
+  display: grid;
+  gap: 5px;
+  margin-bottom: 12px;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.dayEditStudentPreviewDayPicker select{
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 7px 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.dayEditStudentPreviewPhone{
+  max-height: none;
+  overflow: visible;
+  padding: 0 10px 12px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.dayEditStudentPreviewDayTitle{
+  padding: 2px 8px 22px;
+  color: #001f33;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.dayEditStudentPreviewDayHeader{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: #102132;
+  color: #ffffff;
+}
+
+.dayEditStudentPreviewDayHeader span,
+.dayEditStudentPreviewAux span,
+.dayEditStudentPreviewNotes span,
+.dayEditStudentPreviewMetric span{
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  opacity: 0.78;
+}
+
+.dayEditStudentPreviewDayHeader strong{
+  font-size: 1rem;
+}
+
+.dayEditStudentPreviewAux{
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.dayEditStudentPreviewAux strong{
+  display: block;
+  margin-top: 2px;
+  font-size: 0.9rem;
+}
+
+.dayEditStudentPreviewAux ul{
+  padding-left: 18px;
+  margin: 8px 0 0;
+  color: #475569;
+  font-size: 0.84rem;
+}
+
+.dayEditStudentPreviewList{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dayEditStudentPreviewCard,
+.dayEditStudentPreviewBlock{
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.dayEditStudentPreviewCard{
+  padding: 12px;
+}
+
+.dayEditStudentPreviewExerciseHeader{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dayEditStudentPreviewExerciseHeader h5{
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.dayEditStudentPreviewNumber{
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: #102132;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.dayEditStudentPreviewNumberSmall{
+  width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+}
+
+.dayEditStudentPreviewVideo{
+  display: inline-flex;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.dayEditStudentPreviewMetrics,
+.dayEditStudentPreviewCircuitMetrics{
+  display: grid;
+  gap: 8px;
+}
+
+.dayEditStudentPreviewMetrics{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dayEditStudentPreviewCircuitMetrics{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 8px;
+}
+
+.dayEditStudentPreviewMetric{
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.dayEditStudentPreviewMetric strong{
+  display: block;
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+.dayEditStudentPreviewNotes{
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+.dayEditStudentPreviewNotes p{
+  margin: 2px 0 0;
+  color: #334155;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.dayEditStudentPreviewBlockHeader{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  color: #ffffff;
+}
+
+.dayEditStudentPreviewBlockHeader span{
+  font-size: 0.75rem;
+  font-weight: 800;
+  opacity: 0.86;
+}
+
+.dayEditStudentPreviewBlockHeader strong{
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.dayEditStudentPreviewBlockBody{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: #f8fafc;
+}
+
+.dayEditStudentPreviewCircuitList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dayEditStudentPreviewCircuitItem{
+  padding: 9px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.dayEditStudentPreviewCircuitItem > div:first-child{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dayEditStudentPreviewCircuitItem strong{
+  min-width: 0;
+  color: #0f172a;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.dayEditStudentPreviewEmpty{
+  padding: 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.dayEditStudentPreviewSlider{
+  width: 100%;
+  position: relative;
+}
+
+.dayEditStudentPreviewSliderTrack{
+  display: flex;
+  gap: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.dayEditStudentPreviewSliderTrack::-webkit-scrollbar{
+  display: none;
+}
+
+.dayEditStudentPreviewSlide{
+  flex: 0 0 100%;
+  min-width: 100%;
+  transition: transform 0.22s ease;
+}
+
+.dayEditStudentPreviewSliderNav{
+  position: absolute;
+  top: 42%;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #dbe4ef;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  font-size: 1.1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+}
+
+.dayEditStudentPreviewSliderPrev{
+  left: 2px;
+}
+
+.dayEditStudentPreviewSliderNext{
+  right: 2px;
+}
+
+.dayEditStudentPreviewSliderDots{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: -4px 0 20px;
+}
+
+.dayEditStudentPreviewSliderDots span{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #d1d5db;
+}
+
+.dayEditStudentPreviewSliderDots span.active{
+  background: #1683f7;
+}
+
+.dayEditStudentPreviewDialog .StyleLightBox{
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 4px !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08) !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+}
+
+.dayEditStudentPreviewAuxSection .StyleLightBox{
+  margin-top: 0 !important;
+  margin-bottom: 0.35rem !important;
+  min-height: 52px;
+}
+
+.dayEditStudentPreviewDialog .fontStylesSpan,
+.dayEditStudentPreviewDialog .textWeightCards{
+  text-align: center !important;
+  width: 100%;
+}
+
+.dayEditStudentPreviewAuxMetric{
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.dayEditStudentPreviewDialog .Mui-disabled{
+  pointer-events: none !important;
+}
+
+.dayEditStudentPreviewTimer{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 23px;
+  color: #0f172a;
+  font-weight: 700;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.1;
+}
+
+.dayEditStudentPreviewTimerEmpty{
+  font-size: 0.64rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.dayEditStudentPreviewTimer button{
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  padding: 0;
+}
+
+.dayEditStudentPreviewTimer svg{
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.dayEditStudentPreviewCounter{
+  min-width: 118px;
+  padding: 5px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  font-size: 0.66rem;
+  white-space: nowrap;
+}
+
+.dayEditStudentPreviewCounter span{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  min-height: 22px;
+  margin-left: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.dayEditReadOnlyStudentField:disabled{
+  cursor: help;
+  background: #eef2f7 !important;
+  color: #64748b !important;
+  opacity: 1;
+  max-width: 8ch !important;
+  width: 8ch !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dayEditReadOnlyStudentFieldWrap{
+  display: inline-flex;
+  justify-content: center;
+  cursor: help;
+  width: 8ch;
+  max-width: 8ch;
+}
+
+.dayEditDarkPage .dayEditTableShell .stylePesoInput{
+  width: 72px !important;
+  max-width: 72px !important;
+  min-width: 0 !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.dayEditDarkPage .dayEditTableShell .dayEditReadOnlyStudentFieldWrap,
+.dayEditDarkPage .dayEditTableShell .dayEditReadOnlyStudentField{
+  width: 8ch !important;
+  max-width: 8ch !important;
+  min-width: 0 !important;
+}
+
+.dayEditDarkPage .dayEditTableShell .dayEditReadOnlyStudentField{
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#verComoAlumno.bgItemsDropdown{
+  min-height: 34px;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+#verComoAlumno.bgItemsDropdown strong{
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+#verComoAlumno.bgItemsDropdown svg{
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 575.98px){
+  .dayEditColumnConfigRow{
+    grid-template-columns: 1fr;
+  }
+
+  .dayEditColumnDialogActions{
+    justify-content: stretch;
+  }
+
+  .dayEditColumnDialogActions .coachDialogBtn{
+    width: 100%;
+  }
 }
 
 .dayEditDarkPage .dayEditCircuitIndexCell span{
@@ -2762,6 +3662,12 @@ font-weight: 550;
   display: inline-flex;
   align-items: stretch;
   width: 98px;
+}
+
+.dayEditDarkPage .dayEditTableShell .dayEditRestManual{
+  width: 94px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .dayEditDarkPage .dayEditRestManualInput{
@@ -5146,42 +6052,15 @@ padding: 0 5px;
 }
 
 .dayEditCircuitTimeCombo{
-  display: flex;
+  display: inline-flex;
   align-items: stretch;
-  width: 132px;
-  flex: 0 0 132px;
+  width: 86px;
+  flex: 0 0 86px;
 }
 
 .dayEditCircuitTimeCombo .dayEditCircuitTimeInput{
-  width: 88px;
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-}
-
-.dayEditCircuitTimeCombo .dayEditCircuitTimeSelect{
-  width: 44px;
-  min-height: var(--day-edit-control-height) !important;
-  border-color: #cfdae6 !important;
-  border-left: 0 !important;
-  border-radius: 0 10px 10px 0 !important;
-  background-color: #f8fafc !important;
-  color: #102132 !important;
-  box-shadow: none !important;
-  font-size: 0.85rem;
-  color-scheme: light;
-  padding-left: 0 !important;
-  padding-right: 1.45rem !important;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23102132' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-  background-repeat: no-repeat !important;
-  background-position: center center !important;
-  background-size: 12px 12px !important;
-}
-
-.dayEditCircuitTimeCombo .dayEditCircuitTimeSelect option{
-  background-color: #ffffff;
-  color: #102132;
+  width: 86px;
+  border-radius: 10px !important;
 }
 
 .dayEditBlockOrderCell{
@@ -5222,6 +6101,32 @@ padding: 0 5px;
 
 .dayEditCircuitHeaderEditor .dayEditCircuitInlineFields{
   align-items: flex-end !important;
+}
+
+.dayEditCircuitEmomInline{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--day-edit-control-height);
+  white-space: nowrap;
+}
+
+.dayEditCircuitInlinePair{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dayEditCircuitInlineLabel{
+  color: #64748b;
+  font-size: 0.66rem;
+  line-height: 1;
+}
+
+.dayEditCircuitInlineSymbol{
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1;
 }
 
 .dayEditCircuitNotesField{
@@ -7221,6 +8126,15 @@ input:checked + .slider:before {
     width: 100% !important;
   }
 
+  .ddp.ddp-dark.dayEditDarkPage .dayEditMobileTable .div-bordered{
+    padding-top: 12px !important;
+  }
+
+  .ddp.ddp-dark.dayEditDarkPage .dayEditMobileFieldGrid{
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 0.65rem;
+  }
+
   .ddp.ddp-dark.dayEditDarkPage .dayEditMobileTable .shadowCards,
   .ddp.ddp-dark.dayEditDarkPage .dayEditMobileTable .div-bordered{
     width: 100% !important;
@@ -7990,5 +8904,274 @@ input:checked + .slider:before {
 
 .weekly-summary-shell-dark .btn.btn-outline-dark:hover {
   background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.weekly-summary-full-comments {
+  border: 1px solid #d6e4ff;
+  border-radius: 10px;
+  background: #f8fbff;
+  padding: 10px 12px;
+}
+
+.weekly-summary-full-comments-label {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #1e3a8a;
+}
+
+.weekly-summary-full-comments-text {
+  color: #0f172a;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+  max-height: min(42vh, 360px);
+  overflow-y: auto;
+}
+
+.weekly-summary-comments-preview {
+  display: block;
+  width: calc(100% - 1rem);
+  max-width: calc(100% - 1rem);
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.weekly-summary-comments-dialog-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: min(62vh, 520px);
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.athletePerformedWeightHint {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 9px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.dayEditMobileReorderActiveBtn {
+  background: #0b132b !important;
+  color: #ffffff !important;
+  border-color: #0b132b !important;
+}
+
+.dayEditMobileReorderHint {
+  margin: 8px 8px 12px;
+  padding: 10px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  font-weight: 600;
+  text-align: left;
+}
+
+.dayEditMobileReorderCard {
+  margin-bottom: 10px !important;
+  padding: 0 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+.dayEditMobileReorderItem {
+  display: grid;
+  grid-template-columns: 44px 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  min-height: 58px;
+}
+
+.dayEditMobileReorderHandle {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.dayEditMobileReorderNumber {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #0b132b;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.dayEditMobileReorderInfo {
+  min-width: 0;
+  text-align: left;
+}
+
+.dayEditMobileReorderTitle {
+  font-weight: 700;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dayEditMobileReorderMeta {
+  color: #64748b;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+@media (min-width: 993px) and (max-width: 1500px){
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect{
+    display: grid !important;
+    grid-template-columns: 48px !important;
+    grid-auto-flow: row !important;
+    justify-content: center !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect > .p-button,
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect > button{
+    grid-column: 1 !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 18px !important;
+    justify-content: center !important;
+    padding: 0 2px !important;
+    border-radius: 0 !important;
+    font-size: 0.56rem !important;
+    line-height: 1 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect > .p-button:first-child,
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect > button:first-child{
+    border-radius: 7px 7px 0 0 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect > .p-button:last-child,
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect > button:last-child{
+    border-radius: 0 0 7px 7px !important;
+    border-left-width: 1px !important;
+    border-top-width: 0 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .dayEditRepsModeSelect .p-button-label{
+    width: auto !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+}
+
+.dayEditDarkPage .dayEditTableShell .dayEditReadOnlyStudentFieldWrap{
+  display: inline-flex !important;
+  justify-content: center !important;
+  width: 9ch !important;
+  max-width: 9ch !important;
+}
+
+.dayEditDarkPage .dayEditTableShell .dayEditReadOnlyStudentField:disabled{
+  width: 9ch !important;
+  max-width: 9ch !important;
+  text-align: center !important;
+}
+
+@media (min-width: 993px) and (max-width: 1500px){
+  .dayEditDarkPage .dayEditTableShell .customInputNumberRoot{
+    width: fit-content !important;
+    min-width: 0 !important;
+    max-width: 52px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .customInputNumberRoot .largoTextMode{
+    display: block !important;
+    width: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    height: 26px !important;
+    padding: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .customInputNumberRoot .largoTextMode input{
+    display: block !important;
+    width: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    height: 26px !important;
+    padding: 0 3px !important;
+    font-size: 0.78rem !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .customInputModeSelectorWrap{
+    display: flex !important;
+    justify-content: center !important;
+    width: 52px !important;
+    max-width: 52px !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .customInputModeSelectorReps{
+    display: grid !important;
+    grid-template-columns: 52px !important;
+    grid-template-rows: repeat(2, 18px) !important;
+    width: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    height: 36px !important;
+    border-radius: 7px !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .customInputModeSelectorReps .seg-btn{
+    display: flex !important;
+    width: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    height: 18px !important;
+    min-height: 18px !important;
+    padding: 0 2px !important;
+    border-radius: 0 !important;
+    font-size: 0.56rem !important;
+    line-height: 1 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .customInputModeSelectorReps .seg-btn:first-child{
+    border-radius: 7px 7px 0 0 !important;
+  }
+
+  .dayEditDarkPage .dayEditTableShell .customInputModeSelectorReps .seg-btn:last-child{
+    border-left: 0 !important;
+    border-top: 1px solid rgba(0,0,0,0.18) !important;
+    border-radius: 0 0 7px 7px !important;
+  }
 }
 

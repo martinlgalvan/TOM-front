@@ -76,6 +76,17 @@ import { Files } from 'lucide-react';
 import { ToggleRight } from 'lucide-react';
 import { ToggleLeft } from 'lucide-react';
 
+const COMMENTS_PREVIEW_LIMIT = 80;
+
+const getCommentsPreview = (value) => {
+  const text = String(value || "").trim();
+  if (!text) return "No hay comentarios";
+  if (text.length <= COMMENTS_PREVIEW_LIMIT) return text;
+  return `${text.slice(0, COMMENTS_PREVIEW_LIMIT).trimEnd()}...`;
+};
+
+const hasLongComments = (value) => String(value || "").trim().length > COMMENTS_PREVIEW_LIMIT;
+
 function UserRoutineEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -1318,36 +1329,18 @@ const rightDialItems = [
 
               <div id="comments" className="position-relative">
                 <label className="text-light small ms-2" htmlFor="">Comentarios</label>
-                <OverlayTrigger
-                  placement="right"
-                  delay={{ show: 200, hide: 150 }}
-                  overlay={
-                    <Tooltip
-                      id="full-comment-tooltip"
-                      style={{
-                        backgroundColor: '#fff',
-                        color: '#212529',
-                        maxWidth: '300px',
-                        whiteSpace: 'normal',
-                        border: '1px solid rgba(0,0,0,0.2)',
-                        padding: '0.5rem',
-                      }}
-                    >
-                      {weeklySummary.comments || 'No hay comentarios'}
-                      <span className='d-block bg-primary mt-3'>Presiona para ver</span>
-                    </Tooltip>
-                  }
-                >
-                  <p
-                    className="small mx-2 rounded p-2 text-light bgItemsDropdown"
-                    style={{ cursor: 'pointer' }}
+                <p className="weekly-summary-comments-preview small mx-2 rounded p-2 text-light bgItemsDropdown mb-2">
+                  {getCommentsPreview(weeklySummary.comments)}
+                </p>
+                {hasLongComments(weeklySummary.comments) && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-light btn-sm mx-2 mb-2"
                     onClick={() => setShowCommentsDialog(true)}
                   >
-                    {weeklySummary.comments?.split(' ').length > 15
-                      ? weeklySummary.comments.split(' ').slice(0, 15).join(' ') + '...'
-                      : weeklySummary.comments || 'No hay comentarios'}
-                  </p>
-                </OverlayTrigger>
+                    Ver comentarios completos
+                  </button>
+                )}
               </div>
 
               <div id='correcciones' className="d-grid mt-2">
@@ -1676,7 +1669,7 @@ const rightDialItems = [
         <Dialog
           header="Resumen Semanal"
           visible={showWeeklySummaryModal}
-          style={{ width: '80vw', maxWidth: 520 }}
+          style={{ width: firstWidth > 900 ? '80vw' : '94vw', maxWidth: 620 }}
           onHide={() => setShowWeeklySummaryModal(false)}
           draggable={true}
         >
@@ -1707,7 +1700,6 @@ const rightDialItems = [
               ['Descanso / Sueno:', weeklySummary.selection4],
               ['Estres:', weeklySummary.selection5],
               ['Peso:', weeklySummary.pesoCorporal || '-'],
-              ['Comentarios:', weeklySummary.comments || '-'],
             ].map(([label, value], i) => (
               <div key={i} className="d-flex justify-content-between align-items-center">
                 <div>{label}</div>
@@ -1724,6 +1716,22 @@ const rightDialItems = [
                 </span>
               </div>
             ))}
+
+            <div className="weekly-summary-full-comments">
+              <div className="weekly-summary-full-comments-label">Comentarios:</div>
+              <div className="weekly-summary-full-comments-text">
+                {getCommentsPreview(weeklySummary.comments)}
+              </div>
+              {hasLongComments(weeklySummary.comments) && (
+                <button
+                  type="button"
+                  className="btn btn-outline-dark btn-sm mt-2"
+                  onClick={() => setShowCommentsDialog(true)}
+                >
+                  Ver comentarios completos
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="text-center align-bottom my-3">
@@ -1813,11 +1821,11 @@ const rightDialItems = [
         <Dialog
           header="Comentarios completos"
           visible={showCommentsDialog}
-          style={{ width: '60vw', maxWidth: '800px' }}
+          style={{ width: firstWidth > 900 ? '60vw' : '94vw', maxWidth: '800px' }}
           onHide={() => setShowCommentsDialog(false)}
           draggable
         >
-          <div style={{ whiteSpace: 'pre-wrap' }}>
+          <div className="weekly-summary-comments-dialog-text">
             {weeklySummary.comments || 'No hay comentarios'}
           </div>
           <div className="text-center mt-3">
