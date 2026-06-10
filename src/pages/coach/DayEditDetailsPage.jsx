@@ -1398,6 +1398,60 @@ function CircuitSmallNumberInput({ value, onChange, min = 1, title }) {
   );
 }
 
+function CircuitNotesTextarea({ value = "", onCommit, className = "" }) {
+  const [draft, setDraft] = useState(value ?? "");
+
+  useEffect(() => {
+    setDraft(value ?? "");
+  }, [value]);
+
+  const commit = () => {
+    if ((value ?? "") !== draft) {
+      onCommit(draft);
+    }
+  };
+
+  return (
+    <textarea
+      placeholder="Notas"
+      value={draft}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={commit}
+      className={`form-control dayEditCircuitNotesNative ${className || ""}`.trim()}
+      rows={2}
+    />
+  );
+}
+
+function CircuitNotesInput({ value = "", onCommit, className = "" }) {
+  const [draft, setDraft] = useState(value ?? "");
+
+  useEffect(() => {
+    setDraft(value ?? "");
+  }, [value]);
+
+  const commit = () => {
+    if ((value ?? "") !== draft) {
+      onCommit(draft);
+    }
+  };
+
+  return (
+    <input
+      className={className}
+      placeholder="Notas"
+      value={draft}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={commit}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.currentTarget.blur();
+        }
+      }}
+    />
+  );
+}
+
 const normalizeCircuitKindValue = (rawValue) => {
   const cleanValue = String(rawValue ?? "").trim();
   if (!cleanValue) return "Libre";
@@ -1428,9 +1482,10 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
   const customInputEditDay = (data, index, field, blockIndex = null) => {
 
       const applyChange = (value) => {
+        const targetField = field === "rpeRir" ? "athleteRpeRir" : field;
         blockIndex != null
-          ? changeBlockExerciseData(blockIndex, index, field, value)
-          : changeModifiedData(index, value, field);
+          ? changeBlockExerciseData(blockIndex, index, targetField, value)
+          : changeModifiedData(index, value, targetField);
       };
 
    if (field === "sets" ) {
@@ -1574,23 +1629,13 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
       const studentValue = data ?? "";
       return (
         <div className="row justify-content-center text-center">
-          <Tooltip
-            placement="top"
-            arrow
-            title={studentValue ? `${studentValue} - Este campo solo puede ser llenado por el alumno.` : "Este campo solo puede ser llenado por el alumno."}
-            enterDelay={0}
-            leaveDelay={0}
-          >
-            <span className="dayEditReadOnlyStudentFieldWrap">
-              <input
-                ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
-                className={`form-control dayEditFieldInput dayEditReadOnlyStudentField ${firstWidth > 992 ? 'stylePesoInput' : 'stylePesoInputMobile'} text-center`}
-                type="text"
-                defaultValue={studentValue}
-                disabled
-              />
-            </span>
-          </Tooltip>
+          <input
+            ref={(el) => (inputRefs.current[`${index}-${field}`] = el)}
+            className={`form-control dayEditFieldInput ${firstWidth > 992 ? 'stylePesoInput' : 'stylePesoInputMobile'} text-center`}
+            type="text"
+            defaultValue={studentValue}
+            onChange={(event) => applyChange(event.target.value)}
+          />
         </div>
       );
     } else {
@@ -1756,7 +1801,7 @@ const handleCancel = () => {
      return;
    }
    try {
-     const json = JSON.stringify(src);
+     const json = JSON.stringify(sanitizeDayForPaste(src, indexDay + 1));
      localStorage.setItem("copiedDay", json);
      setDayClipboard(json);
      Notify.instantToast("Dia copiado con exito!");
@@ -1768,7 +1813,7 @@ const handleCancel = () => {
 
  // Clona un ejercicio simple (suelto)
  const cloneSimpleExercise = (ex) => {
-   const { exercise_id, ...rest } = ex || {};
+   const { exercise_id, athleteRpeRir, rpeRir, ...rest } = ex || {};
    return { ...rest, exercise_id: new ObjectId().toString() };
  };
 
@@ -1784,9 +1829,12 @@ const handleCancel = () => {
 
  // Clona un objeto de circuito (raiz o dentro de bloque)
  const cloneCircuit = (ex) => {
-   const { exercise_id, circuit = [], ...rest } = ex || {};
+   const { exercise_id, athleteRpeRir, rpeRir, circuit = [], ...rest } = ex || {};
    const newCircuit = Array.isArray(circuit)
-     ? circuit.map(item => ({ ...item, idRefresh: RefreshFunction.generateUUID() }))
+     ? circuit.map(item => {
+       const { athleteRpeRir: _omitAthleteRpeRir, rpeRir: _omitRpeRir, ...cleanItem } = item || {};
+       return { ...cleanItem, idRefresh: RefreshFunction.generateUUID() };
+     })
      : [];
    return { ...rest, exercise_id: new ObjectId().toString(), circuit: newCircuit };
  };
@@ -1801,7 +1849,7 @@ const handleCancel = () => {
 
  // Clona un bloque con todos sus ejercicios internos
 const cloneBlock = (block) => {
-  const { block_id, numberExercise, exercises = [], ...rest } = block || {};
+  const { block_id, numberExercise, athleteRpeRir, rpeRir, exercises = [], ...rest } = block || {};
   const clonedInner = exercises.map(inner => cloneAnyExerciseOrStructure(inner));
 
   // Re-enumerar solo los hijos del bloque, no el bloque en si
@@ -2447,11 +2495,10 @@ const CircuitHeaderEditor = ({
         </div>
 
         <div className="ms-auto dayEditCircuitNotesField">
-          <input
+          <CircuitNotesInput
             className="form-control form-control-sm"
-            placeholder="Notas"
             value={circuit.notas || ''}
-            onChange={(e) => onField('notas', e.target.value)}
+            onCommit={(value) => onField('notas', value)}
           />
         </div>
       </div>
@@ -2490,11 +2537,9 @@ const CircuitHeaderEditor = ({
   <MobileInline />
 
   <div className="mt-2">
-    <InputTextarea
-      autoResize
-      placeholder="Notas"
+    <CircuitNotesTextarea
       value={circuit.notas || ''}
-      onChange={(e) => onField('notas', e.target.value)}
+      onCommit={(value) => onField('notas', value)}
       className="w-100"
     />
   </div>
@@ -2555,12 +2600,10 @@ const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
     return (
       <div className="row justify-content-center">
 
-      <InputTextarea
-        ref={el => inputRefs.current[`${blockIndex ?? ""}-${circuitIndex}-${field}`] = el}
+      <CircuitNotesTextarea
+        value={data || ""}
+        onCommit={(value) => onChange({ target: { value } })}
         className="textAreaResize"
-        autoResize
-        defaultValue={data}
-        onChange={onChange}
       />
       
       </div>
@@ -2770,23 +2813,13 @@ const changeExerciseInCircuit = (circuitIndex, exIndex, field, value) => {
     const studentValue = data ?? "";
     return (
       <div className="row justify-content-center text-center">
-        <Tooltip
-          placement="top"
-          arrow
-          title={studentValue ? `${studentValue} - Este campo solo puede ser llenado por el alumno.` : "Este campo solo puede ser llenado por el alumno."}
-          enterDelay={0}
-          leaveDelay={0}
-        >
-          <span className="dayEditReadOnlyStudentFieldWrap">
-            <input
-              ref={el => inputRefs.current[key] = el}
-              className="form-control ellipsis-input text-center stylePesoInput dayEditFieldInput dayEditReadOnlyStudentField"
-              type="text"
-              defaultValue={studentValue}
-              disabled
-            />
-          </span>
-        </Tooltip>
+        <input
+          ref={el => inputRefs.current[key] = el}
+          className="form-control ellipsis-input text-center stylePesoInput dayEditFieldInput"
+          type="text"
+          defaultValue={studentValue}
+          onChange={(event) => apply(event.target.value)}
+        />
       </div>
     );
   }
@@ -4212,7 +4245,7 @@ function colorItemTemplate(option) {
                                 {isColumnVisible("rpeRir") && (
                                 <div className="col-5 ">
                                   {renderStudentOnlyFieldLabel()}
-                                  <div>{customInputEditDay(ex.athleteRpeRir, j, 'rpeRir', i)}</div>
+                                  <div>{customInputEditDay(ex.athleteRpeRir ?? ex.rpeRir, j, 'rpeRir', i)}</div>
                                 </div>
                                 )}
                                 {isColumnVisible("rest") && (
@@ -4363,7 +4396,7 @@ function colorItemTemplate(option) {
                             {isColumnVisible("rpeRir") && (
                             <div className="col-5">
                               {renderStudentOnlyFieldLabel("fs07em text-muted text-start")}
-                              {customInputEditDay(exercise.athleteRpeRir, i, 'rpeRir')}
+                              {customInputEditDay(exercise.athleteRpeRir ?? exercise.rpeRir, i, 'rpeRir')}
                             </div>
                             )}
                             {isColumnVisible("rest") && (
@@ -5293,7 +5326,7 @@ function colorItemTemplate(option) {
                                                         )}
                                                         {isColumnVisible("rpeRir") && (
                                                         <td>
-                                                          {customInputEditDay(ex.athleteRpeRir, j, "rpeRir", i)}
+                                                          {customInputEditDay(ex.athleteRpeRir ?? ex.rpeRir, j, "rpeRir", i)}
                                                         </td>
                                                         )}
                                                         {isColumnVisible("rest") && (
@@ -5556,7 +5589,7 @@ function colorItemTemplate(option) {
                                                         {isColumnVisible("rpeRir") && (
                                                         <td>
                                                           {customInputEditDay(
-                                                            exercise.athleteRpeRir,
+                                                            exercise.athleteRpeRir ?? exercise.rpeRir,
                                                             i,
                                                             "rpeRir"
                                                           )}

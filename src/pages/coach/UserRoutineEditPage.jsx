@@ -489,6 +489,53 @@ function UserRoutineEditPage() {
   const isBlock = (ex) => ex && ex.type === 'block';
   const isCircuit = (ex) => ex && ex.type !== 'exercise' && ex.type !== 'block' && Array.isArray(ex.circuit);
 
+  const stripAthleteExerciseFields = (exercise) => {
+    if (!exercise || typeof exercise !== 'object') return exercise;
+
+    const { athleteRpeRir, rpeRir, ...rest } = exercise;
+    const clean = { ...rest };
+
+    if (Array.isArray(clean.exercises)) {
+      clean.exercises = clean.exercises.map(stripAthleteExerciseFields);
+    }
+
+    if (Array.isArray(clean.circuit)) {
+      clean.circuit = clean.circuit.map(stripAthleteExerciseFields);
+    }
+
+    return clean;
+  };
+
+  const stripAthleteWeekFields = (week) => {
+    if (!week || typeof week !== 'object') return week;
+
+    const cleanWeek = { ...week };
+    const days = Array.isArray(cleanWeek.routine)
+      ? cleanWeek.routine
+      : Array.isArray(cleanWeek.routine?.days)
+        ? cleanWeek.routine.days
+        : Array.isArray(cleanWeek.days)
+          ? cleanWeek.days
+          : null;
+
+    const cleanDays = days?.map((day) => ({
+      ...day,
+      exercises: Array.isArray(day?.exercises)
+        ? day.exercises.map(stripAthleteExerciseFields)
+        : day?.exercises
+    }));
+
+    if (Array.isArray(cleanWeek.routine)) {
+      cleanWeek.routine = cleanDays;
+    } else if (cleanWeek.routine?.days && Array.isArray(cleanDays)) {
+      cleanWeek.routine = { ...cleanWeek.routine, days: cleanDays };
+    } else if (Array.isArray(cleanWeek.days)) {
+      cleanWeek.days = cleanDays;
+    }
+
+    return cleanWeek;
+  };
+
   const cloneWithNewIdIfMissing = (obj, field) => {
     const id = obj?.[field];
     if (!id || typeof id !== 'string' || id.trim() === '') {
@@ -628,7 +675,7 @@ const cancelDeleteWeek = () => {
     if (!rawWeek || typeof rawWeek !== 'object') return { week: rawWeek, warnings: [] };
 
     // clonar superficial
-    const cloned = { ...rawWeek };
+    const cloned = stripAthleteWeekFields(rawWeek);
     // nuevo _id de semana (si existiese)
     if ('_id' in cloned) {
       cloned._id = new ObjectId().toString();
@@ -1090,7 +1137,7 @@ function FabMenu({ id, items, position = "left" }) {
 
   const handleCopyWeek = (w) => {
     try {
-      localStorage.setItem('userWeek', JSON.stringify(w));
+      localStorage.setItem('userWeek', JSON.stringify(stripAthleteWeekFields(w)));
       NotifyHelper.instantToast('Semana copiada al portapapeles local.');
     } catch {
       NotifyHelper.instantToast('No se pudo copiar la semana.');
