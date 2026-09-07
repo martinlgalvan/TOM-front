@@ -6,14 +6,12 @@ import * as UsersService from "../../services/users.services.js";
 
 //.............................. HELPERS ..............................//
 import * as Notify from "../../helpers/notify.js";
-import * as RefreshFunction from "../../helpers/generateUUID.js";
 
 //.............................. BIBLIOTECAS EXTERNAS ..............................//
 import { Tour } from "antd";
 import { ProgressBar } from "primereact/progressbar";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Calendar } from "primereact/calendar";
@@ -23,21 +21,20 @@ import { SelectButton } from "primereact/selectbutton";
 
 //.............................. COMPONENTES ..............................//
 import LogoChico from "../../components/LogoChico.jsx";
-import DeleteUserDialog from "../../components/DeleteActions/DeleteUserDialog.jsx";
 import PrimeReactTable from "../../components/PrimeReactTable.jsx";
 import SportsCalendarManager from "../../components/SportsCalendarManager.jsx";
+import GeneralSettingsDialog from "../../components/Settings/GeneralSettingsDialog.jsx";
 
 //.............................. ICONOS MUI ..............................//
-import PersonIcon from "@mui/icons-material/Person";
 import Logo from "../../components/Logo.jsx";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 //.............................. LUCIDE ..............................//
-import { Megaphone, Plus, Pencil, Trash2,HelpCircle ,Calendar1, Eye } from "lucide-react";
+import { Megaphone, Plus, Pencil, Trash2, HelpCircle, Calendar1, Eye, Settings } from "lucide-react";
 import { MessageSquare, Link as LinkIcon, Circle, CircleDot } from "lucide-react";
 
-function UsersListPage() {
+function UsersListPage({ editorTheme = "light" }) {
   const { id } = useParams();
 
   const [users, setUsers] = useState([]);
@@ -50,12 +47,12 @@ function UsersListPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [tourSteps, setTourSteps] = useState([]);
   const [tourVisible, setTourVisible] = useState(false);
-  const [showDialog, setShowDialog] = useState();
-  const [firstWidth, setFirstWidth] = useState();
+  const [firstWidth, setFirstWidth] = useState(() => window.innerWidth);
 
   // ---------- Anuncios
   const [showAnnouncementsDialog, setShowAnnouncementsDialog] = useState(false);
   const [showSportsCalendarDialog, setShowSportsCalendarDialog] = useState(false);
+  const [showGeneralSettings, setShowGeneralSettings] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [usersList, setUsersList] = useState([]);
@@ -127,7 +124,6 @@ function UsersListPage() {
         const dateB = b.show_at_date || new Date(0);
         return new Date(dateB) - new Date(dateA);
       });
-          console.log(sorted)
       setAnnouncements(sorted);
     } catch (err) {
       Notify.instantToast("Error al obtener anuncios");
@@ -136,20 +132,16 @@ function UsersListPage() {
     }
   };
 
-  const fetchUsers = async () => {
-    try {
-      const users = await UsersService.find(id);
-      setUsersList(users.map((u) => ({ label: u.name, value: u._id })));
-
-    } catch (err) {
-      Notify.instantToast("Error al obtener usuarios");
-    }
-  };
+  /* El selector de destinatarios se arma con los alumnos que la pantalla ya
+     tiene cargados. Antes abrir el dialogo volvia a traer la lista entera
+     -17kb- para quedarse solo con el nombre y el id de cada uno. */
+  useEffect(() => {
+    setUsersList(users.map((u) => ({ label: u.name, value: u._id })));
+  }, [users]);
 
   useEffect(() => {
     if (showAnnouncementsDialog) {
       fetchAnnouncements();
-      fetchUsers();
       fetchViewCounts();
     }
   }, [showAnnouncementsDialog]);
@@ -204,7 +196,6 @@ useEffect(() => {
 
   Notify.notifyA("Cargando usuarios...");
   UsersService.findWithLastWeek(id).then((data) => {
-    console.log(data)
     setUsers(data); // cada user ahora puede traer last_week_created_at / last_week_updated_at
     setTotalUsers(data.length);
     sessionStorage.setItem("U4S3R", JSON.stringify(data));
@@ -231,10 +222,6 @@ useEffect(() => {
   }, [totalUsers, planLimit]);
 
   const refresh = () => setStatus((prev) => prev + 1);
-  const hideDialog = (load) => {
-    if (load != null) setStatus(RefreshFunction.generateUUID());
-    setShowDialog(false);
-  };
 
   if (isPlanPaid === false) {
     return (
@@ -322,103 +309,107 @@ useEffect(() => {
     }
   };
 
+  const isMobileLayout = firstWidth < 982;
+
   return (
     <>
       {/* ----- Sidebar existente (sin cambios funcionales) ----- */}
-      <div className="sidebarPro colorMainAll">
+      <div className="sidebarPro colorMainAll usersListSidebarModern">
         <div
-          className="d-flex flex-column justify-content-between colorMainAll shadow-sm"
+          className="d-flex flex-column colorMainAll shadow-sm usersListSidebarModernInner"
           style={{ width: collapsed ? "85px" : "220px", height: "100vh" }}
         >
-          <div className="p-3">
-            <h5 className="fw-bold text-center mb-4">TOM</h5>
+          <div className="usersListSidebarModernTop">
 
             {/* NOMBRE */}
-            <div id={"username"} className="bgItemsDropdown rounded mx-2 row justify-content-center mb-3">
-              <div className="col-1">
-                <PersonIcon />
-              </div>
+            <div id={"username"} className="usersListSidebarIdentity">
+              <span className="usersListSidebarAvatar">
+                {(localStorage.getItem("name") || "U").trim().charAt(0).toUpperCase()}
+              </span>
               {!collapsed && (
-                <div className="text-center text-light col-10">
+                <div className="usersListSidebarIdentityText">
                   <strong>{localStorage.getItem("name")}</strong>
+                  <span>Plan {plan}</span>
                 </div>
               )}
             </div>
 
-            {/* PLAN */}
-            <div id={"plan"} className="text-light small bgItemsDropdown rounded mx-2 mb-3 p-2 text-center">
-              <span className="d-block">Plan</span>
-              <strong>{plan}</strong>
-            </div>
-
             {/* PROGRESO */}
-            <div id={"alumnos"} className="bgItemsDropdown text-light rounded mx-2 mb-4 p-2 text-center small">
-              <span>
-                ({totalUsers}/{planLimit} alumnos)
-              </span>
-              <ProgressBar value={progress} showValue={false} className="mx-2 mt-1" style={{ height: "20px", borderRadius: "10px" }} />
+            <div id={"alumnos"} className="usersListSidebarCapacity">
+              <div>
+                <span>Alumnos</span>
+                <strong>{totalUsers}/{planLimit}</strong>
+              </div>
+              <ProgressBar value={progress} showValue={false} />
             </div>
 
             {/* ANUNCIOS */}
-            <div id={"anuncios"} className=" text-light rounded text-center small">
-              <button className="btn btn-warning my-1 text-center" onClick={() => setShowAnnouncementsDialog(true)}>
+            <div id={"anuncios"} className="usersListSidebarPrimaryAction">
+              <button type="button" onClick={() => setShowAnnouncementsDialog(true)}>
+                <Megaphone size={13} />
                 Administrar anuncios
               </button>
             </div>
-            <div className="text-light rounded text-center small">
+            <div className="usersListSidebarSecondaryAction">
               <button
-                className="btn btn-outline-light my-1 text-center"
+                type="button"
                 onClick={() => setShowSportsCalendarDialog(true)}
               >
+                <Calendar1 size={13} />
                 Calendario deportivo
               </button>
             </div>
           </div>
 
-          <div className="d-grid ">
+          <div className="usersListSidebarModernLogo">
             <LogoChico />
           </div>
 
           {/* AYUDA */}
-          <div className="p-3 text-center ">
-            <button className="btn btn-outline-light btn-sm" onClick={() => setTourVisible(true)}>
-              <HelpCircle size={16} className="me-1" /> {!collapsed && "Ayuda"}
+          <div className="usersListSidebarModernHelp">
+            <button type="button" onClick={() => setShowGeneralSettings(true)}>
+              <Settings size={15} /> {!collapsed && "Configuracion"}
+            </button>
+            <button type="button" onClick={() => setTourVisible(true)}>
+              <HelpCircle size={15} /> {!collapsed && "Ayuda"}
             </button>
           </div>
         </div>
       </div>
 
       {/* ====== CONTENIDO ====== */}
-      <section className="container-fluid totalHeight">
-        <article id={"tabla"} className={`row justify-content-center ${collapsed ? "marginSidebarClosed" : " marginSidebarOpen"}`}>
-          {/* Top actions en mobile */}
-          {firstWidth < 982 && (
-            <div className="text-center mb-3">
-              <button className="btn btn-warning my-1 text-center" onClick={() => setShowAnnouncementsDialog(true)}>
-                Administrar anuncios{" "}
-              </button>
-              <div>
-                <button
-                  className="btn btn-dark my-1 text-center"
-                  onClick={() => setShowSportsCalendarDialog(true)}
-                >
-                  Calendario deportivo
-                </button>
-              </div>
-            </div>
-          )}
+      <section className={`container-fluid totalHeight usersListPageModern usersListTheme-${editorTheme}`}>
+        <article
+          id={"tabla"}
+          className={`row justify-content-center usersListPageContent ${isMobileLayout ? "usersListPageContentMobile" : (collapsed ? "marginSidebarClosed" : " marginSidebarOpen")}`}
+        >
+          <div className="col-12 col-sm-11 usersListPageHeading">
+            <h1>Lista de alumnos</h1>
+            <p>Gestiona y segui el progreso de tus alumnos</p>
+          </div>
 
           {/* CARD + TABLA */}
-          <div className="col-12 col-sm-11">
-            <div className="bg-white border rounded-4 shadow-sm overflow-hidden">
-              <PrimeReactTable id={id} users={users} refresh={refresh} collapsed={collapsed} />
+          <div className="col-12 col-sm-11 usersListModernColumn">
+            <div className="bg-white border rounded-4 overflow-hidden usersListModernCard">
+              <PrimeReactTable id={id} users={users} refresh={refresh} collapsed={collapsed} editorTheme={editorTheme} />
             </div>
           </div>
         </article>
 
-        <ConfirmDialog />
+        {isMobileLayout && (
+          <nav className={`usersListMobileBottomNav usersListTheme-${editorTheme}`} aria-label="Acciones de lista de alumnos">
+            <button type="button" onClick={() => setShowAnnouncementsDialog(true)}>
+              <Megaphone size={18} />
+              <span>Anuncios</span>
+            </button>
+            <button type="button" onClick={() => setShowSportsCalendarDialog(true)}>
+              <Calendar1 size={18} />
+              <span>Calendario</span>
+            </button>
+          </nav>
+        )}
 
-        <DeleteUserDialog showDialog={showDialog} hideDialog={hideDialog} load={id} />
+        <ConfirmDialog className={`usersListConfirmDialog usersListTheme-${editorTheme}`} />
 
         {/* TOUR */}
         {tourVisible && (
@@ -435,22 +426,16 @@ useEffect(() => {
      <Dialog
   header={
     <div className="d-flex justify-content-between align-items-center w-100">
-      <div className="d-flex align-items-center">
-        <span
-          className="bg-light rounded-2 d-inline-flex align-items-center justify-content-center me-3"
-          style={{ width: 32, height: 32 }}
-        >
-          <Megaphone size={18} />
-        </span>
+      <div className="usersListDialogHeader">
+        <span className="usersListDialogHeaderIcon"><Megaphone size={18} /></span>
         <div>
-          <div className="fw-semibold">Administrar anuncios</div>
-          <small className="text-muted">
-            {(announcements?.length ?? 0)} anuncios totales
-          </small>
+          <strong>Administrar anuncios</strong>
+          <span>{(announcements?.length ?? 0)} anuncios totales</span>
         </div>
       </div>
 
-      <button className="btn btn-primary btn-sm d-inline-flex align-items-center me-3"
+      <button
+        className="usersListDialogButton usersListDialogButtonPrimary d-inline-flex align-items-center"
         onClick={openNewForm}
       >
         <Plus size={16} className="me-2" />
@@ -460,14 +445,14 @@ useEffect(() => {
   }
   visible={showAnnouncementsDialog}
   onHide={() => setShowAnnouncementsDialog(false)}
-  className="col-10 col-sm-9 col-lg-8 col-xl-6"
+  className={`col-10 col-sm-9 col-lg-8 col-xl-6 usersListDialog usersListAnnouncementsDialog usersListTheme-${editorTheme}`}
 >
   {loadingAnnouncements ? (
     <p className="ms-1 my-3 text-muted">Cargando...</p>
   ) : announcements.length === 0 ? (
     <p className="ms-1 my-3 text-muted">No hay anuncios creados aun.</p>
   ) : (
-    <div>
+    <div className="usersListAnnouncementList">
       {announcements.map((a) => {
         const vc = viewCounts[a._id] ?? 0;
         const dateIso = a.created_at || a.createdAt; // fallback por si viene en camelCase
@@ -483,63 +468,53 @@ useEffect(() => {
             : "";
 
         return (
-          <div
-            key={a._id}
-            className="bg-light rounded-3 p-3 mb-3 border"
-            style={{ borderColor: "#e9ecef" }}
-          >
-            {/* Fila superior: titulo + acciones */}
-            <div className="d-flex justify-content-between align-items-start">
-              <div className="pe-3">
-                <div className="fw-semibold">{a.title}</div>
-                <div className="text-muted mb-0">{a.message}</div>
+          <div key={a._id} className="usersListAnnouncementCard">
+            <div className="usersListAnnouncementCardHead">
+              <div>
+                <strong>{a.title}</strong>
+                <p>{a.message}</p>
               </div>
 
-              <div className="d-flex align-items-center">
+              <div className="usersListAnnouncementCardActions">
                 <button
-                  className="btn btn-link p-1 text-secondary me-2"
                   aria-label="Editar"
                   onClick={() => openEditForm(a)}
                   title="Editar"
                 >
-                  <Pencil size={18} />
+                  <Pencil size={16} />
                 </button>
                 <button
-                  className="btn btn-link p-1 text-secondary"
+                  className="is-danger"
                   aria-label="Eliminar"
                   onClick={() => confirmDeleteAnnouncement(a._id)}
                   title="Eliminar"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
 
-            {/* Fila inferior: metricas + link */}
-            <div className="mt-2 border-top pt-2 d-flex justify-content-between align-items-center small">
-              <div className="text-muted d-flex align-items-center">
-                <span className="me-3 d-inline-flex align-items-center">
-                  <Eye size={14} className="me-1" />
+            <div className="usersListAnnouncementCardFoot">
+              <div className="usersListAnnouncementCardMeta">
+                <span>
+                  <Eye size={14} />
                   Visto por {vc} {vc === 1 ? "usuario" : "usuarios"}
                 </span>
 
                 {fecha && (
-                  <span className="d-inline-flex align-items-center">
-                    <Calendar1 size={14} className="me-1" />
+                  <span>
+                    <Calendar1 size={14} />
                     {fecha}
                   </span>
                 )}
               </div>
-              <div>
-                <button
-                  className="btn btn-primary py-1 px-2 small"
-                  onClick={() => fetchViewsForAnnouncement(a._id)}
-                >
-                  
-                  Ver quien lo vio
-                </button>
-              </div>
 
+              <button
+                className="usersListAnnouncementCardViews"
+                onClick={() => fetchViewsForAnnouncement(a._id)}
+              >
+                Ver quien lo vio
+              </button>
             </div>
           </div>
         );
@@ -552,29 +527,54 @@ useEffect(() => {
 <Dialog
   visible={formVisible}
   onHide={() => setFormVisible(false)}
-  className="col-10 col-sm-9 col-lg-8 col-xl-6"
+  className={`col-10 col-sm-9 col-lg-8 col-xl-6 usersListDialog usersListAnnouncementFormDialog usersListTheme-${editorTheme}`}
   header={
-    <div className="d-flex align-items-start justify-content-between w-100">
-      <div className="d-flex align-items-start">
-        <span
-          className="bg-light rounded-2 d-inline-flex align-items-center justify-content-center me-3"
-          style={{ width: 32, height: 32 }}
-        >
-          <MessageSquare size={18} />
-        </span>
-        <div>
-          <div className="fw-semibold">{editMode ? "Editar anuncio" : "Nuevo anuncio"}</div>
-          <small className="text-muted">Modifique los detalles del anuncio</small>
-        </div>
+    <div className="usersListDialogHeader">
+      <span className="usersListDialogHeaderIcon"><MessageSquare size={18} /></span>
+      <div>
+        <strong>{editMode ? "Editar anuncio" : "Nuevo anuncio"}</strong>
+        <span>Modifique los detalles del anuncio</span>
       </div>
+    </div>
+  }
+  footer={
+    <div className="usersListDialogActions">
+      <div className="form-check form-switch me-auto">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          role="switch"
+          id="scheduledSwitch"
+          checked={announcementForm.mode !== "once"}
+          readOnly
+          disabled
+        />
+        <label className="form-check-label ms-1" htmlFor="scheduledSwitch">
+          Este anuncio sera programado
+        </label>
+      </div>
+
+      <button
+        type="button"
+        className="usersListDialogButton usersListDialogButtonSecondary"
+        onClick={() => setFormVisible(false)}
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        className="usersListDialogButton usersListDialogButtonPrimary"
+        onClick={handleSubmit}
+      >
+        {editMode ? "Actualizar anuncio" : "Crear anuncio"}
+      </button>
     </div>
   }
 >
   {/* -------- Formulario -------- */}
-  <div className="p-fluid text-dark">
-    {/* Titulo */}
-    <div className="mb-3">
-      <label className="form-label fw-semibold">Titulo del anuncio *</label>
+  <div className="p-fluid">
+    <div className="usersListFieldGroup">
+      <label>Titulo del anuncio *</label>
       <InputText
         placeholder="Ingrese el titulo del anuncio"
         value={announcementForm.title}
@@ -584,9 +584,8 @@ useEffect(() => {
       />
     </div>
 
-    {/* Descripcion */}
-    <div className="mb-3">
-      <label className="form-label fw-semibold">Descripcion *</label>
+    <div className="usersListFieldGroup">
+      <label>Descripcion *</label>
       <InputTextarea
         rows={3}
         placeholder="Escriba el contenido del anuncio..."
@@ -598,20 +597,23 @@ useEffect(() => {
     </div>
 
     {/* Links */}
-    <div className="mb-4">
-      <button
-        type="button"
-        onClick={() =>
-          setAnnouncementForm({
-            ...announcementForm,
-            link_urls: [...(announcementForm.link_urls || []), ""],
-          })
-        }
-        className="btn btn-primary btn-sm d-inline-flex align-items-center"
-      >
-        <LinkIcon size={16} className="me-2" />
-        Agregar link
-      </button>
+    <div className="usersListFieldGroup">
+      <label>Links</label>
+      <div>
+        <button
+          type="button"
+          onClick={() =>
+            setAnnouncementForm({
+              ...announcementForm,
+              link_urls: [...(announcementForm.link_urls || []), ""],
+            })
+          }
+          className="usersListDialogButton usersListDialogButtonSecondary d-inline-flex align-items-center"
+        >
+          <LinkIcon size={16} className="me-2" />
+          Agregar link
+        </button>
+      </div>
 
       {announcementForm.link_urls?.length > 0 && (
         <ul className="list-group mt-2">
@@ -651,8 +653,8 @@ useEffect(() => {
     </div>
 
     {/* Tipo de anuncio (tarjetas radiales) */}
-    <div className="mb-3">
-      <label className="form-label fw-semibold mb-2">Tipo de anuncio</label>
+    <div className="usersListFieldGroup">
+      <label>Tipo de anuncio</label>
 
       {(() => {
         const isLocked = editMode && isModeLocked();
@@ -662,9 +664,9 @@ useEffect(() => {
             role="button"
             tabIndex={0}
             className={
-              "d-flex justify-content-between align-items-center rounded-3 p-3 mb-2 " +
-              (sel === value ? "border border-primary shadow-sm" : "border") +
-              (isLocked ? " opacity-75" : "")
+              "usersListAnnouncementTypeCard" +
+              (sel === value ? " is-selected" : "") +
+              (isLocked ? " is-locked" : "")
             }
             onClick={() =>
               !isLocked &&
@@ -691,10 +693,10 @@ useEffect(() => {
             }}
           >
             <div>
-              <div className="fw-semibold">{title}</div>
-              <small className="text-muted">{subtitle}</small>
+              <strong>{title}</strong>
+              <small>{subtitle}</small>
             </div>
-            <div className="ms-3 text-primary">
+            <div className="usersListAnnouncementTypeRadio">
               {sel === value ? <CircleDot size={18} /> : <Circle size={18} />}
             </div>
           </div>
@@ -729,9 +731,9 @@ useEffect(() => {
 
     {/* Campos condicionales por modo */}
     {announcementForm.mode === "once" && (
-      <div className="mb-3">
-        <label className="form-label fw-semibold">Fecha de envio</label>
-        <p className="text-muted small mb-2">
+      <div className="usersListFieldGroup">
+        <label>Fecha de envio</label>
+        <p className="text-muted small mb-0">
           Por ejemplo, si selecciona el 17/05, solo ese dia se mostrara el
           anuncio.
         </p>
@@ -752,9 +754,9 @@ useEffect(() => {
     )}
 
     {announcementForm.mode === "repeat" && (
-      <div className="mb-3">
-        <label className="form-label fw-semibold">Dia de la semana</label>
-        <p className="text-muted small mb-2">
+      <div className="usersListFieldGroup">
+        <label>Dia de la semana</label>
+        <p className="text-muted small mb-0">
           Por ejemplo, si selecciona el viernes, todos los viernes se mostrara
           este anuncio.
         </p>
@@ -772,9 +774,9 @@ useEffect(() => {
     )}
 
     {announcementForm.mode === "monthly" && (
-      <div className="mb-3">
-        <label className="form-label fw-semibold">Dia del mes</label>
-        <p className="text-muted small mb-2">
+      <div className="usersListFieldGroup">
+        <label>Dia del mes</label>
+        <p className="text-muted small mb-0">
           Por ejemplo, si selecciona el 1, todos los meses en el dia 1 se
           mostrara este anuncio.
         </p>
@@ -795,8 +797,8 @@ useEffect(() => {
     )}
 
     {/* Categoria / Destinatarios */}
-    <div className="mb-3">
-      <label className="form-label fw-semibold">Categoria </label>
+    <div className="usersListFieldGroup">
+      <label>Categoria</label>
       <MultiSelect
         value={announcementForm.target_categories}
         options={CATEGORIES}
@@ -808,8 +810,8 @@ useEffect(() => {
       />
     </div>
 
-    <div className="mb-3">
-      <label className="form-label fw-semibold">Destinatarios </label>
+    <div className="usersListFieldGroup">
+      <label>Destinatarios</label>
       <MultiSelect
         value={announcementForm.target_users}
         options={usersList}
@@ -823,59 +825,43 @@ useEffect(() => {
         className="w-100"
       />
     </div>
-
-    {/* Pie: switch informativo + boton accion */}
-    <div className="d-flex align-items-center justify-content-between mt-4">
-      <div className="form-check form-switch">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="scheduledSwitch"
-          checked={announcementForm.mode !== "once"}
-          readOnly
-          disabled
-        />
-        <label className="form-check-label ms-1" htmlFor="scheduledSwitch">
-          Este anuncio sera programado
-        </label>
-      </div>
-
-      <Button
-        label={editMode ? "Actualizar anuncio" : "Crear anuncio"}
-        onClick={handleSubmit}
-        className="p-button-primary"
-        autoFocus
-      />
-    </div>
   </div>
 </Dialog>
 
-{/* ---- Dialogo de vistas (sin cambios funcionales, estilos limpios) ---- */}
+{/* ---- Dialogo de vistas ---- */}
 <Dialog
-  header={`Alumnos que vieron:`}
+  header={
+    <div className="usersListDialogHeader">
+      <span className="usersListDialogHeaderIcon"><Eye size={18} /></span>
+      <div>
+        <strong>Alumnos que vieron</strong>
+        <span>{Array.isArray(viewsDialogData) ? viewsDialogData.length : 0} alumno(s)</span>
+      </div>
+    </div>
+  }
   visible={showViewsDialog}
   onHide={() => setShowViewsDialog(false)}
-  className="col-10 col-sm-9 col-lg-6 col-xl-5"
+  className={`col-10 col-sm-9 col-lg-6 col-xl-5 usersListDialog usersListViewsDialog usersListTheme-${editorTheme}`}
 >
   {Array.isArray(viewsDialogData) && viewsDialogData.length === 0 ? (
     <p className="text-muted mb-0">Aun nadie ha visto este anuncio.</p>
   ) : (
-    <ul className="list-group">
+    <div className="usersListViewsList">
       {Array.isArray(viewsDialogData) &&
         viewsDialogData.map((user) => (
-          <li key={user._id} className="list-group-item py-2 px-3">
-            <strong>{user.name}</strong>{" "}
-            <span className="text-muted small ms-1">- {user.email}</span>
-          </li>
+          <div key={user._id} className="usersListViewsItem">
+            <strong>{user.name}</strong>
+            <span>{user.email}</span>
+          </div>
         ))}
-    </ul>
+    </div>
   )}
 </Dialog>
 
       <ConfirmDialog
         visible={!!announcementToDelete}
         onHide={() => setAnnouncementToDelete(null)}
+        className={`usersListConfirmDialog usersListTheme-${editorTheme}`}
         message="?Estas seguro que deseas eliminar este anuncio?"
         header="Confirmar eliminacion"
         icon="pi pi-exclamation-triangle"
@@ -890,6 +876,13 @@ useEffect(() => {
         onHide={() => setShowSportsCalendarDialog(false)}
         coachId={id}
         users={users}
+        editorTheme={editorTheme}
+      />
+      <GeneralSettingsDialog
+        visible={showGeneralSettings}
+        onHide={() => setShowGeneralSettings(false)}
+        trainerId={id}
+        editorTheme={editorTheme}
       />
     </>
   );

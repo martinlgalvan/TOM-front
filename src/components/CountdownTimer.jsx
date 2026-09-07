@@ -121,8 +121,12 @@ export default function CountdownTimer({darkMode, initialTime = "00:30" }) {
     );
   }
 
+  /* El estado sale al DOM para que la celda de Descanso pueda tenirse entera
+     cuando termina, en vez del recuadro rojo sobre las cifras. */
+  const estadoDescanso = isExpired ? 'terminado' : isRunning ? 'corriendo' : isPaused ? 'pausado' : 'listo';
+
   return (
-    <Box position="relative" className="timerBox" display="inline-block">
+    <Box position="relative" className={`timerBox timerBox-${estadoDescanso}`} display="inline-block">
       {/* Timer display */}
       <span
         variant="subtitle2"

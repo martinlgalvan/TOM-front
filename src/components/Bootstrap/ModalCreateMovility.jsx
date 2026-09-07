@@ -1,5 +1,6 @@
 // ModalCreateMovility.jsx
-import { useState, useEffect, useRef } from "react";
+import { MessageSquare } from 'lucide-react';
+import { Fragment, useState, useEffect, useRef } from "react";
 
 import * as WeekService from "../../services/week.services.js";
 import * as Notify from "../../helpers/notify.js";
@@ -21,8 +22,19 @@ import AddIcon from "@mui/icons-material/Add";
 
 import options from "../../assets/json/options.json";
 
-function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
+function ModalCreateMovility({ editAndClose, week, week_id, day_id, editorTheme = "light" , notesVisibility = "closed" }) {
   // Estado para el bloque de activacion
+  // Misma logica de notas que en los ejercicios: el ajuste del editor decide
+  // el estado inicial ('closed' | 'with-content' | 'open') y el entrenador
+  // puede abrir o cerrar cada una con el boton de la celda.
+  const [openNotesKey, setOpenNotesKey] = useState(null);
+  const isNotesOpenFor = (notas, key) => {
+    if (openNotesKey === key) return true;
+    if (notesVisibility === "open") return true;
+    if (notesVisibility === "with-content") return Boolean(String(notas ?? "").trim());
+    return false;
+  };
+
   const [movility, setMovility] = useState([]); // Copia local de la semana (con el bloque de activacion)
   const [movilityName, setMovilityName] = useState(""); // Nombre del bloque de activacion
   const [indexMovilityA, setIndexMovilityA] = useState(0); // Indice del dia en la semana en el que se crea el bloque
@@ -134,7 +146,12 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
           ref={(el) =>
             (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })
           }
-          onChange={(e) => handleInputChange(index, e, field)}
+          onChange={(nombre, video) => {
+            handleInputChange(index, nombre, field);
+            /* Solo cuando viene de la biblioteca: al escribir a mano el segundo
+               argumento es undefined y no hay que borrar un video ya cargado. */
+            if (video !== undefined) handleInputChange(index, video, 'video');
+          }}
         />
       );
     } else if (field === "sets" || field === "reps") {
@@ -148,6 +165,8 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
             isNotNeedProp={true}
             onChange={(value) => handleInputChange(index, value, field)}
             isRep={field === "reps"}
+            /* Estos bloques no usan series piramidales: solo texto/numerico. */
+            allowMultiple={false}
             className="mt-5"
           />
         </div>
@@ -246,7 +265,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
   // Funcion para confirmar la eliminacion de un ejercicio
   const deleteMovility = (event, index, name) => {
     confirmDialog({
-      className: "coachConfirmDialog",
+      className: `coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`,
       message: "Estas seguro de que deseas eliminar este ejercicio?",
       header: "Confirmacion",
       icon: "pi pi-exclamation-triangle",
@@ -280,126 +299,36 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
     editAndClose();
   };
 
-  // Version para moviles (tabla)
-  const tableMobile = () => {
-    return (
-      <div className="p-0 bg-light">
-
-          <div>
-            {modifiedMovility[indexMovilityA]?.movility &&
-              modifiedMovility[indexMovilityA].movility.map((exercise, i) => (
-                <div className="shadowCards py-2 px-0 mt-5" key={exercise.movility_id}>
-                  <div className="row justify-content-center p-0">
-                    <div className="col-10 text-start ">
-                      <span className="styleInputsSpan ms-3">Nombre</span>
-                      <div className="largoo">
-                        <AutoComplete
-                          defaultValue={exercise.name}
-                          onChange={(e) => handleInputChange(i, e, "name")}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-1 text-start mt-3 me-3">
-                      {customInputEditMovility(exercise.video, i, "video")}
-                    </div>
-                                
-                    </div>
-
-                    <div className="row justify-content-center mt-2 ms-2 me-4">
-
-                      <div className="col-6 text-start ">
-                        <span className="styleInputsSpan ms-1 ">Peso</span>
-                        <div className="largoInput ">{customInputEditMovility(exercise.peso, i, "peso")}</div>
-                      </div>
-
-                      <div className="col-6 text-start ">
-                        <span className="styleInputsSpan ms-1">Rest</span>
-                        <div className="largoInput ">{customInputEditMovility(exercise.rest, i, "rest")}</div>
-
-                      </div>
-                    </div>
-
-
-                    <div className="row justify-content-center mt-2 ms-2 pe-3 me-2">
-
-                      <div className="col-6 text-start">
-                      <span className="styleInputsSpan text-start">Series</span>
-                      <div className="largoInput">{customInputEditMovility(exercise.sets, i, "sets")}</div>
-                      </div>
-
-                      <div className="col-6 text-start  ">
-                      <span className="styleInputsSpan ">Reps</span>
-                      <div className="largoInput">{customInputEditMovility(exercise.reps, i, "reps")}</div>
-                      </div>
-
-                    </div>
-
-                    <div className="row justify-content-center my-2">
-
-                        <div className="col-11 text-start">
-                          <span className="styleInputsSpan">Notas</span>
-                          <div>{customInputEditMovility(exercise.notas, i, "notas")}</div>
-                        </div>
-                    </div>
-                      <div className="">
-                        <div className="row justify-content-center marginDropDown ">
-                          <div className="col-6 ">
-                          <Dropdown
-                              value={exercise.numberMovility}
-                              options={groupedOptions}
-                              onChange={(e) =>
-                                handleInputChange(i, e.target.value, "numberMovility")
-                              }
-                              placeholder="Select an item"
-                              optionLabel="label"
-                              className="p-dropdown-group w-100"
-                            />
-                          </div>
-                      
-                          <div className="col-6">
-                            <div className="row justify-content-around">
-                              <div className="col-6">
-                              <IconButton
-                                aria-label="video"
-                                className="styleButtonsEdit rounded-0"
-                                onClick={(e) => deleteMovility(e, i, exercise.name)}
-                              >
-                                <CancelIcon className="bbbbb" />
-                              </IconButton>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                </div>
-              ))}
-          </div>
-        
-      </div>
-    );
-  };
-
   return (
-    <>
-      <section className="row justify-content-start ">
-        <article className="col-10">
-          <div className="text-start mb-3">
+    <div className={`coachRoutineAuxEditor coachRoutineAuxEditor-${editorTheme}`}>
+      <section className="coachRoutineAuxToolbar">
+        <article>
+          <div className="text-start">
             <IconButton
-              aria-label="video"
-              className="bgColor rounded-2 text-light me-2"
+              aria-label="Añadir ejercicio"
+              className="coachRoutineAuxAddBtn"
               onClick={addNewMovilityExercise}
             >
               <AddIcon />
-              <span className="font-icons me-1">Anadir ejercicio</span>
+              <span className="font-icons me-1">Añadir ejercicio</span>
             </IconButton>
           </div>
         </article>
       </section>
 
       {modifiedMovility && modifiedMovility.length > 0 && (
-        <article className="table-responsive coachRoutineAuxTableShell border-bottom text-center altoTable ">
-          <table className="table table-hover align-middle text-center pb-5 ">
+        <article className="table-responsive coachRoutineAuxTableShell text-center altoTable ">
+          <table className="table table-hover align-middle text-center pb-5 coachRoutineAuxTable">
+            <colgroup>
+              <col className="coachRoutineAuxColNumber" />
+              <col className="coachRoutineAuxColName" />
+              <col className="coachRoutineAuxColMetric" />
+              <col className="coachRoutineAuxColMetric" />
+              <col className="coachRoutineAuxColPeso" />
+              <col className="coachRoutineAuxColIcon" />
+              <col className="coachRoutineAuxColNotes" />
+              <col className="coachRoutineAuxColAction" />
+            </colgroup>
             <thead>
               <tr>
                 <th>#</th>
@@ -415,7 +344,11 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
             <tbody>
               {modifiedMovility[indexMovilityA]?.movility &&
                 modifiedMovility[indexMovilityA].movility.map((item, index) => (
-                  <tr key={item.movility_id}>
+                  <Fragment key={item.movility_id || index}>
+                    {/* La fila se marca cuando tiene las notas abiertas: asi el CSS
+                        le saca el borde inferior. Las notas son parte de ESTE
+                        ejercicio; la linea solo separa un ejercicio del siguiente. */}
+                    <tr className={`coachRoutineAuxExerciseRow ${isNotesOpenFor(item.notas, item.movility_id || index) ? "hasOpenNotes" : ""}`}>
                     <td>
                       {customInputEditMovility(
                         item.numberMovility,
@@ -438,8 +371,22 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
                     <td>
                       {customInputEditMovility(item.video, index, "video")}
                     </td>
-                    <td>
-                      {customInputEditMovility(item.notas, index, "notas")}
+                    <td className="coachRoutineAuxNotesCell">
+                      <div className={`coachRoutineAuxNotesWrap ${String(item.notas ?? "").trim() ? "has-notes" : ""} ${isNotesOpenFor(item.notas, item.movility_id || index) ? "is-open" : ""}`}>
+                        <button
+                          type="button"
+                          className="coachRoutineAuxNotesTrigger"
+                          aria-label="Ver o editar notas"
+                          title="Notas"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            const k = item.movility_id || index;
+                            setOpenNotesKey((cur) => (cur === k ? null : k));
+                          }}
+                        >
+                          <MessageSquare size={15} />
+                        </button>
+                      </div>
                     </td>
                     <td>
                       <IconButton
@@ -451,6 +398,21 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
                       </IconButton>
                     </td>
                   </tr>
+                  {/* Las notas se abren en su PROPIA fila debajo, igual que en los
+                      ejercicios. Antes iban al lado del boton, dentro de la celda,
+                      lo que apretaba la columna y no coincidia con el resto. */}
+                  {isNotesOpenFor(item.notas, item.movility_id || index) && (
+                    <tr className="coachRoutineAuxNotesRow" key={`notas-${item.movility_id || index}`}>
+                      {/* UNA sola celda a todo el ancho. Antes eran tres —dos
+                          vacias a los costados— y el campo arrancaba corrido a la
+                          derecha en vez de empezar por la izquierda. */}
+                      <td colSpan={8} className="coachRoutineAuxNotesRowCell">
+                        <span className="coachRoutineAuxNotesRowTitle">Notas</span>
+                        {customInputEditMovility(item.notas, index, "notas")}
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
             </tbody>
           </table>
@@ -475,9 +437,11 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id }) {
         rejectLabel="No"
         accept={handleCancel}
         reject={() => setShowCancelDialog(false)}
-        className="coachConfirmDialog"
+        className={`coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`}
       />
-    </>
+
+      <ConfirmDialog className={`coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`} />
+    </div>
   );
 }
 

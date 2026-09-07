@@ -227,6 +227,11 @@ function UserRoutinePage() {
     };
 
     useEffect(() => {
+        /* Sigue pidiendo la rutina completa a proposito. La version liviana ya
+           existe en la API y esta pantalla podria usarla, pero la pantalla del
+           dia consume la misma respuesta y necesita los ejercicios: si esta pide
+           la liviana, alla se produce un fallo de cache y se descarga todo igual,
+           con lo cual el total empeora. Se cambian juntas o ninguna. */
         WeekService.findRoutineByUserId(id)
             .then(data => {
                 // OJO: esto oculta las semanas con visibility === "hidden"

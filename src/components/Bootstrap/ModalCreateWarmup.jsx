@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { MessageSquare } from 'lucide-react';
+import { Fragment, useState, useEffect, useRef } from "react";
 
 import * as WeekService from "../../services/week.services.js";
 import * as Notify from "./../../helpers/notify.js";
@@ -20,7 +21,18 @@ import AddIcon from "@mui/icons-material/Add";
 
 import options from "../../assets/json/options.json"; // Archivo JSON original
 
-function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id }) {
+function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id, editorTheme = "light" , notesVisibility = "closed" }) {
+  // Misma logica de notas que en los ejercicios: el ajuste del editor decide
+  // el estado inicial ('closed' | 'with-content' | 'open') y el entrenador
+  // puede abrir o cerrar cada una con el boton de la celda.
+  const [openNotesKey, setOpenNotesKey] = useState(null);
+  const isNotesOpenFor = (notas, key) => {
+    if (openNotesKey === key) return true;
+    if (notesVisibility === "open") return true;
+    if (notesVisibility === "with-content") return Boolean(String(notas ?? "").trim());
+    return false;
+  };
+
   const [warmup, setWarmup] = useState([]);
   const [warmupName, setWarmupName] = useState([]);
   const [indexWarmupA, setIndexWarmupA] = useState(0);
@@ -142,7 +154,12 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
           ref={(el) =>
             (inputRefs.current[index] = { ...inputRefs.current[index], [field]: el })
           }
-          onChange={(e) => handleInputChange(index, e, field)}
+          onChange={(nombre, video) => {
+            handleInputChange(index, nombre, field);
+            /* Igual que en movilidad: undefined significa que lo estan tipeando
+               a mano, no que el ejercicio se quedo sin video. */
+            if (video !== undefined) handleInputChange(index, video, 'video');
+          }}
         />
       );
     } else if (field === "sets" || field === "reps") {
@@ -156,6 +173,8 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
             isNotNeedProp={true}
             onChange={(value) => handleInputChange(index, value, field)}
             isRep={field === "reps"}
+            /* Estos bloques no usan series piramidales: solo texto/numerico. */
+            allowMultiple={false}
             className={'margin-custom'}
           /> 
         </div>
@@ -254,7 +273,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   // Funcion para confirmar eliminacion
   const deleteWarmup = (event, index, name) => {
     confirmDialog({
-      className: "coachConfirmDialog",
+      className: `coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`,
       message: "Estas seguro de que deseas eliminar este ejercicio?",
       header: "Confirmacion",
       icon: "pi pi-exclamation-triangle",
@@ -288,118 +307,18 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
     editAndClose();
   };
 
-  const tableMobile = () => {
-    return (
-      <div className="p-0 bg-light">
-
-          <div>
-            {modifiedWarmup[indexWarmupA]?.warmup &&
-              modifiedWarmup[indexWarmupA].warmup.map((exercise, i) => (
-                                <div className="shadowCards py-2 mt-5" key={exercise.warmup_id || i}>
-                                  <div className="row justify-content-center p-0">
-                                    <div className="col-10 text-start ">
-                                      <span className="styleInputsSpan ms-3">Nombre</span>
-                                      
-                                      <AutoComplete
-                                        defaultValue={exercise.name}
-                                        onChange={(e) => handleInputChange(i, e, "name")}
-                                      />
-                                      
-                                    </div>
-                                    <div className="col-1 text-start mt-3 me-3">
-                                      {customInputEditWarmup(exercise.video, i, "video")}
-                                    </div>
-                                                
-                                    </div>
-                
-                                    <div className="row justify-content-center mt-2 ms-2 me-4">
-                
-                                      <div className="col-6 text-start ">
-                                        <span className="styleInputsSpan ms-1 ">Peso</span>
-                                        <div className="largoInput ">{customInputEditWarmup(exercise.peso, i, "peso")}</div>
-                                      </div>
-                
-                                      <div className="col-6 text-start ">
-                                        <span className="styleInputsSpan ms-1">Rest</span>
-                                        <div className="largoInput ">{customInputEditWarmup(exercise.rest, i, "rest")}</div>
-                
-                                      </div>
-                                    </div>
-                
-                
-                                    <div className="row justify-content-center mt-2 ms-2 pe-3 me-2">
-                
-                                      <div className="col-6 text-start">
-                                      <span className="styleInputsSpan text-start">Series</span>
-                                      <div className="largoInput">{customInputEditWarmup(exercise.sets, i, "sets")}</div>
-                                      </div>
-                
-                                      <div className="col-6 text-start  ">
-                                      <span className="styleInputsSpan ">Reps</span>
-                                      <div className="largoInput">{customInputEditWarmup(exercise.reps, i, "reps")}</div>
-                                      </div>
-                
-                                    </div>
-                
-                                    <div className="row justify-content-center my-2">
-                
-                                        <div className="col-11 text-start">
-                                          <span className="styleInputsSpan">Notas</span>
-                                          <div>{customInputEditWarmup(exercise.notas, i, "notas")}</div>
-                                        </div>
-                                    </div>
-                                      <div className="">
-                                        <div className="row justify-content-center marginDropDown ">
-                                          <div className="col-6 ">
-                                          <Dropdown
-                                              value={exercise.numberWarmup}
-                                              options={groupedOptions}
-                                              onChange={(e) =>
-                                                handleInputChange(i, e.target.value, "numberWarmup")
-                                              }
-                                              placeholder="Seleccionar"
-                                              optionLabel="label"
-                                              className="p-dropdown-group w-100"
-                                            />
-                                          </div>
-                                      
-                                          <div className="col-6">
-                                            <div className="row justify-content-around">
-                                              <div className="col-6">
-                                              <IconButton
-                                                aria-label="video"
-                                                className="styleButtonsEdit rounded-0"
-                                                onClick={(e) => deleteWarmup(e, i, exercise.name)}
-                                              >
-                                                <CancelIcon className="bbbbb" />
-                                              </IconButton>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                
-                                </div>
-                
-              ))}
-          </div>
-
-      </div>
-    );
-  };
-
   return (
-    <>
-      <section className="row justify-content-start ">
-        <article className="col-10">
-          <div className=" mb-3">
+    <div className={`coachRoutineAuxEditor coachRoutineAuxEditor-${editorTheme}`}>
+      <section className="coachRoutineAuxToolbar">
+        <article>
+          <div>
             <IconButton
-              aria-label="video"
-              className="bgColor rounded-2 text-light me-2"
+              aria-label="Añadir ejercicio"
+              className="coachRoutineAuxAddBtn"
               onClick={() => addNewWarmupExercise()}
             >
               <AddIcon className="" />
-              <span className="font-icons me-1">Anadir ejercicio</span>
+              <span className="font-icons me-1">Añadir ejercicio</span>
             </IconButton>
           </div>
         </article>
@@ -408,8 +327,18 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       
 
       {modifiedWarmup && modifiedWarmup.length > 0 && (
-        <article className="table-responsive coachRoutineAuxTableShell border-bottom text-center altoTable ">
-          <table className="table table-hover align-middle text-center pb-5">
+        <article className="table-responsive coachRoutineAuxTableShell text-center altoTable ">
+          <table className="table table-hover align-middle text-center pb-5 coachRoutineAuxTable">
+            <colgroup>
+              <col className="coachRoutineAuxColNumber" />
+              <col className="coachRoutineAuxColName" />
+              <col className="coachRoutineAuxColMetric" />
+              <col className="coachRoutineAuxColMetric" />
+              <col className="coachRoutineAuxColPeso" />
+              <col className="coachRoutineAuxColIcon" />
+              <col className="coachRoutineAuxColNotes" />
+              <col className="coachRoutineAuxColAction" />
+            </colgroup>
             <thead>
               <tr>
                 <th>#</th>
@@ -425,7 +354,11 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
             <tbody>
               {modifiedWarmup[indexWarmupA]?.warmup &&
                 modifiedWarmup[indexWarmupA].warmup.map((item, index) => (
-                  <tr key={item.warmup_id}>
+                  <Fragment key={item.warmup_id || index}>
+                    {/* La fila se marca cuando tiene las notas abiertas: asi el CSS
+                        le saca el borde inferior. Las notas son parte de ESTE
+                        ejercicio; la linea solo separa un ejercicio del siguiente. */}
+                    <tr className={`coachRoutineAuxExerciseRow ${isNotesOpenFor(item.notas, item.warmup_id || index) ? "hasOpenNotes" : ""}`}>
                     <td>{customInputEditWarmup(item.numberWarmup, index, "numberWarmup")}</td>
                     <td>{customInputEditWarmup(item.name, index, "name")}</td>
                     <td>{customInputEditWarmup(item.sets, index, "sets")}</td>
@@ -436,7 +369,23 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
                     </td>
                     <td>{customInputEditWarmup(item.peso, index, "peso")}</td>
                     <td>{customInputEditWarmup(item.video, index, "video")}</td>
-                    <td>{customInputEditWarmup(item.notas, index, "notas")}</td>
+                    <td className="coachRoutineAuxNotesCell">
+                      <div className={`coachRoutineAuxNotesWrap ${String(item.notas ?? "").trim() ? "has-notes" : ""} ${isNotesOpenFor(item.notas, item.warmup_id || index) ? "is-open" : ""}`}>
+                        <button
+                          type="button"
+                          className="coachRoutineAuxNotesTrigger"
+                          aria-label="Ver o editar notas"
+                          title="Notas"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            const k = item.warmup_id || index;
+                            setOpenNotesKey((cur) => (cur === k ? null : k));
+                          }}
+                        >
+                          <MessageSquare size={15} />
+                        </button>
+                      </div>
+                    </td>
                     <td>
                       <IconButton
                         aria-label="video"
@@ -447,6 +396,21 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
                       </IconButton>
                     </td>
                   </tr>
+                  {/* Las notas se abren en su PROPIA fila debajo, igual que en los
+                      ejercicios. Antes iban al lado del boton, dentro de la celda,
+                      lo que apretaba la columna y no coincidia con el resto. */}
+                  {isNotesOpenFor(item.notas, item.warmup_id || index) && (
+                    <tr className="coachRoutineAuxNotesRow" key={`notas-${item.warmup_id || index}`}>
+                      {/* UNA sola celda a todo el ancho. Antes eran tres —dos
+                          vacias a los costados— y el campo arrancaba corrido a la
+                          derecha en vez de empezar por la izquierda. */}
+                      <td colSpan={8} className="coachRoutineAuxNotesRowCell">
+                        <span className="coachRoutineAuxNotesRowTitle">Notas</span>
+                        {customInputEditWarmup(item.notas, index, "notas")}
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
             </tbody>
           </table>
@@ -472,9 +436,11 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
         rejectLabel="No"
         accept={() => handleCancel()}
         reject={() => setShowCancelDialog(false)}
-        className="coachConfirmDialog"
+        className={`coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`}
       />
-    </>
+
+      <ConfirmDialog className={`coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`} />
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import './UserRoutineEditPage.css';
 
@@ -15,12 +15,10 @@ import * as RefreshFunction from './../../helpers/generateUUID.js';
 
 //.............................. BIBLIOTECAS EXTERNAS ..............................//
 import { Tour } from 'antd';
-import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import ObjectId from 'bson-objectid';
-import { Dropdown } from 'primereact/dropdown';
 // >>> Agregados para el editor de comentarios:
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -30,7 +28,7 @@ import { SpeedDial } from 'primereact/speeddial';
 import PrimeReactTable_Routines from '../../components/PrimeReactTable_Routines.jsx';
 import LogoChico from '../../components/LogoChico.jsx';
 import BloquesForm from './../../components/BloquesForm.jsx';
-import BlocksListPage from './../../components/BlocksListPage.jsx';
+import RoutineWeeksBlockSelect from '../../components/RoutineWeeksBlockSelect.jsx';
 
 //.............................. ICONOS LUCIDE ..............................//
 import {
@@ -53,12 +51,12 @@ import {
   UserPen,
   Plus,
   FileText,
-  MessageSquareText
+  MessageSquareText,
+  Settings
 } from 'lucide-react';
 
 //.............................. ICONOS MUI ..............................//
 import IconButton from "@mui/material/IconButton";
-import AddIcon from '@mui/icons-material/Add';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PersonIcon from '@mui/icons-material/Person';
@@ -76,7 +74,13 @@ import { Files } from 'lucide-react';
 import { ToggleRight } from 'lucide-react';
 import { ToggleLeft } from 'lucide-react';
 
-const COMMENTS_PREVIEW_LIMIT = 80;
+const COMMENTS_PREVIEW_LIMIT = 65;
+const ROUTINE_WEEKS_SETTINGS_KEY = `routineWeeksSettings:${localStorage.getItem("_id") || "global"}`;
+const DEFAULT_ROUTINE_WEEKS_SETTINGS = {
+  order: "newest",
+  pageSize: 8,
+  density: "comfortable",
+};
 
 const getCommentsPreview = (value) => {
   const text = String(value || "").trim();
@@ -87,7 +91,7 @@ const getCommentsPreview = (value) => {
 
 const hasLongComments = (value) => String(value || "").trim().length > COMMENTS_PREVIEW_LIMIT;
 
-function UserRoutineEditPage() {
+function UserRoutineEditPage({ editorTheme = 'light' }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const { username } = useParams();
@@ -126,10 +130,19 @@ function UserRoutineEditPage() {
     if (!isSpeedDialOpen) return;
 
     const handleClickOutside = (event) => {
-      // Si el click fue dentro de algun SpeedDial (boton o items), no hacemos nada
+      // Si el click fue dentro de algun SpeedDial (boton o items), no hacemos nada.
+      //
+      // El dock mobile TIENE que estar en esta lista. Este listener corre en fase
+      // de CAPTURA sobre document, o sea antes que el onClick del boton: si no se
+      // exime, cierra el menu, React desmonta el boton y el click termina llegando
+      // a un elemento que ya no esta en el DOM. Resultado: en mobile ninguna opcion
+      // del dock hacia nada (ni "Nueva semana", ni "Cargar correcciones", etc.),
+      // sin error ni request. El dock fue un rediseno posterior y quedo afuera de
+      // esta exencion, escrita para el SpeedDial viejo.
       if (
-        event.target.closest('.p-speeddial') ||   // contenedor de PrimeReact
-        event.target.closest('.bottom-dial')      // wrapper que usas en el navbar
+        event.target.closest('.p-speeddial') ||        // contenedor de PrimeReact
+        event.target.closest('.bottom-dial') ||        // wrapper que usas en el navbar
+        event.target.closest('.week-mobile-actionbar') // dock mobile: botones + menus
       ) {
         return;
       }
@@ -146,15 +159,12 @@ function UserRoutineEditPage() {
     };
   }, [isSpeedDialOpen]);
 
-  const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showDriveLinkDialog, setShowDriveLinkDialog] = useState(false);
   const [showWeeklySummaryModal, setShowWeeklySummaryModal] = useState();
   const [profile, setProfile] = useState(true);
   const [showCorrectionsDialog, setShowCorrectionsDialog] = useState(false);
   const [correctionsText, setCorrectionsText] = useState("");
 
-  const [showBlockForm, setShowBlockForm] = useState(false);
-  
   const [showCommentsDialog, setShowCommentsDialog] = useState(false); // (resumen semanal: visor)
 
   const [blocks, setBlocks] = useState([]);
@@ -163,6 +173,7 @@ function UserRoutineEditPage() {
   const [blockDialogWeek, setBlockDialogWeek] = useState(null);
   const [selectedBlockId, setSelectedBlockId] = useState(null);
   const [showManageBlocksDialog, setShowManageBlocksDialog] = useState(false);
+  const [blockPendingEdit, setBlockPendingEdit] = useState(null);
 
   const [weekDate, setWeekDate] = useState(() => {
     return localStorage.getItem("weekDate") || "";
@@ -174,6 +185,16 @@ function UserRoutineEditPage() {
   });
 
   const [showModeDialog, setShowModeDialog] = useState(false);
+  const [routineWeeksSettings, setRoutineWeeksSettings] = useState(() => {
+    try {
+      return {
+        ...DEFAULT_ROUTINE_WEEKS_SETTINGS,
+        ...(JSON.parse(localStorage.getItem(ROUTINE_WEEKS_SETTINGS_KEY)) || {}),
+      };
+    } catch {
+      return DEFAULT_ROUTINE_WEEKS_SETTINGS;
+    }
+  });
 
   const [isEditable, setIsEditable] = useState(() => {
     const saved = localStorage.getItem("isEditable");
@@ -189,10 +210,6 @@ function UserRoutineEditPage() {
   const [commentsMode, setCommentsMode] = useState("free"); // "free" | "days"
   const [commentsDaysMeta, setCommentsDaysMeta] = useState([]); // [{_id,label}]
   const [commentsByDay, setCommentsByDay] = useState({}); // { [dayId]: text }
-  const modeOptions = [
-    { label: "Modo libre", value: "free" },
-    { label: "Modo dias", value: "days" },
-  ];
   // ====== /Comentarios por semana ======
 
   // ====== Estado acordeon para MOBILE ======
@@ -204,16 +221,6 @@ function UserRoutineEditPage() {
       else next.add(id);
       return next;
     });
-  };
-
-  const getContrastYIQ = (hexcolor) => {
- if (!hexcolor) return "black";
- const h = hexcolor.replace("#", "");
- const r = parseInt(h.substr(0, 2), 16);
- const g = parseInt(h.substr(2, 2), 16);
- const b = parseInt(h.substr(4, 2), 16);
- const yiq = (r * 299 + g * 587 + b * 114) / 1000;
- return yiq >= 150 ? "black" : "white";
   };
 
   const resolveWeekBlock = React.useCallback((week, availableBlocks = blocks) => {
@@ -354,7 +361,12 @@ function UserRoutineEditPage() {
         setLoading(false);
         NotifyHelper.updateToast();
       });
-  }, [status, id, resolveWeekBlock]);
+    // resolveWeekBlock NO va en las dependencias: es un useCallback atado a
+    // `blocks`, asi que cambia de identidad cuando los bloques terminan de
+    // cargar y volvia a disparar todo el efecto. Eso pedia las semanas de nuevo
+    // y mostraba un segundo "Listo!". El efecto de abajo ya re-resuelve los
+    // bloques cuando llegan, asi que aca no hace falta.
+  }, [status, id]);
 
   useEffect(() => {
     if (!blocks.length) return;
@@ -382,9 +394,9 @@ function UserRoutineEditPage() {
       });
   }, [id]);
 
-  const buildOptions = (currentBlock) => {
+ const buildOptions = (currentBlock) => {
  const base = [
-   { name: "Anadir/editar bloques", _id: "add-new-block" },
+   { name: "Agregar bloque", _id: "add-new-block" },
    { name: "Sin bloque", _id: null },
  ];
  const extra = currentBlock && !blocks.find((b) => b._id === currentBlock._id)
@@ -392,11 +404,6 @@ function UserRoutineEditPage() {
    : [];
  return [...base, ...blocks, ...extra];
  };
-
- const itemTemplate = (option) =>
- option._id === "add-new-block"
-   ? (<span className="d-flex align-items-center"><span className="me-2">ï¼‹</span>{option.name}</span>)
-   : option.name;
 
  // === ACTUALIZADO: tambien refresca el bloque mostrado dentro del dialogo
   const handleAssignBlock = async (routineId, block) => {
@@ -423,11 +430,13 @@ function UserRoutineEditPage() {
    } catch (err) {
      console.error("Error actualizando bloque", err);
      NotifyHelper.instantToast("Error al guardar el bloque");
+     throw err;
    }
  };
 
- const handleBlockDropdownChange = (weekId, value) => {
+ const handleBlockDropdownChange = async (weekId, value) => {
    if (value === "add-new-block") {
+     setBlockPendingEdit(null);
      setShowManageBlocksDialog(true);
      return;
    }
@@ -441,7 +450,13 @@ function UserRoutineEditPage() {
        : prev
    );
 
-   handleAssignBlock(weekId, selected);
+   return handleAssignBlock(weekId, selected);
+ };
+
+ const handleEditBlockFromSelect = (block) => {
+   if (!block?._id) return;
+   setBlockPendingEdit(block);
+   setShowManageBlocksDialog(true);
  };
 
   const copyRoutine = (data) => {
@@ -457,6 +472,19 @@ function UserRoutineEditPage() {
     setUseDate(newValue);
     localStorage.setItem("useDate", newValue.toString());
   };
+
+  const updateRoutineWeeksSetting = (key, value) => {
+    setRoutineWeeksSettings((current) => {
+      const next = { ...current, [key]: value };
+      localStorage.setItem(ROUTINE_WEEKS_SETTINGS_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const visibleRoutine = useMemo(() => {
+    const list = Array.isArray(routine) ? [...routine] : [];
+    return routineWeeksSettings.order === "oldest" ? list.reverse() : list;
+  }, [routine, routineWeeksSettings.order]);
 
   function createWeek() {
     setLoading(true);
@@ -1254,7 +1282,7 @@ const handleEditBlock = (w) => {
       type="button"
       onClick={disabled ? undefined : onClick}
       aria-disabled={disabled}
-      className="border-0 p-0 bg-transparent"
+      className="border-0 p-0 bg-transparent routine-modern-action-button"
       style={{ width: '100%' }}
     >
       <div
@@ -1319,29 +1347,15 @@ const rightDialItems = [
 
   return (
     <>
-      <div className='sidebarPro colorMainAll'>
-        <div className="d-flex flex-column  colorMainAll  shadow-sm" style={{ width: '220px', height: '100vh', paddingTop: '50px' }}>
+      <div className={`sidebarPro colorMainAll routineSidebarModern routineWeeksTheme-${editorTheme}`}>
+        <div className="d-flex flex-column colorMainAll shadow-sm routineSidebarModernInner">
 
-          <div className="p-3">
-            <div id={'switchWeek'} className="d-flex justify-content-between text-light bgItemsDropdown align-items-center 3">
-              <span className="text-light mx-2 small d-flex align-items-center">
-                {useDate ? "Modo fecha" : "Modo numerico"}
-                <OverlayTrigger
-                  placement="right"
-                  overlay={
-                    <Tooltip id="switch-mode-tooltip">
-                      Es el nombre que se le pondra a las semanas. En modo fecha: "Semana - xx/xx/xxxx". En modo numerico: "Semana x"
-                    </Tooltip>
-                  }
-                >
-                  <Info size={14} className="ms-2" style={{ cursor: 'pointer' }} />
-                </OverlayTrigger>
-              </span>
-              <div className="form-check form-switch">
-                <input className="form-check-input" type="checkbox" checked={useDate} onChange={handleToggleUseDate} />
-              </div>
+          <div className="routineSidebarIdentity">
+            <span>{String(username || 'A').trim().charAt(0).toUpperCase()}</span>
+            <div>
+              <strong>{username || 'Alumno'}</strong>
+              <small>Planificacion del alumno</small>
             </div>
-
           </div>
 
           {weeklySummary && (
@@ -1369,7 +1383,7 @@ const rightDialItems = [
               </ul>
 
               {weeklySummary.lastSaved && (
-                <p className='text-light small text-center mb-2'>
+                <p className='routineSidebarLastUpdate text-light text-center mb-2'>
                   Ultima actualizacion: {new Date(weeklySummary.lastSaved).toLocaleDateString()}
                 </p>
               )}
@@ -1382,7 +1396,7 @@ const rightDialItems = [
                 {hasLongComments(weeklySummary.comments) && (
                   <button
                     type="button"
-                    className="btn btn-outline-light btn-sm mx-2 mb-2"
+                    className="btn btn-outline-light btn-sm mx-2 mb-2 routineSidebarFullComments"
                     onClick={() => setShowCommentsDialog(true)}
                   >
                     Ver comentarios completos
@@ -1395,7 +1409,7 @@ const rightDialItems = [
                   setCorrectionsText(profile.devolucion || "");
                   setShowCorrectionsDialog(true);
                 }}>
-                  Cargar correciones
+                  Cargar correcciones
                 </button>
               </div>
               <div id='drive' className="d-grid mt-2">
@@ -1420,21 +1434,35 @@ const rightDialItems = [
             </div>
           )}
 
-          <div className="p-3 mb-3 text-center">
-            <button className="btn btn-outline-light btn-sm" onClick={() => setTourVisible(true)}>
-              <HelpCircle size={16} className="me-1" /> Ayuda
+          <div className="routineSidebarBottomActions">
+            <button type="button" onClick={() => setTourVisible(true)}>
+              <HelpCircle size={15} /> Ayuda
             </button>
           </div>
         </div>
       </div>
 
-      <section className='container-fluid totalHeight'>
+      <section className={`container-fluid totalHeight routineWeeksPage routineWeeksTheme-${editorTheme}`}>
         <div className={isSpeedDialOpen ? 'blur-main' : ''}>
-        <article className={`row justify-content-center ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}>
+        <article className={`row justify-content-center routineWeeksContent ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}>
 
-          {/* === TUS BOTONES ORIGINALES (se mantienen) -> Rehechos como "tarjetas" (look de la 1Âª imagen) === */}
-          {firstWidth > 983 && (
-            <div className="row justify-content-center mb-3 mt-2" style={{ maxWidth: 980 }}>
+          {firstWidth >= 991 && (
+            <div className="routineWeeksTop">
+              <div className="routineWeeksHeading">
+                <h1>Semanas de {username || 'alumno'}</h1>
+                <p>Organiza la planificacion, los bloques y el seguimiento semanal.</p>
+              </div>
+
+              <div className="row justify-content-end routineWeeksActions">
+              <div className="col-3">
+                <ActionTile
+                  id="routineWeeksSettings"
+                  gradient="linear-gradient(180deg, #1F3A5F 0%, #10233D 100%)"
+                  icon={<Settings size={18} />}
+                  label="Ajustes"
+                  onClick={() => setShowModeDialog(true)}
+                />
+              </div>
               <div className="col-3">
                 <ActionTile
                   id="week0"
@@ -1459,9 +1487,10 @@ const rightDialItems = [
                   id="paste"
                   gradient="linear-gradient(180deg, #A46BFF 0%, #7B3BFF 100%)"
                   icon={<ClipboardCopy size={18} />}
-                  label="Pegar rutina"
+                  label="Pegar semana"
                   onClick={loadFromLocalStorage}
                 />
+              </div>
               </div>
             </div>
           )}
@@ -1475,17 +1504,22 @@ const rightDialItems = [
                 <PrimeReactTable_Routines
                   id={id}
                   username={username}
-                  routine={routine}
+                  routine={visibleRoutine}
                   setRoutine={setRoutine}
                   copyRoutine={copyRoutine}
+                  editorTheme={editorTheme}
+                  rowsPerPage={routineWeeksSettings.pageSize}
+                  density={routineWeeksSettings.density}
+                  blocks={blocks}
+                  onBlocksRefresh={loadBlocks}
                 />
               </div>
             </div>
           ) : (
             // ====== EN MOBILE: CARDS + ACORDEON ======
             <div className='col-12'>
-              <div className='row justify-content-center g-3'>
-                {routine.map((w) => {
+              <div className='row justify-content-center g-3 routineWeeksMobileList'>
+                {visibleRoutine.map((w) => {
                   const resolvedWeek = resolveWeekBlock(w);
                   const isOpen = expanded.has(w._id);
                   const isHidden = (w?.visibility || 'visible') === 'hidden';
@@ -1503,14 +1537,19 @@ const rightDialItems = [
                     <div key={w._id} className="col-12">
                       <div className="week-mobile-card">
                         <div className="week-mobile-head">
-                          <div
-                            className="week-mobile-head-main"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => toggleExpanded(w._id)}
-                          >
-                            <div className="week-mobile-title">{w.name || 'Semana'}</div>
-                            <div className="week-mobile-meta">
-                              <span>{trainerDateLabel}</span>
+                          <div className="week-mobile-head-top">
+                            <div
+                              className="week-mobile-head-main"
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => toggleExpanded(w._id)}
+                            >
+                              <div className="week-mobile-title">{w.name || 'Semana'}</div>
+                              <div className="week-mobile-meta">
+                                <span>{trainerDateLabel}</span>
+                              </div>
+                            </div>
+
+                            <div className="week-mobile-status-wrap">
                               <span className={`week-mobile-visibility ${isHidden ? 'is-hidden' : 'is-visible'}`}>
                                 {isHidden ? 'Oculta' : 'Visible'}
                               </span>
@@ -1528,6 +1567,9 @@ const rightDialItems = [
                               }}
                             >
                               {isHidden ? <EyeOff size={16} /> : <Eye size={16} />}
+                              <span className="week-mobile-eye-status">
+                                {isHidden ? 'No visible' : 'Visible'}
+                              </span>
                             </button>
                             <Link
                               className="week-mobile-icon-btn"
@@ -1536,6 +1578,7 @@ const rightDialItems = [
                               title="Entrar a la semana"
                             >
                               <Edit size={16} />
+                              <span className="week-mobile-eye-status">Editar</span>
                             </Link>
                             <button
                               type="button"
@@ -1544,12 +1587,28 @@ const rightDialItems = [
                               title={isOpen ? 'Contraer' : 'Expandir'}
                             >
                               {isOpen ? <ChevronUp size={18} color={isOpen ? '#fff' : undefined} /> : <ChevronDown size={18} />}
+                              <span className="week-mobile-eye-status">Ver mas</span>
                             </button>
                           </div>
                         </div>
 
                         {isOpen && (
                           <div className="week-mobile-body">
+                            <div className="week-mobile-dates">
+                              <div className="week-mobile-date-card">
+                                <span className="week-mobile-date-label">
+                                  <Pencil size={12} className="me-1" /> Ultima edicion del entrenador
+                                </span>
+                                <div className="week-mobile-date-value">{trainerDateLabel}</div>
+                              </div>
+                              <div className="week-mobile-date-card">
+                                <span className="week-mobile-date-label">
+                                  <UserPen size={12} className="me-1" /> Ultima edicion del alumno
+                                </span>
+                                <div className="week-mobile-date-value">{athleteDateLabel}</div>
+                              </div>
+                            </div>
+
                             <div className="week-mobile-action-row">
                               <button
                                 type="button"
@@ -1576,21 +1635,6 @@ const rightDialItems = [
                                 <span>Eliminar</span>
                               </button>
                             </div>
-
-                            <div className="week-mobile-dates">
-                              <div className="week-mobile-date-card">
-                                <span className="week-mobile-date-label">
-                                  <Pencil size={12} className="me-1" /> Entrenador
-                                </span>
-                                <div className="week-mobile-date-value">{trainerDateLabel}</div>
-                              </div>
-                              <div className="week-mobile-date-card">
-                                <span className="week-mobile-date-label">
-                                  <UserPen size={12} className="me-1" /> Alumno
-                                </span>
-                                <div className="week-mobile-date-value">{athleteDateLabel}</div>
-                              </div>
-                            </div>
                           </div>
                         )}
 
@@ -1600,10 +1644,19 @@ const rightDialItems = [
                             <div
                               className="week-mobile-block-pill"
                               title={blockName}
-                              style={{
-                                backgroundColor: blockColor,
-                                color: getContrastYIQ(blockColor)
-                              }}
+                              style={
+                                editorTheme === 'dark'
+                                  ? {
+                                      backgroundColor: `color-mix(in srgb, ${blockColor} 20%, #111827)`,
+                                      borderColor: `color-mix(in srgb, ${blockColor} 55%, transparent)`,
+                                      color: `color-mix(in srgb, ${blockColor} 55%, #ffffff)`
+                                    }
+                                  : {
+                                      backgroundColor: `color-mix(in srgb, ${blockColor} 14%, white)`,
+                                      borderColor: `color-mix(in srgb, ${blockColor} 45%, white)`,
+                                      color: `color-mix(in srgb, ${blockColor} 65%, #1e2a3a)`
+                                    }
+                              }
                             >
                               {blockName}
                             </div>
@@ -1623,7 +1676,24 @@ const rightDialItems = [
                 })}
 
                 {routine.length === 0 && (
-                  <div className="text-center text-muted py-4">No hay semanas creadas todavia.</div>
+                  /* Estado vacio CON accion. Antes era solo esta frase suelta
+                     arriba de un bloque que ocupaba casi toda la pantalla, y el
+                     unico camino para crear estaba en el dock de abajo, lejos de
+                     donde uno mira. */
+                  <div className="week-mobile-empty">
+                    <SquarePlus size={30} className="week-mobile-empty-icon" />
+                    <p className="week-mobile-empty-title">Todavia no hay semanas</p>
+                    <p className="week-mobile-empty-text">
+                      Crea la primera semana para empezar a planificar.
+                    </p>
+                    <button
+                      type="button"
+                      className="week-mobile-empty-cta"
+                      onClick={() => createWeek()}
+                    >
+                      Crear primera semana
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -1632,68 +1702,105 @@ const rightDialItems = [
 </div>
 {firstWidth < 991 && (
 
-  <nav className="navbar footerColor fixed-bottom altoNavbb">
+  <nav className="navbar footerColor fixed-bottom altoNavbb week-mobile-actionbar">
 
 
           {/* Columna izquierda */}
-        <div className="col-3 d-flex  justify-content-center altoNavbb2 ">
-  <SpeedDial
-    visible={isResumenDialVisible}
-    onVisibleChange={(visible) => {
-      setIsResumenDialVisible(visible);
-      if (visible) {
-        setIsWeeksDialVisible(false);
-        setIsToolsDialVisible(false);
-      }
-    }}
-    showIcon={<UserPen size={20} />}
-    hideIcon={<X />}
-    model={itemsResumenAndDevolution}
-    direction="up"
-    mask
-    className="bottom-dial"
-    buttonClassName="rounded-5 styleDial "
-  />
+        <div className="week-mobile-actionbar-slot">
+          {isResumenDialVisible && (
+            <div className="week-mobile-dock-menu is-left">
+              <button type="button" onClick={() => { setShowDriveLinkDialog(true); setIsResumenDialVisible(false); }}>
+                <Video size={16} />
+                <span>Ver videos subidos</span>
+              </button>
+              {/* Hay que cargar profile.devolucion ANTES de abrir, igual que los
+                  caminos de desktop. Sin esto el dialogo mostraba el estado
+                  inicial ("") aunque el alumno ya tuviera correcciones cargadas,
+                  y al guardar se pisaba lo anterior sin ningun aviso. */}
+              <button type="button" onClick={() => { setCorrectionsText(profile?.devolucion || ''); setShowCorrectionsDialog(true); setIsResumenDialVisible(false); }}>
+                <FilePlus size={16} />
+                <span>Cargar correcciones</span>
+              </button>
+              <button type="button" onClick={() => { setShowWeeklySummaryModal(true); setIsResumenDialVisible(false); }}>
+                <NotepadText size={16} />
+                <span>Resumen semanal</span>
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className={`week-mobile-dock-btn ${isResumenDialVisible ? 'is-active' : ''}`}
+            onClick={() => {
+              setIsResumenDialVisible((visible) => !visible);
+              setIsWeeksDialVisible(false);
+              setIsToolsDialVisible(false);
+            }}
+            aria-label="Herramientas del alumno"
+            aria-expanded={isResumenDialVisible}
+          >
+            {isResumenDialVisible ? <X size={22} /> : <UserPen size={20} />}
+            <span className="week-mobile-dock-label">Alumno</span>
+          </button>
 </div>
 
           {/* Columna centro */}
-<div className="col-3 d-flex justify-content-center altoNavbb2">
-  <SpeedDial
-    visible={isWeeksDialVisible}
-    onVisibleChange={(visible) => {
-      setIsWeeksDialVisible(visible);
-      if (visible) {
-        setIsResumenDialVisible(false);
-        setIsToolsDialVisible(false);
-      }
-    }}
-    mask
-    model={itemsWeeks}
-    direction="up"
-    className="bottom-dial"
-    buttonClassName="rounded-5 styleDial "
-  />
+<div className="week-mobile-actionbar-slot">
+          {isWeeksDialVisible && (
+            <div className="week-mobile-dock-menu is-center">
+              <button type="button" onClick={() => { createWeek(); setIsWeeksDialVisible(false); }}>
+                <SquarePlus size={16} />
+                <span>Nueva semana</span>
+              </button>
+              <button type="button" onClick={() => { createWeekCopyLastWeek(); setIsWeeksDialVisible(false); }}>
+                <CopyPlus size={16} />
+                <span>Seguir semana</span>
+              </button>
+              <button type="button" onClick={() => { loadFromLocalStorage(); setIsWeeksDialVisible(false); }}>
+                <Files size={16} />
+                <span>Pegar semana</span>
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className={`week-mobile-dock-btn week-mobile-dock-main ${isWeeksDialVisible ? 'is-active' : ''}`}
+            onClick={() => {
+              setIsWeeksDialVisible((visible) => !visible);
+              setIsResumenDialVisible(false);
+              setIsToolsDialVisible(false);
+            }}
+            aria-label="Acciones de semanas"
+            aria-expanded={isWeeksDialVisible}
+          >
+            {isWeeksDialVisible ? <X size={22} /> : <Plus size={24} />}
+            <span className="week-mobile-dock-label">Semanas</span>
+          </button>
 </div>
 
           {/* Columna derecha */}
-<div className="col-3 d-flex justify-content-center altoNavbb2">
-  <SpeedDial
-    visible={isToolsDialVisible}
-    onVisibleChange={(visible) => {
-      setIsToolsDialVisible(visible);
-      if (visible) {
-        setIsResumenDialVisible(false);
-        setIsWeeksDialVisible(false);
-      }
-    }}
-    mask
-    showIcon={<Pencil size={20} />}
-    hideIcon={<X />}
-    model={itemsHerramientas}
-    direction="up"
-    className="bottom-dial"
-    buttonClassName="rounded-5 styleDial"
-  />
+<div className="week-mobile-actionbar-slot">
+          {isToolsDialVisible && (
+            <div className="week-mobile-dock-menu is-right">
+              <button type="button" onClick={() => { setShowModeDialog(true); setIsToolsDialVisible(false); }}>
+                <ToggleLeft size={16} />
+                <span>Modo fecha / numerico</span>
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className={`week-mobile-dock-btn ${isToolsDialVisible ? 'is-active' : ''}`}
+            onClick={() => {
+              setIsToolsDialVisible((visible) => !visible);
+              setIsResumenDialVisible(false);
+              setIsWeeksDialVisible(false);
+            }}
+            aria-label="Ajustes"
+            aria-expanded={isToolsDialVisible}
+          >
+            {isToolsDialVisible ? <X size={22} /> : <Pencil size={20} />}
+            <span className="week-mobile-dock-label">Ajustes</span>
+          </button>
 </div>
 
      
@@ -1714,109 +1821,99 @@ const rightDialItems = [
 
         {/* === ACTUALIZADO: modal con diseno como en la imagen === */}
         <Dialog
-          header="Resumen Semanal"
-          visible={showWeeklySummaryModal}
-          style={{ width: firstWidth > 900 ? '80vw' : '94vw', maxWidth: 620 }}
-          onHide={() => setShowWeeklySummaryModal(false)}
-          draggable={true}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* cajita celeste con ultima actualizacion */}
-            <div
-              style={{
-                background: '#e9f2ff',
-                border: '1px solid #d6e4ff',
-                color: '#2b5bbd',
-                borderRadius: 10,
-                padding: '10px 12px'
-              }}
-            >
-              <div style={{ fontSize: 12, opacity: .85, marginBottom: 4 }}>
-                Ultima actualizacion
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>
-                {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : '-'}
+          header={
+            <div className="routineWeeksDialogHeader">
+              <span className="routineWeeksDialogHeaderIcon"><NotepadText size={18} /></span>
+              <div>
+                <strong>Resumen semanal</strong>
+                <span>
+                  {weeklySummary.lastSaved
+                    ? `Ultima actualizacion: ${new Date(weeklySummary.lastSaved).toLocaleString()}`
+                    : 'Sin actualizaciones todavia'}
+                </span>
               </div>
             </div>
-
-            {/* filas con badge a la derecha */}
+          }
+          visible={showWeeklySummaryModal}
+          className={`routineWeeksDialog routineWeeksTheme-${editorTheme}`}
+          style={{ width: firstWidth > 900 ? '480px' : '94vw' }}
+          onHide={() => setShowWeeklySummaryModal(false)}
+          footer={
+            <div className="routineWeeksDialogActions">
+              <button
+                type="button"
+                className="routineWeeksDialogButton routineWeeksDialogButtonSecondary"
+                onClick={() => {
+                  setCorrectionsText(profile.devolucion || "");
+                  setShowCorrectionsDialog(true);
+                }}
+              >
+                Cargar correcciones
+              </button>
+              <button
+                type="button"
+                className="routineWeeksDialogButton routineWeeksDialogButtonPrimary"
+                onClick={() => setShowWeeklySummaryModal(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          }
+          draggable={true}
+        >
+          <div className="routineWeeksSummaryList">
             {[
-              ['Alimentacion:', weeklySummary.selection1],
-              ['NEAT:', weeklySummary.selection2],
-              ['Sensaciones:', weeklySummary.selection3],
-              ['Descanso / Sueno:', weeklySummary.selection4],
-              ['Estres:', weeklySummary.selection5],
-              ['Peso:', weeklySummary.pesoCorporal || '-'],
+              ['Alimentacion', weeklySummary.selection1],
+              ['NEAT', weeklySummary.selection2],
+              ['Sensaciones', weeklySummary.selection3],
+              ['Descanso / Sueno', weeklySummary.selection4],
+              ['Estres', weeklySummary.selection5],
+              ['Peso', weeklySummary.pesoCorporal || '-'],
             ].map(([label, value], i) => (
-              <div key={i} className="d-flex justify-content-between align-items-center">
-                <div>{label}</div>
-                <span
-                  className={`badge ${typeof value === 'string' ? getBadgeStyle(value) : 'bg-secondary'}`}
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: 10,
-                    minWidth: 60,
-                    textAlign: 'center'
-                  }}
-                >
+              <div key={i} className="routineWeeksSummaryRow">
+                <span>{label}</span>
+                <span className={`badge ${typeof value === 'string' ? getBadgeStyle(value) : 'bg-secondary'}`}>
                   {value || '-'}
                 </span>
               </div>
             ))}
+          </div>
 
-            <div className="weekly-summary-full-comments">
-              <div className="weekly-summary-full-comments-label">Comentarios:</div>
-              <div className="weekly-summary-full-comments-text">
-                {getCommentsPreview(weeklySummary.comments)}
-              </div>
-              {hasLongComments(weeklySummary.comments) && (
-                <button
-                  type="button"
-                  className="btn btn-outline-dark btn-sm mt-2"
-                  onClick={() => setShowCommentsDialog(true)}
-                >
-                  Ver comentarios completos
-                </button>
-              )}
+          <div className="routineWeeksFieldGroup">
+            <label>Comentarios</label>
+            <div className="weekly-summary-full-comments-text">
+              {getCommentsPreview(weeklySummary.comments)}
             </div>
-          </div>
-
-          <div className="text-center align-bottom my-3">
-            <button 
-              className="btn btn-outline-light"
-              onClick={() => {
-                setCorrectionsText(profile.devolucion || "");
-                setShowCorrectionsDialog(true);
-              }}
-            >
-              Cargar correcciones/devoluciones
-            </button>
-          </div>
-
-          <div className="row justify-content-center mt-2">
-            <button
-              className="btn"
-              style={{
-                background: '#0b132b',
-                color: '#fff',
-                width: '90%',
-                borderRadius: 12
-              }}
-              onClick={() => setShowWeeklySummaryModal(false)}
-            >
-              Cerrar
-            </button>
+            {hasLongComments(weeklySummary.comments) && (
+              <button
+                type="button"
+                className="routineWeeksDialogButton routineWeeksDialogButtonSecondary mt-2"
+                onClick={() => setShowCommentsDialog(true)}
+              >
+                Ver comentarios completos
+              </button>
+            )}
           </div>
         </Dialog>
 
         <Dialog
           header="Correcciones / Devolucion"
           visible={showCorrectionsDialog}
+          className={`routineWeeksDialog routineWeeksFeedbackDialog routineWeeksTheme-${editorTheme}`}
           onHide={() => setShowCorrectionsDialog(false)}
           style={{ width: firstWidth > 900 ? '40%' : '90%' }}
         >
-          <div className="mb-3">
+          <div className="routineWeeksDialogIntro">
+            <MessageSquareText size={18} />
+            <div>
+              <strong>Mensaje para el alumno</strong>
+              <span>Escribi correcciones, devoluciones o indicaciones generales.</span>
+            </div>
+          </div>
+          <div className="routineWeeksFieldGroup">
+            <label htmlFor="routine-corrections-text">Correcciones</label>
             <textarea 
+              id="routine-corrections-text"
               className="form-control" 
               rows="5" 
               value={correctionsText} 
@@ -1824,11 +1921,11 @@ const rightDialItems = [
               placeholder="Ingrese las correcciones o devolucion..."
             />
           </div>
-          <div className="d-flex justify-content-end">
-            <button className="btn btn-secondary me-2" onClick={() => setShowCorrectionsDialog(false)}>
+          <div className="routineWeeksDialogActions">
+            <button className="routineWeeksDialogButton routineWeeksDialogButtonSecondary" onClick={() => setShowCorrectionsDialog(false)}>
               Cancelar
             </button>
-            <button className="btn btn-primary" onClick={handleCorrectionsSave}>
+            <button className="routineWeeksDialogButton routineWeeksDialogButtonPrimary" onClick={handleCorrectionsSave}>
               Guardar
             </button>
           </div>
@@ -1838,137 +1935,160 @@ const rightDialItems = [
           header="Sin link de Drive"
           visible={showDriveLinkDialog}
           onHide={() => setShowDriveLinkDialog(false)}
-          className='col-10 col-lg-4'
+          className={`col-10 col-lg-4 routineWeeksDialog routineWeeksDriveDialog routineWeeksTheme-${editorTheme}`}
         >
-          <p className='text-dark'>Pedile a tu alumno que suba el link de su drive para poder verlo</p>
-          <div className="text-center mt-3">
-            <Button label="Cerrar" onClick={() => setShowDriveLinkDialog(false)} />
-          </div>
-        </Dialog>
-
-        <Dialog
-          header="Perfil del Alumno"
-          visible={showProfileDialog}
-          style={{ width: '30vw' }}
-          onHide={() => setShowProfileDialog(false)}
-          draggable={true}
-        >
-          {profile && (
-            <div className="text-muted small">
-              <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Edad</span><strong className='me-2'>{profile.edad || '-'} anos</strong></div>
-              <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Peso</span><strong className='me-2'>{profile.peso || '-'} kg</strong></div>
-              <div className="d-flex justify-content-between bgItemsDropdown"><span className='ms-2'>Altura</span><strong className='me-2'>{profile.altura || '-'} cm</strong></div>
+          <div className="routineWeeksEmptyState">
+            <div className="routineWeeksEmptyIcon">
+              <AddToDriveIcon fontSize="small" />
             </div>
-          )}
-          <div className="text-center mt-3">
-            <Button label="Cerrar" onClick={() => setShowProfileDialog(false)} />
+            <strong>No hay link cargado</strong>
+            <p>Pedile a tu alumno que suba el link de su Drive para poder ver sus videos desde aca.</p>
+          </div>
+          <div className="routineWeeksDialogActions">
+            <button className="routineWeeksDialogButton routineWeeksDialogButtonPrimary" onClick={() => setShowDriveLinkDialog(false)}>
+              Cerrar
+            </button>
           </div>
         </Dialog>
 
         <Dialog
           header="Comentarios completos"
           visible={showCommentsDialog}
+          className={`routineWeeksDialog routineWeeksCommentsDialog routineWeeksTheme-${editorTheme}`}
           style={{ width: firstWidth > 900 ? '60vw' : '94vw', maxWidth: '800px' }}
           onHide={() => setShowCommentsDialog(false)}
           draggable
         >
-          <div className="weekly-summary-comments-dialog-text">
-            {weeklySummary.comments || 'No hay comentarios'}
+          <div className="routineWeeksDialogIntro">
+            <FileText size={18} />
+            <div>
+              <strong>Comentarios semanales</strong>
+              <span>{weeklySummary.comments ? `${weeklySummary.comments.length} caracteres cargados` : 'Sin comentarios cargados'}</span>
+            </div>
           </div>
-          <div className="text-center mt-3">
-            <Button label="Cerrar" onClick={() => setShowCommentsDialog(false)} />
+          <div className="routineWeeksCommentsCard">
+            <div className="routineWeeksCommentsCardHeader">
+              <span>Contenido</span>
+            </div>
+            <div className="weekly-summary-comments-dialog-text">
+              {weeklySummary.comments || 'No hay comentarios'}
+            </div>
+          </div>
+          <div className="routineWeeksDialogActions">
+            <button className="routineWeeksDialogButton routineWeeksDialogButtonPrimary" onClick={() => setShowCommentsDialog(false)}>
+              Cerrar
+            </button>
           </div>
         </Dialog>
 
-        {/* ====== NUEVO: Editor de comentarios por semana (MessageSquare) ====== */}
+        {/* ====== Editor de comentarios por semana (rediseno de preview) ====== */}
         <Dialog
-          header="Comentarios de la semana"
+          header={
+            <div className="routineWeeksDialogHeader">
+              <span className="routineWeeksDialogHeaderIcon"><MessageSquare size={18} /></span>
+              <div>
+                <strong>Comentarios de la semana</strong>
+                <span>Dejale a tu alumno una devolucion general o dia por dia</span>
+              </div>
+            </div>
+          }
           visible={showWeekCommentsDialog}
-          className='col-11'
-          appendTo={document.body} 
+          className={`col-11 routineWeeksDialog routineWeeksWeekCommentsDialog routineWeeksTheme-${editorTheme}`}
+          appendTo={document.body}
           baseZIndex={2100}
           onHide={() => setShowWeekCommentsDialog(false)}
           footer={
-            <div className="d-flex gap-2 justify-content-end">
-              <Button
-                label="Cancelar"
-                className="p-button-text"
+            <div className="routineWeeksDialogActions">
+              <button
+                type="button"
+                className="routineWeeksDialogButton routineWeeksDialogButtonSecondary"
                 onClick={() => setShowWeekCommentsDialog(false)}
-              />
-              <Button label="Guardar" onClick={handleSaveWeekComments} />
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="routineWeeksDialogButton routineWeeksDialogButtonPrimary"
+                onClick={handleSaveWeekComments}
+              >
+                Guardar
+              </button>
             </div>
           }
           draggable
         >
-          {/* Titulo + modo */}
-          <div className="row g-3 align-items-end mb-3">
-            <div className="col-12 col-md">
-              <label htmlFor="comments-title" className="form-label d-block mb-2">
-                Titulo
-              </label>
-              <InputText
-                id="comments-title"
-                value={commentsTitle}
-                onChange={(e) => setCommentsTitle(e.target.value)}
-                className="w-100 text-dark"
-                placeholder="Comentarios semanales"
-              />
-            </div>
-            <div className="col-12 col-md-4">
-              <label htmlFor="comments-mode" className="form-label d-block mb-2">
-                Modo
-              </label>
-              <Dropdown
-                id="comments-mode"
-                value={commentsMode}
-                options={modeOptions}
-                optionLabel="label"
-                optionValue="value"
-                className="w-100"
-                onChange={(e) => setCommentsMode(e.value)}
-              />
+          <div className="routineWeeksFieldGroup mb-3">
+            <label htmlFor="comments-title">Titulo</label>
+            <InputText
+              id="comments-title"
+              value={commentsTitle}
+              onChange={(e) => setCommentsTitle(e.target.value)}
+              className="w-100"
+              placeholder="Comentarios semanales"
+            />
+          </div>
+
+          <div className="routineWeeksFieldGroup mb-3">
+            <label htmlFor="comments-mode">Modo</label>
+            <div className="routineWeeksSegmentedControl" id="comments-mode">
+              <button
+                type="button"
+                className={commentsMode === "free" ? "is-active" : ""}
+                onClick={() => setCommentsMode("free")}
+              >
+                Libre
+              </button>
+              <button
+                type="button"
+                className={commentsMode === "days" ? "is-active" : ""}
+                onClick={() => setCommentsMode("days")}
+              >
+                Por dia
+              </button>
             </div>
           </div>
 
-          {/* Contenido */}
           {commentsMode === "free" ? (
-            <div>
-              <label htmlFor="comments-body" className="form-label d-block mb-2">
-                Comentarios
-              </label>
+            <div className="routineWeeksFieldGroup">
+              <label htmlFor="comments-body">Comentarios</label>
               <InputTextarea
                 id="comments-body"
                 value={commentsDescription}
                 onChange={(e) => setCommentsDescription(e.target.value)}
-                className="w-100 text-dark"
+                className="w-100"
                 rows={5}
                 placeholder="Escribi aqui los comentarios para tu alumno..."
               />
             </div>
           ) : (
-            <div className="d-grid gap-1">
+            <div className="routineWeeksFieldGroup">
+              <label>Comentarios por dia</label>
               {commentsDaysMeta.length ? (
-                commentsDaysMeta.map((d) => (
-                  <div key={d._id} className="shadow-1">
-                    <div className="mb-2 fw-semibold">{d.label}</div>
-                    <InputTextarea
-                      value={commentsByDay[d._id] || ""}
-                      onChange={(e) =>
-                        setCommentsByDay((prev) => ({
-                          ...prev,
-                          [d._id]: e.target.value,
-                        }))
-                      }
-                      className="w-100 text-dark"
-                      rows={1}
-                      autoResize
-                      placeholder={`Comentario para ${d.label}...`}
-                    />
-                  </div>
-                ))
+                <div className="routineWeeksDayCommentsList">
+                  {commentsDaysMeta.map((d) => (
+                    <div key={d._id} className="routineWeeksDayCommentRow">
+                      <span className="routineWeeksDayCommentLabel">{d.label}</span>
+                      <InputTextarea
+                        value={commentsByDay[d._id] || ""}
+                        onChange={(e) =>
+                          setCommentsByDay((prev) => ({
+                            ...prev,
+                            [d._id]: e.target.value,
+                          }))
+                        }
+                        className="w-100"
+                        rows={1}
+                        autoResize
+                        placeholder={`Comentario para ${d.label}...`}
+                      />
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div className="text-muted">
-                  Esta semana no tiene dias cargados todavia.
+                <div className="routineWeeksEmptyState">
+                  <span className="routineWeeksEmptyIcon"><Info size={18} /></span>
+                  <strong>Sin dias cargados</strong>
+                  <p>Esta semana no tiene dias cargados todavia.</p>
                 </div>
               )}
             </div>
@@ -1976,34 +2096,124 @@ const rightDialItems = [
         </Dialog>
        
        
-       <Dialog
-  header="Modo de creacion de semanas"
+<Dialog
+  header="Ajustes de semanas"
   visible={showModeDialog}
+  className={`routineWeeksDialog routineWeeksTheme-${editorTheme}`}
   onHide={() => setShowModeDialog(false)}
-  style={{ width: firstWidth > 900 ? '40%' : '90%' }}
+  style={{ width: firstWidth > 900 ? '640px' : '92%' }}
 >
-  <p className="mb-3">
-    Aca podes elegir si queres nombrar las semanas por numero
-    (<strong>Semana 1, Semana 2...</strong>) o por fecha
-    (<strong>Semana del 01/01/2025</strong>).
-  </p>
+  <div className="routineWeeksSettingsDialog">
+    <div className="routineWeeksSettingsIntro">
+      <strong>Personaliza esta seccion.</strong>
+      <span>Estos ajustes cambian como trabajas con las semanas de este alumno.</span>
+    </div>
 
-  <div className="d-flex align-items-center justify-content-between bgItemsDropdown p-3 rounded">
-    <span className="text-light me-2">
-      {useDate ? 'Modo fecha' : 'Modo numerico'}
-    </span>
-    <div className="form-check form-switch mb-0">
-      <input
-        className="form-check-input"
-        type="checkbox"
-        checked={useDate}
-        onChange={handleToggleUseDate}
-      />
+    <div className="routineWeeksSettingsSection">
+      <div>
+        <h6>Creacion de semanas</h6>
+        <p>Elegi si las nuevas semanas nacen con nombre numerico o basado en fecha.</p>
+      </div>
+
+      <div id="switchWeek" className="routineWeeksSettingRow">
+        <div className="routineWeeksSettingText">
+          <span>{useDate ? 'Modo fecha' : 'Modo numerico'}</span>
+          <small>
+            {useDate
+              ? 'Ejemplo: Semana - 01/01/2025'
+              : 'Ejemplo: Semana 1, Semana 2...'}
+          </small>
+        </div>
+
+        <button
+          type="button"
+          className={`routineWeeksPrettySwitch ${useDate ? 'is-on' : ''}`}
+          onClick={handleToggleUseDate}
+          role="switch"
+          aria-checked={useDate}
+          aria-label="Alternar modo de creacion de semanas"
+        >
+          <span />
+        </button>
+      </div>
+    </div>
+
+    <div className="routineWeeksSettingsSection">
+      <div>
+        <h6>Orden de semanas</h6>
+        <p>Define como se ordena visualmente esta lista. No modifica el orden real guardado.</p>
+      </div>
+
+      <div className="routineWeeksSegmentedControl" role="group" aria-label="Orden de semanas">
+        {[
+          { label: 'Recientes primero', value: 'newest' },
+          { label: 'Antiguas primero', value: 'oldest' },
+        ].map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={routineWeeksSettings.order === option.value ? 'is-active' : ''}
+            onClick={() => updateRoutineWeeksSetting('order', option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div className="routineWeeksSettingsSection">
+      <div>
+        <h6>Semanas por pagina</h6>
+        <p>Elegí cuantas semanas querés ver antes de paginar.</p>
+      </div>
+
+      <div className="routineWeeksSegmentedControl routineWeeksSegmentedControlGrid" role="group" aria-label="Semanas por pagina">
+        {[
+          { label: '8', value: 8 },
+          { label: '12', value: 12 },
+          { label: '20', value: 20 },
+          { label: 'Todas', value: 999 },
+        ].map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={routineWeeksSettings.pageSize === option.value ? 'is-active' : ''}
+            onClick={() => updateRoutineWeeksSetting('pageSize', option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div className="routineWeeksSettingsSection">
+      <div>
+        <h6>Densidad visual</h6>
+        <p>Compacto muestra más semanas en pantalla. Cómodo deja más aire entre filas.</p>
+      </div>
+
+      <div className="routineWeeksSegmentedControl" role="group" aria-label="Densidad visual">
+        {[
+          { label: 'Compacto', value: 'compact' },
+          { label: 'Comodo', value: 'comfortable' },
+        ].map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={routineWeeksSettings.density === option.value ? 'is-active' : ''}
+            onClick={() => updateRoutineWeeksSetting('density', option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
     </div>
   </div>
 
-  <div className="text-end mt-3">
-    <Button label="Cerrar" onClick={() => setShowModeDialog(false)} />
+  <div className="routineWeeksSettingsFooter">
+    <button type="button" className="routineWeeksSaveSettingsButton" onClick={() => setShowModeDialog(false)}>
+      Guardar
+    </button>
   </div>
 </Dialog>
 
@@ -2013,85 +2223,139 @@ const rightDialItems = [
   header="Asignar bloque a la semana"
   visible={showBlockDialog}
   appendTo={document.body}
-  className="coachRoutineAuxDialog"
+  className={`coachRoutineAuxDialog routineWeeksDialog routineWeeksBlockAssignDialog routineWeeksTheme-${editorTheme}`}
   style={{ width: '90vw', maxWidth: 520 }}
   onHide={() => setShowBlockDialog(false)}
 >
   {blockDialogWeek && (
-    <div className="d-flex flex-column gap-3">
-      <div>
-        <div className="mb-2">Semana: <strong>{blockDialogWeek.name}</strong></div>
+    <div className="routineWeeksBlockAssign">
+      <div className="routineWeeksBlockAssignCurrent">
+        <span className="routineWeeksBlockAssignEyebrow">Semana seleccionada</span>
+        <strong>{blockDialogWeek.name}</strong>
         {(() => {
           const currentBlock = blockDialogWeek.block || null;
-          const bg = currentBlock?.color || '#6c757d';
-          const fg = getContrastYIQ(bg);
+          const bg = currentBlock?.color || '#94a3b8';
+          const isDark = editorTheme === 'dark';
           return (
-            <div className="px-2 py-1 rounded-pill small" style={{ backgroundColor: bg, color: fg, display: 'inline-block' }}>
-              {currentBlock?.name || 'Sin bloque'}
+            <div className="routineWeeksBlockAssignPillRow">
+              <span>Bloque actual</span>
+              <div
+                className="routineWeeksBlockAssignPill"
+                style={
+                  isDark
+                    ? {
+                        backgroundColor: `color-mix(in srgb, ${bg} 20%, #111827)`,
+                        borderColor: `color-mix(in srgb, ${bg} 55%, transparent)`,
+                        color: `color-mix(in srgb, ${bg} 55%, #ffffff)`,
+                      }
+                    : {
+                        backgroundColor: `color-mix(in srgb, ${bg} 14%, white)`,
+                        borderColor: `color-mix(in srgb, ${bg} 45%, white)`,
+                        color: `color-mix(in srgb, ${bg} 65%, #1e2a3a)`,
+                      }
+                }
+              >
+                {currentBlock?.name || 'Sin bloque'}
+              </div>
             </div>
           );
         })()}
       </div>
 
-      <Dropdown
-        value={selectedBlockId || null}
-        options={buildOptions(blockDialogWeek.block)}
-        dataKey="_id"
-        optionLabel="name"
-        optionValue="_id"
-        appendTo={document.body}
-        panelClassName="coachRoutineBlockDropdownPanel"
-        scrollHeight="280px"
-        className="w-100"
-        placeholder="Seleccionar bloque"
-        onChange={(e) => handleBlockDropdownChange(blockDialogWeek._id, e.value)}
-        itemTemplate={itemTemplate}
-      />
+      <div className="routineWeeksBlockAssignPicker">
+        <span className="routineWeeksBlockAssignEyebrow">Asignar bloque</span>
+        <RoutineWeeksBlockSelect
+          value={selectedBlockId || ""}
+          options={buildOptions(blockDialogWeek.block)}
+          theme={editorTheme}
+          label="Seleccionar bloque"
+          currentBlock={blockDialogWeek.block || null}
+          className="routineWeeksDialogBlockSelect"
+          mode="panel"
+          onEditBlock={handleEditBlockFromSelect}
+          onChange={(nextValue) =>
+            handleBlockDropdownChange(blockDialogWeek._id, nextValue)
+          }
+        />
+        <small>Al elegir un bloque, se asigna automaticamente a esta semana.</small>
+      </div>
 
-      <div className="d-flex justify-content-between">
-        <button className="btn btn-outline-secondary" onClick={() => setShowManageBlocksDialog(true)}>
-          Gestionar bloques...
+      <div className="routineWeeksBlockAssignActions">
+        <button
+          type="button"
+          className="routineWeeksDialogButton routineWeeksDialogButtonSecondary"
+          onClick={() => {
+            setBlockPendingEdit(null);
+            setShowManageBlocksDialog(true);
+          }}
+        >
+          Agregar bloque
         </button>
-        <div className="d-flex gap-2">
-          <Button label="Cerrar" className="p-button-text" onClick={() => setShowBlockDialog(false)} />
-        </div>
+        <button
+          type="button"
+          className="routineWeeksDialogButton routineWeeksDialogButtonPrimary"
+          onClick={() => setShowBlockDialog(false)}
+        >
+          Cerrar
+        </button>
       </div>
     </div>
   )}
 </Dialog>
 
 <Dialog
-  header="Gestion de bloques"
+  header={blockPendingEdit ? "Editar bloque" : "Crear bloque"}
   visible={showManageBlocksDialog}
   appendTo={document.body}
-  className="coachRoutineAuxDialog"
-  style={{ width: '90vw', maxWidth: 900 }}
+  className={`coachRoutineAuxDialog routineWeeksDialog routineWeeksTheme-${editorTheme} blocksManagerFormDialog`}
+  style={{ width: '90vw', maxWidth: 420 }}
   onHide={() => {
     setShowManageBlocksDialog(false);
+    setBlockPendingEdit(null);
     loadBlocks();
   }}
 >
-  <BlocksListPage id={trainer_id} />
+  <BloquesForm
+    id={trainer_id}
+    editorTheme={editorTheme}
+    isEditMode={!!blockPendingEdit}
+    initialData={blockPendingEdit || {}}
+    onSaved={async () => {
+      setShowManageBlocksDialog(false);
+      setBlockPendingEdit(null);
+      await loadBlocks();
+    }}
+    onCancel={() => {
+      setShowManageBlocksDialog(false);
+      setBlockPendingEdit(null);
+    }}
+  />
 </Dialog>
 
 <Dialog
   header="Confirmar eliminacion"
   visible={confirmDeleteOpen}
   appendTo={document.body}
+  className={`routineWeeksDialog routineWeeksTheme-${editorTheme}`}
   baseZIndex={2100}
   style={{ width: '90vw', maxWidth: 420 }}
   onHide={cancelDeleteWeek}
+  footer={
+    <div className="routineWeeksDialogActions">
+      <button type="button" className="routineWeeksDialogButton routineWeeksDialogButtonSecondary" onClick={cancelDeleteWeek}>
+        Cancelar
+      </button>
+      <button type="button" className="routineWeeksDialogButton routineWeeksDialogButtonDanger" onClick={confirmDeleteWeek}>
+        Eliminar
+      </button>
+    </div>
+  }
 >
-  <div className="mb-3">
+  <p className="mb-0">
     {weekPendingDelete
       ? <>Queres eliminar la <strong>{weekPendingDelete.name || 'semana'}</strong>? Esta accion no se puede deshacer.</>
       : 'Queres eliminar esta semana?'}
-  </div>
-
-  <div className="d-flex justify-content-end gap-2">
-    <Button label="Cancelar" className="btn btn-outline-dark" onClick={cancelDeleteWeek} />
-    <Button label="Eliminar" className="btn btn-danger" onClick={confirmDeleteWeek} />
-  </div>
+  </p>
 </Dialog>
 
       </section>
@@ -2100,3 +2364,4 @@ const rightDialItems = [
 }
 
 export default UserRoutineEditPage;
+

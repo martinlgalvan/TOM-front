@@ -5,6 +5,11 @@ const weekId = "6991c35bb65af844b98823ce";
 const dayId = "6991c35bb65af844b98823cf";
 const username = "e2e-user";
 
+function createTestJwt() {
+  const encode = (value) => Buffer.from(JSON.stringify(value)).toString("base64url");
+  return `${encode({ alg: "none", typ: "JWT" })}.${encode({ exp: Math.floor(Date.now() / 1000) + 86400 })}.e2e`;
+}
+
 function createIdFactory() {
   let n = 1;
   return () => (n++).toString(16).padStart(24, "0");
@@ -182,10 +187,14 @@ function collectExerciseIdsFromDay(day) {
 
 async function bootstrapAuth(page) {
   await page.addInitScript(() => {
-    localStorage.setItem("token", "e2e-token");
+    const encode = (value) => btoa(JSON.stringify(value)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    const token = `${encode({ alg: "none", typ: "JWT" })}.${encode({ exp: Math.floor(Date.now() / 1000) + 86400 })}.e2e`;
+    localStorage.clear();
+    localStorage.setItem("token", token);
     localStorage.setItem("role", "admin");
     localStorage.setItem("_id", "coach-e2e");
     localStorage.setItem("name", "coach-e2e");
+    localStorage.setItem("email", "coach-e2e@test.local");
     localStorage.setItem("DATABASE_USER", "[]");
     localStorage.setItem("color", "#111111");
   });
@@ -198,16 +207,34 @@ async function mockApi(page, weekDoc, savedPayloads) {
     "access-control-allow-headers": "Content-Type, auth-token",
   };
 
-  await page.route("http://localhost:2022/api/**", async (route) => {
+  await page.route("**/api/**", async (route) => {
     const request = route.request();
     const method = request.method();
-    const url = request.url();
+    const url = new URL(request.url());
+    const pathname = url.pathname;
 
     if (method === "OPTIONS") {
       return route.fulfill({ status: 204, headers: corsHeaders });
     }
 
-    if (url === `http://localhost:2022/api/week/${weekId}` && method === "GET") {
+    if (pathname === "/api/auth/refresh" && method === "POST") {
+      return route.fulfill({
+        status: 200,
+        headers: { ...corsHeaders, "content-type": "application/json" },
+        body: JSON.stringify({
+          token: createTestJwt(),
+          user: {
+            _id: "coach-e2e",
+            role: "admin",
+            name: "coach-e2e",
+            email: "coach-e2e@test.local",
+            color: "#111111",
+          },
+        }),
+      });
+    }
+
+    if (pathname === `/api/week/${weekId}` && method === "GET") {
       return route.fulfill({
         status: 200,
         headers: { ...corsHeaders, "content-type": "application/json" },
@@ -215,7 +242,7 @@ async function mockApi(page, weekDoc, savedPayloads) {
       });
     }
 
-    if (url === `http://localhost:2022/api/week/${weekId}` && method === "PATCH") {
+    if (pathname === `/api/week/${weekId}` && method === "PATCH") {
       const body = request.postDataJSON();
       savedPayloads.push(body);
       weekDoc.routine = Array.isArray(body) ? body : weekDoc.routine;
@@ -226,7 +253,7 @@ async function mockApi(page, weekDoc, savedPayloads) {
       });
     }
 
-    if (url.includes("/api/announcements/")) {
+    if (pathname.includes("/api/announcements/")) {
       return route.fulfill({
         status: 200,
         headers: { ...corsHeaders, "content-type": "application/json" },
@@ -248,6 +275,10 @@ async function goToPlanner(page) {
   await expect(page.locator("#dias")).toBeVisible();
 }
 
+async function addAuxiliaryExercise(dialog) {
+  await dialog.getByRole("button", { name: /anadir-ejercicio|adir ejercicio/i }).first().click();
+}
+
 test("complex planner workflow keeps payload valid after mixed operations", async ({ page }) => {
   const weekDoc = buildWeekFixture();
   const savedPayloads = [];
@@ -263,7 +294,7 @@ test("complex planner workflow keeps payload valid after mixed operations", asyn
 
   await page.locator("#dias").getByText(/Dia 1/i).first().click();
   await page.locator("#addEjercicio").click();
-  await page.getByText(/Agregar bloque de entrenamiento/i).first().click();
+  await page.getByText(/^Bloque de entrenamiento$/i).first().click();
   await page.getByRole("button", { name: /A(?:ñ|n)adir ejercicio al bloque/i }).first().click();
   await page.getByRole("button", { name: /A(?:ñ|n)adir circuito al bloque/i }).first().click();
 
@@ -278,13 +309,13 @@ test("complex planner workflow keeps payload valid after mixed operations", asyn
   await page.locator("#movility").click();
   const movilityDialog = page.locator(".p-dialog:has-text('movilidad'):visible");
   await expect(movilityDialog).toBeVisible();
-  await movilityDialog.locator("button.bgColor").first().click();
+  await addAuxiliaryExercise(movilityDialog);
   await movilityDialog.getByRole("button", { name: /Continuar editando/i }).click();
 
   await page.locator("#warmup").click();
   const warmupDialog = page.locator(".p-dialog:has-text('entrada en calor'):visible");
   await expect(warmupDialog).toBeVisible();
-  await warmupDialog.locator("button.bgColor").first().click();
+  await addAuxiliaryExercise(warmupDialog);
   await warmupDialog.getByRole("button", { name: /Continuar editando/i }).click();
 
   await expect(page.getByText(/cambios sin guardar/i)).toBeVisible();
@@ -359,6 +390,74 @@ test("switching between day archetypes remains stable and save still works", asy
   }
   expect(pageErrors).toEqual([]);
 });
+
+test("editor personalization tools open and persist without runtime errors", async ({ page }) => {
+  const weekDoc = buildWeekFixture();
+  const savedPayloads = [];
+  const pageErrors = [];
+  page.on("pageerror", (err) => pageErrors.push(String(err)));
+
+  await bootstrapAuth(page);
+  await mockApi(page, weekDoc, savedPayloads);
+  await goToPlanner(page);
+
+  await page.getByRole("group", { name: /Modo de herramientas/i }).first().getByRole("button", { name: /Libre|^L$/i }).click();
+  await expect.poll(() => page.locator(".dayEditSidebarModern.isFreeMode").count()).toBe(1);
+  await page.getByRole("button", { name: /Barra|^B$/i }).first().click();
+  await expect(page.locator(".dayEditSidebarModern.isSidebarMode")).toBeVisible();
+  await page.getByRole("group", { name: /Modo de herramientas/i }).first().getByRole("button", { name: /Simple|^S$/i }).click();
+  await expect(page.locator(".dayEditSidebarModern.isSimpleMode")).toBeVisible();
+  await page.getByRole("button", { name: /Barra|^B$/i }).first().click();
+  await expect(page.locator(".dayEditSidebarModern.isSidebarMode")).toBeVisible();
+
+  await page.getByRole("button", { name: /Columnas/i }).first().click();
+  const columnsDialog = page.locator(".p-dialog:has-text('Columnas del planificador'):visible");
+  await expect(columnsDialog).toBeVisible();
+  await columnsDialog.getByLabel(/Alumno/i).uncheck();
+  await columnsDialog.getByRole("button", { name: /Restablecer/i }).click();
+  await columnsDialog.getByRole("button", { name: /^Listo$/i }).click();
+  await expect(columnsDialog).not.toBeVisible();
+
+  await page.getByRole("button", { name: /Ajustes/i }).first().click();
+  const settingsDialog = page.locator(".p-dialog:has-text('Ajustes del editor'):visible");
+  await expect(settingsDialog).toBeVisible();
+  await settingsDialog.getByRole("group", { name: /Visualizacion de notas/i }).getByRole("button", { name: /Abiertas/i }).click();
+  await settingsDialog.getByRole("group", { name: /Visualizacion de aproximaciones/i }).getByRole("button", { name: /Siempre/i }).click();
+  await settingsDialog.getByRole("group", { name: /Densidad visual/i }).getByRole("button", { name: /Compacto/i }).click();
+  await settingsDialog.getByRole("group", { name: /Modo reps por defecto/i }).getByRole("button", { name: /Multiple/i }).click();
+  await settingsDialog.getByRole("group", { name: /Confirmar antes de eliminar/i }).getByRole("button", { name: /^Si$/i }).click();
+  await settingsDialog.getByRole("button", { name: /^Listo$/i }).click();
+  await expect(settingsDialog).not.toBeVisible({ timeout: 15000 });
+
+  const stored = await page.evaluate(() => ({
+    settings: JSON.parse(localStorage.getItem(Object.keys(localStorage).find((key) => key.startsWith("dayEditSettings:")) || "") || "{}"),
+    columns: JSON.parse(localStorage.getItem(Object.keys(localStorage).find((key) => key.startsWith("dayEditColumnConfig:")) || "") || "{}"),
+  }));
+  expect(stored.settings).toEqual(expect.objectContaining({
+    notesVisibility: "open",
+    approxBackoffVisibility: "always",
+    editorDensity: "compact",
+    defaultRepsMode: "multiple",
+    confirmBeforeDelete: true,
+  }));
+  expect(stored.columns).toEqual(expect.objectContaining({ __version: expect.any(Number) }));
+
+  // Tercera opcion de notas: solo se abren las que ya tienen texto.
+  await page.getByRole("button", { name: /Ajustes/i }).first().click();
+  const settingsAgain = page.locator(".p-dialog:has-text('Ajustes del editor'):visible");
+  await expect(settingsAgain).toBeVisible();
+  await settingsAgain.getByRole("group", { name: /Visualizacion de notas/i })
+    .getByRole("button", { name: /Con texto/i }).click();
+  await settingsAgain.getByRole("button", { name: /^Listo$/i }).click();
+  await expect(settingsAgain).not.toBeVisible({ timeout: 15000 });
+
+  const storedWithContent = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem(Object.keys(localStorage).find((key) => key.startsWith("dayEditSettings:")) || "") || "{}"));
+  expect(storedWithContent.notesVisibility).toBe("with-content");
+
+  expect(pageErrors).toEqual([]);
+});
+
 test("day actions and normal circuit delete confirmation keep state coherent", async ({ page }) => {
   const weekDoc = buildWeekFixture();
   const savedPayloads = [];
@@ -394,7 +493,8 @@ test("day actions and normal circuit delete confirmation keep state coherent", a
   await expect(reorderDialog).toBeVisible();
   await reorderDialog.getByRole("button", { name: /Aplicar/i }).click();
 
-  await page.getByText(/Ver semanas anteriores/i).first().click();
+  await page.locator("#dias").getByText(/Dia 1/i).first().click();
+  await page.getByRole("button", { name: /Semanas anteriores/i }).first().click();
   const previousWeeksDialog = page.locator(".p-dialog:has-text('Semanas anteriores'):visible");
   await expect(previousWeeksDialog).toBeVisible();
   await previousWeeksDialog.getByRole("button", { name: /Close/i }).click();
@@ -423,7 +523,117 @@ test("day actions and normal circuit delete confirmation keep state coherent", a
   expect(pageErrors).toEqual([]);
 });
 
+test("mobile day actions are directly below the day segmented", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const weekDoc = buildWeekFixture();
+
+  await bootstrapAuth(page);
+  await mockApi(page, weekDoc, []);
+  await page.goto(`/routine/user/${coachId}/week/${weekId}/day/${dayId}/${username}`);
+
+  const segmented = page.locator(".dayEditMobileDaySegmented");
+  const actions = page.locator(".dayEditMobileDayActions");
+  await expect(segmented).toBeVisible();
+  await expect(actions).toBeVisible();
+  await expect(actions.getByRole("button")).toHaveCount(6);
+  await expect(actions.getByRole("button", { name: "Pegar dia" })).toBeDisabled();
+
+  const segmentedBox = await segmented.boundingBox();
+  const actionsBox = await actions.boundingBox();
+  expect(segmentedBox).not.toBeNull();
+  expect(actionsBox).not.toBeNull();
+  expect(actionsBox.y).toBeGreaterThanOrEqual(segmentedBox.y + segmentedBox.height);
+
+  await actions.getByRole("button", { name: "Editar dia" }).click();
+  await expect(page.locator(".p-dialog:has-text('Editar nombre del dia'):visible")).toBeVisible();
+});
+
+// Queda en skip mientras MOSTRAR_CREACION_POR_TEXTO este en false en
+// DayEditDetailsPage.jsx: el boton no se renderiza. Al reactivar la funcion,
+// sacar el .skip — la cobertura sigue siendo valida.
+test.skip("simple exercise command creates a validated exercise draft", async ({ page }) => {
+  const weekDoc = buildWeekFixture();
+
+  await bootstrapAuth(page);
+  await mockApi(page, weekDoc, []);
+  await goToPlanner(page);
+
+  await page.getByRole("button", { name: /Crear por texto o voz/i }).click();
+  const composer = page.locator(".exerciseCommandComposer");
+  await composer.getByLabel("Instrucción para crear ejercicio").fill(
+    "Sentadilla al cajón, tres series por cuatro repeticiones, 200 kg y 3 minutos de descanso."
+  );
+  await composer.getByRole("button", { name: /^Revisar$/i }).click();
+  await expect(composer.locator(".exerciseCommandPreview.isValid")).toContainText(/Sentadilla al cajón/i);
+  await expect(composer.locator(".exerciseCommandPreview.isValid")).toContainText(/3 series × 4 reps/i);
+  await composer.getByRole("button", { name: /Agregar al día/i }).click();
+  await expect(page.locator("table.ddp-table input[value='Sentadilla al cajón']")).toHaveCount(1);
+});
+
+test("exercise rest and inline notes remain usable after redesign", async ({ page }) => {
+  const weekDoc = buildWeekFixture();
+  const savedPayloads = [];
+  const pageErrors = [];
+  page.on("pageerror", (err) => pageErrors.push(String(err)));
+
+  await bootstrapAuth(page);
+  await mockApi(page, weekDoc, savedPayloads);
+  await goToPlanner(page);
+
+  await page.getByRole("button", { name: /Modo oscuro/i }).click();
+  await expect(page.locator(".dayEditDarkPage").first()).toBeVisible();
+  await page.getByRole("button", { name: /Modo claro/i }).click();
+
+  const firstExerciseRow = page.locator("table.ddp-table > tbody > tr").filter({ has: page.locator("input[value='Bench Press']") }).first();
+  await expect(firstExerciseRow).toBeVisible();
+
+  const restCell = firstExerciseRow.locator("td").nth(7);
+  await restCell.getByRole("button").click();
+  await expect(page.getByText("00:30").first()).toBeVisible();
+  await page.getByText("01:30").first().click();
+  await expect(restCell.getByPlaceholder("MM:SS")).toHaveValue("01:30");
+
+  await firstExerciseRow.locator("td").nth(9).getByRole("button").click();
+  await expect(page.getByText(/^Notas$/i).first()).toBeVisible();
+  const notesField = page.locator("textarea").first();
+  await notesField.fill("Nota e2e estable");
+  await expect(notesField).toHaveValue("Nota e2e estable");
+
+  await expect(page.getByText(/Cambios sin guardar/i)).toBeVisible();
+  await page.getByRole("button", { name: /^Guardar$/i }).first().click();
+  await expect.poll(() => savedPayloads.length).toBeGreaterThan(0);
+  expect(pageErrors).toEqual([]);
+});
 
 
 
 
+
+
+/* El editor tenia su propia copia del tema y solo el escuchaba el evento
+   "storage". Si el tema cambiaba en otra pestania -o en la app instalada, que
+   comparte el mismo localStorage-, el editor se pasaba a claro mientras la barra
+   seguia mostrando "Modo claro", es decir, creyendose en oscuro. */
+test("el tema del editor sigue al de la barra aunque cambie en otra pestania", async ({ page }) => {
+  const weekDoc = buildWeekFixture();
+
+  await bootstrapAuth(page);
+  await mockApi(page, weekDoc, []);
+  await goToPlanner(page);
+
+  const barra = page.locator(".tomTopNavEditorThemeBtn");
+  const editor = page.locator(".ddp").first();
+
+  if (/Modo oscuro/.test(await barra.textContent())) await barra.click();
+  await expect(barra).toHaveText(/Modo claro/);
+  await expect(editor).toHaveClass(/dayEditEditorTheme-dark/);
+
+  // Lo que hace otra pestania al cambiar el tema.
+  await page.evaluate(() => {
+    localStorage.setItem("dayEditEditorTheme", "light");
+    window.dispatchEvent(new StorageEvent("storage", { key: "dayEditEditorTheme", newValue: "light" }));
+  });
+
+  await expect(editor).toHaveClass(/dayEditEditorTheme-light/);
+  await expect(barra).toHaveText(/Modo oscuro/);
+});

@@ -1141,7 +1141,12 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
       return (
         <AutoComplete
           defaultValue={data}
-          onChange={(val) => changeExerciseInCircuit(circuitIndex, exerciseIndex, field, val)}
+          onChange={(val, video) => {
+            changeExerciseInCircuit(circuitIndex, exerciseIndex, field, val);
+            /* Mismo caso que movilidad y entrada en calor: al elegir de la
+               biblioteca viene el video en el segundo argumento y se descartaba. */
+            if (video !== undefined) changeExerciseInCircuit(circuitIndex, exerciseIndex, 'video', video);
+          }}
         />
       );
     }

@@ -1,7 +1,7 @@
 import React from "react";
 import { Dialog } from "primereact/dialog";
 import { MultiSelect } from "primereact/multiselect";
-import { Eye, Trash2 } from "lucide-react";
+import { Calendar1, Eye, Trash2 } from "lucide-react";
 
 import * as UsersService from "../services/users.services.js";
 import * as Notify from "../helpers/notify.js";
@@ -26,7 +26,7 @@ const CATEGORY_OPTIONS = [
 
 const toUserId = (user) => String(user?._id || "");
 
-function SportsCalendarManager({ visible, onHide, coachId, users = [] }) {
+function SportsCalendarManager({ visible, onHide, coachId, users = [], editorTheme = "light" }) {
   const [loading, setLoading] = React.useState(false);
   const [savingTemplates, setSavingTemplates] = React.useState(false);
   const [assigning, setAssigning] = React.useState(false);
@@ -240,6 +240,40 @@ function SportsCalendarManager({ visible, onHide, coachId, users = [] }) {
   };
 
   const assignName = String(assignDialog.plan?.meetName || "").trim() || "sin nombre";
+
+  // El feature esta terminado funcionalmente pero todavia no listo para
+  // mostrar a entrenadores: en vez de borrar el trabajo, lo tapamos con un
+  // "Proximamente" y dejamos toda la logica/UI de abajo intacta. Para
+  // reactivarlo alcanza con volver esto a false.
+  const COMING_SOON = true;
+
+  if (COMING_SOON) {
+    return (
+      <Dialog
+        header={
+          <div className="usersListDialogHeader">
+            <span className="usersListDialogHeaderIcon"><Calendar1 size={18} /></span>
+            <div>
+              <strong>Calendario deportivo</strong>
+              <span>Planificacion de competencias</span>
+            </div>
+          </div>
+        }
+        visible={visible}
+        onHide={onHide}
+        className={`usersListDialog usersListComingSoonDialog usersListTheme-${editorTheme}`}
+      >
+        <div className="usersListComingSoon">
+          <span className="usersListComingSoonIcon"><Calendar1 size={26} /></span>
+          <strong>Proximamente</strong>
+          <p>
+            Estamos terminando de pulir el calendario deportivo para entrenadores.
+            Vas a poder crear plantillas de competencia y asignarlas a tus alumnos muy pronto.
+          </p>
+        </div>
+      </Dialog>
+    );
+  }
 
   return (
     <>

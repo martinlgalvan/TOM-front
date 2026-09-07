@@ -6,7 +6,9 @@ import Exercises from './../assets/json/NEW_EXERCISES.json';
 // Si tienes un "databaseUser" en localStorage, ajusta la logica
 // a tu conveniencia
 
-const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
+// Los dos modales auxiliares le pasan una ref. Sin forwardRef, React avisaba
+// "Function components cannot be given refs" y esa ref quedaba en null.
+const AutoComplete = React.forwardRef(({ defaultValue = '', onChange, isProgression }, refExterna) => {
   const [exercisesDatabase, setExercisesDatabase] = useState([]);
 
   // Estado para el texto del input y la logica de sugerencias
@@ -16,6 +18,8 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
 
   // Referencias para popper
   const inputRef = useRef(null);                // El input
+  // La ref que llega desde afuera apunta al input real.
+  React.useImperativeHandle(refExterna, () => inputRef.current, []);
   const [popperElement, setPopperElement] = useState(null); 
   const [referenceElement, setReferenceElement] = useState(null);
 
@@ -61,14 +65,21 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
 
   }, [defaultValue]);
 
+  // La biblioteca entera, agrupada: 29 grupos con 264 ejercicios. Es lo que se
+  // muestra al abrir el desplegable, con scroll dentro del panel.
+  const bibliotecaCompleta = () =>
+    exercisesDatabase
+      .filter((group) => group?.items?.length)
+      .map((group) => ({ label: group.label, items: group.items }));
+
   // Filtra sugerencias al cambiar inputValue
   const filterData = (value) => {
     // Pequena logica para filtrar
     if (!value || value.trim() === '') {
-      // Si quieres mostrar *todos* los items al hacer click, aqui
-      // podrias poner la lista completa:
-      // setFilteredSuggestions( ... );
-      setFilteredSuggestions([]);
+      // Con el campo vacio se muestra la biblioteca completa. Antes esto
+      // devolvia una lista vacia, asi que al hacer click el panel se abria sin
+      // nada adentro y parecia que el buscador no funcionaba.
+      setFilteredSuggestions(bibliotecaCompleta());
       return;
     }
 
@@ -128,9 +139,11 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
 
   // Manejo del click/focus en el input
   const handleFocusOrClick = () => {
-    // Filtra con el valor actual
-    filterData(inputValue);
-    // Muestra la lista (aunque no se haya escrito)
+    // Al abrirlo se ve la biblioteca completa, se comporte como un select:
+    // filtrar por el valor ya cargado dejaba el panel vacio cuando ese nombre
+    // no estaba en la biblioteca (por ejemplo un ejercicio escrito a mano).
+    // El filtrado sigue funcionando mientras se escribe.
+    setFilteredSuggestions(bibliotecaCompleta());
     setShowSuggestions(true);
 
     if (update) update();
@@ -189,6 +202,6 @@ const AutoComplete = ({ defaultValue = '', onChange, isProgression }) => {
       )}
     </div>
   );
-};
+});
 
 export default AutoComplete;

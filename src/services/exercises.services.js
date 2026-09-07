@@ -1,4 +1,5 @@
 import { API_BASE, apiFetch } from './apiFetch.js'
+import { olvidarRutina } from './week.services.js'
 
 
 /*---------------------------------------------------*/
@@ -26,6 +27,9 @@ async function findExercises(id) {
 //Agrega un ejercicio a un dA­a 
 
 async function addExerciseToDay(week_id,day_id, exercise) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}/exercises`, {
         method: 'POST',
         headers: {
@@ -40,6 +44,9 @@ async function addExerciseToDay(week_id,day_id, exercise) {
 //Agrega un amrap a un dA­a 
 
 async function addAmrap(week_id,day_id, amrap) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}/exercises/amrap`, {
         method: 'POST',
         headers: {
@@ -54,6 +61,9 @@ async function addAmrap(week_id,day_id, amrap) {
 //Editar un ejercicio del amrap
 
 async function editExerciseAmrap(week_id, day_id,exercise_id, amrap) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}/amrap`, {
         method: 'PUT',
         headers: {
@@ -68,6 +78,9 @@ async function editExerciseAmrap(week_id, day_id,exercise_id, amrap) {
 
 //Elimina un ejercicio dependiendo el dA­a y el ejercicio
 async function deleteExercise(week_id, day_id, exercise_id) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}/exercise/${exercise_id}`, {
         method: 'DELETE',
         headers: {
@@ -80,6 +93,9 @@ async function deleteExercise(week_id, day_id, exercise_id) {
 
 
 async function editExercise(week_id, day_id, exercise) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
   return apiFetch(
     `${API_BASE}/api/week/${week_id}/day/${day_id}/exercise`,
     {
@@ -112,6 +128,9 @@ async function editExercise(week_id, day_id, exercise) {
 
 
 async function editExerciseMobile(week_id, day_id, exercise_id, exercise) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}/exercises/${exercise_id}`, {
         method: 'PUT',
         headers: {

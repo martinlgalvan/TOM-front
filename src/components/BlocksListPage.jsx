@@ -15,12 +15,20 @@ function BlocksListPage(props) {
 
   // Soportar que props.id sea string o { id: string }
   const projectId = typeof props.id === 'string' ? props.id : props.id?.id
+  const editorTheme = props.editorTheme || 'light'
+  const initialEditBlock = props.initialEditBlock || null
 
   useEffect(() => {
     setFirstWidth(window.innerWidth)
     if (!projectId) return
     BlockService.getBlocks(projectId).then(setBlocks)
   }, [projectId])
+
+  useEffect(() => {
+    if (!initialEditBlock?._id) return
+    setEditData(initialEditBlock)
+    setShowForm(true)
+  }, [initialEditBlock?._id])
 
   const handleEdit = (block) => {
     setEditData(block)
@@ -48,22 +56,21 @@ function BlocksListPage(props) {
   }
 
   return (
-    <div className="">
+    <div className={`blocksManager blocksManager-${editorTheme}`}>
       <span className="styleInputsSpan ms-1 ps-1">Bloques de entrenamiento</span>
 
-      {/* CONTENEDOR CENTRADO */}
-      <div className="mx-auto" style={{ maxWidth: 780 }}>
-        <div className="row row-cols-1 row-cols-sm-2 g-3 justify-content-center px-2">
+      <div className="blocksManagerListWrap">
+        <div className="blocksManagerGrid">
           {blocks.map((block) => {
             const accentColor = block.color || '#9aa0a6'
             return (
-              <div key={block._id} className="col d-flex">
+              <div key={block._id} className="blocksManagerItem">
                 <button
                   onClick={() => handleEdit(block)}
                   className="w-100 p-0 border-0 bg-transparent text-start"
                   style={{ cursor: 'pointer' }}
                 >
-                  <div className="shadow-sm border rounded-4">
+                  <div className="blocksManagerCard shadow-sm border rounded-4">
                     <div
                       style={{
                         height: 10,
@@ -73,36 +80,37 @@ function BlocksListPage(props) {
                       }}
                     />
                     <div className="p-3">
-                      <strong className="text-dark">{block.name}</strong>
+                      <strong>{block.name}</strong>
                     </div>
                   </div>
                 </button>
               </div>
             )
           })}
-
-          {/* ANADIR BLOQUE */}
-          <div className="col-12">
-            <button
-              className="w-100 d-flex align-items-center justify-content-center py-3 border border-2 rounded-3"
-              style={{ borderStyle: 'dashed' }}
-              onClick={handleAddNew} // 🔧 FIX: usa helper que limpia editData
-            >
-              <AddIcon className="me-2" />
-              <span>Anadir bloque</span>
-            </button>
-          </div>
         </div>
+      </div>
+
+      <div className="blocksManagerFooter">
+        <button
+          className="blocksManagerAddButton"
+          onClick={handleAddNew}
+          type="button"
+        >
+          <AddIcon className="me-2" />
+          <span>Agregar bloque</span>
+        </button>
       </div>
 
       <Dialog
         header={`${editData ? 'Editar bloque' : 'Crear bloque'}`}
         visible={showForm}
         style={{ width: `${firstWidth > 992 ? '25vw' : '75vw'}` }}
+        className={`routineWeeksDialog routineWeeksTheme-${editorTheme} blocksManagerFormDialog`}
         onHide={handleOnHide}
       >
         <BloquesForm
           id={projectId}
+          editorTheme={editorTheme}
           isEditMode={!!editData}          // 🔧 Enviar booleano
           initialData={editData || {}}     // 🔧 Evitar undefined
           onSaved={refreshAndClose}        // 🔧 Refresca y cierra modal

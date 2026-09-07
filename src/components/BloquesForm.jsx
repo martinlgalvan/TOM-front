@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import * as BlockService from '../services/blocks.services.js'
 
-function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
+function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id, editorTheme = 'light' }) {
   // Paleta clara: buen contraste con texto negro
   const PALETTE = [
     '#4ab8fdff', '#fd2f40ff', '#47e29fff', '#ffb01cff', '#9471f1ff',
@@ -53,63 +53,47 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
     }
   }
 
-  const inputStyle = { borderRadius: 12, padding: '10px 12px' }
-  const colorGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(5, 48px)',
-    gap: 12,
-  }
-  const swatchStyle = (hex, selected) => ({
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    background: hex,
-    border: 'none',
-    cursor: 'pointer',
-    boxShadow: selected
-      ? '0 0 0 3px #fff, 0 0 0 6px #3b82f6'
-      : '0 0 0 1px rgba(0,0,0,0.08)',
-  })
-
   return (
-    <div className="row justify-content-center">
-      <div className="mb-3">
-        <label className="form-label fw-semibold">Nombre</label>
+    <div className={`blocksForm blocksForm-${editorTheme}`}>
+      <div className="blocksFormField">
+        <label>Nombre</label>
         <input
           value={form.name}
           placeholder="Ej: Resistencia, Velocidad..."
           onChange={(e) => handleChange('name', e.target.value)}
-          className="form-control text-dark"
-          style={inputStyle}
+          className="form-control blocksFormInput"
         />
       </div>
 
-      <div className="mb-2">
-        <label className="form-label fw-semibold">Color</label>
-        <div style={colorGridStyle} className="mt-1">
-          {PALETTE.map((hex) => {
+      <div className="blocksFormField">
+        <label>Color</label>
+        <div className="blocksFormPalette">
+          {/* La key lleva la posicion porque el color no alcanza: la paleta
+              repite #9471f1ff y React avisaba por la clave duplicada. */}
+          {PALETTE.map((hex, posicion) => {
             const selected = form.color === hex
             return (
               <button
-                key={hex}
+                key={`${hex}-${posicion}`}
                 type='button'
                 aria-label={`Elegir color ${hex}`}
                 onClick={() => handleChange('color', hex)}
-                style={swatchStyle(hex, selected)}
+                className={`blocksFormSwatch ${selected ? 'is-selected' : ''}`}
+                style={{ '--blocks-form-swatch': hex }}
               />
             )
           })}
         </div>
       </div>
 
-      <div className='d-flex align-items-center justify-content-between mt-4'>
+      <div className='blocksFormActions'>
         {isEditMode ? (
-          <button className="btn btn-outline-danger" onClick={handleDelete}>
+          <button className="blocksFormButton blocksFormButtonDanger" onClick={handleDelete}>
             Eliminar
           </button>
         ) : (
           <button
-            className="btn btn-link text-muted px-0"
+            className="blocksFormButton blocksFormButtonGhost"
             type="button"
             onClick={onCancel}            // - FIX: cerrar modal (no navegar)
           >
@@ -118,10 +102,9 @@ function BloquesForm({ isEditMode, initialData = {}, onSaved, onCancel, id }) {
         )}
 
         <button
-          className="btn btn-primary"
+          className="blocksFormButton blocksFormButtonPrimary"
           onClick={handleSubmit}
           disabled={!form.name}
-          style={{ minWidth: 140, borderRadius: 12, opacity: !form.name ? 0.6 : 1 }}
         >
           Guardar
         </button>

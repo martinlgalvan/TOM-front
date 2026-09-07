@@ -2,6 +2,11 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  /* Los specs *.real.spec.mjs necesitan el backend real y su propia config
+     (playwright.real-localhost.config.mjs, que los selecciona con testMatch).
+     Sin esta exclusion se colaban aca y fallaban siempre, porque este servidor
+     sirve con rutas mockeadas en otro puerto. */
+  testIgnore: /.*\.real\.spec\.mjs/,
   timeout: 120000,
   expect: {
     timeout: 10000,

@@ -1,3 +1,4 @@
+import { Pyramid } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 // Eliminado: import { SelectButton } from 'primereact/selectbutton';
 import IconButton from '@mui/material/IconButton';
@@ -6,7 +7,10 @@ import RemoveIcon from '@mui/icons-material/Remove';
 
 const CustomInputNumber = React.forwardRef(
   (
-    { initialValue, onChange, disabled, isRep, onActivate, currentDay, isNotNeedProp },
+    // allowMultiple: los bloques de activacion/movilidad y entrada en calor no
+    // usan series piramidales, solo texto/numerico. Va como prop propia y no
+    // reusando isRep porque isRep tambien decide margenes y layout de reps.
+    { initialValue, onChange, disabled, isRep, onActivate, currentDay, isNotNeedProp, allowMultiple = true },
     ref
   ) => {
     const [firstWidth, setFirstWidth] = useState(window.innerWidth);
@@ -131,8 +135,8 @@ const CustomInputNumber = React.forwardRef(
 
     // Toggle universal para nuestro segmented manual
     const handleModeToggle = (nextMode) => {
-      // Defensa sets: nunca permitir 'multiple'
-      if (!isRep && nextMode === 'multiple') nextMode = 'text';
+      // Defensa: 'multiple' solo donde corresponde (reps y con la piramide habilitada)
+      if ((!isRep || !allowMultiple) && nextMode === 'multiple') nextMode = 'text';
 
       // Si clickean el modo activo, volvemos a null (numerico)
       const finalMode = (mode === nextMode) ? null : nextMode;
@@ -150,8 +154,12 @@ const CustomInputNumber = React.forwardRef(
 
     // UI del selector (manual, chico y consistente)
     const ModeSelector = () => {
-      return isRep ? (
+      return (isRep && allowMultiple) ? (
         <div className="seg customInputModeSelector customInputModeSelectorReps" role="group" aria-label="Modo reps">
+          {/* Con la piramide activa escondemos "Texto" para darle ese ancho a
+              las celdas. No se pierde la salida: tocar la piramide de nuevo
+              vuelve al stepper numerico. */}
+          {mode !== 'multiple' && (
           <button
             type="button"
             className={`seg-btn ${mode === 'text' ? 'active' : ''}`}
@@ -160,13 +168,19 @@ const CustomInputNumber = React.forwardRef(
           >
             Texto
           </button>
+          )}
           <button
             type="button"
-            className={`seg-btn ${mode === 'multiple' ? 'active' : ''}`}
+            className={`seg-btn seg-btn-icon ${mode === 'multiple' ? 'active' : ''}`}
             disabled={disabled}
             onClick={() => handleModeToggle('multiple')}
+            title="Reps multiples (piramide)"
+            aria-label="Reps multiples"
           >
-            Multiple
+            {/* El icono reemplaza la palabra "Multiple": ocupa mucho menos y le
+                devuelve ancho al campo de sets/reps. El nombre sigue disponible
+                para lectores de pantalla via aria-label. */}
+            <Pyramid size={13} aria-hidden="true" />
           </button>
         </div>
       ) : (
@@ -186,9 +200,11 @@ const CustomInputNumber = React.forwardRef(
     return (
       <>
         <div
+          /* Ojo: `cond && 'clase'` mete la string "false" en el className
+             cuando la condicion es falsa. Con ternario a '' no pasa. */
           className={`row customInputNumberRoot justify-content-center text-center align-middle mt-4 align-center ${
-            isRep && !isNotNeedProp && firstWidth < 992 && 'mb-2'
-          } ${isRep && firstWidth > 992 && 'mt-4'}`}
+            isRep && !isNotNeedProp && firstWidth < 992 ? 'mb-2' : ''
+          } ${isRep && firstWidth > 992 ? 'mt-4' : ''}`}
         >
           {/* Render segun modo */}
           {mode === 'text' ? (
@@ -203,36 +219,22 @@ const CustomInputNumber = React.forwardRef(
               />
             </div>
           ) : mode === 'multiple' ? (
-            <div className="row justify-content-center py-1 px-0 rounded text-center">
+            <div className="customInputMultiple">
+              {/* Serie piramidal: una fila de celdas angostas (2 caracteres) con
+                  los botones + / - como una celda mas al final. Antes eran inputs
+                  apilados a lo ancho, con width:20px y height:2px inline. */}
               {repsList.map((item, idx) => (
                 <input
                   key={idx}
                   type="number"
+                  inputMode="numeric"
                   value={item.reps}
                   onChange={e => handleRepChange(idx, e.target.value)}
                   disabled={disabled}
-                  className="form-control form-control-sm text-center me-2"
-                  style={{ width: '20px', height: '2px', margin: 'auto 0', fontSize: '0.8em', padding: '0 0px' }}
+                  className="customInputMultipleCell"
+                  aria-label={`Serie ${idx + 1}`}
                 />
               ))}
-              <IconButton
-                onClick={handleAddRep}
-                disabled={disabled}
-                size="small"
-                className="col-1 text-end"
-              >
-                <AddIcon className="fontAddIconMultiple" />
-              </IconButton>
-              {repsList.length > 1 && (
-                <IconButton
-                  onClick={handleRemoveLast}
-                  className="col-1 ms-2 text-end"
-                  disabled={disabled}
-                  size="small"
-                >
-                  <RemoveIcon className="fontAddIconMultiple" />
-                </IconButton>
-              )}
             </div>
           ) : (
             <div className="input-number-container">
@@ -267,6 +269,35 @@ const CustomInputNumber = React.forwardRef(
 
           {/* Selector de modo manual, centrado */}
           <div className={`${!isRep ? 'w-100 d-flex justify-content-center' : 'text-center'} customInputModeSelectorWrap mt-1 px-0`}>
+            {/* Los +/- viven al lado de la piramide, no dentro de la fila de
+                celdas: con mas de 3 series la fila se quedaba sin lugar y los
+                botones se caian a otro renglon. Aca ocupan un lugar fijo. */}
+            {mode === 'multiple' && (
+              <span className="customInputMultipleActions">
+                <button
+                  type="button"
+                  onClick={handleAddRep}
+                  disabled={disabled}
+                  className="customInputMultipleBtn"
+                  title="Agregar serie"
+                  aria-label="Agregar serie"
+                >
+                  <AddIcon className="fontAddIconMultiple" />
+                </button>
+                {repsList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveLast}
+                    disabled={disabled}
+                    className="customInputMultipleBtn"
+                    title="Quitar ultima serie"
+                    aria-label="Quitar ultima serie"
+                  >
+                    <RemoveIcon className="fontAddIconMultiple" />
+                  </button>
+                )}
+              </span>
+            )}
             <ModeSelector />
           </div>
         </div>

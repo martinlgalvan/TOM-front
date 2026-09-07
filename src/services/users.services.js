@@ -34,14 +34,20 @@ async function createAlumno(id, user) {
   if (!response.ok) {                           // 2) si no esta OK, propago el texto
     // puedes inspeccionar aqui text para logs:
     console.error('createAlumno -> Error response:', text);
+    /* El mensaje del servidor manda. Antes cualquier 400 que mencionara la
+       palabra "email" se reescribia como "ya existe", asi que un email mal
+       formado se reportaba como duplicado. Y ".message.includes" reventaba con
+       un TypeError -dentro del propio manejo del error- si el 400 venia sin
+       campo message: el ?. cubria el parseo, no la propiedad. */
+    const mensaje = JSON.parseSafe(text)?.message;
+    const duplicado = typeof mensaje === 'string' && /ya existe|already exists|duplicad|duplicate/i.test(mensaje);
+
     throw new Error(
       response.status === 403
-        ? (JSON.parseSafe(text)?.message || 'Limite de usuarios alcanzado.')
+        ? (mensaje || 'Limite de usuarios alcanzado.')
         : response.status === 400
-          ? (JSON.parseSafe(text)?.message.includes('email')
-              ? 'El email ya existe. Usa otro.'
-              : (JSON.parseSafe(text)?.message || 'Error de validacion.'))
-          : (JSON.parseSafe(text)?.message || 'Ocurrio un error inesperado.')
+          ? (duplicado ? 'El email ya existe. Usa otro.' : (mensaje || 'Error de validacion.'))
+          : (mensaje || 'Ocurrio un error inesperado.')
     );
   }
 
@@ -487,6 +493,35 @@ async function updatePaymentInfo(userId, paymentInfo) {
   });
 }
 
+/**
+ * El entrenador le define una contrasena nueva a su alumno.
+ * `revokeSessions` cierra las sesiones que el alumno tenga abiertas.
+ */
+async function changeStudentPassword(userId, password, revokeSessions = true) {
+  const response = await apiFetch(`${API_BASE}/api/user/${userId}/password`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'auth-token': localStorage.getItem('token')
+    },
+    body: JSON.stringify({ password, revokeSessions })
+  });
+
+  if (!response.ok) {
+    // El back manda { message } con el motivo real (muy corta, sin permiso, etc.).
+    let message = 'No se pudo cambiar la contrasena';
+    try {
+      const body = await response.json();
+      if (body?.message) message = body.message;
+    } catch {
+      // respuesta sin JSON: nos quedamos con el mensaje generico
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
 async function getOpenersProfileData(userId) {
   const profile = await getProfileById(userId).catch(() => ({}));
 
@@ -590,6 +625,7 @@ export {
     getAnnouncementViewCounts,
 
     updatePaymentInfo,
+    changeStudentPassword,
     getOpenersProfileData,
     saveOpenersPlans,
     saveOpenersTemplates

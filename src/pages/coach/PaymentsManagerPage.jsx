@@ -19,7 +19,9 @@ import { addLocale, locale as setPrimeLocale } from 'primereact/api';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 import * as UsersService from './../../services/users.services.js';
@@ -180,7 +182,7 @@ const nameStripeColor = (isPaid) => {
 
 
 // ================== Componente (logica) ==================
-export default function PaymentsManagerPage() {
+export default function PaymentsManagerPage({ editorTheme = 'light' }) {
   const { id } = useParams(); // gymId
   const navigate = useNavigate();
 // Desglose de ingresos/gastos/ventas
@@ -1025,7 +1027,7 @@ const closeBreakdown = () => setBreakdownOpen(false);
 
 
 return (
-  <Box className='p-3' style={{ minHeight: '100vh' }}>
+  <Box className={`p-3 paymentsManagerPage paymentsManagerTheme-${editorTheme}`} style={{ minHeight: '100vh' }}>
     {/* ====== GATE DE SEGURIDAD ====== */}
     <MuiDialog
       open={gateAskOpen}
@@ -1035,6 +1037,7 @@ return (
       }}
       fullWidth
       maxWidth="xs"
+      className={`paymentsManagerGateDialog paymentsManagerTheme-${editorTheme}`}
       slotProps={{
         backdrop: {
           sx: {
@@ -1043,6 +1046,7 @@ return (
           },
         },
         paper: {
+          className: `paymentsManagerGateDialog paymentsManagerTheme-${editorTheme}`,
           sx: {
             borderRadius: 3,
             boxShadow: '0 24px 60px rgba(15, 23, 42, 0.35)',
@@ -1078,7 +1082,16 @@ return (
     </MuiDialog>
 
     {/* ====== DIALOG: PONER/CAMBIAR CONTRASENA ====== */}
-    <MuiDialog open={setPwdOpen} onClose={() => setSetPwdOpen(false)} fullWidth maxWidth="xs">
+    <MuiDialog
+      open={setPwdOpen}
+      onClose={() => setSetPwdOpen(false)}
+      fullWidth
+      maxWidth="xs"
+      className={`paymentsManagerGateDialog paymentsManagerTheme-${editorTheme}`}
+      slotProps={{
+        paper: { className: `paymentsManagerGateDialog paymentsManagerTheme-${editorTheme}` },
+      }}
+    >
       <Box p={3}>
         <Stack spacing={2}>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -1109,7 +1122,7 @@ return (
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack spacing={0}>
             <Typography variant='caption'>Miembros Activos</Typography>
-            <Typography variant='h6' sx={{ color: 'success.main' }}>{kpis.activos}</Typography>
+            <Typography variant='h6' className="pmColorSuccess" sx={{ color: 'success.main' }}>{kpis.activos}</Typography>
           </Stack>
           <PeopleAlt fontSize="small" sx={{ color: 'success.main' }} />
         </Stack>
@@ -1119,7 +1132,7 @@ return (
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack spacing={0}>
             <Typography variant='caption'>Por Vencer (≤7 dias)</Typography>
-            <Typography variant='h6' sx={{ color: 'warning.main' }}>{kpis.porVencer}</Typography>
+            <Typography variant='h6' className="pmColorWarning" sx={{ color: 'warning.main' }}>{kpis.porVencer}</Typography>
           </Stack>
           <AccessTime fontSize="small" sx={{ color: 'warning.main' }} />
         </Stack>
@@ -1129,7 +1142,7 @@ return (
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack spacing={0}>
             <Typography variant='caption'>Vencidos</Typography>
-            <Typography variant='h6' sx={{ color: 'error.main' }}>{kpis.vencidos}</Typography>
+            <Typography variant='h6' className="pmColorError" sx={{ color: 'error.main' }}>{kpis.vencidos}</Typography>
           </Stack>
           <EventAvailable fontSize="small" sx={{ color: 'error.main' }} />
         </Stack>
@@ -1548,7 +1561,16 @@ return (
 
                 {/* Dias */}
                 <td>
-                  <Typography variant='body2' sx={{ fontWeight: 600, color: dInfo.color }}>
+                  <Typography
+                    variant='body2'
+                    className={
+                      dInfo.color === 'success.main' ? 'pmColorSuccess'
+                        : dInfo.color === 'warning.main' ? 'pmColorWarning'
+                        : dInfo.color === 'error.main' ? 'pmColorError'
+                        : undefined
+                    }
+                    sx={{ fontWeight: 600, color: dInfo.color }}
+                  >
                     {dInfo.text}
                   </Typography>
                 </td>
@@ -1561,9 +1583,18 @@ return (
 
     {/* ====== Dialog: Renovar mes ====== */}
     <Dialog
-      header="Renovar mes"
+      header={
+        <div className="coachDialogHeader">
+          <span className="coachDialogHeaderIcon"><Autorenew fontSize="small" /></span>
+          <div>
+            <strong>Renovar mes</strong>
+            <span>Registra el pago del proximo periodo</span>
+          </div>
+        </div>
+      }
       visible={renewOpen}
       onHide={() => setRenewOpen(false)}
+      className={`coachModalDialog paymentsManagerDialog dayEditEditorTheme-${editorTheme}`}
       style={{ width: '38rem', maxWidth: '95vw' }}
     >
       <div className="row g-3">
@@ -1599,18 +1630,27 @@ return (
             placeholder="Metodo"
           />
         </div>
-        <div className="col-12 text-end mt-2 mt-4">
-          <Button className="me-2" variant="outlined" onClick={() => setRenewOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={confirmRenew}>Confirmar</Button>
+        <div className="col-12 text-end mt-2 mt-4 d-flex justify-content-end gap-2">
+          <button type="button" className="coachDialogBtn coachDialogBtnSecondary" onClick={() => setRenewOpen(false)}>Cancelar</button>
+          <button type="button" className="coachDialogBtn coachDialogBtnPrimary" onClick={confirmRenew}>Confirmar</button>
         </div>
       </div>
     </Dialog>
 
     {/* ====== Dialog: Registrar/Editar gasto ====== */}
     <Dialog
-      header={editing.expenseId ? "Editar gasto" : "Registrar gasto"}
+      header={
+        <div className="coachDialogHeader">
+          <span className="coachDialogHeaderIcon"><ReceiptLongIcon fontSize="small" /></span>
+          <div>
+            <strong>{editing.expenseId ? "Editar gasto" : "Registrar gasto"}</strong>
+            <span>Proveedores, alquiler, servicios y mas</span>
+          </div>
+        </div>
+      }
       visible={expenseOpen}
       onHide={() => { setExpenseOpen(false); cancelEditExpense(); }}
+      className={`coachModalDialog paymentsManagerDialog dayEditEditorTheme-${editorTheme}`}
       style={{ width: '38rem', maxWidth: '95vw' }}
     >
       <div className="row g-3">
@@ -1656,13 +1696,13 @@ return (
 
         <div className="col-12 d-flex justify-content-between mt-2">
           {editing.expenseId ? (
-            <Button variant="outlined" color="warning" onClick={cancelEditExpense}>Cancelar edicion</Button>
+            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditExpense}>Cancelar edicion</button>
           ) : <span />}
-          <div>
-            <Button className="me-2" variant="outlined" onClick={() => { setExpenseOpen(false); cancelEditExpense(); }}>Cerrar</Button>
-            <Button variant="contained" onClick={submitExpense}>
+          <div className="d-flex gap-2">
+            <button type="button" className="coachDialogBtn coachDialogBtnSecondary" onClick={() => { setExpenseOpen(false); cancelEditExpense(); }}>Cerrar</button>
+            <button type="button" className="coachDialogBtn coachDialogBtnPrimary" onClick={submitExpense}>
               {editing.expenseId ? 'Actualizar' : 'Guardar'}
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -1709,9 +1749,18 @@ return (
 
     {/* ====== Dialog: Flujo de caja ====== */}
     <Dialog
-      header={editing.cashflowId ? "Editar movimiento" : "Flujo de caja"}
+      header={
+        <div className="coachDialogHeader">
+          <span className="coachDialogHeaderIcon"><AccountBalanceWalletIcon fontSize="small" /></span>
+          <div>
+            <strong>{editing.cashflowId ? "Editar movimiento" : "Flujo de caja"}</strong>
+            <span>Ingresos y retiros de caja</span>
+          </div>
+        </div>
+      }
       visible={cashflowOpen}
       onHide={() => { setCashflowOpen(false); cancelEditCashflow(); }}
+      className={`coachModalDialog paymentsManagerDialog dayEditEditorTheme-${editorTheme}`}
       style={{ width: '52rem', maxWidth: '98vw' }}
     >
       {/* (Quitado el bloque de KPIs/Totales que antes estaba aca) */}
@@ -1748,9 +1797,9 @@ return (
           />
         </div>
         <div className="col-12 col-md-2 text-end">
-          <Button variant="contained" onClick={submitCashflow}>
+          <button type="button" className="coachDialogBtn coachDialogBtnPrimary" onClick={submitCashflow}>
             {editing.cashflowId ? 'Actualizar' : 'Agregar'}
-          </Button>
+          </button>
         </div>
         <div className="col-12">
           <label className="form-label">Descripcion</label>
@@ -1763,7 +1812,7 @@ return (
         </div>
         {editing.cashflowId && (
           <div className="col-12 d-flex justify-content-end">
-            <Button variant="outlined" color="warning" onClick={cancelEditCashflow}>Cancelar edicion</Button>
+            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditCashflow}>Cancelar edicion</button>
           </div>
         )}
       </div>
@@ -1816,9 +1865,18 @@ return (
 
     {/* ====== Dialog: Venta adicional ====== */}
     <Dialog
-      header="Venta adicional"
+      header={
+        <div className="coachDialogHeader">
+          <span className="coachDialogHeaderIcon"><ShoppingCartIcon fontSize="small" /></span>
+          <div>
+            <strong>Venta adicional</strong>
+            <span>Bebidas, indumentaria y otros productos</span>
+          </div>
+        </div>
+      }
       visible={extraSaleOpen}
-      onHide={() => setExtraSaleOpen(false)}
+      onHide={() => { setExtraSaleOpen(false); cancelEditExtraSale(); }}
+      className={`coachModalDialog paymentsManagerDialog dayEditEditorTheme-${editorTheme}`}
       style={{ width: '32rem', maxWidth: '95vw' }}
     >
       <div className="row g-3">
@@ -1840,17 +1898,72 @@ return (
             placeholder="0"
           />
         </div>
-        <div className="col-12 text-end mt-2">
-          <Button variant="contained" onClick={submitExtraSale}>Registrar</Button>
+        <div className="col-12 d-flex justify-content-between mt-2">
+          {editing.extraSaleId ? (
+            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditExtraSale}>Cancelar edicion</button>
+          ) : <span />}
+          <div className="d-flex gap-2">
+            <button type="button" className="coachDialogBtn coachDialogBtnSecondary" onClick={() => { setExtraSaleOpen(false); cancelEditExtraSale(); }}>Cerrar</button>
+            <button type="button" className="coachDialogBtn coachDialogBtnPrimary" onClick={submitExtraSale}>
+              {editing.extraSaleId ? 'Actualizar' : 'Registrar'}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Historial de ventas adicionales: sin esto, una venta mal cargada
+          quedaba sumando en los totales sin forma de tocarla desde la pantalla. */}
+      <Box mt={3}>
+        <Typography variant='subtitle2' gutterBottom>Ventas recientes</Typography>
+        <div className="table-responsive">
+          <table className='table table-sm align-middle'>
+            <thead className='table-light'>
+              <tr>
+                <th>Fecha</th>
+                <th>Nombre</th>
+                <th className='text-end'>Monto</th>
+                <th className='text-center' style={{ width: 120 }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ledger.extraSales.slice().reverse().slice(0, 50).map((it) => (
+                <tr key={it._id}>
+                  <td>{it.fecha ? new Date(it.fecha).toLocaleString() : '-'}</td>
+                  <td>{it.nombre || '-'}</td>
+                  <td className='text-end'>{currencyARS(it.monto)}</td>
+                  <td className='text-center'>
+                    <IconButton size="small" onClick={() => onEditExtraSale(it)} title="Editar">
+                      <Edit fontSize="inherit" />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => onDeleteExtraSale(it)} title="Eliminar">
+                      <HighlightOff fontSize="inherit" />
+                    </IconButton>
+                  </td>
+                </tr>
+              ))}
+              {ledger.extraSales.length === 0 && (
+                <tr><td colSpan={4} className='text-center text-muted'>Sin ventas adicionales</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Box>
     </Dialog>
 
     {/* ====== Dialog: Desglose ====== */}
 <Dialog
-  header="Desglose de ingresos y egresos"
+  header={
+    <div className="coachDialogHeader">
+      <span className="coachDialogHeaderIcon"><PieChartIcon fontSize="small" /></span>
+      <div>
+        <strong>Desglose de ingresos y egresos</strong>
+        <span>Resumen del periodo actual</span>
+      </div>
+    </div>
+  }
   visible={breakdownOpen}
   onHide={() => setBreakdownOpen(false)}
+  className={`coachModalDialog paymentsManagerDialog dayEditEditorTheme-${editorTheme}`}
   style={{ width: '64rem', maxWidth: '96vw' }}
 >
   {/* Cards responsive, estilo KPI */}
@@ -1868,7 +1981,7 @@ return (
               <Typography variant="caption" color="text.secondary">
                 Alumnos (cuotas pagas)
               </Typography>
-              <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>
+              <Typography variant="h6" className="pmColorSuccess" sx={{ color: 'success.main', fontWeight: 700 }}>
                 {currencyARS(breakdown.alumnos.total)}
               </Typography>
             </Box>
@@ -1890,7 +2003,7 @@ return (
               <Typography variant="caption" color="text.secondary">
                 Ingresos (cashflow)
               </Typography>
-              <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>
+              <Typography variant="h6" className="pmColorSuccess" sx={{ color: 'success.main', fontWeight: 700 }}>
                 {currencyARS(breakdown.cfIn.total)}
               </Typography>
             </Box>
@@ -1912,7 +2025,7 @@ return (
               <Typography variant="caption" color="text.secondary">
                 Ventas adicionales
               </Typography>
-              <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>
+              <Typography variant="h6" className="pmColorSuccess" sx={{ color: 'success.main', fontWeight: 700 }}>
                 {currencyARS(breakdown.ventas.total)}
               </Typography>
             </Box>
@@ -1931,13 +2044,13 @@ return (
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Avatar sx={{ width: 36, height: 36, bgcolor: 'warning.light' }}>
-              <ShoppingCartIcon  fontSize="small" />
+              <RemoveCircleOutlineIcon fontSize="small" />
             </Avatar>
             <Box>
               <Typography variant="caption" color="text.secondary">
                 Retiros (cashflow)
               </Typography>
-              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 700 }}>
+              <Typography variant="h6" className="pmColorError" sx={{ color: 'error.main', fontWeight: 700 }}>
                 -{currencyARS(breakdown.cfOut.total)}
               </Typography>
             </Box>
@@ -1959,7 +2072,7 @@ return (
               <Typography variant="caption" color="text.secondary">
                 Gastos
               </Typography>
-              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 700 }}>
+              <Typography variant="h6" className="pmColorError" sx={{ color: 'error.main', fontWeight: 700 }}>
                 -{currencyARS(breakdown.gastos.total)}
               </Typography>
             </Box>
@@ -1973,6 +2086,7 @@ return (
       {/* Ingresos Netos (tile destacado) */}
       <Paper
         elevation={3}
+        className="pmHighlightTile"
         sx={{
           p: 2,
           borderRadius: 3,
@@ -2009,7 +2123,7 @@ return (
             variant="contained"
             color="inherit"
             onClick={() => setBreakdownOpen(false)}
-            startIcon={<VisibilityIcon fontSize="small" />}
+            startIcon={<CloseIcon fontSize="small" />}
             sx={{
               color: 'primary.main',
               bgcolor: 'rgba(255,255,255,0.9)',

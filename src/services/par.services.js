@@ -64,13 +64,15 @@ async function deletePAR(id) {
             'auth-token': localStorage.getItem('token')
         }
     }) 
-    .then(response => {
+    .then(async response => {
         if (response.ok) {
             return response.json()
         }
         else {
-            const errorMessage = response.text();
-            throw new Error(errorMessage || 'No se pudo obtener el usuario');
+            /* response.text() devuelve una promesa: sin await, lo que llegaba a
+               la pantalla era "[object Promise]" en vez del motivo del fallo. */
+            const detalle = await response.text().catch(() => '');
+            throw new Error(detalle || 'No se pudo eliminar el PAR.');
         }
     
     })
@@ -108,13 +110,15 @@ async function createProgressionsPARToUsers(template, userIds) {
             user_ids: userIds
         })
     })
-    .then(response => {
+    .then(async response => {
         if (response.ok) {
             return response.json()
         }
         else {
-            const errorMessage = response.text();
-            throw new Error(errorMessage || 'No se pudo obtener el usuario');
+            /* response.text() devuelve una promesa: sin await, lo que llegaba a
+               la pantalla era "[object Promise]" en vez del motivo del fallo. */
+            const detalle = await response.text().catch(() => '');
+            throw new Error(detalle || 'No se pudieron crear las progresiones.');
         }
     })
 }
@@ -127,13 +131,15 @@ async function createProgressionFromPAR(par_id) {
             'auth-token': localStorage.getItem('token')
         }
     })
-    .then(response => {
+    .then(async response => {
         if (response.ok) {
             return response.json()
         }
         else {
-            const errorMessage = response.text();
-            throw new Error(errorMessage || 'No se pudo obtener el usuario');
+            /* response.text() devuelve una promesa: sin await, lo que llegaba a
+               la pantalla era "[object Promise]" en vez del motivo del fallo. */
+            const detalle = await response.text().catch(() => '');
+            throw new Error(detalle || 'No se pudo crear la progresion.');
         }
     })
 }

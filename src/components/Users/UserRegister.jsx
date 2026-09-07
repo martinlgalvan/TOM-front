@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import * as UsersService from '../../services/users.services.js';
 import * as Notify from './../../helpers/notify.js';
-import * as ChangePropertyService from '../../services/changePropertys.services.js';
 import { Dialog } from 'primereact/dialog';
 
 // MUI
@@ -13,7 +12,7 @@ import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
-export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
+export default function UserRegister({ refresh, dialogg, parentId, onClose, editorTheme = 'light' }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [logo, setLogo] = useState("");
@@ -38,25 +37,47 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
     setTextColor(localStorage.getItem('textColor'));
   }, []);
 
-  useEffect(() => {
-    if (parentId) {
-      UsersService.findUserById(parentId)
-        .then(data => {
-          if (data && data.logo) {
-            setLogo(data.logo);
-          }
-        })
-        .catch(err => console.log(err));
-    }
-  }, [parentId]);
+  /* El componente vive montado en la lista aunque el dialogo este cerrado. Si
+     se pide sin condicion, cada carga de la lista trae el documento entero del
+     entrenador solo para el logo, que unicamente se usa al dar de alta. */
+  const logoPendiente = useRef(null);
 
-  function onSubmit(e) {
+  const obtenerLogo = useCallback(async () => {
+    if (!parentId) return '';
+    if (logo) return logo;
+    /* Una sola peticion aunque se llame de nuevo mientras esta en vuelo. */
+    if (!logoPendiente.current) {
+      logoPendiente.current = UsersService.findUserById(parentId)
+        .then(data => data?.logo || '')
+        /* Si el logo no se pudo leer no se corta el alta: se devuelve vacio y
+           el error del alta lo reporta el submit con el mensaje de la API. */
+        .catch(err => { console.error('No se pudo leer el logo del entrenador:', err?.message || err); return ''; })
+        .finally(() => { logoPendiente.current = null; });
+    }
+    const valor = await logoPendiente.current;
+    if (valor) setLogo(valor);
+    return valor;
+  }, [parentId, logo]);
+
+  useEffect(() => {
+    if (dialogg) obtenerLogo();
+  }, [dialogg, obtenerLogo]);
+
+  async function onSubmit(e) {
     e.preventDefault();
     setError(null);
 
     if (!name || !email || !password || !confirmPassword || !category) {
       setTouched({ name: true, email: true, password: true, confirmPassword: true, category: true });
       setError("Por favor complete todos los campos obligatorios.");
+      return;
+    }
+
+    /* Sin esto, un email mal escrito viajaba al servidor y volvia como
+       "El email ya existe", que manda a buscar un duplicado que no hay. */
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+      setTouched((prev) => ({ ...prev, email: true }));
+      setError("El email no tiene un formato valido.");
       return;
     }
 
@@ -70,17 +91,21 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
       return;
     }
 
+    /* Si el dialogo se abrio y se envio muy rapido, el logo puede no haber
+       llegado todavia. El servidor lo exige, asi que se espera aca. */
+    const logoFinal = logo || await obtenerLogo();
+
     Notify.notifyA('Creando alumno...');
 
+    // La categoria viaja en el alta: antes se mandaba en un PATCH aparte y,
+    // si ese segundo request fallaba, el alumno quedaba creado sin categoria.
     UsersService.createAlumno(parentId, {
       name,
       email,
       password,
-      logo
+      logo: logoFinal,
+      category
     })
-      .then((newUser) => {
-        return ChangePropertyService.changeProperty(newUser._id, category);
-      })
       .then(() => {
         Notify.updateToast();
         refresh();
@@ -99,7 +124,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
     <Dialog
       header="Crear Alumno"
       visible={dialogg}
-      className="col-11 col-lg-4 colorPrimaryDialog"
+      className={`col-11 col-lg-4 usersListDialog usersListCreateUserDialog usersListTheme-${editorTheme}`}
       modal
       closable
       onHide={onClose}
@@ -157,12 +182,15 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
 
             {/* Password */}
             <li className="list-group-item">
-              <label className="form-label">Contrasena *</label>
+              <label className="form-label" htmlFor="nuevo-alumno-password">Contrasena *</label>
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <LockOutlinedIcon fontSize="small" />
                 </span>
                 <input
+                  id="nuevo-alumno-password"
+                  name="new-password"
+                  autoComplete="new-password"
                   type={showPassword ? "text" : "password"}
                   minLength={6}
                   className={`form-control border-start-0  ${touched.password && !password ? 'is-invalid' : ''}`}
@@ -179,12 +207,15 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
 
             {/* Confirm Password */}
             <li className="list-group-item">
-              <label className="form-label">Confirmar contrasena *</label>
+              <label className="form-label" htmlFor="nuevo-alumno-password-2">Confirmar contrasena *</label>
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <LockOutlinedIcon fontSize="small" />
                 </span>
                 <input
+                  id="nuevo-alumno-password-2"
+                  name="confirm-password"
+                  autoComplete="new-password"
                   type={showPassword ? "text" : "password"}
                   minLength={6}
                   className={`form-control border-start-0  ${touched.confirmPassword && !confirmPassword ? 'is-invalid' : ''}`}
@@ -232,7 +263,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose }) {
 
             {/* Boton */}
             <li className="list-group-item">
-              <button type="submit" className="btn colorMainAll text-light w-100">
+              <button type="submit" className="btn usersListCreateUserSubmit w-100">
                 Crear Usuario
               </button>
             </li>

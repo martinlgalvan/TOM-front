@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import BackgroundLogo from "/src/assets/img/backgroundLogo.png";
+import BackgroundLogo from "/src/assets/img/hero-training.webp";
 
 import TOM from "/src/assets/img/TOM.png";
 import JESUSOLIVA from "/src/assets/img/Jesusoliva-old.png";
@@ -19,7 +19,7 @@ import FRANCO from "/src/assets/img/Franco.jpeg";
 import SOL from "/src/assets/img/SvStrong.jpeg";
 import MARTIN_CASANOVA from "/src/assets/img/MartinCasanova.png";
 import MACARENA from "/src/assets/img/Macarena.png";
-import LEO_BURGIO from "/src/assets/img/Leo_burgio.png";
+import LEO_BURGIO from "/src/assets/img/Leo_burgio.jpeg";
 import VALU_MARCHE from "/src/assets/img/Valu_marche.png";
 import AGUSTIN_ARENAS from "/src/assets/img/Agustin_arenas.png";
 import LEONEL_ORTIZ from "/src/assets/img/Leonel_ortiz.png";
@@ -32,7 +32,9 @@ import FARID from "/src/assets/img/Farid.png";
 import INAKI from "/src/assets/img/inaki-logo.png";
 import AXEL from "/src/assets/img/Axel.jpeg";
 import DANIEL from "/src/assets/img/Daniel.png";
+import MOVEON from "/src/assets/img/moveon.png";
 import TOM_WHITE from "/src/assets/img/TOM_White.png";
+import GONZALO from "/src/assets/img/Gonzalo.jpeg";
 
 const DEFAULT_LOGO = TOM;
 
@@ -142,7 +144,13 @@ const LOGO_MAP = {
     "id:694c1869aa31bb2de8d104e3": INAKI,
 
     "email:danielnoferi@gmail.com": DANIEL,
-    "id:694026ca258acddc74ed3339": DANIEL
+    "id:694026ca258acddc74ed3339": DANIEL,
+
+    "email:marcelosebastianrodriguez@gmail.com": MOVEON,
+    "id:6a57ac194ef60971c5352895": MOVEON,
+
+    "email:gonzaloalvarez125@gmail.com": GONZALO,
+    "id:6a724fc0bc9b74afeafbcb18": GONZALO
 
 };
 
@@ -159,11 +167,18 @@ function resolveLogoFromStorage() {
   return byId || byEmail || DEFAULT_LOGO;
 }
 
-function shouldUseWhiteTomLogo(resolvedLogo) {
+function shouldUseWhiteTomLogo(resolvedLogo, isHomePage = false, editorTheme = undefined) {
   if (typeof window === "undefined") return false;
 
   // Solo si el logo resultante es el default (TOM)
   if (resolvedLogo !== TOM) return false;
+
+  if (isHomePage) {
+    // El hero de portada siempre superpone un overlay oscuro sobre la foto de
+    // fondo, en modo claro y oscuro por igual, asi que el logo default debe
+    // ser siempre la version blanca para mantener contraste.
+    return true;
+  }
 
   // Solo si esta activo el modo oscuro mobile
   const darkEnabled = localStorage.getItem("mobileDarkMode") === "true";
@@ -174,12 +189,12 @@ function shouldUseWhiteTomLogo(resolvedLogo) {
   return isMobile;
 }
 
-function Logo({ isHomePage = false }) {
+function Logo({ isHomePage = false, editorTheme }) {
   const [urlPath, setUrlPath] = useState(DEFAULT_LOGO);
 
   const recomputeLogo = () => {
     const resolved = resolveLogoFromStorage();
-    const finalLogo = shouldUseWhiteTomLogo(resolved) ? TOM_WHITE : resolved;
+    const finalLogo = shouldUseWhiteTomLogo(resolved, isHomePage, editorTheme) ? TOM_WHITE : resolved;
     setUrlPath(finalLogo);
   };
 
@@ -189,6 +204,7 @@ function Logo({ isHomePage = false }) {
     // ✅ Para que se actualice al tocar el switch (evento que dispara App)
     const onThemeChange = () => recomputeLogo();
     window.addEventListener("mobileDarkModeChange", onThemeChange);
+    window.addEventListener("dayEditEditorThemeChange", onThemeChange);
 
     // (Opcional) si cambia en otra pestana
     // const onStorage = () => recomputeLogo();
@@ -196,14 +212,15 @@ function Logo({ isHomePage = false }) {
 
     return () => {
       window.removeEventListener("mobileDarkModeChange", onThemeChange);
+      window.removeEventListener("dayEditEditorThemeChange", onThemeChange);
       // window.removeEventListener("storage", onStorage);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [editorTheme, isHomePage]);
 
   return (
     <>
-      {urlPath === TOM && isHomePage === true ? (
+      {(urlPath === TOM || urlPath === TOM_WHITE) && isHomePage === true ? (
         <div className={`row justify-content-center align-items-center position-relative divPrincipal marginNavBar`}>
           <h1 className="visually-hidden">TOM</h1>
 

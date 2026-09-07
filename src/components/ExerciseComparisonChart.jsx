@@ -492,7 +492,16 @@ function ExerciseComparisonChart({ currentWeek, previousWeek, isDark = false }) 
 
   if (!previousWeek) {
     return (
-      <div className={`alert ${isDark ? "alert-secondary" : "alert-info"} mb-0`}>
+      <div
+        className="mb-0"
+        style={{
+          padding: "12px 14px",
+          borderRadius: 10,
+          border: `1px solid ${isDark ? "rgba(96,165,250,0.28)" : "#bfdbfe"}`,
+          background: isDark ? "rgba(14,165,233,0.1)" : "#eff6ff",
+          color: isDark ? "#bfdbfe" : "#1e40af"
+        }}
+      >
         No hay una semana anterior para comparar.
       </div>
     );
@@ -500,7 +509,16 @@ function ExerciseComparisonChart({ currentWeek, previousWeek, isDark = false }) 
 
   if (!sameTrainingBlock) {
     return (
-      <div className={`alert ${isDark ? "alert-secondary" : "alert-warning"} mb-0`}>
+      <div
+        className="mb-0"
+        style={{
+          padding: "12px 14px",
+          borderRadius: 10,
+          border: `1px solid ${isDark ? "rgba(251,191,36,0.32)" : "#fde68a"}`,
+          background: isDark ? "rgba(251,191,36,0.1)" : "#fffbeb",
+          color: isDark ? "#fde68a" : "#92400e"
+        }}
+      >
         Se detecto una estructura distinta entre semanas. Para comparar, ambas deben mantener
         la misma estructura (ejercicios, bloques, superseries y circuitos).
       </div>

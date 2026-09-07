@@ -11,25 +11,68 @@ import WorkIcon from '@mui/icons-material/Work';
 import LaptopIcon from '@mui/icons-material/Laptop';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 
-import trainerImg from './../assets/img/entrenador.png'
-import alumnoImg from './../assets/img/alumno.jpg'
+const HOME_STATS = [
+  { target: 65, prefix: '+', label: 'Entrenadores' },
+  { target: 2000, prefix: '+', label: 'Alumnos' },
+  { target: 30000, prefix: '+', label: 'Rutinas creadas' },
+  { target: 3, suffix: ' años', label: 'En el mercado' },
+];
 
-function HomePage() {
+// Cuenta de 0 al valor final cuando el numero entra en pantalla.
+function StatCounter({ target, prefix = '', suffix = '' }) {
+  const ref = useRef(null);
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setValue(target);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.disconnect();
+
+          const duration = 1100;
+          const start = performance.now();
+
+          const tick = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setValue(Math.round(target * eased));
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+
+          requestAnimationFrame(tick);
+        });
+      },
+      { threshold: 0.4 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <span ref={ref} className="homeInfoStatValue">
+      {prefix}{value.toLocaleString('es-AR')}{suffix}
+    </span>
+  );
+}
+
+function HomePage({ editorTheme = 'light' }) {
   // Estado para el tipo de usuario
   const [userType, setUserType] = useState(null);
   const [isLoged, setIsLoged] = useState(null);
   const [username, setUsername] = useState(null);
   const navigate = useNavigate()
-
-  // Crear refs unicos para cada card
-  const leftRef1 = useRef(null);
-  const leftRef2 = useRef(null);
-  const rightRef1 = useRef(null);
-  const rightRef2 = useRef(null);
-  const centerRef1 = useRef(null);
-  const centerRef2 = useRef(null);
-
-
+  const isDark = editorTheme === 'dark';
+  const rootRef = useRef(null);
 
   useEffect(() => {
     if(localStorage.getItem('role') === 'common'){
@@ -38,42 +81,36 @@ function HomePage() {
     }
   }, [userType]); // Se ejecutara solo cuando `userType` cambie
 
-  
-  // Efecto para configurar el IntersectionObserver solo si el usuario es "entrenador"
+  // Animacion de entrada al scrollear: cualquier elemento con la clase
+  // "reveal" se desvanece hacia adentro la primera vez que entra en pantalla.
   useEffect(() => {
-    if (userType === 'entrenador') {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('in-view');
-            } else {
-              entry.target.classList.remove('in-view');
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
+    const root = rootRef.current;
+    if (!root) return;
 
-      // Observando cada ref individualmente
-      if (leftRef1.current) observer.observe(leftRef1.current);
-      if (leftRef2.current) observer.observe(leftRef2.current);
-      if (rightRef1.current) observer.observe(rightRef1.current);
-      if (rightRef2.current) observer.observe(rightRef2.current);
-      if (centerRef1.current) observer.observe(centerRef1.current);
-      if (centerRef2.current) observer.observe(centerRef2.current);
+    const elements = Array.from(root.querySelectorAll('.reveal'));
+    if (elements.length === 0) return;
 
-      // Limpiar el observador al desmontar o cambiar de vista
-      return () => {
-        if (leftRef1.current) observer.unobserve(leftRef1.current);
-        if (leftRef2.current) observer.unobserve(leftRef2.current);
-        if (rightRef1.current) observer.unobserve(rightRef1.current);
-        if (rightRef2.current) observer.unobserve(rightRef2.current);
-        if (centerRef1.current) observer.unobserve(centerRef1.current);
-        if (centerRef2.current) observer.unobserve(centerRef2.current);
-      };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      elements.forEach((el) => el.classList.add('in-view'));
+      return;
     }
-  }, [userType]); // Se ejecutara solo cuando `userType` cambie
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [userType]); // Se vuelve a ejecutar cuando cambia la vista (nuevos elementos montados)
 
   // Funcion para manejar la seleccion de tipo de usuario
   const handleUserType = (type) => {
@@ -90,154 +127,187 @@ function HomePage() {
 
     } else{
       setUserType(type);
-      console.log(type)
     }
   };
 
 
   return (
-    <>
-      <div className='container-fluid mb-4 p-0'>
-        <Logo  isHomePage={true} />
+    <div ref={rootRef} className={`homeInfoPage homeInfoPage-${isDark ? 'dark' : 'light'}`}>
+      <div className='container-fluid p-0 homeInfoHero'>
+        <Logo isHomePage={true} editorTheme={editorTheme} />
       </div>
 
-      <div>
-        
-      </div>
+      <section className="homeInfoStats" aria-label="TOM en numeros">
+        <div className="homeInfoStatsGrid">
+          {HOME_STATS.map((stat) => (
+            <div className="homeInfoStatItem" key={stat.label}>
+              <StatCounter target={stat.target} prefix={stat.prefix} suffix={stat.suffix} />
+              <span className="homeInfoStatLabel">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
-  
-      <main className="container-fluid">
+      <main className="container-fluid homeInfoMain">
       {!userType ? (
-        
-        <div className='row justify-content-center text-center'>
 
-                   <div className='col-10 col-lg-5 mt-5 mb-5'>
+        <div className='row justify-content-center text-center homeInfoChoiceGrid'>
 
-        <div class="blog-slider bounce-in-right" >
-            <div class="flex-blog">
+          <div className='col-11 col-md-10 col-lg-5'>
 
-              <div class="blog-slider__img row">
-                <IconButton className='text-center' onClick={() => handleUserType('atleta')}>
-                  <FitnessCenterIcon className='fs-1 text-light d-block' />
+            <div
+              className="homeInfoChoiceCard homeInfoChoiceCard-athlete reveal"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleUserType('atleta')}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleUserType('atleta')}
+            >
+              <div className="homeInfoChoiceIconWrap">
+                <IconButton className='homeInfoChoiceIconButton' onClick={(e) => { e.stopPropagation(); handleUserType('atleta'); }} aria-label="Ingresar como alumno">
+                  <FitnessCenterIcon className='homeInfoChoiceIcon' />
                 </IconButton>
               </div>
-              <div class="blog-slider__content">
-                <div class="blog-slider__title">{isLoged ? `Bienvenido ${username}` : 'Iniciar sesion'}</div>
-                <div class="blog-slider__text">{isLoged ? 'Entra ' : 'Inicia sesion'} y observa la planificacion que tu entrenador armo. </div>
-                <button  class="blog-slider__button" onClick={() => handleUserType('atleta')}>{isLoged ? 'Ver rutina' : 'Iniciar sesion'}</button>
-              </div>
-          </div>
-        </div>
-
-        </div>
-
-        
-          <div className='col-10 col-lg-5  mt-5'>
-
-            <div class="blog-slider bounce-in-left" >
-
-                <div class="flex-blog">
-
-                  <div class="blog-slider__img  row">
-                    <IconButton className='text-center' onClick={() => handleUserType('entrenador')}>
-                      <LaptopIcon className='fs-1 text-light d-block' />
-                    </IconButton>
-                  </div>
-                  <div class="blog-slider__content ">
-                    <div class="blog-slider__title">Sos entrenador?</div>
-                    <div class="blog-slider__text">Ingresa y mira las caracteristicas de nuestro software. </div>
-                    <button  class="blog-slider__button" onClick={() => handleUserType('entrenador')}>Ver</button>
-                  </div>
+              <div className="homeInfoChoiceContent">
+                <span className="homeInfoChoiceEyebrow">Alumno</span>
+                <h2>{isLoged ? `Bienvenido ${username}` : 'Iniciar sesion'}</h2>
+                <p>{isLoged ? 'Entra ' : 'Inicia sesion'} y observa la planificacion que tu entrenador armo.</p>
+                <button className="homeInfoButton" onClick={(e) => { e.stopPropagation(); handleUserType('atleta'); }}>{isLoged ? 'Ver rutina' : 'Iniciar sesion'}</button>
               </div>
             </div>
 
           </div>
 
- 
+          <div className='col-11 col-md-10 col-lg-5'>
+            <div
+              className="homeInfoChoiceCard homeInfoChoiceCard-coach reveal"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleUserType('entrenador')}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleUserType('entrenador')}
+            >
+              <div className="homeInfoChoiceIconWrap">
+                <IconButton className='homeInfoChoiceIconButton' onClick={(e) => { e.stopPropagation(); handleUserType('entrenador'); }} aria-label="Ver informacion para entrenadores">
+                  <LaptopIcon className='homeInfoChoiceIcon' />
+                </IconButton>
+              </div>
+              <div className="homeInfoChoiceContent">
+                <span className="homeInfoChoiceEyebrow">Entrenador</span>
+                <h2>Sos entrenador?</h2>
+                <p>Ingresa y mira las caracteristicas de nuestro software.</p>
+                <button className="homeInfoButton" onClick={(e) => { e.stopPropagation(); handleUserType('entrenador'); }}>Ver</button>
+              </div>
+            </div>
+          </div>
 
         </div>
 
       ) : userType === 'entrenador' ? (
-        <div>
+        <div className="homeInfoTrainer">
 
-
-            <div className="row justify-content-center colorFondo transition-rigth-to-medium">
-              <h2 className="my-4 col-12 text-center tipografia-titulos">?QUE BRINDA NUESTRO SOFTWARE?</h2>
-              <p className="mt-4 mb-5 col-10 col-lg-6 text-center">
+            <section className="homeInfoTrainerIntro reveal">
+              <span className="homeInfoSectionEyebrow">Software para entrenadores</span>
+              <h2>¿QUE BRINDA NUESTRO SOFTWARE?</h2>
+              <p>
                 Aca vas a encontrar todas las herramientas para <b>gestionar la planificacion de tus alumnos.</b> Nuestro software esta en continuo desarrollo, codo a codo junto a los entrenadores que la utilizan (podes ser uno), ya que nuestro objetivo es tu <b>comodidad</b>, un software hecho 100% para los entrenadores, para que planificar sea una tarea mucho mas <b>sencilla</b>. No nos interesa hacer un software y que cobres cuotas, o que gestiones turnos, <b>nos interesa que el trabajo que hagas, sea lo mas comodo y profesional posible.</b>
               </p>
-            </div>
+            </section>
 
-            <h2 className="text-center my-5 tipografia-titulos">CARACTERISTICAS</h2>
-
-            <div className="row justify-content-center">
-              <div ref={leftRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-left">
-                <div className="card-body text-center">
-                  <IconButton>
-                    <GroupIcon className='fs-1 colorMainAllText' />
-                  </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Gestion de alumnos</h3>
-                  <p className="card-text">Conta con un panel de alumnos, donde podes agregar, buscar o eliminar alumnos de forma sencilla.</p>
-                </div>
+            <section className="homeInfoSteps">
+              <div className="homeInfoFeaturesHeader reveal">
+                <span className="homeInfoSectionEyebrow">Como funciona</span>
+                <h2>EMPEZA EN 3 PASOS</h2>
               </div>
 
-              <div ref={centerRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-center">
-                <div className="card-body text-center">
-                  <IconButton>
-                    <LaptopChromebookIcon className='fs-1 colorMainAllText' />
-                  </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Planificacion</h3>
-                  <p className="card-text">Gestiona la planificacion de cada alumno, donde podes agregar semanas, e ir guardando el progreso de cada uno.</p>
+              <div className="row justify-content-center homeInfoStepsGrid">
+                <div className="col-11 col-md-10 col-lg-4 homeInfoStepCol">
+                  <div className="homeInfoStepCard reveal">
+                    <span className="homeInfoStepNumber">01</span>
+                    <h3>Carga tu equipo</h3>
+                    <p>Suma a tus alumnos a la plataforma y organiza tu panel de trabajo.</p>
+                  </div>
                 </div>
+
+                <div className="col-11 col-md-10 col-lg-4 homeInfoStepCol">
+                  <div className="homeInfoStepCard reveal">
+                    <span className="homeInfoStepNumber">02</span>
+                    <h3>Diseña la planificacion</h3>
+                    <p>Arma semanas, dias, ejercicios, circuitos y super series a tu medida.</p>
+                  </div>
+                </div>
+
+                <div className="col-11 col-md-10 col-lg-4 homeInfoStepCol">
+                  <div className="homeInfoStepCard reveal">
+                    <span className="homeInfoStepNumber">03</span>
+                    <h3>Hace seguimiento</h3>
+                    <p>Tu alumno accede desde el celular, ve su rutina y te comenta como se sintio.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="homeInfoFeatures">
+              <div className="homeInfoFeaturesHeader reveal">
+                <span className="homeInfoSectionEyebrow">Caracteristicas</span>
+                <h2>CARACTERISTICAS</h2>
               </div>
 
-              <div ref={rightRef1} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-right">
-                <div className="card-body text-center">
-                  <IconButton>
-                    <SettingsIcon className='fs-1 colorMainAllText' />
-                  </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Versatilidad</h3>
-                  <p className="card-text">Crea semanas, dias, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b className='d-block'>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
+              <div className="row justify-content-center homeInfoFeatureGrid">
+                <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
+                  <div className="homeInfoFeatureCard reveal">
+                    <div className="homeInfoFeatureIcon"><GroupIcon /></div>
+                    <h3>Gestion de alumnos</h3>
+                    <p>Conta con un panel de alumnos, donde podes agregar, buscar o eliminar alumnos de forma sencilla.</p>
+                  </div>
                 </div>
-              </div>
 
-              <div ref={leftRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-left">
-                <div className="card-body text-center">
-                  <IconButton>
-                    <MessageIcon className='fs-1 colorMainAllText' />
-                  </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Comunicacion con tus alumnos</h3>
-                  <p className="card-text">Tus alumnos te van a poder comentar sus sensaciones, tanto semanales, como en cada ejercicio.</p>
+                <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
+                  <div className="homeInfoFeatureCard reveal">
+                    <div className="homeInfoFeatureIcon"><LaptopChromebookIcon /></div>
+                    <h3>Planificacion</h3>
+                    <p>Gestiona la planificacion de cada alumno, donde podes agregar semanas, e ir guardando el progreso de cada uno.</p>
+                  </div>
                 </div>
-              </div>
 
-              <div ref={centerRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-center">
-                <div className="card-body text-center">
-                  <IconButton>
-                    <MenuBookIcon className='fs-1 colorMainAllText' />
-                  </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Biblioteca de ejercicios</h3>
-                  <p className="card-text">Accede a nuestra biblioteca de ejercicios, con subdivisiones en los basicos, y grupo musculares. Tambien podras cargar la tuya propia.</p>
+                <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
+                  <div className="homeInfoFeatureCard reveal">
+                    <div className="homeInfoFeatureIcon"><SettingsIcon /></div>
+                    <h3>Versatilidad</h3>
+                    <p>Crea semanas, dias, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
+                  </div>
                 </div>
-              </div>
 
-              <div ref={rightRef2} className="card col-10 col-sm-4 col-xl-3 p-2 m-4 shadow box from-right">
-                <div className="card-body text-center">
-                  <IconButton>
-                    <WorkIcon className='fs-1 colorMainAllText' />
-                  </IconButton>
-                  <h3 className="card-title tipografia-subtitulos">Profesionalismo</h3>
-                  <p className="card-text">Es tu carta de presentacion. Lleva tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificacion en su celular.</p>
+                <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
+                  <div className="homeInfoFeatureCard reveal">
+                    <div className="homeInfoFeatureIcon"><MessageIcon /></div>
+                    <h3>Comunicacion con tus alumnos</h3>
+                    <p>Tus alumnos te van a poder comentar sus sensaciones, tanto semanales, como en cada ejercicio.</p>
+                  </div>
+                </div>
+
+                <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
+                  <div className="homeInfoFeatureCard reveal">
+                    <div className="homeInfoFeatureIcon"><MenuBookIcon /></div>
+                    <h3>Biblioteca de ejercicios</h3>
+                    <p>Accede a nuestra biblioteca de ejercicios, con subdivisiones en los basicos, y grupo musculares. Tambien podras cargar la tuya propia.</p>
+                  </div>
+                </div>
+
+                <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
+                  <div className="homeInfoFeatureCard reveal">
+                    <div className="homeInfoFeatureIcon"><WorkIcon /></div>
+                    <h3>Profesionalismo</h3>
+                    <p>Es tu carta de presentacion. Lleva tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificacion en su celular.</p>
+                  </div>
                 </div>
               </div>
-            </div>
-         
+            </section>
+
         </div>
       ) : (
         <h2 className="text-center my-5"></h2>
       )}
        </main>
-    </>
+    </div>
   );
 }
 

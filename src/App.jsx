@@ -35,13 +35,16 @@ import { registerServiceWorker } from './serviceWorkerRegistration.js';
 import { ToastContainer, toast } from 'react-toastify';
 import { Dialog } from "primereact/dialog";
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import NotFound404 from './pages/NotFound404.jsx'
 import ParDetailsPage from './pages/coach/ParDetailsPage.jsx'
 import UserAnnouncementsPage from './components/UserAnnouncementsPage.jsx'
 import PaymentsManagerPage from './pages/coach/PaymentsManagerPage.jsx'
+import TomMeetPage from './pages/competitions/TomMeetPage.jsx'
+import NutritionAdminPage from './pages/coach/NutritionAdminPage.jsx'
+import { canAccessCompetitions, canAccessNutrition } from './helpers/nutritionAccess.js'
+import { applyStoredGeneralSettings } from './helpers/generalSettings.js'
 
-import { AlignJustify, User } from 'lucide-react';
+import { AlignJustify, ChevronLeft, LogOut, User } from 'lucide-react';
 
 function RoutePrivate({ isAutenticate, children }) {
   return (
@@ -63,7 +66,20 @@ function App() {
   const currentRole = localStorage.getItem('role')
 
   const [user, setUser] = useState()
+  const hasNutritionAccess = canAccessNutrition({
+    id: user?._id || id,
+    email: user?.email || localStorage.getItem('email'),
+    role: user?.role || currentRole,
+  });
+  const hasCompetitionsAccess = canAccessCompetitions({
+    id: user?._id || id,
+    role: user?.role || currentRole,
+  });
   const { color } = useColor();
+
+  useEffect(() => {
+    applyStoredGeneralSettings(user?._id || id);
+  }, [id, user?._id]);
 
   const [menuSidebar, setMenuSidebar] = useState(null);
   const [isAutenticated, setIsAutenticated] = useState(null)
@@ -98,6 +114,9 @@ function App() {
   });
 
   const [mobileDarkMode, setMobileDarkMode] = useState(getInitialMobileDarkMode);
+  const [dayEditEditorTheme, setDayEditEditorTheme] = useState(() => {
+    return localStorage.getItem('dayEditEditorTheme') === 'dark' ? 'dark' : 'light';
+  });
 
   function isAdmin() {
     const admin = localStorage.getItem('role')
@@ -119,7 +138,10 @@ function App() {
     // Ajustes minimos de estilo global (sin tocar tu CSS)
     // Nota: solo aplicamos estilos si corresponde (NO-admin + mobile)
     if (enabled) {
-      document.body.style.backgroundColor = '#041324';
+      // Mismo valor que la superficie de .ddp-dark (rgb(5,11,20)). Antes era
+      // #041324, un azul mas claro, y se veia como un marco de otro tono en los
+      // bordes donde la seccion no llegaba a cubrir el body.
+      document.body.style.backgroundColor = '#050b14';
       document.body.style.color = '#e6e6e6';
     } else {
       document.body.style.backgroundColor = '';
@@ -134,6 +156,42 @@ function App() {
     const next = !mobileDarkMode;
     setMobileDarkMode(next);
   };
+
+  const toggleDayEditEditorTheme = () => {
+    setDayEditEditorTheme((current) => {
+      const next = current === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('dayEditEditorTheme', next);
+      window.dispatchEvent(new CustomEvent('dayEditEditorThemeChange', { detail: next }));
+      return next;
+    });
+  };
+
+  // El tema tambien puede cambiar fuera de esta ventana: otra pestania del sitio
+  // o la aplicacion instalada comparten el mismo localStorage. Sin escuchar ese
+  // cambio, la barra se quedaba con el tema viejo mientras el editor abria con el
+  // nuevo, y cada pantalla mostraba un tema distinto.
+  useEffect(() => {
+    const sincronizarTemaExterno = (evento) => {
+      // key null es un localStorage.clear() en otra pestania: tambien hay que releer.
+      if (evento.key && evento.key !== 'dayEditEditorTheme') return;
+      setDayEditEditorTheme(localStorage.getItem('dayEditEditorTheme') === 'dark' ? 'dark' : 'light');
+    };
+
+    window.addEventListener('storage', sincronizarTemaExterno);
+    return () => window.removeEventListener('storage', sincronizarTemaExterno);
+  }, []);
+
+  useEffect(() => {
+    // El alumno tambien recibe el atributo. Antes era solo para admin, asi que
+    // ninguna de las reglas de tema llegaba a su pantalla: las barras se veian
+    // oscuras y el contenido quedaba claro. El nombre del atributo se mantiene
+    // porque ya hay reglas escritas contra el.
+    if (isAutenticated) {
+      document.documentElement.dataset.tomAdminTheme = dayEditEditorTheme;
+    } else {
+      delete document.documentElement.dataset.tomAdminTheme;
+    }
+  }, [dayEditEditorTheme, isAutenticated, location.pathname]);
 
   // Detectar mobile por resize / media query
   useEffect(() => {
@@ -173,9 +231,11 @@ function App() {
       document.body.style.color = '';
       return;
     }
-    applyMobileDarkMode(mobileDarkMode);
+    // El fondo del alumno lo decide la MISMA preferencia que usa el entrenador,
+    // para no tener dos interruptores de tema conviviendo.
+    applyMobileDarkMode(dayEditEditorTheme === 'dark');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldEnableMobileDarkUI, mobileDarkMode]);
+  }, [shouldEnableMobileDarkUI, dayEditEditorTheme]);
 
   // =========================================================
 
@@ -277,7 +337,10 @@ function App() {
   return () => {
     isMounted = false;
   };
-}, [isAutenticated, id, currentRole, location.pathname]);
+  /* Sin location.pathname: los anuncios son del usuario, no de la ruta. Con la
+     ruta en las dependencias se volvian a pedir en cada pantalla que abria el
+     alumno. El dialogo se sigue mostrando segun la ruta en el efecto de abajo. */
+}, [isAutenticated, id, currentRole]);
 
 const handleDismissAnnouncement = async () => {
   const currentAnnouncement = pendingAnnouncements[currentAnnouncementIndex];
@@ -386,6 +449,9 @@ const handleDismissAnnouncement = async () => {
     setIsAutenticated(true);
 
     localStorage.setItem('token', token);
+    /* Marca de que en este dispositivo hubo sesion alguna vez. Sin esto, la app
+       intenta restaurar sesion en cada primera visita y se come un 401. */
+    localStorage.setItem('tom-session-seen', '1');
     localStorage.setItem('role', userData.role);
     localStorage.setItem('_id', userData._id);
     localStorage.setItem('name', userData.name);
@@ -426,9 +492,22 @@ const handleDismissAnnouncement = async () => {
 
       if (token && !isJwtExpired(token)) {
         if (!isMounted) return;
+        /* Sesiones abiertas antes de que existiera la marca: se les pone ahora,
+           para que al vencer el token puedan restaurarse igual. */
+        localStorage.setItem('tom-session-seen', '1');
         setIsAutenticated(true);
         registerServiceWorker();
         setIsLoading(false);
+        return;
+      }
+
+      /* Sin rastro de sesion previa no hay cookie que canjear: pedir el refresh
+         es un viaje perdido y deja un 401 rojo en consola en cada visita. */
+      if (!localStorage.getItem('tom-session-seen')) {
+        if (isMounted) {
+          setIsAutenticated(false);
+          setIsLoading(false);
+        }
         return;
       }
 
@@ -589,50 +668,46 @@ const handleDismissAnnouncement = async () => {
   return (
     <>
       {/* NAVBAR FIJA */}
-      <nav className={`navbar navbar-expand-lg colorMainAll text-light fixed-top `}>
-        <div className="container-fluid">
-          {(((isAdmin() && (location.pathname == '/' || location.pathname == `/users/${id}`)) || !isAdmin())) ?
-            <a className="navbar-brand text-light btn btn-outline-light border me-2 ms-3 font1Em " href={`/`}>TOM</a> :
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="btn btn-outline-light border me-2 ms-3"
-            >
-              <User className="me-2" /> {inUserContext && currentUsername ? currentUsername : 'Atras'}
-            </button>
-          }
+      <nav className={`navbar navbar-expand-lg colorMainAll text-light fixed-top tomTopNav ${location.pathname === '/' ? 'tomTopNavHome' : ''}`}>
+        <div className="container-fluid tomTopNavInner">
+          <div className="tomTopNavStart">
+            {isAutenticated ? (
+              <Link className="tomTopNavAccount" to="/" aria-label="Ir al inicio">
+                <span className="tomTopNavAvatar"><User size={13} /></span>
+                <span>{localStorage.getItem('name') || 'Usuario'}</span>
+              </Link>
+            ) : (
+              <Link className="tomTopNavAccount" to="/">TOM</Link>
+            )}
 
-          {isAdmin() && location.pathname != '/' && (
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="btn btn-outline-light border "
-            >
-              <ArrowBackIcon className="me-2" /> Atras
-            </button>
-          )}
-
-          {/* NUEVO: Switch darkmode (solo NO-admin + mobile) al lado del hamburguesa */}
-          {shouldEnableMobileDarkUI && (
-            <div className="d-flex align-items-center ms-2">
-              <IconButton
-                aria-label="toggle dark mode"
-                onClick={toggleMobileDarkMode}
-                className="text-light"
-                size="small"
+            {isAutenticated && (
+              <button
+                type="button"
+                className={`tomTopNavEditorThemeBtn is-${dayEditEditorTheme}`}
+                onClick={toggleDayEditEditorTheme}
+                aria-label={dayEditEditorTheme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
               >
-                {mobileDarkMode ? <DarkModeIcon /> : <LightModeIcon />}
-              </IconButton>
+                {dayEditEditorTheme === 'dark' ? <LightModeIcon fontSize="inherit" /> : <DarkModeIcon fontSize="inherit" />}
+                <span>{dayEditEditorTheme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
+              </button>
+            )}
 
-              <Switch
-                checked={mobileDarkMode}
-                onChange={toggleMobileDarkMode}
-                inputProps={{ 'aria-label': 'mobile dark mode switch' }}
-              />
-            </div>
-          )}
+            {/* "Atras" queda solo del lado del entrenador, que navega mucho entre
+                alumno, semanas y dias. En la vista del alumno ocupaba lugar en una
+                barra angosta y el gesto del telefono ya cubre volver. */}
+            {isAutenticated && isAdmin() && location.pathname !== '/' && (
+              <button type="button" onClick={() => navigate(-1)} className="tomTopNavBack">
+                <ChevronLeft size={15} />
+                <span>Atras</span>
+              </button>
+            )}
+          </div>
 
-          <button className="navbar-toggler text-light " type="button" onClick={handleMenuSidebarOpen}>
+          {/* El sol + switch del alumno se fue: ahora usa la misma pastilla
+              "Modo claro / Modo oscuro" que el entrenador, arriba en esta misma
+              barra, para que haya un solo control y un solo estado de tema. */}
+
+          <button className="navbar-toggler text-light tomTopNavToggle" type="button" onClick={handleMenuSidebarOpen}>
             <AlignJustify />
           </button>
 
@@ -641,6 +716,14 @@ const handleDismissAnnouncement = async () => {
               <li className="nav-item">
                 <Link className={`nav-link text-light ${location.pathname === `/` && 'active'}`} to="/">Inicio</Link>
               </li>
+
+              {hasCompetitionsAccess && (
+                <li className="nav-item">
+                  <Link className={`nav-link text-light ${location.pathname === `/competencias` && 'active'}`} to="/competencias">
+                    Competencias
+                  </Link>
+                </li>
+              )}
 
               {isAdmin() && (
                 <li className="nav-item">
@@ -662,6 +745,14 @@ const handleDismissAnnouncement = async () => {
                 <li className="nav-item">
                   <Link className={`nav-link text-light ${location.pathname === `/planificator/${id}` && 'active'}`} to={`/planificator/${id}`}>
                     Planificador
+                  </Link>
+                </li>
+              )}
+
+              {hasNutritionAccess && (
+                <li className="nav-item">
+                  <Link className={`nav-link text-light ${location.pathname === `/nutricion` && 'active'}`} to={`/nutricion`}>
+                    Nutricion
                   </Link>
                 </li>
               )}
@@ -715,9 +806,10 @@ const handleDismissAnnouncement = async () => {
               )}
 
               {isAutenticated && (
-                <li className="nav-item m-auto ">
-                  <button className="nav-link text-light btn btn-link p-0" onClick={onLogout}>
-                    Cerrar sesion
+                <li className="nav-item m-auto">
+                  <button className="nav-link btn btn-link tomTopNavLogout" onClick={onLogout}>
+                    <LogOut size={14} />
+                    <span>Cerrar sesion</span>
                   </button>
                 </li>
               )}
@@ -738,29 +830,39 @@ const handleDismissAnnouncement = async () => {
       </nav>
 
       <main
-        className={isCoachDayEditRoute ? "appMainCoachDayEdit" : ""}
+        className={`${isCoachDayEditRoute ? `appMainCoachDayEdit dayEditAppTheme-${dayEditEditorTheme}` : ""} ${isAutenticated && isAdmin() ? `appAdminTheme-${dayEditEditorTheme}` : ""}`.trim()}
         style={location.pathname !== `/` ? {
           marginTop: "0",
           minHeight: "calc(100vh - 96px)",
           boxSizing: "border-box",
-          paddingTop: "70px",
+          paddingTop: isCoachDayEditRoute ? "50px" : "70px",
           paddingRight: isCoachDayEditRoute ? "0" : "0.4rem",
           paddingBottom: isCoachDayEditRoute ? "0" : "0.4rem",
           paddingLeft: isCoachDayEditRoute ? "0" : "0.4rem",
-          backgroundColor: isCoachDayEditRoute ? "#ffffff" : "transparent",
+          backgroundColor: isCoachDayEditRoute
+            ? (dayEditEditorTheme === 'dark' ? "var(--tom-shell-bg-deep, #050b14)" : "#f3f6fb")
+            : (isAutenticated && isAdmin() && dayEditEditorTheme === 'dark' ? "var(--tom-shell-bg-deep, #050b14)" : "transparent"),
           overflowX: "hidden"
         } : { padding: "0" }}
       >
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<HomePage editorTheme={dayEditEditorTheme} />} />
           <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
           <Route path="/qr-login" element={<QrLogin onLogin={onLogin} />} />
+          <Route
+            path="/competencias"
+            element={
+              <RoutePrivate isAutenticate={isAutenticated}>
+                {hasCompetitionsAccess ? <TomMeetPage /> : <Navigate to="/" replace />}
+              </RoutePrivate>
+            }
+          />
 
           <Route
             path="/users/:id/"
             element={
               <RoutePrivate isAutenticate={isAutenticated}>
-                <UsersListPage />
+                <UsersListPage editorTheme={dayEditEditorTheme} />
               </RoutePrivate>
             }
           />
@@ -778,7 +880,7 @@ const handleDismissAnnouncement = async () => {
             path="/user/routine/:id/:username"
             element={
               <RoutePrivate isAutenticate={isAutenticated}>
-                <UserRoutineEditPage />
+                <UserRoutineEditPage editorTheme={dayEditEditorTheme} />
               </RoutePrivate>
             }
           />
@@ -787,7 +889,10 @@ const handleDismissAnnouncement = async () => {
             path="/routine/user/:id/week/:week_id/day/:day_id/:username"
             element={
               <RoutePrivate isAutenticate={isAutenticated}>
-                <DayEditDetailsPage />
+                {/* El editor tenia su propia copia del tema y se desincronizaba
+                    de la barra. El tema lo decide App y baja como prop, igual
+                    que en las demas pantallas. */}
+                <DayEditDetailsPage editorTheme={dayEditEditorTheme} />
               </RoutePrivate>
             }
           />
@@ -868,7 +973,16 @@ const handleDismissAnnouncement = async () => {
             path="/usuarios/:id"
             element={
               <RoutePrivate isAutenticate={isAutenticated}>
-                <PaymentsManagerPage />
+                <PaymentsManagerPage editorTheme={dayEditEditorTheme} />
+              </RoutePrivate>
+            }
+          />
+
+          <Route
+            path="/nutricion"
+            element={
+              <RoutePrivate isAutenticate={isAutenticated}>
+                {hasNutritionAccess ? <NutritionAdminPage /> : <Navigate to="/" replace />}
               </RoutePrivate>
             }
           />
@@ -889,6 +1003,14 @@ const handleDismissAnnouncement = async () => {
               Inicio
             </Link>
           </li>
+
+          {hasCompetitionsAccess && (
+            <li className="list-group-item">
+              <Link className='nav-link' to="/competencias" onClick={() => setMenuSidebar(false)}>
+                Competencias
+              </Link>
+            </li>
+          )}
 
           {isAdmin() && (
             <li className="list-group-item">
@@ -918,6 +1040,14 @@ const handleDismissAnnouncement = async () => {
             <li className="list-group-item">
               <Link className='nav-link' to={`/planificator/${id}`} onClick={() => setMenuSidebar(false)}>
                 Planificador
+              </Link>
+            </li>
+          )}
+
+          {hasNutritionAccess && (
+            <li className="list-group-item">
+              <Link className='nav-link' to={`/nutricion`} onClick={() => setMenuSidebar(false)}>
+                Nutricion
               </Link>
             </li>
           )}
@@ -991,7 +1121,7 @@ const handleDismissAnnouncement = async () => {
         </ul>
       </Sidebar>
 
-      <footer className={`container-fluid colorMainAll`}>
+      <footer className={`container-fluid colorMainAll ${isAutenticated && isAdmin() ? `appAdminFooterTheme-${dayEditEditorTheme}` : ""}`}>
         <div className={`row marginSidebarClosed`}>
           <ul className="text-center">
             <li className="text-light py-2">TOM</li>

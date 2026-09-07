@@ -1,7 +1,11 @@
 import { API_BASE, apiFetch } from './apiFetch.js'
+import { olvidarRutina } from './week.services.js'
 
 //Crea un dia
 async function createDay(name, week_id) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day`, {
         method: 'POST',
         headers: {
@@ -24,6 +28,9 @@ async function createDay(name, week_id) {
 //Editar un dia
 
 async function editDay(week_id, day_id, name) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}`, {
         method: 'PATCH',
         headers: {
@@ -43,6 +50,9 @@ async function editDay(week_id, day_id, name) {
 }
 
 async function deleteDay(week_id, day_id) {
+    /* Cambia la rutina: el guardado corto de week.services deja de valer. */
+    olvidarRutina()
+
     return apiFetch(`${API_BASE}/api/week/${week_id}/day/${day_id}`, {
         method: 'DELETE',
         headers: {

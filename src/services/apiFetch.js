@@ -1,10 +1,15 @@
-const ENV_API_BASE = (import.meta.env.VITE_API_BASE || '').trim().replace(/\/+$/, '')
+/* Vite reemplaza import.meta.env en el build. Fuera de Vite -por ejemplo al
+   correr los tests con node --test- ese objeto no existe, y leerle una
+   propiedad tiraba el modulo entero antes de ejecutar nada. */
+const ENV = import.meta.env || {}
+
+const ENV_API_BASE = (ENV.VITE_API_BASE || '').trim().replace(/\/+$/, '')
 const PROD_API_FALLBACK = 'https://tom-api-udqr-git-main-martinlgalvans-projects.vercel.app'
 
 // Si existe VITE_API_BASE, lo usamos tanto en desarrollo como en produccion.
 // En produccion, si falta esa env, usamos un fallback explicito a la API publicada.
 // En desarrollo, si falta, caemos a mismo dominio/proxy local.
-export const API_BASE = ENV_API_BASE || (import.meta.env.PROD ? PROD_API_FALLBACK : '')
+export const API_BASE = ENV_API_BASE || (ENV.PROD ? PROD_API_FALLBACK : '')
 
 export function buildApiUrl(path = '') {
   if (!path) return API_BASE

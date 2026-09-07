@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
+﻿import React, { useEffect, useLayoutEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Fragment } from 'react';
 import { Link, useParams, useNavigate } from "react-router-dom"; // Se agrego useNavigate
 import { Tour } from 'antd';
@@ -44,6 +44,8 @@ import Formulas from "../../components/Formulas.jsx";
 import CountdownTimer from "../../components/CountdownTimer.jsx";
 import ExerciseComparisonChart from "../../components/ExerciseComparisonChart.jsx";
 import PlateCounterTool from "../../components/PlateCounterTool.jsx";
+import CardFontSizeTool from "../../components/CardFontSizeTool.jsx";
+import { readCardFontScale, applyCardFontScale } from "../../helpers/cardFontScale.js";
 import AttemptPlannerTool from "../../components/AttemptPlannerTool.jsx";
 import TechnicalLogTool from "../../components/TechnicalLogTool.jsx";
 import ImageIcon from '@mui/icons-material/Image';
@@ -71,6 +73,8 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 import {
+  Info,
+  Zap,
   NotebookText,
   Pencil,
   ArrowUp10,
@@ -85,6 +89,7 @@ const ATHLETE_TOOL_OPTIONS = [
   { label: "1RM estimado", value: "pr" },
   { label: "Plan de competencia", value: "openers" },
   { label: "Bitacora tecnica", value: "technical_log" },
+  { label: "Tamano de letra", value: "fontsize" },
 ];
 
 const parseColorToRgb = (color) => {
@@ -248,6 +253,7 @@ function DayDetailsPage() {
     const [dismissUnsavedBanner, setDismissUnsavedBanner] = useState(false);
     // â¬‡ï¸Ž NUEVO: dialogo informativo de circuitos
     const [showCircuitInfo, setShowCircuitInfo] = useState(false);
+    const [showSupersetInfo, setShowSupersetInfo] = useState(false);
     const [circuitInfoTitle, setCircuitInfoTitle] = useState('');
     const [circuitInfoText, setCircuitInfoText] = useState('');
 
@@ -312,7 +318,13 @@ const [isDark, setIsDark] = useState(() => {
   if (typeof window === "undefined") return false;
   return readTheme();
 });
-const athleteDialogClass = isDark ? "athlete-dialog-dark" : "";
+const athleteDialogClass = isDark ? "athlete-dialog athlete-dialog-dark" : "athlete-dialog";
+
+const [cardFontScale, setCardFontScale] = useState(readCardFontScale);
+
+useLayoutEffect(() => {
+  applyCardFontScale(cardFontScale);
+}, [cardFontScale]);
 
 useEffect(() => {
   if (!athleteOpenersPlans.length) {
@@ -712,7 +724,11 @@ const isCurrentWeek = currentWeekIndex === 0;
   useEffect(() => {
     const fetchWeeks = async () => {
       try {
-        const weeks = await WeekService.findRoutineByUserId(id);
+        /* Unico consumidor del guardado corto: la lista de semanas aca alimenta
+           el navegador y la comparacion con la semana anterior. La semana que se
+           muestra se pide siempre fresca en otro efecto (/api/week/:id), y el
+           alumno no crea ni borra dias. */
+        const weeks = await WeekService.findRoutineByUserId(id, { usarGuardado: true });
         const sortedWeeks = (weeks || []).sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         ); // ultima primero
@@ -720,28 +736,31 @@ const isCurrentWeek = currentWeekIndex === 0;
         const visibleWeeks = sortedWeeks.filter(
           (w) => !w?.visibility || w.visibility === 'visible'
         );
-        console.log(visibleWeeks)
         setAllWeeks(visibleWeeks);
-      
-        if (visibleWeeks.length === 0) {
-          setCurrentWeekIndex(0);
-          return;
-        }
-      
-        const selectedIndex = visibleWeeks.findIndex((w) => w._id === week_id);
-        if (selectedIndex !== -1) {
-          setCurrentWeekIndex(selectedIndex);
-        } else {
-          // Si la semana actual esta oculta, redirigimos a la primera visible
-          setCurrentWeekIndex(0);
-          navigate(`/routine/${id}/day/0/${visibleWeeks[0]._id}/0`, { replace: true });
-        }
+        if (visibleWeeks.length === 0) setCurrentWeekIndex(0);
       } catch (err) {
         console.error("Error al cargar semanas", err);
       }
     };
     fetchWeeks();
-  }, [id, week_id, navigate]);
+    // Solo depende de `id`: antes tambien de `week_id`, asi que cada vez que el
+    // alumno cambiaba de semana se volvian a pedir TODAS sus semanas por red.
+    // Con muchas semanas eso es lento y abre una ventana donde la lista y el
+    // indice pueden quedar desfasados. El indice ahora se deriva abajo.
+  }, [id]);
+
+  // Deriva la semana mostrada a partir de la URL y de la lista ya cargada, sin
+  // pedir nada de nuevo.
+  useEffect(() => {
+    if (!allWeeks.length) return;
+    const selectedIndex = allWeeks.findIndex((w) => w._id === week_id);
+    if (selectedIndex !== -1) {
+      setCurrentWeekIndex((prev) => (prev === selectedIndex ? prev : selectedIndex));
+    } else {
+      setCurrentWeekIndex(0);
+      navigate(`/routine/${id}/day/0/${allWeeks[0]._id}/0`, { replace: true });
+    }
+  }, [allWeeks, week_id, id, navigate]);
 
 function handleEditMobileBlockExercise(exercise, blockIndex, exerciseIndex) {
   setCompleteExercise(exercise);
@@ -2674,6 +2693,51 @@ const renderMetricBox = (label, value, colClass, extraClass = '') => (
 );
 
 
+/* Fila de metricas: UNA sola definicion para todas las cards.
+   Antes cada tipo de card la dibujaba por su cuenta —el ejercicio suelto
+   incluso a mano, con markup distinto en Sets— y por eso las etiquetas no
+   quedaban a la misma altura entre una card y otra. Lo que distingue a un
+   bloque o a una superserie va por FUERA de esta fila, nunca adentro. */
+const renderMetricRow = (item) => {
+  if (!item) return null;
+  return (
+    <div className="athleteMetrics">
+      {/* Series y reps son la misma idea (el volumen), asi que van juntos. */}
+      <div className="athleteMetric athleteMetricVolumen">
+        <span className="athleteMetricLabel">Series y reps</span>
+        <span className="athleteMetricValue">
+          {renderMetricValue(item.sets)}
+          <span className="athleteMetricPor">&times;</span>
+          {renderMetricValue(item.reps)}
+        </span>
+      </div>
+
+      {/* El peso es lo que la persona tiene que cargar: manda en la fila. */}
+      <div className="athleteMetric athleteMetricPeso">
+        <span className="athleteMetricLabel">Peso</span>
+        <span className="athleteMetricValue">
+          {item.peso ? cleanUiText(item.peso) : '-'}
+        </span>
+      </div>
+
+      {item.rpeRir ? (
+        <div className="athleteMetric athleteMetricAlumno">
+          <span className="athleteMetricLabel">Alumno</span>
+          <span className="athleteMetricValue">{cleanUiText(item.rpeRir)}</span>
+        </div>
+      ) : null}
+
+      {/* Descanso se lee como cronometro, no como un dato mas. */}
+      <div className="athleteMetric athleteMetricDescanso">
+        <span className="athleteMetricLabel">Descanso</span>
+        <div className="athleteMetricTimer">
+          <CountdownTimer darkMode={isDark} initialTime={item.rest} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const currentDayData = currentDay !== null ? allDays[currentDay] : null;
 const currentMovility = Array.isArray(currentDayData?.movility) ? currentDayData.movility : [];
 const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.warmup : [];
@@ -2704,38 +2768,57 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
 
     return (
         <>
-    <div className="container-fluid p-0 ">
-        <Logo />
-    </div>
+    {/* El logo estaba en su propio contenedor, fuera de la seccion con tema:
+        eran dos superficies pegadas con fondos distintos y se veia el corte.
+        Ahora vive adentro y comparte el mismo fondo. */}
+    <section className={`container-fluid p-0 ddp athleteDayShell ${isDark ? "ddp-dark" : "ddp-light"}`}>
 
-    <section className={`container-fluid p-0 ddp ${isDark ? "ddp-dark" : "ddp-light"}`}>
+        <div className="athleteDayLogo athleteIn athleteIn--1">
+            <Logo />
+        </div>
 
         <div className={`text-center py-2 ${currentWeekIndex !== 0 ? 'alert alert-warning rounded-1 text-dark' : ''}`}>
-          <div className="d-flex justify-content-center align-items-center">
-            <IconButton
-              className="me-2"
-                onClick={() => goToWeek(Math.min(currentWeekIndex + 1, allWeeks.length - 1))}
+          {/* Navegador de semanas: pasa de dos flechas sueltas con el titulo en
+              el medio a una pieza unica, con las flechas como destinos tactiles
+              propios y la posicion dentro del total a la vista. */}
+          <div className="athleteWeekNav athleteIn athleteIn--2">
+            <button
+              type="button"
+              className="athleteWeekNavArrow"
+              onClick={() => goToWeek(Math.min(currentWeekIndex + 1, allWeeks.length - 1))}
               disabled={currentWeekIndex === allWeeks.length - 1}
+              aria-label="Semana anterior"
             >
-              <NavigateBeforeIcon className={`fs-2 ${currentWeekIndex === allWeeks.length - 1 ? 'text-muted' : ''}`} />
-            </IconButton>
+              <NavigateBeforeIcon fontSize="inherit" />
+            </button>
 
-            <div className="d-flex flex-column align-items-center">
-              <h5 className="mb-0">{allWeeks[currentWeekIndex]?.name }</h5>
-                <small className="text-muted">
-                  {allWeeks[currentWeekIndex]?.createdAt 
+            <div className="athleteWeekNavCenter">
+              <span className="athleteWeekNavName">{allWeeks[currentWeekIndex]?.name}</span>
+              {/* Sin fecha y con una sola semana no hay nada que mostrar: si se
+                  renderiza igual queda un renglon vacio debajo del nombre. */}
+              {(allWeeks[currentWeekIndex]?.createdAt || allWeeks.length > 1) && (
+                <span className="athleteWeekNavMeta">
+                  {allWeeks[currentWeekIndex]?.createdAt
                     ? new Date(allWeeks[currentWeekIndex].createdAt).toLocaleDateString()
-                    : ''}
-                </small>
+                    : null}
+                  {allWeeks.length > 1 && (
+                    <span className="athleteWeekNavCount">
+                      {allWeeks.length - currentWeekIndex} de {allWeeks.length}
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
 
-            <IconButton
-              className="ms-2"
+            <button
+              type="button"
+              className="athleteWeekNavArrow"
               onClick={() => goToWeek(Math.max(currentWeekIndex - 1, 0))}
               disabled={currentWeekIndex === 0}
+              aria-label="Semana siguiente"
             >
-              <NavigateNextIcon className={`fs-2 ${currentWeekIndex === 0 ? 'text-muted' : ''}`} />
-            </IconButton>
+              <NavigateNextIcon fontSize="inherit" />
+            </button>
           </div>
 
           {currentWeekIndex !== 0 && (
@@ -2746,7 +2829,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
         </div>
 
           {allDays.length > 0 && (
-            <div className="text-center my-3">
+            <div className="text-center my-3 athleteIn athleteIn--3">
               <Segmented
                 options={allDays.map(day => {
                   const name = day.name || '';
@@ -2767,15 +2850,22 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
             </div>
           )}
 
-        {currentDay !== null && (
-        <div className="row align-items-center text-center m-0 px-1 my-5">
-            <h2 className={`text-center mb-4 rounded-2 fs-5 py-2 ${isDark ? "ddp-dayTitle-dark" : "ddp-dayTitle-light"}`}>
-                {allDays[currentDay]?.name}
-            </h2>
+        {/* Sin dias cargados esto se dibujaba igual, con el titulo vacio, y al
+            llegar los datos cambiaba day_id: el bloque se volvia a montar y la
+            entrada se veia dos veces. Se espera a tener los dias. */}
+        {currentDay !== null && allDays.length > 0 && (
+        <div className="row align-items-center text-center m-0 px-1 athleteDayBody" key={day_id}>
+            {/* La key hace que el bloque se vuelva a montar al cambiar de dia,
+                y con eso la animacion de entrada se repite. */}
+            <div className="athleteDayHeading" key={allDays[currentDay]?._id || currentDay}>
+                <span className="athleteDayHeadingEyebrow">Entrenamiento</span>
+                <h2 className="athleteDayHeadingTitle">{allDays[currentDay]?.name}</h2>
+                <span className="athleteDayHeadingRule" aria-hidden="true" />
+            </div>
 
             {currentMovility.length > 0 && (
             <>
-              <div className="text-start"><span>Activacion / movilidad</span></div>
+              <div className="text-start athleteSectionTitle athleteIn athleteIn--5"><span>Activacion / movilidad</span></div>
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 loop
@@ -2791,7 +2881,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                   1400: { slidesPerView: 2 },
                 }}
                 onSwiper={swiper => (movilitySwiper.current = swiper)}
-                className="mx-0 px-0">
+                className="mx-0 px-0 athleteIn athleteIn--6">
                     {currentMovility.map((exercise, idx) => (
                       <SwiperSlide key={idx}>
                         {productTemplate(exercise, idx, true)}
@@ -2804,7 +2894,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
 
             {currentWarmup.length > 0 && (
             <>
-              <div className="text-start"><span>Entrada en calor</span></div>
+              <div className="text-start athleteSectionTitle athleteIn athleteIn--5"><span>Entrada en calor</span></div>
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 loop
@@ -2820,7 +2910,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                   1400: { slidesPerView: 2 },
                 }}
                 onSwiper={swiper => (movilitySwiper.current = swiper)}
-                className="mx-0 px-0">
+                className="mx-0 px-0 athleteIn athleteIn--6">
                     {currentWarmup.map((exercise, idx) => (
                       <SwiperSlide key={idx}>
                         {productTemplate(exercise, idx, false)}
@@ -2834,7 +2924,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
             
               <div className="row m-auto px-0 ">
                 
-                <h2 className=" p-2 mb-0 text-start ">Rutina del dia</h2>
+                <h2 className="p-2 mb-0 text-start athleteSectionTitle athleteIn athleteIn--5">Rutina del dia</h2>
               
                 {groupSupersets(modifiedDay).map((element, idx) => {
   const sourceIndex = element._origIndex ?? idx;
@@ -2862,14 +2952,14 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
         }
       : undefined;
     const themedTextClass = blockTextColor ? '' : (isDark ? "text-light" : "text-dark");
-  console.log(element)      
   return (
     <div
       key={isSuperset ? `sup-${element.baseNumber}-${idx}` : `${element.exercise_id || element._id || idx}-${idx}`}
       ref={el => (cardRefs.current[idx] = el)}
-      className="px-0 mb-3"
+      className="px-0 mb-3 athleteIn athleteCardIn"
+      style={{ '--ath-i': idx }}
     >
-      <div className={`row justify-content-center border rounded-2 m-0 mb-3 ddp-card ${isDark ? "ddp-surface" : "bg-light"}`}>
+      <div className={`row justify-content-center border rounded-2 m-0 mb-3 ddp-card ${isSuperset ? "ddp-supersetCard" : ""} ${isDark ? "ddp-surface" : "bg-light"}`}>
         <div 
           className={`col-12 ${blockBgColor ? 'ddp-block-colored-header' : ''}`}
           style={blockHeaderStyle}
@@ -2891,11 +2981,21 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                     ? <span>{cleanUiText(element.name)}</span>
                     : isSuperset
                       ? (
-                        <span>
-                          Superserie
-                          <small className="ms-2">
-                            ({element.exercises.map(e => e.supSuffix).join(' - ')})
+                        <span className="ddp-supersetTitle">
+                          <Zap size={14} aria-hidden="true" />
+                          <span>Superserie</span>
+                          <small className="ddp-supersetRange">
+                            {element.exercises.map(e => e.supSuffix).join(' + ')}
                           </small>
+                          {/* En mobile no hay hover: la explicacion abre en un dialogo. */}
+                          <button
+                            type="button"
+                            className="ddp-supersetInfo"
+                            aria-label="Que es una superserie"
+                            onClick={(e) => { e.stopPropagation(); setShowSupersetInfo(true); }}
+                          >
+                            <Info size={15} />
+                          </button>
                         </span>
                       )
                       : <span>Circuito</span>}
@@ -2919,68 +3019,31 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
           </div>
         </div>
 
+{element.name?.approximations?.length > 0 && (
+  <>
+    <span className={`${isDark ? "styleInputsNote-backDark" : "styleInputsNote-back"}  text-center mt-3`}>
+      {cleanUiText(element.name.approxTitle ?? "Aproximaciones")}
+    </span>
+    <div className=" col-12 mb-2">
+      {element.name.approximations.map((ap, i) => (
+        <div className={`row justify-content-around ${isDark ? "colorNote3Dark" : "colorNote3"} my-1`} key={i}>
+          <span className="fs08em  text-start col-6">
+            <b>{i + 1}</b> aproximacion
+          </span>
+          <p className={`pb-0 mb-0 fs08em col-5 ${isDark ? "text-light " : "text-dark"}`}>
+            {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
+          </p>
+        </div>
+
+
+      ))}
+    </div>
+  </>
+)}
+
 {isExercise ? (
   <>
-    <div className={`${setsCol} p-0 mt-4 pt-2 mb-2 d-flex flex-column ${isDark ? "StyleDarkBox" : "StyleLightBox"} `}>
-      <div>
-        <p className="fontStylesSpan ">Sets</p>
-      </div>
-      <div>
-      {Array.isArray(element.sets) ? (
-        <span className="textWeightCards border-1 d-block ">
-          {element.sets.map((setValue, i) => (
-            <React.Fragment key={i}>
-              <span className="textWeightCards arrayBadge">{cleanUiText(setValue)}</span>
-              {i < element.sets.length - 1 && <span>-</span>}
-            </React.Fragment>
-          ))}
-        </span>
-      ) : (
-        <span className="textWeightCards border-1 d-block">{cleanUiText(element.sets)}</span>
-      )}
-      </div>
-    </div>
-
-    <div className={`${repsCol} p-0 mx-1 mt-4 pt-2 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
-      <div>
-         <p className="fontStylesSpan">Reps</p>
-      </div>
-      <div>
-      {Array.isArray(element.reps) ? (
-        <span className="textWeightCards border-1 d-block">
-          {element.reps.map((r, i) => (
-            <React.Fragment key={i}>
-              <span className="textWeightCards arrayBadge">{r}</span>
-              {i < element.reps.length - 1 && <span>-</span>}
-            </React.Fragment>
-          ))}
-        </span>
-      ) : (
-        <span className="textWeightCards border-1 d-block">{element.reps}</span>
-      )}
-      </div>
-    </div>
-
-    <div className={`${pesoCol} p-0 me-1 mt-4 pt-2 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
-     <div>
-         <p className="fontStylesSpan ">Peso</p>
-      </div>
-      <div>
-        <span className="textWeightCards d-block">{element.peso ? cleanUiText(element.peso) : '-'}</span>
-      </div>
-    </div>
-
-    {element.rpeRir ? renderMetricBox("Alumno", cleanUiText(element.rpeRir), "col-3", "me-1") : null}
-
-    <div className={`${restCol} p-0 me-1 mt-4  mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
-      
-       <div>
-         <p className="fontStylesSpan mt-2 ">Descanso</p>
-      </div>
-      <div>
-        <CountdownTimer darkMode={isDark} initialTime={element.rest} />      
-        </div>
-    </div>
+    {renderMetricRow(element)}
   </>
 ) : isSuperset ? (
   <>
@@ -2995,7 +3058,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
           <div className="col-12 mb-2 mb-3 shadow-personalized">
             <div className="row justify-content-around rounded-2 p-2 align-items-center">
               <div className="col-2 text-center">
-                <span className="badge text-light border bg-dark">{ex.supSuffix}</span>
+                <span className="ddp-supersetTag">{ex.supSuffix}</span>
               </div>
               <div className="col-8 text-start ">{innerName}</div>
               <div className="col-2 text-center">
@@ -3004,38 +3067,27 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                 </IconButton>
               </div>
 
-              {renderMetricBox("Sets", ex.sets, cols.setsCol)}
-              {renderMetricBox("Reps", ex.reps, cols.repsCol, "mx-1")}
-              {renderMetricBox("Peso", ex.peso ? ex.peso : "-", cols.pesoCol, "me-1")}
-              {ex.rpeRir ? renderMetricBox("Alumno", cleanUiText(ex.rpeRir), "col-3", "me-1") : null}
+              {ex.name?.approximations?.length > 0 && (
+                <>
+                  <span className="styleInputsNote-back">{cleanUiText(ex.name.approxTitle ?? 'Aproximaciones')}</span>
+                  <div className="colorNote3 py-2 rounded-1">
+                    {ex.name.approximations.map((ap, i) => (
+                      <div className="row my-1" key={i}>
+                        <span className="fs07em text-muted col-6">
+                          <b>{i + 1}</b> aproximacion -
+                        </span>
+                        <p className="mb-0 col-5 text-start">
+                          {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
 
-              <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
-                <div>
-                  <p className="fontStylesSpan mt-2">Descanso</p>
-                </div>
-                <div>
-                  <CountdownTimer darkMode={isDark} initialTime={ex.rest} />
-                </div>
-              </div>
+              {renderMetricRow(ex)}
             </div>
 
-            {ex.name?.approximations?.length > 0 && (
-              <>
-                <span className="styleInputsNote-back">{cleanUiText(ex.name.approxTitle ?? 'Aproximaciones')}</span>
-                <div className="colorNote3 py-2 rounded-1">
-                  {ex.name.approximations.map((ap, i) => (
-                    <div className="row my-1" key={i}>
-                      <span className="fs07em text-muted col-6">
-                        <b>{i + 1}</b> aproximacion -
-                      </span>
-                      <p className="mb-0 col-5 text-start">
-                        {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
 
             {ex.name?.backoff?.length > 0 && (
               <>
@@ -3127,20 +3179,6 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                   </IconButton>
                 </div>
 
-                {renderMetricBox("Sets", s.sets, cols.setsCol)}
-                {renderMetricBox("Reps", s.reps, cols.repsCol, "mx-1")}
-                {renderMetricBox("Peso", s.peso || "-", cols.pesoCol, "me-1")}
-                {s.rpeRir ? renderMetricBox("Alumno", cleanUiText(s.rpeRir), "col-3", "me-1") : null}
-
-                <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
-                  <div>
-                    <p className="fontStylesSpan mt-2">Descanso</p>
-                  </div>
-                  <div>
-                    <CountdownTimer darkMode={isDark} initialTime={s.rest} />
-                  </div>
-                </div>
-
                 {s.name?.approximations?.length > 0 && (
                   <>
                     <span className="styleInputsNote-back">{cleanUiText(s.name.approxTitle ?? 'Aproximaciones')}</span>
@@ -3156,6 +3194,9 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
                     </div>
                   </>
                 )}
+
+                {renderMetricRow(s)}
+
 
                 {s.name?.backoff?.length > 0 && (
                   <>
@@ -3313,40 +3354,29 @@ if (isInnerCircuit) {
 
             {isInnerExercise && (
               <>
-                {renderMetricBox("Sets", ex.sets, cols.setsCol)}
-                {renderMetricBox("Reps", ex.reps, cols.repsCol, "mx-1")}
-                {renderMetricBox("Peso", ex.peso || "-", cols.pesoCol, "me-1")}
-                {ex.rpeRir ? renderMetricBox("Alumno", cleanUiText(ex.rpeRir), "col-3", "me-1") : null}
+                {ex.name?.approximations?.length > 0 && (
+                  <>
+                    <span className="styleInputsNote-back">{cleanUiText(ex.name.approxTitle ?? 'Aproximaciones')}</span>
+                    <div className="colorNote3 py-2 rounded-1">
+                      {ex.name.approximations.map((ap, i) => (
+                        <div className="row my-1" key={i}>
+                          <span className="fs07em text-muted col-6">
+                            <b>{i + 1}</b> aproximacion -
+                          </span>
+                          <p className="mb-0 col-5 text-start">
+                            {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
 
-                <div className={`${cols.restCol} p-0 me-1 mt-4 mb-2 ${isDark ? "StyleDarkBox" : "StyleLightBox"}`}>
-                  <div>
-                    <p className="fontStylesSpan mt-2">Descanso</p>
-                  </div>
-                  <div>
-                    <CountdownTimer darkMode={isDark} initialTime={ex.rest} />
-                  </div>
-                </div>
+                {renderMetricRow(ex)}
               </>
             )}
           </div>
 
-          {isInnerExercise && ex.name?.approximations?.length > 0 && (
-            <>
-              <span className="styleInputsNote-back">{cleanUiText(ex.name.approxTitle ?? 'Aproximaciones')}</span>
-              <div className="colorNote3 py-2 rounded-1">
-                {ex.name.approximations.map((ap, i) => (
-                  <div className="row my-1" key={i}>
-                    <span className="fs07em text-muted col-6">
-                      <b>{i + 1}</b> aproximacion -
-                    </span>
-                    <p className="mb-0 col-5 text-start">
-                      {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
 
           {isInnerExercise && ex.name?.backoff?.length > 0 && (
             <>
@@ -3421,27 +3451,6 @@ if (isInnerCircuit) {
 )}
 
 
-        {element.name?.approximations?.length > 0 && (
-          <>
-            <span className={`${isDark ? "styleInputsNote-backDark" : "styleInputsNote-back"}  text-center mt-3`}>
-              {cleanUiText(element.name.approxTitle ?? "Aproximaciones")}
-            </span>
-            <div className=" col-12 mb-2">
-              {element.name.approximations.map((ap, i) => (
-                <div className={`row justify-content-around ${isDark ? "colorNote3Dark" : "colorNote3"} my-1`} key={i}>
-                  <span className="fs08em  text-start col-6">
-                    <b>{i + 1}</b> aproximacion
-                  </span>
-                  <p className={`pb-0 mb-0 fs08em col-5 ${isDark ? "text-light " : "text-dark"}`}>
-                    {cleanUiText(ap.reps)} reps / {cleanUiText(ap.peso)}
-                  </p>
-                </div>
-
-                
-              ))}
-            </div>
-          </>
-        )}
 
         {/* - BACKOFF y NOTAS (identico en ambos casos top-level) - */}
         {element.name?.backoff?.length > 0 && (
@@ -3589,6 +3598,13 @@ if (isInnerCircuit) {
           <div className="mt-3">
             {selectedTool === "calculator" && <PercentageCalculator isDark={isDark} />}
             {selectedTool === "plates" && <PlateCounterTool isDark={isDark} />}
+            {selectedTool === "fontsize" && (
+              <CardFontSizeTool
+                value={cardFontScale}
+                onChange={setCardFontScale}
+                isDark={isDark}
+              />
+            )}
             {selectedTool === "stats" && (
               <ExerciseComparisonChart
                 currentWeek={allWeeks[currentWeekIndex]}
@@ -3673,10 +3689,10 @@ if (isInnerCircuit) {
                 </Dialog>
 
                 <Dialog
-                  header="Editar Ejercicio"
+                  header="Editar ejercicio"
                   visible={editExerciseMobile}
                   style={{ width: '90vw', maxWidth: '600px' }}
-                  className={athleteDialogClass}
+                  className={`athleteEditDialog ${athleteDialogClass}`}
                   onHide={hideDialogEditExercises}
                   draggable={true}
                 >
@@ -3858,9 +3874,9 @@ if (isInnerCircuit) {
                     className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
                     onClick={() => setShowToolsDialog(true)}
                   >
-                    <IconButton className="fs-1">
+                    <span className="fs-1 d-inline-flex p-2">
                       <SettingsIcon className="text-light small" />
-                    </IconButton>
+                    </span>
                     <span className="text-light small">Herramientas</span>
                   </button>
                   <button
@@ -3886,9 +3902,9 @@ if (isInnerCircuit) {
                       });
                     }}
                   >
-                    <IconButton className="fs-1">
+                    <span className="fs-1 d-inline-flex p-2">
                       <CommitIcon className="text-light small" />
-                    </IconButton>
+                    </span>
                     <span className="text-light small">Resumen semanal</span>
                   </button>
 
@@ -3896,9 +3912,9 @@ if (isInnerCircuit) {
                     className="nav-item btn-bottom-nav d-flex flex-column align-items-center border-0 bg-transparent"
                     onClick={() => setShowDriveDialog(true)}
                   >
-                    <IconButton className="fs-1">
+                    <span className="fs-1 d-inline-flex p-2">
                       <AddToDriveIcon className="text-light small" />
-                    </IconButton>
+                    </span>
                     <span className="text-light small">{driveLink ? 'Google Drive' : 'Agregar Drive'}</span>
                   </button>
                 </nav>
@@ -4030,7 +4046,7 @@ if (isInnerCircuit) {
                           type="number"
                           step="0.1"
                           className="form-control fs09em"
-                          value={weeklySummary.pesoCorporal}
+                          value={weeklySummary.pesoCorporal ?? ""}
                           onChange={(e) =>
                             setWeeklySummary((prev) => ({
                               ...prev,
@@ -4256,6 +4272,38 @@ if (isInnerCircuit) {
     >
       Guardar
     </button>
+  </div>
+</Dialog>
+
+<Dialog
+  header="Que es una superserie?"
+  visible={showSupersetInfo}
+  style={{ width: '90vw', maxWidth: 520 }}
+  className={athleteDialogClass}
+  modal
+  onHide={() => setShowSupersetInfo(false)}
+  draggable
+>
+  <div className="text-body">
+    <p>
+      Una <strong>superserie</strong> son dos o mas ejercicios que se hacen
+      <strong> uno detras del otro, sin descanso entre ellos</strong>.
+    </p>
+    <p className="mb-2">Como se hace:</p>
+    <ol className="ps-3 mb-3">
+      <li className="mb-1">Hace todas las repeticiones del ejercicio <strong>A</strong>.</li>
+      <li className="mb-1">Pasa enseguida al <strong>B</strong>, sin parar.</li>
+      <li className="mb-1">Recien al terminar el ultimo, descansa el tiempo indicado.</li>
+      <li>Eso es <strong>una serie</strong>. Repeti hasta completar las series pedidas.</li>
+    </ol>
+    <p className="mb-0">
+      Las letras <strong>A</strong> y <strong>B</strong> marcan el orden dentro del
+      grupo, y el borde amarillo indica que esos ejercicios van juntos.
+    </p>
+  </div>
+
+  <div className="d-flex justify-content-end mt-3">
+    <button className="btn btn-outline-light" onClick={() => setShowSupersetInfo(false)}>Entendido</button>
   </div>
 </Dialog>
 

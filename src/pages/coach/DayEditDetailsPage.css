@@ -1,0 +1,3861 @@
+/* ==========================================================================
+   TOKENS DE TEMA — DayEditDetailsPage
+   ==========================================================================
+   Un unico lugar donde viven los colores de la pagina.
+
+   Por que existe esto: antes cada regla que necesitaba modo claro se escribia
+   como `.dayEditEditorTheme-light .loQueSea { ... !important }`. Habia 38
+   parches asi y 73 !important compitiendo entre si, ademas de DOS convenciones
+   de tema en paralelo (`ddp-dark`/`ddp-light` y `dayEditEditorTheme-*`) donde
+   `ddp-dark` quedaba siempre puesto — con lo cual las reglas `.ddp-light`
+   nunca llegaban a aplicarse y el modo claro heredaba colores oscuros.
+
+   Regla de oro para lo que se agregue de aca en adelante: los componentes
+   referencian estos tokens y NUNCA un hex directo. Cambiar el tema pasa a ser
+   cambiar este bloque, sin tocar una sola regla de layout.
+
+   MOBILE: el breakpoint unico de la pagina es 992px (el mismo en el que se
+   oculta la sidebar). No usar 991 ni 968 — antes convivian los tres y
+   generaban saltos de layout en esas franjas de ancho.
+   ========================================================================== */
+
+.ddp {
+  /* --- Superficies, de mas hundida a mas elevada --- */
+  --dd-page-bg: #050b14;
+  --dd-surface: #0a1626;
+  --dd-surface-2: #0f1b2e;
+  --dd-surface-3: #14243a;
+  --dd-surface-hover: #1b2d46;
+
+  /* --- Bordes --- */
+  --dd-border: #24344d;
+  --dd-border-strong: #345074;
+  --dd-border-subtle: rgba(255, 255, 255, 0.09);
+
+  /* --- Texto --- */
+  --dd-text: #f1f6fc;
+  --dd-text-muted: #9fb0c7;
+  --dd-text-soft: #64748b;
+  /* Etiqueta de campo (SERIES, PESO, REST...) */
+  --dd-label: #7d93ae;
+
+  /* --- Campos de formulario --- */
+  --dd-field-bg: #0d1726;
+  --dd-field-border: #2b3d57;
+  --dd-field-text: #eaf2fb;
+  --dd-field-placeholder: #5f7288;
+  --dd-field-focus-border: #3b82f6;
+  --dd-field-focus-ring: rgba(59, 130, 246, 0.22);
+
+  /* --- Acento / interactivo --- */
+  --dd-accent: #3b82f6;
+  --dd-accent-strong: #2563eb;
+  --dd-accent-soft: rgba(59, 130, 246, 0.14);
+  --dd-on-accent: #ffffff;
+
+  /* --- Semanticos --- */
+  --dd-danger: #f87171;
+  --dd-danger-soft: rgba(239, 68, 68, 0.14);
+  --dd-success: #4ade80;
+  --dd-warning: #fbbf24;
+
+  /* --- Acentos por tipo de contenido --- */
+  --dd-warmup-accent: #f59e0b;
+  --dd-movility-accent: #38bdf8;
+  --dd-circuit-accent: #a78bfa;
+  --dd-block-accent: #34d399;
+
+  /* --- Elevacion --- */
+  --dd-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --dd-shadow-raised: 0 6px 20px rgba(0, 0, 0, 0.45);
+
+  /* --- Geometria compartida (para que todo alinee a la misma grilla) --- */
+  --dd-radius: 10px;
+  --dd-radius-sm: 8px;
+  --dd-gap: 10px;
+  --dd-pad-card: 12px;
+  /* Alto minimo de cualquier control tocable. 40px es el minimo comodo en
+     mobile; antes cada boton definia el suyo y por eso quedaban desparejos. */
+  --dd-control-h: 40px;
+  /* Alto de los campos DENTRO de la card. Mas bajo que --dd-control-h para
+     que la card no quede alta; sigue por encima del minimo tocable comodo.
+     Tiene que vivir en el token y no en la regla, porque styles.css lo usa
+     tambien desde una regla que solo aplica en tema oscuro: si cada lado
+     pusiera su numero, la card quedaba de distinto alto segun el tema. */
+  --dd-field-h: 34px;
+  /* Fondo de las celdas de la tabla de desktop. Las filas <tr> tienen fondo
+     BLANCO fijo (viene de las reglas de la tabla) y lo que las hace verse bien
+     es que sus <td> son opacos y lo tapan. Cualquier celda que dejemos
+     transparente deja ver ese blanco. */
+  --dd-table-surface: #0f1117;
+  --dd-row-hover: #151922;   /* hover de fila: apenas mas claro que la superficie */
+  /* Ancho fijo de la columna de etiquetas en las filas etiqueta/control.
+     Es lo que hace que todos los controles arranquen en la misma vertical. */
+  --dd-label-col: 88px;
+}
+
+.ddp.dayEditEditorTheme-light {
+  --dd-page-bg: #f4f7fb;
+  --dd-surface: #ffffff;
+  --dd-surface-2: #f8fafc;
+  --dd-surface-3: #f1f5f9;
+  --dd-surface-hover: #e8eef6;
+
+  --dd-border: #dbe3ec;
+  --dd-border-strong: #c3cfdd;
+  --dd-border-subtle: rgba(15, 23, 42, 0.08);
+
+  --dd-text: #102132;
+  --dd-text-muted: #5d7898;
+  --dd-text-soft: #8095ad;
+  --dd-label: #647e9b;
+
+  --dd-field-bg: #ffffff;
+  --dd-field-border: #cbd8e8;
+  --dd-field-text: #102132;
+  --dd-field-placeholder: #9aabbf;
+  --dd-field-focus-border: #2563eb;
+  --dd-field-focus-ring: rgba(37, 99, 235, 0.14);
+
+  --dd-accent: #2563eb;
+  --dd-accent-strong: #1d4ed8;
+  --dd-accent-soft: rgba(37, 99, 235, 0.09);
+  --dd-on-accent: #ffffff;
+
+  --dd-danger: #dc2626;
+  --dd-danger-soft: rgba(220, 38, 38, 0.08);
+  --dd-success: #059669;
+  --dd-warning: #b45309;
+
+  --dd-warmup-accent: #d97706;
+  --dd-movility-accent: #0284c7;
+  --dd-circuit-accent: #7c3aed;
+  --dd-block-accent: #059669;
+
+  --dd-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --dd-shadow-raised: 0 6px 20px rgba(15, 23, 42, 0.12);
+  --dd-table-surface: #ffffff;
+  --dd-row-hover: #f5f7fa;
+}
+
+.dayEditSidebarModern {
+  width: 220px;
+  top: 0;
+  z-index: 2;
+  background: var(--tom-shell-bg, #08111f) !important;
+  border-right: 1px solid var(--tom-shell-border, #24344d);
+}
+
+.dayEditSidebarModern .dayEditSidebarModernInner {
+  width: 220px !important;
+  height: 100vh !important;
+  padding: 56px 9px 8px;
+  background: var(--tom-shell-bg, #08111f) !important;
+}
+
+.dayEditSidebarModernContent {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0 0 !important;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tom-shell-border-strong, #345074) transparent;
+}
+
+.dayEditSidebarModernContent > h5 {
+  display: none;
+}
+
+.dayEditToolsModeControl {
+  margin: 0 2px 7px !important;
+  padding: 6px;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  align-items: center;
+  column-gap: 6px;
+  border: 1px solid var(--tom-shell-border, #24344d);
+  border-radius: 8px;
+  background: var(--tom-shell-elevated, #0f1b2e);
+}
+
+.dayEditToolsModeControl > span {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0;
+  color: var(--tom-shell-muted, #9fb0c7);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.dayEditToolsModeControl > div[role="group"] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--tom-shell-bg-deep, #050b14);
+}
+
+.dayEditToolsModeControl > div[role="group"] button {
+  min-height: 25px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--tom-shell-muted, #9fb0c7);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.dayEditToolsModeControl > div[role="group"] button.isActive {
+  background: var(--tom-shell-hover, #1b2d46);
+  color: var(--tom-shell-text, #f8fafc);
+}
+
+.dayEditSidebarModern.isSidebarMode .dayEditToolsModeControl {
+  grid-template-columns: 1fr;
+  row-gap: 5px;
+}
+
+.dayEditSidebarModern.isSidebarMode .dayEditToolsModeControl > span {
+  display: block;
+  margin-bottom: 0;
+}
+
+.dayEditFreeModeControls {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.dayEditFreeModeControls button {
+  min-width: 0;
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 5px;
+  background: var(--tom-shell-elevated-2, #14243a);
+  color: var(--tom-shell-text, #f8fafc);
+  font-size: 0.6rem;
+}
+
+.dayEditSidebarModern.isFreeMode {
+  display: none;
+}
+
+.dayEditSidebarModern.isSimpleMode,
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarModernInner {
+  width: 96px !important;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarModernInner {
+  padding: 56px 9px 8px;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarModernContent {
+  align-items: center;
+  overflow-x: hidden;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditToolsModeControl {
+  width: 58px;
+  grid-template-columns: 1fr;
+  row-gap: 4px;
+  margin: 0 0 8px !important;
+  padding: 5px 4px;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditToolsModeControl > span {
+  display: none;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditToolsModeControl > div[role="group"] {
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditToolsModeControl > div[role="group"] button {
+  min-height: 21px;
+  padding: 2px;
+  font-size: 0.58rem;
+  line-height: 1;
+}
+
+.dayEditSidebarWeek {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 2px 7px !important;
+  padding: 6px 9px;
+  border: 1px solid var(--tom-shell-border, #24344d);
+  border-radius: 8px !important;
+  background: var(--tom-shell-elevated, #0f1b2e) !important;
+  color: var(--tom-shell-text, #f8fafc);
+}
+
+.dayEditSidebarWeek > div:first-child {
+  width: 20px;
+  flex: 0 0 20px;
+  padding: 0;
+  color: #7db5ff;
+}
+
+.dayEditSidebarWeek > div:last-child {
+  min-width: 0;
+  width: auto;
+  flex: 1 1 auto;
+  padding: 0;
+  text-align: left !important;
+}
+
+.dayEditSidebarWeek strong {
+  display: block;
+  overflow: hidden;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dayEditSidebarDays {
+  margin: 0 2px 7px !important;
+  padding: 5px;
+  border: 1px solid #31577e;
+  border-radius: 10px;
+  background: #fff !important;
+}
+
+.dayEditSidebarDays .ant-segmented {
+  padding: 1px;
+  border-radius: 8px;
+  background: #fff !important;
+}
+
+.dayEditSidebarDays .ant-segmented-item {
+  min-height: 27px;
+  margin: 0 0 1px;
+  border-radius: 6px;
+  color: #111827 !important;
+  font-size: 0.66rem;
+}
+
+.dayEditSidebarDays .ant-segmented-item:last-child {
+  margin-bottom: 0;
+}
+
+.dayEditSidebarDays .ant-segmented-item-label {
+  min-height: 27px;
+  display: flex;
+  align-items: center;
+  padding: 3px 6px;
+  color: #111827 !important;
+}
+
+.dayEditSidebarDays .ant-segmented-item-icon,
+.dayEditSidebarDays .ant-segmented-item svg,
+.dayEditSidebarDays .ant-segmented-item span {
+  color: #111827 !important;
+}
+
+.dayEditSidebarDays .ant-segmented-item-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: 7px;
+  background: transparent;
+}
+
+.dayEditSidebarDays .ant-segmented-item-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #111827 !important;
+}
+
+.dayEditSidebarDayActions,
+.dayEditSidebarCreateActions {
+  display: grid;
+  gap: 4px;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarDayActions,
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarCreateActions {
+  width: 100%;
+  justify-items: center;
+  gap: 7px;
+}
+
+.dayEditSidebarCreateActions {
+  margin-top: 8px !important;
+  padding-top: 7px;
+  border-top: 1px solid var(--tom-shell-border, #24344d);
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarCreateActions {
+  margin-top: 10px !important;
+  padding-top: 10px;
+}
+
+.dayEditSidebarDayActions > div,
+.dayEditSidebarCreateActions > div {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 6px;
+  margin: 0 2px !important;
+  padding: 4px 8px;
+  border: 1px solid var(--tom-shell-border, #24344d);
+  border-radius: 7px !important;
+  background: var(--tom-shell-elevated, #0f1b2e) !important;
+  color: var(--tom-shell-text, #f8fafc);
+  transition: border-color 0.14s ease, background-color 0.14s ease, color 0.14s ease;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarDayActions > div,
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarCreateActions > div {
+  width: 42px;
+  min-height: 38px;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0;
+}
+
+.dayEditSidebarDayActions > div:hover,
+.dayEditSidebarCreateActions > div:hover {
+  border-color: var(--tom-shell-border-strong, #345074);
+  background: var(--tom-shell-hover, #1b2d46) !important;
+  color: #fff;
+}
+
+.dayEditSidebarDayActions > div > .col-1,
+.dayEditSidebarCreateActions > div > .col-1 {
+  width: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tom-shell-muted, #9fb0c7);
+  line-height: 1;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarDayActions > div > .col-1,
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarCreateActions > div > .col-1 {
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarDayActions > div > .col-10,
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarCreateActions > div > .col-10 {
+  display: none;
+}
+
+.dayEditSidebarDayActions > div > .col-10,
+.dayEditSidebarCreateActions > div > .col-10 {
+  min-width: 0;
+  width: auto;
+  flex: 1 1 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  text-align: left !important;
+}
+
+.dayEditSidebarDayActions strong,
+.dayEditSidebarCreateActions strong {
+  display: block;
+  overflow: hidden;
+  font-size: 0.66rem;
+  font-weight: 650;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dayEditSidebarDayActions svg,
+.dayEditSidebarCreateActions svg {
+  width: 15px;
+  height: 15px;
+  font-size: 15px;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarDayActions svg,
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarCreateActions svg {
+  width: 19px;
+  height: 19px;
+  font-size: 19px;
+  margin: 0 !important;
+}
+
+.dayEditSidebarComboIcon {
+  gap: 1px;
+}
+
+.dayEditSidebarComboIcon svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarComboIcon {
+  gap: 0;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarComboIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.dayEditSidebarDayActions #eliminarDia {
+  border-color: #5f2e3a;
+}
+
+.dayEditSidebarDayActions #eliminarDia:hover {
+  border-color: #a84957;
+  background: #2a1820 !important;
+}
+
+.dayEditSidebarCreateActions > div {
+  border-color: var(--tom-shell-border-strong, #345074);
+  background: var(--tom-shell-elevated-2, #14243a) !important;
+  color: #e8f2ff;
+}
+
+.dayEditSidebarCreateActions > div > .col-1 {
+  color: #66a2ef;
+}
+
+.dayEditSidebarHelp {
+  margin: auto 0 0 !important;
+  padding: 8px 2px 0 !important;
+}
+
+.dayEditSidebarModern.isSimpleMode .dayEditSidebarHelp {
+  display: none;
+}
+
+.dayEditSidebarHelp button {
+  width: 100%;
+  min-height: 31px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-color: var(--tom-shell-border-strong, #345074);
+  border-radius: 7px;
+  background: var(--tom-shell-elevated-2, #14243a);
+  color: var(--tom-shell-text, #f8fafc);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.dayEditSidebarHelp button:hover {
+  border-color: #6ba4ed;
+  background: var(--tom-shell-hover, #1b2d46);
+  color: #fff;
+}
+
+.exerciseCommandComposer {
+  width: min(760px, calc(100% - 24px));
+  margin: 12px auto 14px;
+}
+
+.exerciseCommandTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 8px;
+  background: var(--tom-shell-elevated-2, #14243a);
+  color: var(--tom-shell-text, #f8fafc);
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.exerciseCommandTrigger:hover,
+.exerciseCommandTrigger:focus-visible {
+  border-color: #6ba4ed;
+  background: var(--tom-shell-hover, #1b2d46);
+  outline: none;
+}
+
+.exerciseCommandPanel {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 14px;
+  border: 1px solid var(--tom-shell-border, #24344d);
+  border-radius: 10px;
+  background: var(--tom-shell-elevated, #0f1b2e);
+  color: var(--tom-shell-text, #f8fafc);
+}
+
+.exerciseCommandHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.exerciseCommandHeader > div {
+  display: grid;
+  gap: 3px;
+}
+
+.exerciseCommandHeader strong {
+  font-size: 0.85rem;
+}
+
+.exerciseCommandHeader span {
+  color: var(--tom-shell-muted, #9fb0c7);
+  font-size: 0.7rem;
+}
+
+.exerciseCommandPanel textarea {
+  width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  padding: 9px 11px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 7px;
+  background: var(--tom-shell-bg, #0a1424);
+  color: var(--tom-shell-text, #f8fafc);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.exerciseCommandPanel textarea:focus {
+  border-color: #6ba4ed;
+  outline: 2px solid rgba(107, 164, 237, 0.2);
+  outline-offset: 1px;
+}
+
+.exerciseCommandControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.exerciseCommandControls button,
+.exerciseCommandPreview button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 6px 11px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 7px;
+  background: var(--tom-shell-elevated-2, #14243a);
+  color: var(--tom-shell-text, #f8fafc);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.exerciseCommandControls button:hover,
+.exerciseCommandPreview button:hover,
+.exerciseCommandControls button:focus-visible,
+.exerciseCommandPreview button:focus-visible {
+  border-color: #6ba4ed;
+  outline: none;
+}
+
+.exerciseCommandControls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.exerciseCommandControls button.isListening {
+  border-color: #e56b78;
+  color: #ff9ca5;
+}
+
+.exerciseCommandHelp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--tom-shell-border, #24344d);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tom-shell-muted, #9fb0c7);
+}
+
+.exerciseCommandHelpBox,
+.exerciseCommandPreview {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--tom-shell-border, #24344d);
+  border-radius: 7px;
+  font-size: 0.72rem;
+}
+
+.exerciseCommandHelpBox {
+  background: rgba(52, 80, 116, 0.16);
+}
+
+.exerciseCommandHelpBox p {
+  margin: 0;
+  color: var(--tom-shell-muted, #9fb0c7);
+}
+
+.exerciseCommandHelpBox ul,
+.exerciseCommandPreview ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.exerciseCommandHelpBox li {
+  margin: 3px 0;
+}
+
+.exerciseCommandPreview.isValid {
+  border-color: #356f62;
+  background: rgba(35, 121, 91, 0.13);
+}
+
+.exerciseCommandPreview.isInvalid,
+.exerciseCommandError {
+  color: #ff9ca5;
+}
+
+.exerciseCommandPreview button {
+  justify-self: start;
+  margin-top: 3px;
+  border-color: #3f8d77;
+  background: rgba(35, 121, 91, 0.26);
+}
+
+.exerciseCommandError {
+  margin: 0;
+  font-size: 0.72rem;
+}
+
+@media (max-width: 992px) {
+  .exerciseCommandComposer {
+    width: calc(100% - 24px);
+    margin: 10px auto 16px;
+  }
+
+  .exerciseCommandTrigger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .exerciseCommandPanel {
+    padding: 12px;
+  }
+}
+
+.dayEditFloatingToolsLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.dayEditFreeModeContent {
+  width: 100% !important;
+  margin-left: 0 !important;
+}
+
+.dayEditSimpleModeContent {
+  width: calc(100% - 96px) !important;
+  margin-left: 96px !important;
+  box-sizing: border-box;
+}
+
+.dayEditFreeModeDock {
+  position: fixed;
+  top: 6px;
+  left: 178px;
+  z-index: 2147483200;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--tom-shell-bg, #08111f) 96%, white 4%);
+  box-shadow: 0 5px 16px rgba(1, 12, 27, 0.24);
+  pointer-events: auto;
+}
+
+.dayEditFreeModeDockHandle {
+  width: 25px;
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  border-right: 1px solid var(--tom-shell-border, #24344d) !important;
+  border-radius: 4px 0 0 4px !important;
+  cursor: grab;
+  touch-action: none;
+}
+
+.dayEditFreeModeDockHandle:active {
+  cursor: grabbing;
+}
+
+.dayEditFreeModeDock > button,
+.dayEditFreeVisibilityWrap > button {
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tom-shell-text, #f8fafc);
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dayEditFreeModeDock > button:hover,
+.dayEditFreeVisibilityWrap > button:hover {
+  background: var(--tom-shell-hover, #1b2d46);
+}
+
+.dayEditFreeVisibilityWrap {
+  position: relative;
+}
+
+.dayEditFreeVisibilityMenu {
+  width: 185px;
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  display: grid;
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 7px;
+  background: var(--tom-shell-elevated, #0f1b2e);
+  box-shadow: 0 10px 24px rgba(1, 12, 27, 0.32);
+}
+
+.dayEditFreeVisibilityMenu button {
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--tom-shell-text, #f8fafc);
+  font-size: 0.66rem;
+  text-align: left;
+}
+
+.dayEditFreeVisibilityMenu button:hover {
+  background: var(--tom-shell-hover, #1b2d46);
+}
+
+.dayEditFloatingPanel {
+  width: 210px;
+  position: fixed;
+  z-index: 2147483100;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 8px;
+  background: var(--tom-shell-elevated, #0f1b2e);
+  box-shadow: 0 10px 28px rgba(1, 12, 27, 0.32);
+  pointer-events: auto;
+}
+
+.dayEditFloatingPanel.isCollapsed {
+  width: 190px;
+}
+
+.dayEditFloatingPanelHeader {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 7px;
+  border-bottom: 1px solid var(--tom-shell-border, #24344d);
+  background: var(--tom-shell-bg, #08111f);
+  color: var(--tom-shell-text, #f8fafc);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.dayEditFloatingPanelHeader:active {
+  cursor: grabbing;
+}
+
+.dayEditFloatingPanel.isLocked .dayEditFloatingPanelHeader {
+  cursor: default;
+}
+
+.dayEditFloatingPanelHeader > strong {
+  flex: 1 1 auto;
+  font-size: 0.7rem;
+}
+
+.dayEditFloatingPanelHeader > button {
+  width: 23px;
+  height: 23px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #fff;
+}
+
+.dayEditFloatingPanelHeader > button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.dayEditFloatingPanelBody {
+  padding: 8px;
+  background: var(--tom-shell-elevated, #0f1b2e);
+}
+
+.dayEditFloatingWeek {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  margin-bottom: 7px;
+  padding: 5px 8px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 6px;
+  background: var(--tom-shell-elevated-2, #14243a);
+  color: #f1f6fc;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.dayEditFloatingWeek svg {
+  width: 15px;
+  flex: 0 0 15px;
+}
+
+.dayEditFloatingWeek span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dayEditFloatingDays {
+  width: 100%;
+  padding: 3px;
+  background: var(--tom-shell-elevated-2, #14243a);
+}
+
+.dayEditFloatingDays .ant-segmented-item {
+  min-height: 30px;
+  color: #fff !important;
+  font-size: 0.68rem;
+}
+
+.dayEditFloatingDays .ant-segmented-item-label,
+.dayEditFloatingDays .ant-segmented-item-icon,
+.dayEditFloatingDays .ant-segmented-item svg {
+  color: #fff !important;
+}
+
+.dayEditFloatingDays .ant-segmented-item-selected {
+  background: var(--tom-shell-hover, #1b2d46) !important;
+  color: #fff !important;
+}
+
+.dayEditFloatingDays .ant-segmented-item:hover {
+  background: var(--tom-shell-hover, #1b2d46) !important;
+  color: #fff !important;
+}
+
+.dayEditFloatingActionGrid {
+  display: grid;
+  gap: 5px;
+}
+
+.dayEditFloatingActionGrid button {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  padding: 5px 8px;
+  border: 1px solid var(--tom-shell-border-strong, #345074);
+  border-radius: 6px;
+  background: var(--tom-shell-elevated-2, #14243a);
+  color: #edf5ff;
+  font-size: 0.68rem;
+  font-weight: 650;
+  text-align: left;
+}
+
+.dayEditFloatingActionGrid button:hover {
+  border-color: #5e8bbb;
+  background: var(--tom-shell-hover, #1b2d46);
+}
+
+.dayEditFloatingActionGrid button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.dayEditFloatingActionGrid button svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+
+.dayEditFloatingNavigation {
+  width: 225px;
+}
+
+.ddp.dayEditEditorTheme-light .dayEditSidebarModern,
+.ddp.dayEditEditorTheme-light .dayEditSidebarModern.colorMainAll {
+  background: #f1f5f9 !important;
+  border-right-color: #d7dee8;
+}
+
+.ddp.dayEditEditorTheme-light .dayEditSidebarModern .dayEditSidebarModernInner,
+.ddp.dayEditEditorTheme-light .dayEditSidebarModern .dayEditSidebarModernInner.colorMainAll {
+  background: #f1f5f9 !important;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarModernContent {
+  scrollbar-color: #b8c2cf transparent;
+}
+
+.dayEditEditorTheme-light .dayEditToolsModeControl,
+.dayEditEditorTheme-light .dayEditSidebarWeek,
+.dayEditEditorTheme-light .dayEditSidebarDayActions > div,
+.dayEditEditorTheme-light .dayEditSidebarCreateActions > div {
+  border-color: #d8e3f0 !important;
+  background: #ffffff !important;
+  color: #102132;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
+}
+
+.dayEditEditorTheme-light .dayEditSidebarWeek {
+  background: #ffffff !important;
+  border-color: #d7dee8 !important;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarDays {
+  border-color: #d7dee8 !important;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
+}
+
+.ddp.dayEditEditorTheme-light #nameWeek.bgItemsDropdown.dayEditSidebarWeek {
+  background: #ffffff !important;
+  border: 1px solid #d7dee8 !important;
+  color: #102132 !important;
+}
+
+.ddp.dayEditEditorTheme-light #nameWeek.bgItemsDropdown.dayEditSidebarWeek:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+.ddp.dayEditEditorTheme-light #nameWeek.bgItemsDropdown.dayEditSidebarWeek .MuiSvgIcon-root,
+.ddp.dayEditEditorTheme-light #nameWeek.bgItemsDropdown.dayEditSidebarWeek strong {
+  color: #334155 !important;
+}
+
+.ddp.dayEditEditorTheme-light .dayEditSidebarDays.bgItemsDropdown {
+  background: #ffffff !important;
+  border: 1px solid #d7dee8 !important;
+  color: #102132 !important;
+}
+
+.ddp.dayEditEditorTheme-light .dayEditSidebarDays.bgItemsDropdown .ant-segmented {
+  background: #ffffff !important;
+}
+
+.dayEditEditorTheme-light .dayEditToolsModeControl > span {
+  color: #64748b;
+}
+
+.dayEditEditorTheme-light .dayEditToolsModeControl > div[role="group"] {
+  background: #f1f5f9;
+}
+
+.dayEditEditorTheme-light .dayEditToolsModeControl > div[role="group"] button {
+  color: #475569;
+}
+
+.dayEditEditorTheme-light .dayEditToolsModeControl > div[role="group"] button.isActive {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.dayEditEditorTheme-light .dayEditFreeModeControls button,
+.dayEditEditorTheme-light .dayEditSidebarHelp button {
+  border-color: #d7dee8;
+  background: #ffffff;
+  color: #334155;
+}
+
+.dayEditEditorTheme-light .dayEditFreeModeControls button:hover,
+.dayEditEditorTheme-light .dayEditSidebarHelp button:hover,
+.dayEditEditorTheme-light .dayEditSidebarDayActions > div:hover,
+.dayEditEditorTheme-light .dayEditSidebarCreateActions > div:hover {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  color: #0f172a;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarWeek > div:first-child,
+.dayEditEditorTheme-light .dayEditSidebarDayActions > div > .col-1,
+.dayEditEditorTheme-light .dayEditSidebarCreateActions > div > .col-1 {
+  color: #475569;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarDayActions strong,
+.dayEditEditorTheme-light .dayEditSidebarCreateActions strong,
+.dayEditEditorTheme-light .dayEditSidebarWeek strong {
+  color: #102132;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarCreateActions {
+  border-top-color: #d8e3f0;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarCreateActions > div {
+  border-color: #d7dee8 !important;
+  background: #ffffff !important;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarDayActions #eliminarDia {
+  border-color: #f0c3cb !important;
+  background: #fff6f7 !important;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarDayActions #eliminarDia:hover {
+  border-color: #e68a99 !important;
+  background: #ffecee !important;
+}
+
+.dayEditEditorTheme-light .dayEditSidebarDayActions #eliminarDia > .col-1 {
+  color: #c33b4d;
+}
+
+@media (max-width: 992px) {
+  .dayEditSidebarModern {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   ETAPA 1 — CORRECCION DE TEMA
+   ==========================================================================
+   El root de la pagina lleva `dayEditDarkPage` de forma permanente (no lo
+   saca el tema claro), y en styles.css hay reglas `.dayEditDarkPage .x` que
+   fuerzan superficies oscuras. Por eso en modo claro quedaban en oscuro la
+   barra "Estas en: Dia N", la barra inferior y los botones redondos.
+
+   Aca no borramos esas reglas globales (las usan otras pantallas): las
+   sobreescribimos con los tokens cuando el tema claro esta activo.
+   ========================================================================== */
+
+/* Barra "Estas en: Dia N" */
+.ddp.dayEditEditorTheme-light .colorNameAlumno,
+.ddp.dayEditEditorTheme-light.dayEditDarkPage .colorNameAlumno {
+  background-color: var(--dd-accent-soft) !important;
+  border: 1px solid var(--dd-border) !important;
+  color: var(--dd-text) !important;
+  box-shadow: none !important;
+}
+
+/* Barra inferior fija (Anadir circuito / Anadir ejercicio) */
+.ddp .fixed-bottom.footerColor {
+  background: var(--dd-surface-2) !important;
+  border-top: 1px solid var(--dd-border);
+  color: var(--dd-text);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.ddp .fixed-bottom.footerColor .text-light {
+  color: var(--dd-text) !important;
+}
+
+/* Botones redondos de esa barra */
+.ddp .styleItemsDial {
+  background: var(--dd-accent) !important;
+  border: 1px solid var(--dd-accent) !important;
+  color: var(--dd-on-accent) !important;
+  box-shadow: var(--dd-shadow-card) !important;
+}
+
+.ddp .styleItemsDial:hover,
+.ddp .styleItemsDial:focus-visible {
+  background: var(--dd-accent-strong) !important;
+  border-color: var(--dd-accent-strong) !important;
+}
+
+/* ==========================================================================
+   ETAPA 1 — RITMO VERTICAL EN MOBILE
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  /* El selector de dias venia pegado al bloque de entrada en calor. */
+  .ddp #dias {
+    margin-top: 14px !important;
+  }
+
+  /* Bloques de movilidad y entrada en calor: mismo ancho.
+     styles.css saca el padding exterior con :first-child/:last-child para que
+     en desktop las dos columnas queden al ras del contenedor. En mobile las
+     columnas se APILAN, asi que esas reglas le sacaban el padding izquierdo a
+     la de arriba y el derecho a la de abajo: quedaban 5px desalineadas
+     (329px vs 324px). Apiladas tienen que tener el mismo padding. */
+  .ddp.dayEditDarkPage .dayEditTopBlocksRow > [class*="col-"],
+  .ddp.dayEditDarkPage .dayEditTopBlocksRow > [class*="col-"]:first-child,
+  .ddp.dayEditDarkPage .dayEditTopBlocksRow > [class*="col-"]:last-child {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+
+  /* La barra inferior es position:fixed, asi que no ocupa espacio en el flujo
+     y tapaba el final del contenido al scrollear hasta abajo. Reservamos su
+     alto (58px) mas un respiro. */
+  .ddp .dayEditPageContent {
+    padding-bottom: 84px;
+  }
+}
+
+/* ==========================================================================
+   ETAPA 2 — CARD DE EJERCICIO EN MOBILE
+   ==========================================================================
+   Layout etiqueta-izquierda / control-derecha.
+
+   La clave del alineado es `--dd-label-col`: la columna de etiquetas tiene
+   ancho FIJO, asi que todos los controles arrancan en la misma vertical sin
+   importar si la etiqueta dice "Sets" o "Alumno". Antes era una grilla de
+   Bootstrap con anchos inventados por campo (col-4 + col-7 = 11 columnas,
+   col-5 + col-5 = 10), que es lo que descuadraba peso contra peso del alumno.
+
+   Sobre los colores: NO inventamos tokens nuevos para los campos. styles.css
+   ya define `--day-edit-mobile-input-*` sobre .dayEditMobileExerciseCard, con
+   variante clara y oscura. Ese sistema estaba escrito pero no se notaba porque
+   dependia de .ddp-light / .ddp-dark, y hasta la Etapa 1 la pagina llevaba
+   ddp-dark fijo. Nos colgamos de el y dejamos los --dd-* como fallback.
+
+   Sobre los !important: hay una regla previa
+   `.ddp.ddp-dark.dayEditDarkPage .shadowCards .form-control` que pinta los
+   inputs de BLANCO con !important incluso en modo oscuro. Para ganarle hace
+   falta misma especificidad + !important. No la borramos porque la usan otras
+   pantallas.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  .ddp .dayEditMobileFieldGrid {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ddp .dayEditMobileFieldRow {
+    display: grid;
+    grid-template-columns: var(--dd-label-col) minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-height: var(--dd-control-h);
+  }
+
+  .ddp .dayEditMobileFieldLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin: 0;
+    color: var(--day-edit-mobile-label, var(--dd-label));
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .ddp .dayEditMobileFieldControl {
+    min-width: 0;
+  }
+
+  /* Notas ocupa el ancho completo, con la etiqueta arriba. */
+  .ddp .dayEditMobileFieldRow[data-field="notas"] {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  /* ------------------------------------------------------------------
+     Neutralizamos los wrappers de Bootstrap que traen los controles.
+     CustomInputNumber se envuelve en un `.row justify-content-center mt-4`,
+     por eso el stepper aparecia centrado y empujado hacia abajo en vez de
+     ocupar su columna.
+     ------------------------------------------------------------------ */
+  .ddp .dayEditMobileFieldControl > .row,
+  .ddp .dayEditMobileFieldControl > .customInputNumberRoot {
+    width: 100%;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ddp .dayEditMobileFieldControl .largoTextMode {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* ---- Campos de texto ---- */
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .form-control,
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl input[type="text"],
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl textarea {
+    width: 100% !important;
+    min-height: var(--dd-control-h) !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: var(--day-edit-mobile-input-bg, var(--dd-field-bg)) !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-field-text)) !important;
+    font-size: 0.88rem !important;
+    text-align: left !important;
+    box-shadow: none !important;
+  }
+
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl textarea {
+    min-height: 64px !important;
+    line-height: 1.45;
+  }
+
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .form-control:focus {
+    border-color: var(--day-edit-mobile-focus, var(--dd-field-focus-border)) !important;
+    box-shadow: 0 0 0 3px var(--day-edit-mobile-focus-ring, var(--dd-field-focus-ring)) !important;
+    outline: none !important;
+  }
+
+  /* ---- Stepper (- N +) ---- */
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: var(--dd-control-h);
+    display: grid !important;
+    grid-template-columns: var(--dd-control-h) minmax(0, 1fr) var(--dd-control-h);
+    align-items: center;
+    margin: 0 !important;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: var(--day-edit-mobile-input-bg, var(--dd-field-bg)) !important;
+    overflow: hidden;
+  }
+
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container input {
+    min-height: auto !important;
+    padding: 4px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-field-text)) !important;
+    text-align: center !important;
+    box-shadow: none !important;
+  }
+
+  .ddp .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .MuiIconButton-root {
+    width: var(--dd-control-h);
+    height: var(--dd-control-h);
+    border-radius: 0;
+    color: var(--day-edit-mobile-label, var(--dd-text-muted));
+  }
+
+  /* ---- Chips Texto / Multiple: centrados bajo su control ---- */
+  .ddp .dayEditMobileFieldControl .styleButtonsTypeReps {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 4px !important;
+  }
+}
+
+/* ==========================================================================
+   ETAPA 2 (cont.) — CONTROLES INTERNOS DE LA CARD
+   ==========================================================================
+   Estos tres controles traian colores fijos pensados solo para tema oscuro,
+   asi que en tema claro quedaban azul marino sobre fondo blanco. Ademas
+   ninguno ocupaba su columna, que es lo que rompia el alineado vertical.
+
+   El prefijo lleva .ddp.dayEditDarkPage (dos clases sobre el mismo elemento)
+   para superar en especificidad a las reglas 0-6-0 que ya existen en
+   styles.css sobre .dayEditMobileExerciseCard.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  /* --- Botones - / + del stepper --- */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .buttonLeft,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .buttonRight {
+    width: var(--dd-control-h) !important;
+    height: var(--dd-control-h) !important;
+    min-width: var(--dd-control-h) !important;
+    min-height: var(--dd-control-h) !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: var(--day-edit-mobile-label, var(--dd-text-muted)) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .buttonLeft:hover,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .buttonRight:hover {
+    background: var(--dd-surface-hover) !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-text)) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .MuiSvgIcon-root {
+    width: 18px !important;
+    height: 18px !important;
+    /* Sin esto el icono conserva su propio color y, al volver transparente el
+       boton, los signos - y + quedaban invisibles sobre fondo claro. */
+    color: inherit !important;
+    fill: currentColor !important;
+  }
+
+  /* --- Rest: ocupaba 98px dentro de una columna de 208 --- */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .dayEditRestManual,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .dayEditDefaultRestControl,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .dayEditRestPicker {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: var(--dd-control-h) !important;
+    margin: 0 !important;
+    border-radius: var(--dd-radius-sm) !important;
+  }
+
+  /* --- Chips Texto / Multiple (seg-btn): heredaban texto blanco --- */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg-btn {
+    min-height: 24px !important;
+    padding: 2px 10px !important;
+    /* Sin radio propio: el redondeo lo da el contenedor .seg (que ya tiene
+       overflow:hidden), asi la division entre Texto y Multiple queda RECTA.
+       Con radio por boton se leian como dos pastillas separadas. */
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: var(--day-edit-mobile-label, var(--dd-text-muted)) !important;
+    font-size: 0.64rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* Divisor recto de 1px entre los dos chips. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg-btn + .seg-btn {
+    border-left: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg-btn.active {
+    background: var(--dd-accent) !important;
+    color: var(--dd-on-accent) !important;
+  }
+
+  /* El contenedor de los chips queda centrado bajo su control. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg {
+    display: inline-flex !important;
+    /* Sin gap ni padding: los chips van pegados y el borde del contenedor,
+       con overflow:hidden, redondea solo los extremos. */
+    gap: 0 !important;
+    margin: 5px auto 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: transparent !important;
+  }
+}
+
+/* ==========================================================================
+   ETAPA 3 — CIRCUITOS EN MOBILE
+   ==========================================================================
+   Cada ejercicio del circuito es una sub-card dentro de la card del circuito.
+   Reusa las mismas filas etiqueta/control que la card de ejercicio, para que
+   circuito y ejercicio se lean igual. Antes Peso y Reps iban en col-5 + col-5
+   (10 de 12 columnas), no coincidian entre si ni con el resto de la card, y
+   las etiquetas iban en minuscula mientras el ejercicio las usa en mayuscula.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  .ddp .dayEditMobileCircuitItem {
+    margin: 10px 0 0;
+    padding: 12px;
+    border: 1px solid var(--day-edit-mobile-divider, var(--dd-border));
+    border-radius: var(--dd-radius);
+    background: var(--dd-surface-2);
+  }
+
+  .ddp .dayEditMobileCircuitItemHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .ddp .dayEditMobileCircuitItemTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--day-edit-mobile-label, var(--dd-label));
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* El acento morado identifica al circuito frente al ejercicio suelto. */
+  .ddp .dayEditMobileCircuitItemTitle::before {
+    content: "";
+    width: 3px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--dd-circuit-accent);
+  }
+
+  /* Video y eliminar: mismo tamano y separacion, alineados a la derecha.
+     Antes iban en col-4 cada uno, asi que el video quedaba pegado al texto
+     y la papelera flotando lejos. */
+  .ddp .dayEditMobileCircuitItemActions {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .ddp .dayEditMobileCircuitItemActions .MuiIconButton-root {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+  }
+
+  .ddp .dayEditMobileCircuitItemName {
+    margin-bottom: 10px;
+  }
+
+  .ddp .dayEditMobileCircuitItemName .form-control {
+    width: 100% !important;
+    min-height: var(--dd-control-h) !important;
+    padding: 8px 12px !important;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: var(--day-edit-mobile-input-bg, var(--dd-field-bg)) !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-field-text)) !important;
+    text-align: left !important;
+  }
+
+  /* El wrapper `largoInput` traia un ancho fijo del layout viejo. */
+  .ddp .dayEditMobileCircuitItem .largoInput {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* El control de reps (CustomInputNumber en modo texto) mete un wrapper
+     interno con padding propio: el input quedaba con 12px de inset y 24px
+     menos de ancho que el de peso, en columnas que miden exactamente lo mismo.
+     Neutralizamos ese wrapper para que ambos arranquen en la misma vertical. */
+  .ddp.dayEditDarkPage .dayEditMobileFieldControl .customInputNumberRoot,
+  .ddp.dayEditDarkPage .dayEditMobileFieldControl .customInputNumberRoot > div,
+  .ddp.dayEditDarkPage .dayEditMobileFieldControl .largoTextMode {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* El selector Texto / Multiple vuelve a su renglon, centrado. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .customInputNumberRoot > .seg,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .seg {
+    width: auto !important;
+    margin: 6px auto 0 !important;
+  }
+}
+
+/* ==========================================================================
+   ETAPA 4 — BARRA INFERIOR + MENU DE ACCIONES (MOBILE)
+   ==========================================================================
+   Las dos acciones frecuentes quedan fijas al alcance del pulgar y el resto
+   pasa a un menu. Antes habia 9 botones sueltos en el medio del contenido con
+   alturas distintas (py-1 contra py-2) y solo algunos con `d-flex gap-1`, que
+   es por lo que unos iconos quedaban pegados al texto y otros separados.
+
+   Todo control usa --dd-control-h, asi que ya no hay alturas dispares.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  /* Una sola hilera de iconos. Antes era una lista vertical con etiquetas y un
+     titulo "DIA" que repetia el cartel "Estas en: Dia X" de abajo, y ocupaba
+     seis renglones para acciones que se usan de a una. */
+  .ddp .dayEditMobileDayActions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .ddp .dayEditMobileDayActions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 38px;
+    flex: 0 1 40px;
+    padding: 0;
+    border: 1px solid var(--dd-border);
+    border-radius: var(--dd-radius-sm);
+    background: var(--dd-surface-2);
+    color: var(--dd-text);
+  }
+
+  .ddp .dayEditMobileDayActions button svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    color: var(--dd-text-muted);
+  }
+
+  .ddp .dayEditMobileDayActions button:active {
+    background: var(--dd-surface-hover);
+  }
+
+  .ddp .dayEditMobileDayActions button:focus-visible {
+    outline: 2px solid var(--dd-accent);
+    outline-offset: 2px;
+  }
+
+  .ddp .dayEditMobileDayActions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+
+  .ddp .dayEditMobileDayActions button.isDanger {
+    color: var(--dd-danger);
+  }
+
+  .ddp .dayEditMobileDayActions button.isDanger svg {
+    color: var(--dd-danger);
+  }
+
+  /* Mismo lenguaje visual que el dock de la pantalla de semanas
+     (.week-mobile-actionbar): 58px de alto, botones de 48px transparentes,
+     iconos de linea de 21px y label de 0.66rem. Sin circulos rellenos: el
+     relleno azul competia con el contenido y pesaba de mas para una barra
+     que esta siempre en pantalla. */
+  .ddp .dayEditMobileBar {
+    left: 0;
+    right: 0;
+    min-height: 58px;
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: center;
+    justify-items: center;
+    padding: 5px 18px calc(5px + env(safe-area-inset-bottom, 0px)) !important;
+    background: var(--dd-surface-2) !important;
+    border-top: 1px solid var(--dd-border) !important;
+    box-shadow: none;
+    backdrop-filter: none;
+    z-index: 1200;
+  }
+
+  .ddp .dayEditMobileBarBtn {
+    width: min(96px, 100%);
+    height: 48px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--dd-text-muted);
+    box-shadow: none;
+    transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+  }
+
+  .ddp .dayEditMobileBarBtn:hover,
+  .ddp .dayEditMobileBarBtn:focus-visible,
+  .ddp .dayEditMobileBarBtn.is-active {
+    transform: translateY(-1px);
+    background: var(--dd-surface-hover);
+    color: var(--dd-text);
+    outline: none;
+  }
+
+  .ddp .dayEditMobileBarBtn svg {
+    width: 21px !important;
+    height: 21px !important;
+    stroke-width: 2.15;
+  }
+
+  .ddp .dayEditMobileBarLabel {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.66rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+}
+
+@media (max-width: 992px) {
+  /* ---------------- Menu "Mas": hoja inferior con etiquetas ----------------
+     Solo contenido y vista. Las acciones del dia viven en la hilera de iconos
+     de arriba; aca van con etiqueta porque son menos frecuentes y no se
+     reconocen por el icono solo. */
+  .ddp .dayEditMobileSheetBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: flex-end;
+    background: rgba(2, 6, 14, 0.55);
+  }
+
+  .ddp .dayEditMobileSheet {
+    width: 100%;
+    max-height: 82vh;
+    overflow-y: auto;
+    padding: 8px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-radius: 18px 18px 0 0;
+    border-top: 1px solid var(--dd-border);
+    background: var(--dd-surface);
+    color: var(--dd-text);
+  }
+
+  .ddp .dayEditMobileSheetHeader {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 2px 12px;
+    background: var(--dd-surface);
+  }
+
+  .ddp .dayEditMobileSheetHeader strong {
+    font-size: 0.92rem;
+  }
+
+  .ddp .dayEditMobileSheetHeader button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--dd-border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--dd-text-muted);
+  }
+
+  .ddp .dayEditMobileSheetGroup {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .ddp .dayEditMobileSheetGroupTitle {
+    padding: 0 2px 2px;
+    color: var(--dd-label);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Una sola definicion para todos: misma altura, mismo gap icono-texto. */
+  .ddp .dayEditMobileSheetItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: var(--dd-control-h);
+    padding: 8px 12px;
+    border: 1px solid var(--dd-border);
+    border-radius: var(--dd-radius-sm);
+    background: var(--dd-surface-2);
+    color: var(--dd-text);
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .ddp .dayEditMobileSheetItem:active {
+    background: var(--dd-surface-hover);
+  }
+
+  .ddp .dayEditMobileSheetItem:disabled {
+    opacity: 0.42;
+  }
+
+  .ddp .dayEditMobileSheetItemIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    flex: 0 0 26px;
+    color: var(--dd-text-muted);
+  }
+
+  .ddp .dayEditMobileSheetItem.isActive {
+    border-color: var(--dd-accent);
+    background: var(--dd-accent-soft);
+    color: var(--dd-accent);
+  }
+
+  .ddp .dayEditMobileSheetItem.isActive .dayEditMobileSheetItemIcon {
+    color: var(--dd-accent);
+  }
+
+}
+
+/* ==========================================================================
+   ETAPA 4 (cont.) — PENDIENTES DE TEMA
+   ==========================================================================
+   Estos venian con colores fijos que no acompanaban al tema.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  /* Selector de dias: el contenedor quedaba blanco en modo oscuro. */
+  .ddp .dayEditMobileDaySegmented.ant-segmented {
+    padding: 3px !important;
+    border-radius: var(--dd-radius) !important;
+    background: var(--dd-surface-3) !important;
+  }
+
+  .ddp .dayEditMobileDaySegmented .ant-segmented-item {
+    min-height: var(--dd-field-h) !important;
+    display: inline-flex !important;
+    align-items: center;
+    border-radius: var(--dd-radius-sm) !important;
+    color: var(--dd-text-muted) !important;
+    font-size: 0.76rem !important;
+    font-weight: 650 !important;
+  }
+
+  /* El dia seleccionado va en blanco con texto oscuro en AMBOS temas: tiene
+     que coincidir con el color del thumb animado, si no el deslizamiento
+     entre dias muestra el cambio de color. */
+  .ddp .dayEditMobileDaySegmented .ant-segmented-item-selected {
+    background: #ffffff !important;
+    color: #0f2136 !important;
+  }
+
+  .ddp .dayEditMobileDaySegmented .ant-segmented-item-selected .ant-segmented-item-label {
+    color: #0f2136 !important;
+  }
+
+  /* Boton del nombre de la semana. */
+  .ddp .dayEditMobileWeekButton {
+    min-height: var(--dd-control-h);
+    align-items: center;
+    border: 1px solid var(--dd-border) !important;
+    border-radius: var(--dd-radius) !important;
+    background: var(--dd-surface-2) !important;
+    color: var(--dd-text) !important;
+  }
+
+  /* Nota: el pie con "TOM" NO se toca desde aca. Es <footer> hijo directo de
+     <body>, fuera de .ddp, compartido por todas las pantallas de admin, y su
+     color sale de colorMainAll (el color de marca del entrenador), no del tema
+     claro/oscuro. Una regla .ddp footer nunca llegaria a matchearlo. */
+  .ddp .footerColor:not(.dayEditMobileBar) {
+    background: var(--dd-surface-2) !important;
+    color: var(--dd-text-muted) !important;
+    border-top: 1px solid var(--dd-border);
+  }
+}
+
+/* ==========================================================================
+   ETAPA 5 — RESPIRO VERTICAL Y CARD MAS COMPACTA
+   ==========================================================================
+   Dos objetivos que tiran en direcciones opuestas y hay que balancear:
+   dar aire ENTRE bloques (que estaban pegados) y a la vez bajar el alto
+   DENTRO de la card (que era demasiado alta).
+
+   La regla que seguimos: separacion entre piezas distintas = generosa;
+   separacion dentro de una misma pieza = minima.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  /* --- Separacion entre los bloques de movilidad y entrada en calor --- */
+  .ddp.dayEditDarkPage .dayEditTopBlocksRow > [class*="col-"] {
+    margin-bottom: 12px !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditTopBlocksRow > [class*="col-"]:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .ddp .dayEditPreparationCard {
+    border-radius: var(--dd-radius) !important;
+  }
+
+  /* --- El selector de dias se despega del bloque de arriba --- */
+  .ddp #dias,
+  .ddp .dayEditMobileDaySegmented {
+    margin-top: 22px !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* --- Boton del nombre de la semana --- */
+  .ddp .dayEditMobileWeekButton {
+    min-height: 46px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 12px 18px !important;
+    padding: 0 14px !important;
+    border: 1px solid var(--dd-border) !important;
+    border-radius: var(--dd-radius) !important;
+    background: var(--dd-surface-2) !important;
+    color: var(--dd-text) !important;
+    font-weight: 700;
+  }
+
+  .ddp .dayEditMobileWeekButton .MuiSvgIcon-root,
+  .ddp .dayEditMobileWeekButton svg {
+    width: 18px;
+    height: 18px;
+    color: var(--dd-text-muted);
+  }
+
+  /* ======================================================================
+     CARD DE EJERCICIO — MAS BAJA
+     ======================================================================
+     Los chips Texto / Multiple pasan a la MISMA fila que el stepper. Antes
+     caian abajo y agregaban un renglon por campo, que era lo que estiraba
+     la card y rompia la grilla etiqueta/control.
+     ====================================================================== */
+
+  .ddp .dayEditMobileFieldGrid {
+    gap: 4px;
+  }
+
+  .ddp .dayEditMobileFieldRow {
+    min-height: 34px;
+    gap: 8px;
+  }
+
+  /* La fila de sets/reps se parte en control + chips, en linea. */
+  .ddp .dayEditMobileFieldRow[data-field="sets"] .dayEditMobileFieldControl,
+  .ddp .dayEditMobileFieldRow[data-field="reps"] .dayEditMobileFieldControl {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .customInputNumberRoot {
+    display: contents !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .customInputNumberRoot > .seg,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .seg {
+    margin: 0 !important;
+    flex: 0 0 auto;
+  }
+
+  /* Controles mas bajos: 34px en vez de 40. Sigue por encima del minimo
+     tocable comodo y acerca el alto del campo al de su etiqueta. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .form-control,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl input[type="text"],
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .dayEditRestManual,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .dayEditDefaultRestControl {
+    min-height: var(--dd-field-h) !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    font-size: 0.84rem !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container {
+    grid-template-columns: var(--dd-field-h) minmax(0, 1fr) var(--dd-field-h) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .buttonLeft,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .input-number-container .buttonRight {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: var(--dd-field-h) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl textarea {
+    min-height: 52px !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg-btn {
+    min-height: 22px !important;
+    padding: 1px 8px !important;
+    font-size: 0.6rem !important;
+  }
+
+  /* --- Etiqueta ALUMNO ---
+     Lleva un boton de ayuda al lado que empujaba el texto, asi que quedaba
+     desplazada respecto de SETS / REPS / PESO. El boton pasa a no ocupar
+     espacio de layout para que las cinco etiquetas arranquen igual. */
+  .ddp .dayEditMobileFieldLabel.dayEditStudentOnlyFieldLabel {
+    position: relative;
+    justify-content: flex-start;
+  }
+
+  .ddp .dayEditMobileFieldLabel .dayEditStudentOnlyInfoBtn {
+    width: 14px;
+    height: 14px;
+    min-width: 0;
+    padding: 0;
+    margin-left: 3px;
+    border: 0;
+    background: transparent;
+    color: var(--dd-text-soft);
+    line-height: 1;
+  }
+
+  .ddp .dayEditMobileFieldLabel .dayEditStudentOnlyInfoBtn .MuiSvgIcon-root {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Sets muestra 1 chip ("Texto") y Reps dos ("Texto | Multiple"), asi que si
+     la columna de chips se autodimensiona los dos steppers terminan en x
+     distinto y el borde derecho queda dentado. Ancho fijo para esa columna:
+     ambos steppers cierran en la misma vertical. */
+  .ddp .dayEditMobileFieldRow[data-field="sets"] .dayEditMobileFieldControl,
+  .ddp .dayEditMobileFieldRow[data-field="reps"] .dayEditMobileFieldControl {
+    /* 72px alcanza para "Texto" + el icono de piramide. El ancho que se libera
+       se lo queda el stepper, que es donde se lee el numero. */
+    grid-template-columns: minmax(0, 1fr) 72px;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .customInputNumberRoot > .seg,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .seg {
+    width: 72px !important;
+    display: inline-flex !important;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 992px) {
+  /* El alto del stepper sale de min-height + sus botones. Cualquier padding
+     vertical se suma encima y descuadra la fila respecto del resto. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .input-number-container {
+    padding: 0 !important;
+    min-height: var(--dd-field-h) !important;
+    height: var(--dd-field-h) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .input-number-container input {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Mismo caso que el stepper: el control de rest ya trae su propio alto, asi
+     que el padding vertical se le sumaba encima y dejaba la fila en 48px
+     mientras el resto media 34px. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .dayEditRestManual,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .dayEditDefaultRestControl {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: var(--dd-field-h) !important;
+    height: var(--dd-field-h) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .dayEditRestManualInput,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .dayEditRestManualToggle {
+    height: 100% !important;
+    min-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* ------------------------------------------------------------------
+     "Cambios sin guardar" — version compacta en mobile.
+     Ocupaba demasiada pantalla para un aviso que solo confirma o descarta.
+     Reducimos padding, tipografia y alto de los botones; el ancho minimo
+     de 112px por boton se saca para que los dos entren comodos.
+     Los colores pasan a tokens: la card era blanca fija tambien en oscuro.
+     ------------------------------------------------------------------ */
+  .ddp .unsavedChangesCard {
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 12px;
+    border-color: var(--dd-border) !important;
+    background: var(--dd-surface) !important;
+    box-shadow: var(--dd-shadow-raised);
+  }
+
+  .ddp .unsavedChangesIndicator {
+    width: 7px;
+    height: 7px;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+  }
+
+  .ddp .unsavedChangesTitle {
+    color: var(--dd-text) !important;
+    font-size: 0.82rem;
+  }
+
+  .ddp .unsavedChangesSubtitle {
+    color: var(--dd-text-muted) !important;
+    font-size: 0.7rem;
+  }
+
+  .ddp .unsavedChangesActions {
+    gap: 6px;
+  }
+
+  .ddp .unsavedChangesBtn {
+    min-width: 0;
+    min-height: 32px;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 9px;
+    font-size: 0.75rem;
+  }
+
+  .ddp .unsavedChangesBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .ddp .unsavedChangesBtnSecondary {
+    border-color: var(--dd-border) !important;
+    background: var(--dd-surface-2) !important;
+    color: var(--dd-text-muted) !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Los botones del aviso se estiraban a la mitad del ancho cada uno (168px),
+     que es mucho peso visual para un confirmar/descartar. Ancho segun su
+     contenido y alineados a la derecha. */
+  .ddp .unsavedChangesCard {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .ddp .unsavedChangesActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .ddp .unsavedChangesBtn {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  /* Los dias no seleccionados quedaban demasiado apagados sobre el contenedor
+     oscuro: se leian casi como deshabilitados. */
+  .ddp .dayEditMobileDaySegmented .ant-segmented-item:not(.ant-segmented-item-selected),
+  .ddp .dayEditMobileDaySegmented .ant-segmented-item:not(.ant-segmented-item-selected) .ant-segmented-item-label {
+    color: var(--dd-text-muted) !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* --- Centrado real de los signos - y + ---
+     Son IconButton de MUI: el glifo se centra segun su line-height, no segun
+     la caja, asi que en un cuadrado de 34px quedaba corrido. Forzamos flex
+     centrado y el svg a bloque para que el centro optico coincida con el
+     geometrico. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .input-number-container .buttonLeft,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .input-number-container .buttonRight {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 0 !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .input-number-container .buttonLeft .MuiSvgIcon-root,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldControl .input-number-container .buttonRight .MuiSvgIcon-root {
+    display: block !important;
+    width: 17px !important;
+    height: 17px !important;
+    margin: 0 !important;
+    font-size: 17px !important;
+  }
+
+  /* El chip del icono no necesita el mismo padding que el de texto. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg-btn.seg-btn-icon {
+    padding: 0 !important;
+    min-width: 28px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg-btn.seg-btn-icon svg {
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   BLOQUE DE ENTRENAMIENTO EN MOBILE
+   ==========================================================================
+   Antes la cabecera se pintaba entera con `backgroundColor: exercise.color`
+   inline y los ejercicios de adentro no estaban envueltos en nada: colgaban
+   sueltos, sin diferencia visual con un ejercicio de primer nivel.
+
+   Ahora el color del bloque es un ACENTO (--dd-this-block) y la PERTENENCIA
+   se comunica con contencion, no con relleno: los hijos van dentro de un
+   cuerpo con un riel vertical del color del bloque y sangria a la izquierda.
+   Eso funciona igual en tema claro y oscuro, con cualquier color elegido.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  .ddp .dayEditMobileBlock {
+    /* Si el bloque no tiene color propio usamos el acento de bloque del tema. */
+    --dd-block: var(--dd-this-block, var(--dd-block-accent));
+    margin: 0 0 16px;
+    border: 1px solid var(--dd-border);
+    border-radius: var(--dd-radius);
+    background: var(--dd-surface-2);
+    overflow: hidden;
+  }
+
+  /* ---------- Cabecera ---------- */
+  .ddp .dayEditMobileBlockHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 7px 8px 7px 11px;
+    border-bottom: 1px solid var(--dd-border);
+    background: var(--dd-surface-3);
+  }
+
+  .ddp .dayEditMobileBlockDot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 999px;
+    background: var(--dd-block);
+  }
+
+  .ddp .dayEditMobileBlockName {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    flex: 1 1 auto;
+    padding: 2px 4px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--dd-text);
+    text-align: left;
+  }
+
+  .ddp .dayEditMobileBlockName:active {
+    background: var(--dd-surface-hover);
+  }
+
+  .ddp .dayEditMobileBlockTitle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    font-weight: 750;
+  }
+
+  .ddp .dayEditMobileBlockName .MuiSvgIcon-root {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    color: var(--dd-text-soft);
+  }
+
+  /* Cuantos ejercicios tiene, sin tener que contarlos. */
+  .ddp .dayEditMobileBlockCount {
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--dd-surface);
+    color: var(--dd-text-muted);
+    font-size: 0.66rem;
+    font-weight: 800;
+  }
+
+  .ddp .dayEditMobileBlockDelete {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    flex: 0 0 30px;
+  }
+
+  .ddp .dayEditMobileBlockDelete .MuiSvgIcon-root {
+    width: 17px;
+    height: 17px;
+    color: var(--dd-text-soft);
+  }
+
+  /* ---------- Cuerpo: lo que hace que se lea "adentro" ---------- */
+  .ddp .dayEditMobileBlockBody {
+    position: relative;
+    padding: 10px 10px 10px 18px;
+    background: var(--dd-surface);
+  }
+
+  /* Riel vertical del color del bloque, recorriendo todos sus hijos. */
+  .ddp .dayEditMobileBlockBody::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 8px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--dd-block);
+    opacity: 0.55;
+  }
+
+  /* Las cards de adentro son mas sobrias que una de primer nivel: el bloque
+     ya aporta el marco, si cada hija repite borde+sombra se satura. */
+  .ddp .dayEditMobileBlockBody > .border,
+  .ddp .dayEditMobileBlockBody .dayEditMobileCircuitItem {
+    margin-bottom: 8px !important;
+    border: 1px solid var(--dd-border) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: var(--dd-surface-2) !important;
+  }
+
+  .ddp .dayEditMobileBlockBody > .border:last-of-type {
+    margin-bottom: 0 !important;
+  }
+
+  /* ---------- Botones de agregar ---------- */
+  .ddp .dayEditMobileBlockAdd {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .ddp .dayEditMobileBlockAddBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 34px;
+    padding: 4px 8px;
+    border: 1px dashed var(--dd-border-strong);
+    border-radius: var(--dd-radius-sm);
+    background: transparent;
+    color: var(--dd-text-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .ddp .dayEditMobileBlockAddBtn:active {
+    background: var(--dd-surface-hover);
+    color: var(--dd-text);
+  }
+
+  .ddp .dayEditMobileBlockAddBtn .MuiSvgIcon-root {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* ==========================================================================
+   PIE DE LA CARD DE EJERCICIO (MOBILE)
+   ==========================================================================
+   Antes eran tres col-4 de igual peso: un Dropdown grande a la izquierda y
+   dos iconos sueltos flotando. No se distinguia el DATO (el orden) de las
+   ACCIONES, ni una accion destructiva de una neutra.
+
+   Ahora hay una jerarquia explicita: a la izquierda el orden, tratado como un
+   campo mas de la card (con su etiqueta en el mismo estilo que SETS o PESO);
+   a la derecha las acciones agrupadas, con eliminar en rojo solo al tocarlo
+   para que no grite desde el estado de reposo.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  .ddp .dayEditMobileCardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 10px 0 0;
+    padding-top: 9px;
+    border-top: 1px solid var(--day-edit-mobile-divider, var(--dd-border));
+  }
+
+  /* ---- Izquierda: el orden es un dato, no un boton ---- */
+  .ddp .dayEditMobileCardFooterOrder {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileOrderSelect.p-dropdown {
+    width: auto !important;
+    min-width: 66px;
+    min-height: 30px !important;
+    height: 30px !important;
+    align-items: center;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: var(--day-edit-mobile-input-bg, var(--dd-field-bg)) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileOrderSelect .p-dropdown-label {
+    padding: 0 4px 0 8px !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-field-text)) !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    line-height: 28px !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileOrderSelect .p-dropdown-trigger {
+    width: 22px !important;
+    color: var(--dd-text-soft) !important;
+  }
+
+  /* ---- Derecha: acciones ---- */
+  .ddp .dayEditMobileCardFooterActions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+
+  .ddp .dayEditMobileCardAction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--dd-border);
+    border-radius: var(--dd-radius-sm);
+    background: transparent;
+    color: var(--dd-text-muted);
+    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  }
+
+  .ddp .dayEditMobileCardAction .MuiSvgIcon-root {
+    width: 17px;
+    height: 17px;
+  }
+
+  .ddp .dayEditMobileCardAction:active {
+    background: var(--dd-surface-hover);
+    color: var(--dd-text);
+  }
+
+  /* Si ya hay un video cargado el boton lo indica, sin abrir el panel. */
+  .ddp .dayEditMobileCardAction.hasValue {
+    border-color: var(--dd-accent);
+    color: var(--dd-accent);
+  }
+
+  /* Eliminar: neutro en reposo, rojo al tocarlo. Un rojo permanente en cada
+     card competia con el contenido y se leia como una alerta. */
+  .ddp .dayEditMobileCardAction.isDanger:active {
+    border-color: var(--dd-danger);
+    background: var(--dd-danger-soft);
+    color: var(--dd-danger);
+  }
+
+  /* ---- Chips: el texto centrado dentro de su mitad ---- */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .seg-btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* ------------------------------------------------------------------
+     SERIE PIRAMIDAL (modo multiple)
+     ------------------------------------------------------------------
+     Una fila de celdas angostas, no inputs apilados. Cada celda entra
+     dos digitos; el + y el - son una celda mas al final de la fila.
+     La tipografia baja para que entren cuatro celdas sin desbordar.
+     ------------------------------------------------------------------ */
+  .ddp .dayEditMobileFieldControl .customInputMultiple {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
+    min-height: var(--dd-field-h);
+    margin: 0;
+    padding: 0;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .customInputMultipleCell {
+    /* 2ch mas el padding: no entra un tercer digito, que es justamente el
+       limite que queremos para que las celdas no se coman la fila. */
+    width: 30px !important;
+    min-width: 30px !important;
+    flex: 0 0 30px;
+    height: var(--dd-field-h) !important;
+    min-height: var(--dd-field-h) !important;
+    padding: 0 2px !important;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: 6px !important;
+    background: var(--day-edit-mobile-input-bg, var(--dd-field-bg)) !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-field-text)) !important;
+    font-size: 0.76rem !important;
+    font-weight: 700;
+    text-align: center !important;
+    box-shadow: none !important;
+    -moz-appearance: textfield;
+  }
+
+  /* Las flechitas nativas del input number roban ancho en un campo de 30px. */
+  .ddp .dayEditMobileFieldControl .customInputMultipleCell::-webkit-outer-spin-button,
+  .ddp .dayEditMobileFieldControl .customInputMultipleCell::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .ddp .dayEditMobileFieldControl .customInputMultipleCell:focus {
+    border-color: var(--day-edit-mobile-focus, var(--dd-field-focus-border)) !important;
+    outline: none !important;
+  }
+
+  /* Los botones son una celda mas: mismo alto, apenas mas angostos. */
+  .ddp .dayEditMobileFieldControl .customInputMultipleBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    min-width: 26px;
+    flex: 0 0 26px;
+    height: var(--dd-field-h);
+    padding: 0;
+    border: 1px dashed var(--dd-border-strong);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--dd-text-muted);
+  }
+
+  .ddp .dayEditMobileFieldControl .customInputMultipleBtn:active {
+    background: var(--dd-surface-hover);
+    color: var(--dd-text);
+  }
+
+  .ddp .dayEditMobileFieldControl .customInputMultipleBtn .MuiSvgIcon-root {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Con la piramide activa el selector queda con un solo chip: se achica y le
+     devuelve ese ancho a las celdas de la serie. */
+  .ddp .dayEditMobileFieldRow[data-field="reps"]:has(.customInputMultiple) .dayEditMobileFieldControl {
+    grid-template-columns: minmax(0, 1fr) 34px;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldRow[data-field="reps"]:has(.customInputMultiple) .dayEditMobileFieldControl .seg {
+    width: 34px !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Ajuste fino para que entren 4 celdas tambien en tema claro, donde la
+     columna es mas angosta (170px contra 202px). Cuentas: 4x28 + 5x2 de gap
+     + 2x22 de botones = 166px. */
+  .ddp .dayEditMobileFieldControl .customInputMultiple {
+    gap: 2px;
+    /* Red de seguridad: nada impide cargar 5, 6 o mas series. A partir de ahi
+       la fila se desliza en horizontal en vez de romper el layout de la card. */
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ddp .dayEditMobileFieldControl .customInputMultiple::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .customInputMultipleCell {
+    width: 28px !important;
+    min-width: 28px !important;
+    flex: 0 0 28px;
+    font-size: 0.74rem !important;
+  }
+
+  .ddp .dayEditMobileFieldControl .customInputMultipleBtn {
+    width: 22px;
+    min-width: 22px;
+    flex: 0 0 22px;
+  }
+
+  .ddp .dayEditMobileFieldControl .customInputMultipleBtn .MuiSvgIcon-root {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* ==========================================================================
+   CIRCUITO EN MOBILE
+   ==========================================================================
+   Mismo lenguaje que el bloque y que la card de ejercicio: cabecera con punto
+   de acento, parametros como filas etiqueta/control, y las sub-cards de los
+   ejercicios adentro.
+
+   Antes la cabecera era dos dropdowns sueltos uno al lado del otro y los
+   parametros venian con la etiqueta inline y centrada ("Mins 33"), que no
+   coincidia con ninguna otra parte de la pagina.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  .ddp .dayEditMobileCircuitHead {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--day-edit-mobile-divider, var(--dd-border));
+  }
+
+  .ddp .dayEditMobileCircuitHeadTop {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* El morado es el acento de circuito, igual que el verde identifica bloques. */
+  .ddp .dayEditMobileCircuitDot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 999px;
+    background: var(--dd-circuit-accent);
+  }
+
+  .ddp .dayEditMobileCircuitKind {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .ddp .dayEditMobileCircuitOrder {
+    flex: 0 0 auto;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileCircuitKind .p-dropdown {
+    width: 100% !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    align-items: center;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: var(--day-edit-mobile-input-bg, var(--dd-field-bg)) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileCircuitKind .p-dropdown-label {
+    padding: 0 4px 0 10px !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-field-text)) !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    line-height: 32px !important;
+  }
+
+  /* ---- Parametros del circuito como filas etiqueta/control ----
+     La estructura que traen todos los tipos es <div><span>Label</span>control</div>,
+     asi que se pueden alinear todos con la misma regla, sin tocar cada variante
+     (AMRAP, Tabata, EMOM, Por tiempo, Libre). */
+  .ddp .dayEditCircuitMobileInline {
+    display: grid;
+    gap: 4px;
+  }
+
+  .ddp .dayEditCircuitMobileInline > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .ddp .dayEditCircuitMobileInline div:has(> span) {
+    display: grid;
+    grid-template-columns: var(--dd-label-col) minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-height: var(--dd-field-h);
+  }
+
+  .ddp .dayEditCircuitMobileInline span {
+    margin: 0 !important;
+    color: var(--day-edit-mobile-label, var(--dd-label)) !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  /* Los separadores "/" y "x" de Tabata son spans sueltos entre campos: con
+     cada parametro en su propia fila ya no hacen falta. */
+  .ddp .dayEditCircuitMobileInline > span {
+    display: none !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditCircuitMobileInline input,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditCircuitMobileInline .form-control {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: var(--dd-field-h) !important;
+    height: var(--dd-field-h) !important;
+    margin: 0 !important;
+    padding: 4px 10px !important;
+    border: 1px solid var(--day-edit-mobile-input-border, var(--dd-field-border)) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: var(--day-edit-mobile-input-bg, var(--dd-field-bg)) !important;
+    color: var(--day-edit-mobile-input-text, var(--dd-field-text)) !important;
+    font-size: 0.84rem !important;
+    text-align: left !important;
+  }
+
+  /* Boton de agregar ejercicio al circuito: secundario, igual que en el bloque. */
+  .ddp .dayEditMobileExerciseCard .bgColor {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    min-height: var(--dd-field-h);
+    margin: 0;
+    padding: 4px 10px;
+    border: 1px dashed var(--dd-border-strong) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: transparent !important;
+    color: var(--dd-text-muted) !important;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .ddp .dayEditMobileExerciseCard .bgColor .MuiSvgIcon-root {
+    width: 15px;
+    height: 15px;
+  }
+
+  .ddp .dayEditMobileExerciseCard .bgColor .font-icons {
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Tabata / EMOM traen sus campos dentro de un `div.d-flex` con separadores
+     "/" y "x" sueltos entre medio:
+
+       .dayEditCircuitMobileInline > div.d-flex > (div[campo], span[sep], ...)
+
+     Dos correcciones respecto del intento anterior:
+     1) `.d-flex` de Bootstrap trae display:flex !important, asi que para
+        apilar los campos hace falta !important tambien.
+     2) Los separadores no son hijos directos del contenedor inline sino de
+        ese div interno, por eso el selector anterior no los alcanzaba. */
+  .ddp .dayEditCircuitMobileInline > div,
+  .ddp .dayEditCircuitMobileInline > div.d-flex {
+    display: grid !important;
+    gap: 4px !important;
+    align-items: stretch !important;
+  }
+
+  /* Con cada parametro en su propia fila, "/" y "x" ya no significan nada. */
+  .ddp .dayEditCircuitMobileInline > div > span {
+    display: none !important;
+  }
+
+  /* Los campos internos vuelven a ancho completo: traian anchos fijos
+     pensados para el layout horizontal de escritorio. */
+  .ddp .dayEditCircuitMobileInline .dayEditCircuitInlineField,
+  .ddp .dayEditCircuitMobileInline .dayEditCircuitInlineFieldName,
+  .ddp .dayEditCircuitMobileInline .dayEditCircuitInlineFieldMeta {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* CircuitSmallNumberInput trae un ancho chico pensado para la fila
+     horizontal de escritorio; en la grilla etiqueta/control tiene que ocupar
+     su columna como cualquier otro campo. */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditCircuitMobileInline .dayEditCircuitInlineNumberInput,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditCircuitMobileInline .dayEditCircuitFreeTextInput {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* El contenedor externo de los parametros TAMBIEN matchea `div:has(> span)`,
+     porque los separadores "/" y "x" son spans hijos suyos. Sin esto tomaba la
+     grilla de 2 columnas pensada para las filas etiqueta/control y los campos
+     se repartian de a dos: Work en la columna 1, Rest en la 2, Rounds abajo.
+     Lo forzamos a una sola columna para que cada parametro sea su propia fila. */
+  .ddp .dayEditCircuitMobileInline > div,
+  .ddp .dayEditCircuitMobileInline > div.d-flex {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* La etiqueta "Notas" del circuito venia centrada; en la card de ejercicio
+     va alineada a la izquierda como el resto de las etiquetas. */
+  .ddp .dayEditMobileExerciseCard .styleInputsSpan {
+    display: block;
+    margin: 0 0 4px !important;
+    color: var(--day-edit-mobile-label, var(--dd-label)) !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left !important;
+  }
+
+  /* El contenedor de notas del circuito traia col-11 + me-4, que lo dejaba
+     descentrado respecto del resto de la card. */
+  .ddp .dayEditMobileExerciseCard .col-11.me-4 {
+    width: 100% !important;
+    max-width: none !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+}
+
+@media (max-width: 992px) {
+  /* ------------------------------------------------------------------
+     1) Selector de tipo de circuito: se distingue del fondo.
+     Tenia el mismo borde que los inputs (#2a3342) sobre un fondo casi igual
+     al de la card, asi que el recuadro no se leia. Le damos borde mas fuerte
+     y una superficie distinta: es el titulo del circuito, no un campo mas.
+     ------------------------------------------------------------------ */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileCircuitKind .p-dropdown {
+    border: 1px solid var(--dd-border-strong) !important;
+    background: var(--dd-surface-3) !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileCircuitKind .p-dropdown .p-dropdown-trigger {
+    color: var(--dd-text-muted) !important;
+  }
+
+  /* ------------------------------------------------------------------
+     2) Notas: aire a los costados para que no queden pegadas al borde.
+     ------------------------------------------------------------------ */
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .col-11.me-4 textarea,
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldRow[data-field="notas"] textarea {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .ddp .dayEditMobileExerciseCard .col-11.me-4 {
+    padding: 0 2px !important;
+  }
+
+  /* ------------------------------------------------------------------
+     3) Tabata / Intermitentes / EMOM / Libre: en UNA linea.
+     Son campos de 2-3 digitos; apilarlos gastaba tres renglones. En linea,
+     con los separadores visibles, se lee "1 x 12" o "20 / 10 x 8", que es
+     como se nombran estos formatos.
+     Los de un solo parametro (AMRAP, Por tiempo) siguen como fila
+     etiqueta/control, que para uno solo es mas claro.
+     ------------------------------------------------------------------ */
+  .ddp .dayEditCircuitMobileInline > div.d-flex,
+  .ddp .dayEditCircuitMobileInline > .dayEditCircuitEmomInline,
+  .ddp .dayEditCircuitMobileInline > .dayEditCircuitInlineFields {
+    display: flex !important;
+    grid-template-columns: none !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+    margin: 0 !important;
+  }
+
+  /* Cada parametro: etiqueta chica arriba, campo compacto abajo. */
+  .ddp .dayEditCircuitMobileInline > div.d-flex > div,
+  .ddp .dayEditCircuitMobileInline > .dayEditCircuitEmomInline > .dayEditCircuitInlinePair,
+  .ddp .dayEditCircuitMobileInline > .dayEditCircuitInlineFields > div {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 2px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .ddp .dayEditCircuitMobileInline > div.d-flex > div > span,
+  .ddp .dayEditCircuitMobileInline > .dayEditCircuitEmomInline .dayEditCircuitInlineLabel,
+  .ddp .dayEditCircuitMobileInline > .dayEditCircuitInlineFields > div > span {
+    font-size: 0.6rem !important;
+    letter-spacing: 0.05em;
+  }
+
+  /* Los separadores vuelven: son los que dan la lectura "1 x 12". */
+  .ddp .dayEditCircuitMobileInline > div > span,
+  .ddp .dayEditCircuitMobileInline .dayEditCircuitInlineSymbol {
+    display: inline-flex !important;
+    align-items: center;
+    align-self: flex-end;
+    height: var(--dd-field-h);
+    margin: 0 !important;
+    padding: 0 1px;
+    color: var(--dd-text-soft) !important;
+    font-size: 0.78rem !important;
+    font-weight: 700;
+    text-transform: none;
+  }
+
+  /* El nombre del circuito libre necesita mas lugar que un numero. */
+  .ddp .dayEditCircuitMobileInline > .dayEditCircuitInlineFields > .dayEditCircuitInlineFieldName {
+    flex: 2 1 0 !important;
+  }
+}
+
+/* ==========================================================================
+   SERIE PIRAMIDAL — ESTILOS BASE (TODOS LOS ANCHOS)
+   ==========================================================================
+   REGRESION QUE ESTO ARREGLA: al pasar el modo multiple a celdas propias les
+   saque las clases `form-control form-control-sm` de Bootstrap y las reemplace
+   por `customInputMultipleCell` / `customInputMultipleBtn`, pero escribi TODO
+   ese CSS dentro de @media (max-width: 992px). En desktop los controles
+   quedaron sin ninguna regla: inputs nativos de 213px con borde de 2px y
+   botones grises (#f0f0f0), que es la caja blanca que se veia.
+
+   Moraleja: si una edicion de JSX cambia clases de un componente COMPARTIDO,
+   el estilo de reemplazo no puede vivir solo en el media query de mobile.
+   Aca van los estilos base y en el media query quedan solo los ajustes de
+   tamano propios de mobile.
+   ========================================================================== */
+
+.ddp .customInputMultiple {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+}
+
+.ddp .customInputMultipleCell {
+  width: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  height: 28px;
+  padding: 0 2px;
+  border: 1px solid var(--dd-field-border);
+  border-radius: 6px;
+  background: var(--dd-field-bg);
+  color: var(--dd-field-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: none;
+  -moz-appearance: textfield;
+}
+
+.ddp .customInputMultipleCell::-webkit-outer-spin-button,
+.ddp .customInputMultipleCell::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.ddp .customInputMultipleCell:focus {
+  border-color: var(--dd-field-focus-border);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--dd-field-focus-ring);
+}
+
+.ddp .customInputMultipleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  flex: 0 0 24px;
+  height: 28px;
+  padding: 0;
+  border: 1px dashed var(--dd-border-strong);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dd-text-muted);
+}
+
+.ddp .customInputMultipleBtn:hover:not(:disabled) {
+  background: var(--dd-surface-hover);
+  color: var(--dd-text);
+}
+
+.ddp .customInputMultipleBtn:disabled {
+  opacity: 0.4;
+}
+
+.ddp .customInputMultipleBtn .MuiSvgIcon-root {
+  width: 14px;
+  height: 14px;
+}
+
+/* ==========================================================================
+   DESKTOP — CHIPS Y BOTONES DE AGREGAR
+   ==========================================================================
+   Tres cosas que no seguian el sistema en anchos grandes:
+
+   1) El chip del icono medía 14px de alto con un svg de 13px adentro: el icono
+      quedaba pegado a los bordes y se veia roto. Los botones no llenaban la
+      altura de su contenedor .seg (24px).
+   2) .seg tenia fondo oscuro fijo en LOS DOS temas, asi que en modo claro
+      quedaba un recuadro oscuro.
+   3) Los botones de agregar venian con tres estilos distintos: el de circuito
+      39px de alto y oscuro incluso en tema claro, los de bloque 42px y blancos.
+   ========================================================================== */
+
+@media (min-width: 993px) {
+  /* Solo color: el ALTO de los chips lo define la tabla densa de desktop con
+     reglas de especificidad 0-5-0 (14px a proposito, para que entren muchas
+     filas). Intentar cambiarlo desde aca era CSS muerto. */
+  .ddp .seg {
+    border-color: var(--dd-border) !important;
+    background: var(--dd-surface-3) !important;
+  }
+
+  .ddp .seg .seg-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    color: var(--dd-text-muted) !important;
+  }
+
+  .ddp .seg .seg-btn.active {
+    background: var(--dd-accent) !important;
+    color: var(--dd-on-accent) !important;
+  }
+
+  .ddp .seg .seg-btn + .seg-btn {
+    border-left: 1px solid var(--dd-border) !important;
+  }
+
+  /* El icono se adapta al chip, no al reves: en un chip de 14px un svg de
+     13-14px queda pegado a los bordes y se ve roto. 10px entra con aire. */
+  .ddp .seg .seg-btn-icon svg,
+  .ddp .dayEditTableShell .seg-btn-icon svg,
+  .ddp .dayEditDesktopTableShell .seg-btn-icon svg {
+    display: block;
+    width: 10px !important;
+    height: 10px !important;
+    flex: 0 0 10px;
+  }
+
+  /* Los tres botones de agregar comparten estilo: accion secundaria, borde
+     punteado, misma altura. Igual que en la version mobile del bloque. */
+  .ddp .circuitAddExerciseBtn,
+  .ddp .dayEditTrainingBlockAddBtn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px !important;
+    height: 38px !important;
+    padding: 0 16px !important;
+    border: 1px dashed var(--dd-border-strong) !important;
+    border-radius: var(--dd-radius-sm) !important;
+    background: transparent !important;
+    color: var(--dd-text-muted) !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+  }
+
+  .ddp .circuitAddExerciseBtn:hover,
+  .ddp .dayEditTrainingBlockAddBtn:hover {
+    border-color: var(--dd-accent) !important;
+    background: var(--dd-accent-soft) !important;
+    color: var(--dd-accent) !important;
+  }
+
+  .ddp .circuitAddExerciseBtn .MuiSvgIcon-root,
+  .ddp .dayEditTrainingBlockAddBtn .MuiSvgIcon-root,
+  .ddp .circuitAddExerciseBtn svg,
+  .ddp .dayEditTrainingBlockAddBtn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+@media (min-width: 993px) {
+  /* El texto de los chips estaba fijado en #ffffff !important por una regla de
+     la tabla (.dayEditDarkPage .dayEditTableShell .seg-btn) que aplica en LOS
+     DOS temas. Al darle fondo claro al contenedor quedaba blanco sobre blanco.
+     .ddp.dayEditDarkPage suma una clase sobre el mismo elemento y le gana. */
+  .ddp.dayEditDarkPage .seg .seg-btn,
+  .ddp.dayEditDarkPage .dayEditTableShell .seg .seg-btn,
+  .ddp.dayEditDarkPage .dayEditDesktopTableShell .seg .seg-btn {
+    color: var(--dd-text-muted) !important;
+  }
+
+  .ddp.dayEditDarkPage .seg .seg-btn.active,
+  .ddp.dayEditDarkPage .dayEditTableShell .seg .seg-btn.active,
+  .ddp.dayEditDarkPage .dayEditDesktopTableShell .seg .seg-btn.active {
+    background: var(--dd-accent) !important;
+    color: var(--dd-on-accent) !important;
+  }
+}
+
+/* ==========================================================================
+   SUPERSERIE (MOBILE)
+   ==========================================================================
+   Las cards de una superserie se pegan entre si y comparten un marco, con una
+   cabecera propia arriba. No las envolvimos en un contenedor real porque la
+   lista es un Droppable con <Draggable index={i}> sobre la lista plana:
+   anidarlas correria los indices y romperia el reordenamiento.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  .ddp .dayEditMobileSupersetHeader {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--day-edit-mobile-divider, var(--dd-border));
+    color: var(--dd-warning);
+  }
+
+  .ddp .dayEditMobileSupersetTitle {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* "2-A + 2-B": deja claro que ejercicios entran en el grupo. */
+  .ddp .dayEditMobileSupersetTag {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--dd-surface-3);
+    /* --dd-text-muted daba 3.07 sobre esta superficie. */
+    color: var(--dd-text);
+    font-size: 0.64rem;
+    font-weight: 700;
+  }
+
+  /* Las cards del grupo se tocan: una sola pieza en vez de tarjetas sueltas. */
+  .ddp .dayEditMobileExerciseCard.isSupersetMember {
+    margin-bottom: 0 !important;
+    border-color: var(--dd-warning) !important;
+  }
+
+  .ddp .dayEditMobileExerciseCard.isSupersetMember:not(.isSupersetFirst) {
+    border-top: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+  }
+
+  .ddp .dayEditMobileExerciseCard.isSupersetMember:not(.isSupersetLast) {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  .ddp .dayEditMobileExerciseCard.isSupersetLast {
+    margin-bottom: 16px !important;
+  }
+
+  /* Linea de continuidad entre miembros, para que se lea como un solo bloque. */
+  .ddp .dayEditMobileExerciseCard.isSupersetMember:not(.isSupersetLast)::after {
+    content: "";
+    display: block;
+    height: 1px;
+    margin: 10px -8px -2px;
+    background: var(--dd-warning);
+    opacity: 0.28;
+  }
+}
+
+/* ==========================================================================
+   SERIE PIRAMIDAL — BOTONES JUNTO AL ICONO
+   ==========================================================================
+   Los + / - salieron de la fila de celdas y pasaron al lado del chip de la
+   piramide. Motivo: con mas de 3 series la fila se quedaba sin ancho y los
+   botones se caian a otro renglon, rompiendo la card. Ahora la fila de celdas
+   solo crece con las celdas, y los botones tienen un lugar fijo.
+   ========================================================================== */
+
+.ddp .customInputMultipleActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Celdas mas chicas: entran mas series antes de necesitar scroll. */
+.ddp .customInputMultipleCell {
+  width: 28px;
+  min-width: 28px;
+  flex: 0 0 28px;
+  font-size: 0.74rem;
+}
+
+@media (max-width: 992px) {
+  /* El wrap del selector pasa a ser una fila: [+][-] y despues el chip,
+     todos a la misma altura. */
+  .ddp .dayEditMobileFieldControl .customInputModeSelectorWrap {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard .dayEditMobileFieldControl .customInputMultipleCell {
+    width: 26px !important;
+    min-width: 26px !important;
+    flex: 0 0 26px;
+    font-size: 0.72rem !important;
+  }
+
+  /* Misma altura que el chip de la piramide (22px), para que la fila cierre. */
+  .ddp .dayEditMobileFieldControl .customInputMultipleBtn {
+    width: 22px;
+    min-width: 22px;
+    flex: 0 0 22px;
+    height: 22px;
+  }
+
+  .ddp .dayEditMobileFieldControl .customInputMultipleBtn .MuiSvgIcon-root {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Con los botones afuera, la columna de chips necesita mas lugar. */
+  .ddp .dayEditMobileFieldRow[data-field="reps"]:has(.customInputMultiple) .dayEditMobileFieldControl {
+    grid-template-columns: minmax(0, 1fr) 84px;
+  }
+
+  .ddp.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard.shadowCards .dayEditMobileFieldRow[data-field="reps"]:has(.customInputMultiple) .dayEditMobileFieldControl .seg {
+    width: auto !important;
+  }
+}
+
+@media (min-width: 993px) {
+  /* En desktop los chips miden 14px: los botones acompañan ese alto. */
+  .ddp .customInputMultipleActions .customInputMultipleBtn {
+    width: 18px;
+    min-width: 18px;
+    flex: 0 0 18px;
+    height: 14px;
+  }
+
+  .ddp .customInputMultipleActions .customInputMultipleBtn .MuiSvgIcon-root {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@media (min-width: 993px) {
+  /* La columna REPS de la tabla de desktop es angosta: con celdas de 28px
+     cinco series ya desbordaban. 22px entran y siguen siendo legibles. */
+  .ddp .customInputMultipleCell {
+    width: 22px;
+    min-width: 22px;
+    flex: 0 0 22px;
+    height: 20px;
+    font-size: 0.68rem;
+  }
+
+  /* Si aun asi no entran (7, 8 series), la fila se desliza en vez de romper
+     la celda de la tabla. */
+  .ddp .customInputMultiple {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ddp .customInputMultiple::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   BLOQUES DE ACTIVACION/MOVILIDAD Y ENTRADA EN CALOR
+   ==========================================================================
+   Estos bloques comparten la tabla `coachRoutineAuxTable`. Los alineamos con
+   el lenguaje de la card de ejercicio: peso mas corto, controles de series y
+   reps centrados en su celda, y las notas con su icono.
+
+   No llevan campo Alumno (ese lo edita el alumno, no aplica aca) ni modo
+   piramide: eso ultimo se apaga desde JSX con allowMultiple={false}.
+   ========================================================================== */
+
+/* Peso mas corto: son cargas simples, no necesitan 150px.
+   Con !important porque styles.css define lo mismo con igual especificidad y
+   se carga despues; sin eso la regla quedaba inerte. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable .coachRoutineAuxColPeso,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxColPeso {
+  width: 108px !important;
+}
+
+/* El <col> es solo una sugerencia en tablas auto-layout: fijamos tambien la
+   celda para que el ancho se respete. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable th:nth-child(5),
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td:nth-child(5) {
+  width: 108px !important;
+  max-width: 108px !important;
+}
+
+/* Series y Reps: mismo ancho y contenido centrado, para que los steppers de
+   las dos columnas queden en la misma vertical fila a fila. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxColMetric {
+  width: 124px;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td .customInputNumberRoot,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td .marginRepsNew {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td .input-number-container {
+  margin: 0 auto !important;
+}
+
+/* El selector de modo queda debajo del stepper, centrado, sin el mt-1 suelto. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable .customInputModeSelectorWrap {
+  margin: 0 !important;
+  display: flex !important;
+  justify-content: center;
+}
+
+/* Notas: mismo tratamiento que en la card (icono + campo), no un textarea pelado. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td .p-inputtextarea {
+  min-height: 34px;
+  padding: 7px 10px 7px 30px;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesCell {
+  position: relative;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesCell::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  opacity: 0.55;
+  background: currentColor;
+  -webkit-mask: var(--dd-notes-icon) center / contain no-repeat;
+  mask: var(--dd-notes-icon) center / contain no-repeat;
+}
+
+.ddp,
+.coachModalDialog.dayEditAuxRoutineDialog {
+  /* Icono de nota (lapiz sobre hoja) como mascara, para que tome el color del
+     texto y siga al tema sin tener dos versiones del asset. */
+  --dd-notes-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z'/%3E%3C/svg%3E");
+}
+
+/* Badge de posicion del dialogo de reordenar: cabe una palabra mas. */
+.dayEditReorderPositionBadge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   SUPERSERIE EN DESKTOP
+   ==========================================================================
+   En una tabla no se pueden envolver filas en un contenedor, asi que el grupo
+   se arma con una fila de titulo y bordes laterales en cada miembro. El acento
+   ambar es el mismo que en mobile, para que se reconozca igual en los dos.
+   ========================================================================== */
+
+@media (min-width: 993px) {
+  .ddp .dayEditSupersetHeaderRow > td {
+    padding: 10px 12px 4px !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .ddp .dayEditSupersetHeaderInner {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--dd-warning);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .ddp .dayEditSupersetHeaderInner em {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--dd-surface-3);
+    color: var(--dd-text-muted);
+    font-size: 0.63rem;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  /* Barra lateral continua a lo largo de las filas del grupo. */
+  .ddp tr.isSupersetMember > td:first-child {
+    position: relative;
+  }
+
+  .ddp tr.isSupersetMember > td:first-child::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--dd-warning);
+    opacity: 0.75;
+  }
+
+  .ddp tr.isSupersetFirst > td:first-child::before {
+    top: 4px;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .ddp tr.isSupersetLast > td:first-child::before {
+    bottom: 4px;
+    border-radius: 0 0 2px 2px;
+  }
+
+  /* La celda de series del miembro que no es el primero. */
+  .ddp .dayEditSupersetSetsEcho {
+    display: inline-block;
+    color: var(--dd-text-soft);
+    font-size: 0.9rem;
+    opacity: 0.5;
+  }
+}
+
+/* ==========================================================================
+   BLOQUES AUXILIARES — PESO Y NOTAS
+   ========================================================================== */
+
+/* Peso todavia mas corto: son cargas de una o dos cifras. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable .coachRoutineAuxColPeso,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxColPeso,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable th:nth-child(5),
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td:nth-child(5) {
+  width: 84px !important;
+  max-width: 84px !important;
+}
+
+/* El input tiene que llenar su celda: antes quedaba corrido y con ancho propio. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td:nth-child(5) input,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxTable td:nth-child(5) .form-control {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 6px 8px !important;
+  text-align: center !important;
+}
+
+/* Notas de los bloques auxiliares: mismo patron que los ejercicios.
+   El boton siempre visible; el campo aparece segun el ajuste del editor o
+   cuando el entrenador lo abre. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 0;
+  border: 1px solid var(--dd-border, #24344d);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dd-text-muted, #9fb0c7);
+}
+
+/* Con contenido el boton lo indica, sin necesidad de abrirlo. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesWrap.has-notes .coachRoutineAuxNotesTrigger {
+  border-color: var(--dd-accent, #3b82f6);
+  color: var(--dd-accent, #3b82f6);
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesField {
+  display: none;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesWrap.is-open .coachRoutineAuxNotesField {
+  display: block;
+}
+
+/* El icono de lapiz decorativo ya no aplica: ahora hay un boton real. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesCell::before {
+  content: none;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesField .p-inputtextarea {
+  padding: 7px 10px;
+}
+
+/* Fila de notas de los bloques auxiliares: propia, debajo de la del ejercicio,
+   igual que dayEditInlineNotesRow en la tabla principal. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRow > td {
+  padding-top: 0 !important;
+  border-top: 0 !important;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell {
+  text-align: left !important;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowTitle {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--dd-label, #7d93ae);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell .p-inputtextarea {
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+/* En la celda ya solo queda el boton: que no ocupe mas de lo necesario. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesWrap {
+  justify-content: center;
+}
+
+/* Herramientas de la superserie: atajos para dejar el mismo valor en todo el
+   grupo. Son secundarias respecto del titulo, asi que van en tono neutro y
+   solo se tinen de ambar al tocarlas. */
+.ddp .dayEditSupersetTools {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.ddp .dayEditSupersetTools button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 9px;
+  border: 1px solid var(--dd-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dd-text-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.ddp .dayEditSupersetTools button:hover,
+.ddp .dayEditSupersetTools button:active {
+  border-color: var(--dd-warning);
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--dd-warning);
+}
+
+@media (max-width: 992px) {
+  /* En mobile la cabecera es angosta: el tag se va a su propio renglon para
+     que los dos botones entren sin apretarse. */
+  .ddp .dayEditMobileSupersetHeader {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .ddp .dayEditMobileSupersetHeader .dayEditSupersetTools {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .ddp .dayEditMobileSupersetHeader .dayEditSupersetTools button {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 993px) {
+  /* La fila en si tenia fondo blanco fijo en los dos temas (viene de las reglas
+     de la tabla). Mi regla anterior solo pintaba el <td>, asi que en oscuro
+     quedaba una banda blanca detras. */
+  .ddp tr.dayEditSupersetHeaderRow,
+  .ddp tr.dayEditSupersetHeaderRow > td {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (min-width: 993px) {
+  /* `.ddp.ddp-dark.dayEditDarkPage .dayEditTableShell .ddp-table tbody tr` pinta
+     las filas de BLANCO con !important — otra regla de modo oscuro con color
+     claro. Especificidad 0-5-2 contra la 0-2-1 de mi intento anterior, por eso
+     la banda seguia blanca. Igualamos la cadena y sumamos la clase propia. */
+  .ddp.ddp-dark.dayEditDarkPage .dayEditTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow,
+  .ddp.ddp-dark.dayEditDarkPage .dayEditTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow > td,
+  .ddp.ddp-dark.dayEditDarkPage .dayEditDesktopTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow,
+  .ddp.ddp-dark.dayEditDarkPage .dayEditDesktopTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow > td {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Estado activo de los vinculos de superserie: mientras esta encendido, editar
+   ese campo en un ejercicio lo replica en todo el grupo. Se marca en ambar,
+   igual que el resto de la identidad de la superserie. */
+.ddp .dayEditSupersetTools button.isLinked {
+  border-color: var(--dd-warning);
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--dd-warning);
+}
+
+.ddp .dayEditSupersetTools button.isLinked::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  margin-right: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+@media (min-width: 993px) {
+  /* La celda de la cabecera se pinta OPACA, igual que las celdas de las filas
+     de ejercicio. Antes la dejabamos transparente y dependia de que otra regla
+     nuestra neutralizara el blanco del <tr>: si esa regla perdia en algun
+     contexto, aparecia la banda blanca. Con la celda opaca el resultado no
+     depende de ganar esa pelea. */
+  .ddp tr.dayEditSupersetHeaderRow > td,
+  .ddp.ddp-dark.dayEditDarkPage .dayEditTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow > td,
+  .ddp.ddp-dark.dayEditDarkPage .dayEditDesktopTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow > td,
+  .ddp.ddp-light .dayEditTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow > td,
+  .ddp.ddp-light .dayEditDesktopTableShell .ddp-table tbody tr.dayEditSupersetHeaderRow > td {
+    background: var(--dd-table-surface) !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (min-width: 993px) {
+  /* Las notas son parte del ejercicio, no una fila suelta: se pegan a la fila
+     de arriba (sin borde entre medio, mismo fondo) y ocupan todo el ancho.
+     Antes eran tres celdas —dos vacias a los costados— y el campo quedaba
+     corto y descentrado respecto de la fila del ejercicio. */
+  .ddp tr.dayEditInlineNotesRow > td.dayEditInlineNotesCell {
+    padding: 0 14px 12px !important;
+    border-top: 0 !important;
+    text-align: left !important;
+  }
+
+  .ddp tr.dayEditInlineNotesRow .dayEditInlineNotesTitle {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--dd-label);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .ddp tr.dayEditInlineNotesRow .dayEditInlineNotesCell textarea,
+  .ddp tr.dayEditInlineNotesRow .dayEditInlineNotesCell .form-control,
+  .ddp tr.dayEditInlineNotesRow .dayEditInlineNotesCell .p-inputtextarea {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  /* El wrapper que trae customInputEditDay para notas viene con columnas de
+     Bootstrap; aca tiene que ocupar el ancho completo. */
+  .ddp tr.dayEditInlineNotesRow .dayEditInlineNotesCell > .row,
+  .ddp tr.dayEditInlineNotesRow .dayEditInlineNotesCell [class*="col-"] {
+    width: 100% !important;
+    max-width: none !important;
+    flex: 0 0 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* ==========================================================================
+   NOTAS DE LOS BLOQUES AUXILIARES — LA LINEA SEPARA EJERCICIOS, NO CAMPOS
+   ==========================================================================
+   Las notas pertenecen al ejercicio de arriba, asi que entre la fila del
+   ejercicio y su fila de notas no va ninguna linea: el divisor tiene que
+   quedar recien despues de las notas, separando un ejercicio del siguiente.
+   La linea que se veia no era el border-top de las notas (ese ya estaba en 0)
+   sino el border-bottom de la fila del ejercicio, que es lo que se apaga aca. */
+.coachModalDialog.dayEditAuxRoutineDialog tr.coachRoutineAuxExerciseRow.hasOpenNotes > td {
+  border-bottom: 0 !important;
+}
+
+/* La celda de notas ahora es una sola a todo el ancho (colSpan 8), asi que el
+   campo tiene que arrancar pegado a la izquierda y ocupar la fila entera. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+  text-align: left !important;
+}
+
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell .p-inputtextarea,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell textarea,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell .form-control {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+/* customInput* devuelve el campo envuelto en columnas de Bootstrap; aca esa
+   grilla tiene que soltar el ancho o el textarea vuelve a quedar corto. */
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell > .row,
+.coachModalDialog.dayEditAuxRoutineDialog .coachRoutineAuxNotesRowCell [class*="col-"] {
+  width: 100% !important;
+  max-width: none !important;
+  flex: 0 0 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   SUPERSERIE EN MOBILE — QUE SE NOTE EN TODOS LOS MIEMBROS
+   ==========================================================================
+   Antes solo el primer ejercicio llevaba cabecera y los siguientes quedaban
+   indistinguibles de un ejercicio suelto: el borde amarillo fino no alcanzaba.
+   En mobile las cards se leen de a una, no como filas de una tabla, asi que
+   cada miembro tiene que identificarse solo. */
+@media (max-width: 992px) {
+  /* Riel amarillo lateral en TODA card del grupo: es la marca que se ve de
+     reojo sin leer nada. */
+  /* Sube de especificidad a proposito: la card ya recibe
+     `border: 1px solid ... !important` desde
+     `.ddp.ddp-dark.dayEditDarkPage .dayEditMobileTable .dayEditMobileExerciseCard`
+     (4 clases). Con menos clases el riel amarillo no se veia ni con !important.
+     `dayEditDarkPage` esta siempre puesta, asi que el selector sirve para los
+     dos temas. */
+  .ddp.dayEditDarkPage.dayEditEditorTheme-dark .dayEditMobileTable .dayEditMobileExerciseCard.isSupersetMember,
+  .ddp.dayEditDarkPage.dayEditEditorTheme-light .dayEditMobileTable .dayEditMobileExerciseCard.isSupersetMember {
+    border-left-width: 3px !important;
+    border-left-color: var(--dd-warning) !important;
+  }
+
+  .ddp .dayEditMobileSupersetContinues {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 8px;
+    padding-bottom: 7px;
+    border-bottom: 1px dashed color-mix(in srgb, var(--dd-warning) 45%, transparent);
+    color: var(--dd-warning);
+  }
+
+  /* Borde punteado y texto mas chico que la cabecera del primero: se lee como
+     continuacion del grupo y no como el arranque de otra superserie. */
+  .ddp .dayEditMobileSupersetContinuesText {
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .ddp .dayEditMobileSupersetContinues .dayEditMobileSupersetTag {
+    margin-left: auto;
+    background: color-mix(in srgb, var(--dd-warning) 16%, transparent);
+    color: var(--dd-warning);
+  }
+}
+
+/* La linea divisoria va DESPUES de las notas, no entre el ejercicio y sus
+   notas: son la misma unidad. La fila de notas conserva su borde inferior,
+   que es el que separa un ejercicio del siguiente. */
+.ddp tr.GeneralTrExercises.hasOpenNotes > td,
+.ddp tr.dayEditBlockExerciseRow.hasOpenNotes > td {
+  border-bottom: 0 !important;
+}
+
+/* Botones "+ Ejercicio" / "+ Circuito" dentro de un bloque en mobile.
+   Median 34px de alto; el minimo tactil es 44. Se sube solo el alto para no
+   tocar el ancho, que ya reparte bien la fila en dos columnas. */
+@media (max-width: 992px) {
+  .ddp .dayEditMobileBlock .dayEditMobileBlockAdd .dayEditMobileBlockAddBtn {
+    min-height: 44px;
+  }
+}

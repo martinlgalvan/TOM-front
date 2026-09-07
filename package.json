@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "test:dayedit": "node --test tests/day-edit-details.fuzz.test.mjs",
     "test:e2e": "playwright test",
-    "test:e2e:real": "playwright test -c playwright.real-localhost.config.mjs"
+    "test:e2e:real": "playwright test -c playwright.real-localhost.config.mjs",
+    "test:e2e:dayedit": "node e2e/run-day-edit-real.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

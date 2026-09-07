@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Resultados y trazas de Playwright (se regeneran en cada corrida)
+test-results/
+playwright-report/
+blob-report/
+
+# Copias de seguridad y carpetas de herramientas locales
+.codex-backup/
+.agents/
+
+# Scripts de un solo uso que se usaron para aplicar parches puntuales.
+# No forman parte de la aplicacion: quedaron en el arbol despues de correrlos.
+__*.mjs

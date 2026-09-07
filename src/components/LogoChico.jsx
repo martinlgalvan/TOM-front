@@ -17,7 +17,7 @@ import FRANCO from "/src/assets/img/Franco.jpeg";
 import SOL from "/src/assets/img/SvStrong.jpeg";
 import MARTIN_CASANOVA from "/src/assets/img/MartinCasanova.png";
 import MACARENA from "/src/assets/img/Macarena.png";
-import LEO_BURGIO from "/src/assets/img/Leo_burgio.png";
+import LEO_BURGIO from "/src/assets/img/Leo_burgio.jpeg";
 import VALU_MARCHE from "/src/assets/img/Valu_marche.png";
 import AGUSTIN_ARENAS from "/src/assets/img/Agustin_arenas.png";
 import LEONEL_ORTIZ from "/src/assets/img/Leonel_ortiz.png";
@@ -30,6 +30,8 @@ import FARID from "/src/assets/img/Farid.png";
 import AXEL from "/src/assets/img/Axel.jpeg";
 import INAKI from "/src/assets/img/inaki-logo.png";
 import DANIEL from "/src/assets/img/Daniel.png";
+import MOVEON from "/src/assets/img/moveon.png";
+import GONZALO from "/src/assets/img/Gonzalo.jpeg";
 
 /** Logo por defecto */
 const DEFAULT_LOGO = TOM;
@@ -141,7 +143,13 @@ const LOGO_MAP = {
     "id:694c1869aa31bb2de8d104e3": INAKI,
 
     "email:danielnoferi@gmail.com": DANIEL,
-    "id:694026ca258acddc74ed3339": DANIEL
+    "id:694026ca258acddc74ed3339": DANIEL,
+
+    "email:marcelosebastianrodriguez@gmail.com": MOVEON,
+    "id:6a57ac194ef60971c5352895": MOVEON,
+
+    "email:gonzaloalvarez125@gmail.com": GONZALO,
+    "id:6a724fc0bc9b74afeafbcb18": GONZALO
 
 };
 
