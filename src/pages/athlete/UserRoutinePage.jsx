@@ -113,7 +113,7 @@ function UserRoutinePage() {
         (week?.routine || []).forEach((d, idx) => {
             const key = String(d?._id ?? '');
             if (!key) return;
-            map[key] = d?.name || d?.title || `Dia ${idx + 1}`;
+            map[key] = d?.name || d?.title || `Día ${idx + 1}`;
         });
         return map;
     };
@@ -149,7 +149,7 @@ function UserRoutinePage() {
                         const dayId = String(it?.dayId ?? '').trim();
                         if (!dayId) return null;
                         const text = String(it?.text ?? '').trim();
-                        const label = it?.label || labels[dayId] || 'Dia';
+                        const label = it?.label || labels[dayId] || 'Día';
                         return { dayId, label, text };
                     })
                     .filter(Boolean)
@@ -159,7 +159,7 @@ function UserRoutinePage() {
                     .map(k => {
                         const dayId = String(k);
                         const text = String(src.daysMap[k] ?? '').trim();
-                        const label = labels[dayId] || 'Dia';
+                        const label = labels[dayId] || 'Día';
                         return { dayId, label, text };
                     })
                     .filter(it => it.text.length > 0);
@@ -169,7 +169,7 @@ function UserRoutinePage() {
                     .map(k => {
                         const dayId = String(k);
                         const text = String(src.days[k] ?? '').trim();
-                        const label = labels[dayId] || 'Dia';
+                        const label = labels[dayId] || 'Día';
                         return { dayId, label, text };
                     })
                     .filter(it => it.text.length > 0);
@@ -240,7 +240,7 @@ function UserRoutinePage() {
                     : [];
                 const sorted = [...visibleWeeks].sort((a, b) => getSortTime(b) - getSortTime(a));
                 setRoutine(sorted);
-                NotifyHelper.instantToast('Semanas cargadas con exito');
+                NotifyHelper.instantToast('Semanas cargadas con éxito');
             });
     }, [id]);
 
@@ -399,7 +399,7 @@ function UserRoutinePage() {
 
                 {userProfile && userProfile.devolucion && (
                     <div className={`card p-3 my-3 ${isDark ? 'user-routine-panel-dark border-0' : ''}`}>
-                        <h5 className={`card-title ${isDark ? 'text-light' : ''}`}>Correcciones / Devolucion</h5>
+                        <h5 className={`card-title ${isDark ? 'text-light' : ''}`}>Correcciones / Devolución</h5>
                         {userProfile.devolucionFecha && (
                         <p className={isDark ? 'text-light-emphasis' : 'text-muted'}>
                             Fecha: {new Date(userProfile.devolucionFecha).toLocaleString()}
@@ -577,11 +577,11 @@ function UserRoutinePage() {
                         </div>
                     ) : (
                         <div className="d-flex flex-column gap-3">
-                            <h6 className={`mb-2 ${isDark ? 'text-light' : ''}`}>{commentsData.title || 'Comentarios por dia'}</h6>
+                            <h6 className={`mb-2 ${isDark ? 'text-light' : ''}`}>{commentsData.title || 'Comentarios por día'}</h6>
                             {Array.isArray(commentsData.items) && commentsData.items.length > 0 ? (
                                 commentsData.items.map((it) => (
                                     <div key={it.dayId} className={`border rounded-3 p-3 ${isDark ? 'user-routine-panel-dark border-secondary-subtle' : 'bg-light'}`}>
-                                        <div className={`fw-semibold mb-2 ${isDark ? 'text-light' : ''}`}>{it.label || 'Dia'}</div>
+                                        <div className={`fw-semibold mb-2 ${isDark ? 'text-light' : ''}`}>{it.label || 'Día'}</div>
                                         {it.text ? (
                                             <p className={`mb-0 ${isDark ? 'text-light' : ''}`} style={{ whiteSpace: 'pre-wrap' }}>
                                                 {it.text}
@@ -592,7 +592,7 @@ function UserRoutinePage() {
                                     </div>
                                 ))
                             ) : (
-                                <span className={isDark ? 'text-light-emphasis' : 'text-muted'}>No hay comentarios por dia cargados.</span>
+                                <span className={isDark ? 'text-light-emphasis' : 'text-muted'}>No hay comentarios por día cargados.</span>
                             )}
                         </div>
                     )}

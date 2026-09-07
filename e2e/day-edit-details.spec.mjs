@@ -289,16 +289,16 @@ test("complex planner workflow keeps payload valid after mixed operations", asyn
   await mockApi(page, weekDoc, savedPayloads);
   await goToPlanner(page);
 
-  await page.locator("#dias").getByText(/Dia 2/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 2/i).first().click();
   await page.locator("#addCircuit").click();
 
-  await page.locator("#dias").getByText(/Dia 1/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 1/i).first().click();
   await page.locator("#addEjercicio").click();
   await page.getByText(/^Bloque de entrenamiento$/i).first().click();
   await page.getByRole("button", { name: /A(?:ñ|n)adir ejercicio al bloque/i }).first().click();
   await page.getByRole("button", { name: /A(?:ñ|n)adir circuito al bloque/i }).first().click();
 
-  await page.locator("#dias").getByText(/Dia 3/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 3/i).first().click();
   await page.locator("#copiarDia").click();
   await page.locator("#eliminarDia").click();
   const deleteDialog = page.locator(".p-confirm-dialog:visible");
@@ -365,17 +365,17 @@ test("switching between day archetypes remains stable and save still works", asy
   await goToPlanner(page);
 
   for (let i = 0; i < 3; i++) {
-    await page.locator("#dias").getByText(/Dia 1/i).first().click();
+    await page.locator("#dias").getByText(/D[ií]a 1/i).first().click();
     await expect(page.locator("table")).toBeVisible();
-    await page.locator("#dias").getByText(/Dia 2/i).first().click();
-    await page.locator("#dias").getByText(/Dia 3/i).first().click();
+    await page.locator("#dias").getByText(/D[ií]a 2/i).first().click();
+    await page.locator("#dias").getByText(/D[ií]a 3/i).first().click();
   }
 
-  await page.locator("#dias").getByText(/Dia 1/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 1/i).first().click();
   await page.locator("#addEjercicio").click();
-  await page.locator("#dias").getByText(/Dia 2/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 2/i).first().click();
   await page.locator("#addCircuit").click();
-  await page.locator("#dias").getByText(/Dia 3/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 3/i).first().click();
   await page.locator("#copiarDia").click();
   await page.locator("#pegarDia").click();
 
@@ -469,37 +469,37 @@ test("day actions and normal circuit delete confirmation keep state coherent", a
   await goToPlanner(page);
 
   await page.locator("#agregarDia").click();
-  await expect(page.locator("#dias")).toContainText(/Dia 4/i);
+  await expect(page.locator("#dias")).toContainText(/D[ií]a 4/i);
 
   await page.locator("#editarDia").click();
-  const renameDialog = page.locator(".p-dialog:has-text('Editar nombre del dia'):visible");
+  const renameDialog = page.locator(".p-dialog:has-text('Editar nombre del'):visible");
   await expect(renameDialog).toBeVisible();
   await renameDialog.locator("#dayName").fill("Dia 4 Editado");
   await renameDialog.getByRole("button", { name: /Confirmar/i }).click();
-  await expect(page.locator("#dias")).toContainText(/Dia 4 Editado/i);
+  await expect(page.locator("#dias")).toContainText(/D[ií]a 4 Editado/i);
 
   await page.locator("#copiarDia").click();
   await page.locator("#pegarDia").click();
-  await expect(page.locator("#dias")).toContainText(/Dia 5/i);
+  await expect(page.locator("#dias")).toContainText(/D[ií]a 5/i);
 
   await page.locator("#eliminarDia").click();
   const deleteDayDialog = page.locator(".p-confirm-dialog:visible");
   await expect(deleteDayDialog).toBeVisible();
   await deleteDayDialog.getByRole("button", { name: /^Si$/i }).click();
-  await expect(page.locator("#dias")).not.toContainText(/Dia 5/i);
+  await expect(page.locator("#dias")).not.toContainText(/D[ií]a 5/i);
 
   await page.locator("#reordenarDias").click();
-  const reorderDialog = page.locator(".p-dialog:has-text('Reordenar dias'):visible");
+  const reorderDialog = page.locator(".p-dialog:has-text('Reordenar'):visible");
   await expect(reorderDialog).toBeVisible();
   await reorderDialog.getByRole("button", { name: /Aplicar/i }).click();
 
-  await page.locator("#dias").getByText(/Dia 1/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 1/i).first().click();
   await page.getByRole("button", { name: /Semanas anteriores/i }).first().click();
   const previousWeeksDialog = page.locator(".p-dialog:has-text('Semanas anteriores'):visible");
   await expect(previousWeeksDialog).toBeVisible();
   await previousWeeksDialog.getByRole("button", { name: /Close/i }).click();
 
-  await page.locator("#dias").getByText(/Dia 2/i).first().click();
+  await page.locator("#dias").getByText(/D[ií]a 2/i).first().click();
   const rootCircuitRows = page.locator(".dayEditCircuitNestedTable thead tr").filter({ hasText: /Tipo de circuito/i });
   const rootCircuitCountBefore = await rootCircuitRows.count();
   const rootCircuitDelete = rootCircuitRows.locator("[aria-label='delete']").first();
@@ -536,7 +536,7 @@ test("mobile day actions are directly below the day segmented", async ({ page })
   await expect(segmented).toBeVisible();
   await expect(actions).toBeVisible();
   await expect(actions.getByRole("button")).toHaveCount(6);
-  await expect(actions.getByRole("button", { name: "Pegar dia" })).toBeDisabled();
+  await expect(actions.getByRole("button", { name: /Pegar d[ií]a/ })).toBeDisabled();
 
   const segmentedBox = await segmented.boundingBox();
   const actionsBox = await actions.boundingBox();
@@ -544,8 +544,8 @@ test("mobile day actions are directly below the day segmented", async ({ page })
   expect(actionsBox).not.toBeNull();
   expect(actionsBox.y).toBeGreaterThanOrEqual(segmentedBox.y + segmentedBox.height);
 
-  await actions.getByRole("button", { name: "Editar dia" }).click();
-  await expect(page.locator(".p-dialog:has-text('Editar nombre del dia'):visible")).toBeVisible();
+  await actions.getByRole("button", { name: /Editar d[ií]a/ }).click();
+  await expect(page.locator(".p-dialog:has-text('Editar nombre del'):visible")).toBeVisible();
 });
 
 // Queda en skip mientras MOSTRAR_CREACION_POR_TEXTO este en false en
@@ -636,4 +636,26 @@ test("el tema del editor sigue al de la barra aunque cambie en otra pestania", a
 
   await expect(editor).toHaveClass(/dayEditEditorTheme-light/);
   await expect(barra).toHaveText(/Modo oscuro/);
+});
+
+/* En el telefono la hoja de "Mas" ofrecia "Columnas" -que no cambia nada,
+   porque ahi la tabla no tiene columnas configurables- y en cambio no habia
+   forma de llegar a los ajustes del editor, que en escritorio estan en la barra
+   de herramientas. */
+test("la hoja de acciones del telefono lleva a los ajustes y no ofrece columnas", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const weekDoc = buildWeekFixture();
+
+  await bootstrapAuth(page);
+  await mockApi(page, weekDoc, []);
+  await page.goto(`/routine/user/${coachId}/week/${weekId}/day/${dayId}/${username}`);
+
+  await page.getByRole("button", { name: /^M[aá]s$/i }).first().click();
+
+  const hoja = page.locator(".dayEditMobileSheet");
+  await expect(hoja).toBeVisible();
+  await expect(hoja.getByRole("button", { name: /^Columnas$/i })).toHaveCount(0);
+
+  await hoja.getByRole("button", { name: /Ajustes del editor/i }).click();
+  await expect(page.locator(".dayEditSettingsDialog:visible")).toBeVisible();
 });

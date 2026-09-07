@@ -832,7 +832,7 @@ function DayEditDetailsPage({ editorTheme }) {
         JSON.stringify({ __version: DAY_EDIT_COLUMN_CONFIG_VERSION, ...columnConfig })
       );
     } catch (error) {
-      console.warn("No se pudo guardar la configuracion de columnas", error);
+      console.warn("No se pudo guardar la configuración de columnas", error);
     }
   }, [columnConfigStorageKey, columnConfig]);
 
@@ -936,7 +936,7 @@ const weeksForGrid = useMemo(() => {
  }, []);
 
  const cellSummary = useCallback((day) => {
-   if (!day) return { title: "-", sub: "Sin dia" };
+   if (!day) return { title: "-", sub: "Sin día" };
    const name = toText(day?.name);
    const exCount = Array.isArray(day?.exercises) ? day.exercises.length : 0;
    return { title: name, sub: `${exCount} ejercicio${exCount === 1 ? "" : "s"}` };
@@ -946,7 +946,7 @@ const weeksForGrid = useMemo(() => {
  const scrollWeeks = useCallback((dir) => {
    const node = weeksScrollerRef.current;
    if (!node) return;
-   const delta = (colWidth + 16) * 2; // 2 columnas por "pagina"
+   const delta = (colWidth + 16) * 2; // 2 columnas por "página"
    node.scrollBy({ left: dir * delta, behavior: "smooth" });
  }, [colWidth]);
 
@@ -1032,7 +1032,7 @@ const BLOCK_NAME_OPTIONS = [
   'Bloque de fuerza',
   'Bloque de hipertrofia',
   'Bloque de volumen',
-  'Bloque de recuperacion',
+  'Bloque de recuperación',
   'Bloque de pliometria'
 ];
 // Estado para manejar las sugerencias del Autocomplete
@@ -1040,14 +1040,14 @@ const [blockNameSuggestions, setBlockNameSuggestions] = useState(BLOCK_NAME_OPTI
 
 const sanitizeBrokenText = (value) => {
   return String(value ?? "")
-    .replace(/D\u00C3\u00ADa/g, "Dia")
-    .replace(/d\u00C3\u00ADas/g, "dias")
-    .replace(/d\u00C3\u00ADa/g, "dia")
+    .replace(/D\u00C3\u00ADa/g, "Día")
+    .replace(/d\u00C3\u00ADas/g, "días")
+    .replace(/d\u00C3\u00ADa/g, "día")
     .replace(/A\u00C3\u00B1adir/g, "Añadir")
     .replace(/a\u00C3\u00B1adir/g, "añadir")
     .replace(/M\u00C3\u00BAltiple/g, "Multiple")
     .replace(/m\u00C3\u00BAltiple/g, "multiple")
-    .replace(/Est\u00C3\u00A1s/g, "Estas");
+    .replace(/Est\u00C3\u00A1s/g, "Est\u00E1s");
 };
 
 const getDefaultRestValue = useCallback(() => {
@@ -1203,38 +1203,38 @@ useEffect(() => {
     setTourSteps([
       {
         title: 'Nombre de la semana',
-        description: 'Ademas de ser el nombre, podes editarlo apretando el boton.',
+        description: 'Además de ser el nombre, podés editarlo apretando el botón.',
         target: () => document.getElementById('nameWeek'),
         placement: 'right',
         nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Dias de la semana',
-        description: 'Estos son los dias que contiene la semana. Podes navegar entre ellos apretando en el dia correspondiente.',
+        title: 'Días de la semana',
+        description: 'Estos son los días que contiene la semana. Podés navegar entre ellos apretando en el día correspondiente.',
         target: () => document.getElementById('dias'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Agregar dia',
-        description: 'Este boton permite agregar un dia.',
+        title: 'Agregar día',
+        description: 'Este botón permite agregar un día.',
         target: () => document.getElementById('agregarDia'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Editar el nombre del dia',
-        description: 'Aca podes editar el nombre de cada dia.',
+        title: 'Editar el nombre del día',
+        description: 'Acá podés editar el nombre de cada día.',
         target: () => document.getElementById('editarDia'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Eliminar dia',
-        description: 'Podes eliminar un dia. Esta accion es reversible, si apretas cancelar.',
+        title: 'Eliminar día',
+        description: 'Podés eliminar un día. Esta acción es reversible, si apretas cancelar.',
         target: () => document.getElementById('eliminarDia'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
@@ -1242,7 +1242,7 @@ useEffect(() => {
       },
         {
         title: 'Añadir ejercicio',
-        description: 'Podes agregar un ejercicio para luego completarlo.',
+        description: 'Podés agregar un ejercicio para luego completarlo.',
         target: () => document.getElementById('addEjercicio'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
@@ -1250,15 +1250,15 @@ useEffect(() => {
       },
       {
         title: 'Añadir circuito',
-        description: 'Podes agregar la estructura de un circuito, para luego completarlo.',
+        description: 'Podés agregar la estructura de un circuito, para luego completarlo.',
         target: () => document.getElementById('addCircuit'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' }
       },
       {
-        title: 'Bloque de movilidad/activacion',
-        description: 'Ingresa al bloque de activacion/movilidad de tu alumno. ',
+        title: 'Bloque de movilidad/activación',
+        description: 'Ingresa al bloque de activación/movilidad de tu alumno. ',
         target: () => document.getElementById('movility'),
         placement: 'bottom',
         prevButtonProps: { children: '<< Anterior' },
@@ -2369,7 +2369,7 @@ const restOptions = Array.from({ length: 10 }, (_, i) => i + 1)
   const applyChanges = () => {
     WeekService.editWeek(week_id, modifiedDay)
       .then(() => {
-        Notify.instantToast("Rutina guardada con exito!");
+        Notify.instantToast("Rutina guardada con éxito!");
         setStatus(idRefresh);
         setIsEditing(false);
         setIsMobileReorderMode(false);
@@ -2410,7 +2410,7 @@ const handleDeleteExerciseInBlockClick = (blockIndex, exercise) => {
     setShowDeleteDialog(true);
   } else {
     removeExerciseFromBlock(blockIndex, exercise.exercise_id);
-    Notify.instantToast("Ejercicio eliminado con exito");
+    Notify.instantToast("Ejercicio eliminado con éxito");
   }
 };
 
@@ -2422,7 +2422,7 @@ const handleDeleteExerciseInBlockClick = (blockIndex, exercise) => {
     );
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    Notify.instantToast("Ejercicio eliminado con exito");
+    Notify.instantToast("Ejercicio eliminado con éxito");
   }
 
   const BLOCK_PALETTE = [
@@ -2451,7 +2451,7 @@ const handleDeleteConfirm = () => {
 
   if (exerciseToDelete.scope === "block") {
     removeExerciseFromBlock(exerciseToDelete.blockIndex, exerciseToDelete.exercise_id);
-    Notify.instantToast("Ejercicio eliminado con exito");
+    Notify.instantToast("Ejercicio eliminado con éxito");
   } else {
     acceptDeleteExercise(exerciseToDelete.exercise_id);
   }
@@ -2474,7 +2474,7 @@ const handleDeleteConfirm = () => {
 
   const AddNewExercise = (commandData = null) => {
     if (!Array.isArray(modifiedDay) || !modifiedDay[indexDay]) {
-      Notify.instantToast("No hay dia seleccionado.");
+      Notify.instantToast("No hay día seleccionado.");
       return;
     }
     const updatedDays = [...modifiedDay];  
@@ -2501,7 +2501,7 @@ const handleDeleteConfirm = () => {
     setAllDays(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Ejercicio creado con exito!");
+    Notify.instantToast("Ejercicio creado con éxito!");
   };
 
 const handleCancel = () => {
@@ -2518,17 +2518,17 @@ const handleCancel = () => {
  const copyDayToClipboard = () => {
    const src = modifiedDay?.[indexDay] || day?.[indexDay];
    if (!src) {
-     Notify.instantToast("No hay dia seleccionado");
+     Notify.instantToast("No hay día seleccionado");
      return;
    }
    try {
      const json = JSON.stringify(sanitizeDayForPaste(src, indexDay + 1));
      localStorage.setItem("copiedDay", json);
      setDayClipboard(json);
-     Notify.instantToast("Dia copiado con exito!");
+     Notify.instantToast("Día copiado con éxito!");
    } catch (e) {
-     console.error("Error al copiar dia:", e);
-     Notify.instantToast("Error al copiar el dia");
+     console.error("Error al copiar día:", e);
+     Notify.instantToast("Error al copiar el día");
    }
  };
 
@@ -2611,7 +2611,7 @@ const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
 
   return {
     _id: new ObjectId().toString(),
-    name: `Dia ${nextIndexNumber}`,
+    name: `Día ${nextIndexNumber}`,
     lastEdited: new Date().toISOString(),
     exercises: clonedExercises,
     warmup: clonedWarmup,
@@ -2623,7 +2623,7 @@ const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
  const pasteDayFromClipboard = () => {
    const raw = dayClipboard || localStorage.getItem("copiedDay");
    if (!raw) {
-     Notify.instantToast("No hay un dia copiado");
+     Notify.instantToast("No hay un día copiado");
      return;
    }
    try {
@@ -2637,10 +2637,10 @@ const sanitizeDayForPaste = (srcDay, nextIndexNumber) => {
      setCurrentDay(newDay);
      setIndexDay(updatedDays.length - 1);
      setIsEditing(true);
-     Notify.instantToast("Dia pegado con exito!");
+     Notify.instantToast("Día pegado con éxito!");
    } catch (e) {
-     console.error("Error al pegar dia:", e);
-     Notify.instantToast("Contenido copiado invalido");
+     console.error("Error al pegar día:", e);
+     Notify.instantToast("Contenido copiado inválido");
    }
  };
  // ======== FIN COPY / PASTE DIA ========
@@ -2651,7 +2651,7 @@ const addNewDay = () => {
   const nextDayIndex = updatedDays.length + 1;
   const newDay = {
     _id: new ObjectId().toString(),
-    name: `Dia ${nextDayIndex}`,
+    name: `Día ${nextDayIndex}`,
     lastEdited: new Date().toISOString(),
     exercises: [],
   };
@@ -2668,12 +2668,12 @@ const addNewDay = () => {
   setCurrentDay(newDay);
 
   setIsEditing(true);
-  Notify.instantToast("Dia creado con exito");
+  Notify.instantToast("Día creado con éxito");
 };
 
 const openReorderDaysDialog = () => {
   if (!Array.isArray(modifiedDay) || modifiedDay.length < 2) {
-    Notify.instantToast("Necesitas al menos 2 dias para reordenar.");
+    Notify.instantToast("Necesitas al menos 2 días para reordenar.");
     return;
   }
   setDraftDaysOrder([...modifiedDay]);
@@ -2717,13 +2717,13 @@ const applyDayOrder = () => {
   setIsEditing(true);
   setShowReorderDaysDialog(false);
   setDraftDaysOrder([]);
-  Notify.instantToast("Orden de dias actualizado.");
+  Notify.instantToast("Orden de días actualizado.");
 };
 
 const confirmDeleteDay = () => {
   const updatedDays = [...(Array.isArray(modifiedDay) ? modifiedDay : [])];
   if (updatedDays.length <= 1) {
-    Notify.instantToast("Debe quedar al menos 1 dia.");
+    Notify.instantToast("Debe quedar al menos 1 día.");
     return;
   }
 
@@ -2737,11 +2737,11 @@ const confirmDeleteDay = () => {
 
   //  si no lo encuentra, NO borres nada (evita splice(-1,1))
   if (idx === -1) {
-    console.warn("confirmDeleteDay: dia no encontrado en modifiedDay", {
+    console.warn("confirmDeleteDay: día no encontrado en modifiedDay", {
       currentDayId: currentDay?._id,
       modifiedDayIds: updatedDays.map((d) => d?._id),
     });
-    Notify.instantToast("No se pudo eliminar: el dia no esta sincronizado.");
+    Notify.instantToast("No se pudo eliminar: el día no está sincronizado.");
     return;
   }
 
@@ -2762,11 +2762,11 @@ const confirmDeleteDay = () => {
 
   const handleDeleteDayClick = () => {
     if (!canDeleteDay) {
-      Notify.instantToast("Debe quedar al menos 1 dia.");
+      Notify.instantToast("Debe quedar al menos 1 día.");
       return;
     }
     if (!currentDay) {
-      Notify.instantToast("No hay dia seleccionado.");
+      Notify.instantToast("No hay día seleccionado.");
       return;
     }
     setShowDeleteDayDialog(true);
@@ -2774,7 +2774,7 @@ const confirmDeleteDay = () => {
 
   const openEditNameDialog = (day) => {
     if (!day) {
-      Notify.instantToast("No hay dia seleccionado.");
+      Notify.instantToast("No hay día seleccionado.");
       return;
     }
     setDayToEdit(day);
@@ -2785,7 +2785,7 @@ const confirmDeleteDay = () => {
   const saveNewDayName = () => {
     if (!dayToEdit?._id) {
       setIsEditingName(false);
-      Notify.instantToast("No se pudo editar el nombre del dia.");
+      Notify.instantToast("No se pudo editar el nombre del día.");
       return;
     }
     setIsEditing(true);
@@ -2798,7 +2798,7 @@ const confirmDeleteDay = () => {
       setModifiedDay(updatedDays);
       setCurrentDay(updatedDays[dayIndex]);
     } else {
-      Notify.instantToast("No se encontro el dia a editar.");
+      Notify.instantToast("No se encontro el día a editar.");
     }
     setIsEditingName(false);
   };
@@ -2851,7 +2851,7 @@ function confirmDeleteCircuitInBlock() {
   setDay(updated);
   setModifiedDay(updated);
   setShowDeleteCircuitDialog(false);
-  Notify.instantToast(`${name} eliminado con exito`);
+  Notify.instantToast(`${name} eliminado con éxito`);
   setCircuitToDelete(null);
 }
 
@@ -2875,7 +2875,7 @@ const confirmDeleteBlock = () => {
   setModifiedDay(updatedDays);
   setAllDays(updatedDays);
 
-  Notify.instantToast(`Bloque "${blockToDelete.name}" eliminado con exito`);
+  Notify.instantToast(`Bloque "${blockToDelete.name}" eliminado con éxito`);
 
   // limpiar dialogo
   setShowDeleteBlockDialog(false);
@@ -2884,7 +2884,7 @@ const confirmDeleteBlock = () => {
 
 const AddNewCircuit = (blockIndex = null, kind = 'Libre') => {
   if (!Array.isArray(day) || !day[indexDay]) {
-    Notify.instantToast("No hay dia seleccionado.");
+    Notify.instantToast("No hay día seleccionado.");
     return;
   }
   setIsEditing(true);
@@ -2950,7 +2950,7 @@ function confirmDeleteExerciseInCircuit() {
   setModifiedDay(updated);
   setCurrentDay(updated[indexDay]);
 
-  Notify.instantToast(`${exerciseToDeleteInCircuit.exerciseName} eliminado con exito`);
+  Notify.instantToast(`${exerciseToDeleteInCircuit.exerciseName} eliminado con éxito`);
   setShowDeleteExerciseInCircuitDialog(false);
   setExerciseToDeleteInCircuit(null);
 }
@@ -3281,7 +3281,7 @@ const CircuitHeaderEditor = ({
 
 const AddExerciseToCircuit = (circuitIndex, blockIndex = null) => {
   if (!Array.isArray(day) || !day[indexDay]) {
-    Notify.instantToast("No hay dia seleccionado.");
+    Notify.instantToast("No hay día seleccionado.");
     return;
   }
   setIsEditing(true);
@@ -3804,7 +3804,7 @@ const incrementAllSeries = () => {
         setStatus(idRefresh);
         setWeekName(newWeekName);
         setIsEditingWeekName(false);
-        Notify.instantToast("Nombre editado con exito!");
+        Notify.instantToast("Nombre editado con éxito!");
       });
   };
 
@@ -3908,12 +3908,12 @@ const deleteBlock = (blockId) => {
   );
   setDay(updatedDays);
   setModifiedDay(updatedDays);
-  Notify.instantToast("Bloque eliminado con exito");
+  Notify.instantToast("Bloque eliminado con éxito");
 };
 
 const AddBlock = () => {
   if (!Array.isArray(modifiedDay) || !modifiedDay[indexDay]) {
-    Notify.instantToast("No hay dia seleccionado.");
+    Notify.instantToast("No hay día seleccionado.");
     return;
   }
   // a Parte de modifiedDay, que si contiene las aproximaciones actuales
@@ -3935,7 +3935,7 @@ const AddBlock = () => {
   setModifiedDay(updatedDays);
   setCurrentDay(updatedDays[indexDay]);
 
-  Notify.instantToast("Bloque creado con exito");
+  Notify.instantToast("Bloque creado con éxito");
 };
 
 const handleOnDragEnd = (result) => {
@@ -4442,7 +4442,7 @@ const renderStudentPreviewItem = (item, index) => {
 
 const renderStudentPreviewAuxList = (label, items) => {
   if (!Array.isArray(items) || items.length === 0) return null;
-  const sliderKey = label.includes("Activacion") ? "movility" : "warmup";
+  const sliderKey = label.includes("Activación") ? "movility" : "warmup";
   const activeIndex = Math.min(studentPreviewAuxSlide[sliderKey] || 0, items.length - 1);
   const moveAuxSlide = (direction) => {
     setStudentPreviewAuxSlide((prev) => {
@@ -4477,7 +4477,7 @@ const renderStudentPreviewAuxList = (label, items) => {
             >
               <div className="text-center pt-1 pb-2">
                 <div className="row justify-content-center backgroundCardsWarmMov shadow rounded-2 m-1 mb-3 ddp-card bg-light">
-                  <div className={`col-12 ${label.includes("Activacion") ? "colorMovility" : "colorWarmup"} py-2`}>
+                  <div className={`col-12 ${label.includes("Activación") ? "colorMovility" : "colorWarmup"} py-2`}>
                     <div className="row justify-content-center">
                       <div className="col-1 m-auto text-dark">
                         <span className="ddp-warmmov-number">{exercise?.numberMovility || exercise?.numberWarmup || index + 1}</span>
@@ -4541,7 +4541,7 @@ const renderStudentOnlyFieldLabel = (className = "fs07em text-muted text-center 
       <button
         type="button"
         className="dayEditStudentOnlyInfoBtn"
-        aria-label="Informacion del campo Alumno"
+        aria-label="Información del campo Alumno"
       >
         <HelpOutlineIcon fontSize="inherit" />
       </button>
@@ -4692,7 +4692,7 @@ function colorItemTemplate(option) {
           value={exercise.name}
           suggestions={blockNameSuggestions}
           dropdown
-          placeholder="Escribi o elegi un nombre"
+          placeholder="Escribi o elegí un nombre"
           className="w-100 blockNameAutoComplete"
           inputClassName="blockNameAutoCompleteInput"
           completeMethod={(e) => {
@@ -5224,12 +5224,12 @@ const dayEditThemeVars = useMemo(() => {
 
                   <div className="text-muted small dayEditSidebarDayActions">
 
-                    <div id="agregarDia"  role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center" onClick={addNewDay} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (addNewDay)(e); } }} title="Agregar dia">
+                    <div id="agregarDia"  role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center" onClick={addNewDay} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (addNewDay)(e); } }} title="Agregar día">
                       <div className=' col-1'><AddIcon /></div>
-                      <div className='text-center col-10'><strong >Agregar dia</strong></div>
+                      <div className='text-center col-10'><strong >Agregar día</strong></div>
                     </div>
 
-                     <div id="editarDia" role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center" onClick={() => openEditNameDialog(currentDay)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => openEditNameDialog(currentDay))(e); } }} title="Editar dia">
+                     <div id="editarDia" role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center" onClick={() => openEditNameDialog(currentDay)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => openEditNameDialog(currentDay))(e); } }} title="Editar día">
                      <div className=' col-1'><EditIcon /></div>
                        <div className='text-center col-10'><strong >Editar {`${sanitizeBrokenText(currentDay && currentDay.name)}`}</strong></div>
                      </div>
@@ -5238,17 +5238,17 @@ const dayEditThemeVars = useMemo(() => {
                       id="reordenarDias"
                       role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center"
                       onClick={openReorderDaysDialog} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (openReorderDaysDialog)(e); } }}
-                      title="Reordenar dias"
+                      title="Reordenar días"
                     >
                       <div className=' col-1'><DragIndicatorIcon /></div>
-                      <div className='text-center col-10'><strong>Reordenar dias</strong></div>
+                      <div className='text-center col-10'><strong>Reordenar días</strong></div>
                     </div>
 
                      <div
                        id="eliminarDia"
                        role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center"
                       onClick={handleDeleteDayClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (handleDeleteDayClick)(e); } }}
-                      title="Eliminar dia"
+                      title="Eliminar día"
                       style={{
                         opacity: canDeleteDay ? 1 : 0.5,
                         pointerEvents: canDeleteDay ? "auto" : "none",
@@ -5263,10 +5263,10 @@ const dayEditThemeVars = useMemo(() => {
                       id="copiarDia"
                       role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center"
                       onClick={copyDayToClipboard} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (copyDayToClipboard)(e); } }}
-                      title="Copiar dia"
+                      title="Copiar día"
                     >
                       <div className=' col-1'><ContentCopyIcon /></div>
-                      <div className='text-center col-10'><strong>Copiar dia</strong></div>
+                      <div className='text-center col-10'><strong>Copiar día</strong></div>
                     </div>
                   
                     {/* Pegar dia */}
@@ -5274,11 +5274,11 @@ const dayEditThemeVars = useMemo(() => {
                       id="pegarDia"
                       role="button" tabIndex={0} className="bgItemsDropdown stylePointer rounded row justify-content-center"
                       onClick={pasteDayFromClipboard} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (pasteDayFromClipboard)(e); } }}
-                      title="Pegar dia"
+                      title="Pegar día"
                       style={{ opacity: hasDayClipboard ? 1 : 0.5, pointerEvents: hasDayClipboard ? 'auto' : 'none' }}
                     >
                       <div className=' col-1'><LibraryAddIcon /></div>
-                      <div className='text-center col-10'><strong>Pegar dia</strong></div>
+                      <div className='text-center col-10'><strong>Pegar día</strong></div>
                     </div>
 
                     <div
@@ -5342,9 +5342,9 @@ const dayEditThemeVars = useMemo(() => {
               {showFloatingVisibilityMenu && (
                 <div className="dayEditFreeVisibilityMenu">
                   {[
-                    ["navigation", "Semana y dias"],
-                    ["dayActions", "Gestion de dias"],
-                    ["clipboard", "Acciones del dia"],
+                    ["navigation", "Semana y días"],
+                    ["dayActions", "Gestion de días"],
+                    ["clipboard", "Acciones del día"],
                     ["content", "Agregar contenido"],
                   ].map(([panelId, label]) => (
                     <button type="button" key={panelId} onClick={() => toggleFloatingToolVisibility(panelId)}>
@@ -5360,7 +5360,7 @@ const dayEditThemeVars = useMemo(() => {
           {floatingToolVisibility.navigation && (
           <FloatingToolPanel
             id="navigation"
-            title="Semana y dias"
+            title="Semana y días"
             position={floatingToolPositions.navigation}
             locked={floatingToolsLocked}
             zIndex={activeFloatingPanel === "navigation" ? 2147483150 : 2147483100}
@@ -5404,7 +5404,7 @@ const dayEditThemeVars = useMemo(() => {
           {floatingToolVisibility.dayActions && (
           <FloatingToolPanel
             id="dayActions"
-            title="Gestion de dias"
+            title="Gestion de días"
             position={floatingToolPositions.dayActions}
             locked={floatingToolsLocked}
             zIndex={activeFloatingPanel === "dayActions" ? 2147483150 : 2147483100}
@@ -5412,9 +5412,9 @@ const dayEditThemeVars = useMemo(() => {
             onPositionChange={updateFloatingToolPosition}
           >
             <div className="dayEditFloatingActionGrid">
-              <button type="button" onClick={addNewDay}><AddIcon />Agregar dia</button>
-              <button type="button" onClick={() => openEditNameDialog(currentDay)}><EditIcon />Editar dia</button>
-              <button type="button" onClick={handleDeleteDayClick} disabled={!canDeleteDay}><DeleteIcon />Eliminar dia</button>
+              <button type="button" onClick={addNewDay}><AddIcon />Agregar día</button>
+              <button type="button" onClick={() => openEditNameDialog(currentDay)}><EditIcon />Editar día</button>
+              <button type="button" onClick={handleDeleteDayClick} disabled={!canDeleteDay}><DeleteIcon />Eliminar día</button>
               <button type="button" onClick={openReorderDaysDialog}><DragIndicatorIcon />Reordenar</button>
             </div>
           </FloatingToolPanel>
@@ -5423,7 +5423,7 @@ const dayEditThemeVars = useMemo(() => {
           {floatingToolVisibility.clipboard && (
           <FloatingToolPanel
             id="clipboard"
-            title="Acciones del dia"
+            title="Acciones del día"
             position={floatingToolPositions.clipboard}
             locked={floatingToolsLocked}
             zIndex={activeFloatingPanel === "clipboard" ? 2147483150 : 2147483100}
@@ -5431,8 +5431,8 @@ const dayEditThemeVars = useMemo(() => {
             onPositionChange={updateFloatingToolPosition}
           >
             <div className="dayEditFloatingActionGrid">
-              <button type="button" onClick={copyDayToClipboard}><ContentCopyIcon />Copiar dia</button>
-              <button type="button" onClick={pasteDayFromClipboard} disabled={!hasDayClipboard}><LibraryAddIcon />Pegar dia</button>
+              <button type="button" onClick={copyDayToClipboard}><ContentCopyIcon />Copiar día</button>
+              <button type="button" onClick={pasteDayFromClipboard} disabled={!hasDayClipboard}><LibraryAddIcon />Pegar día</button>
               <button type="button" onClick={() => setShowStudentPreviewDialog(true)}><Eye size={16} />Vista alumno</button>
             </div>
           </FloatingToolPanel>
@@ -5474,7 +5474,7 @@ const dayEditThemeVars = useMemo(() => {
               <span>Editor de entrenamiento</span>
             </div>
             <h1 className="dayEditTrainingTitle">
-              <span className="dayEditTrainingDayName">{sanitizeBrokenText(currentDay?.name || "Dia")}</span>
+              <span className="dayEditTrainingDayName">{sanitizeBrokenText(currentDay?.name || "Día")}</span>
               <span className="dayEditTrainingBlockName">Bloque principal</span>
             </h1>
           </header>
@@ -5494,7 +5494,7 @@ const dayEditThemeVars = useMemo(() => {
                         <CircleIcon  className="me-2 badgeMovility" />
                         <span className="dayEditPreparationTitleText">
                           <span className="dayEditPreparationEyebrow">{sanitizeBrokenText(currentDay && currentDay.name)}</span>
-                          <span className="me-1 stylesSpanTitles">Bloque de <strong>activacion/movilidad</strong></span>
+                          <span className="me-1 stylesSpanTitles">Bloque de <strong>activación/movilidad</strong></span>
                         </span>
                       </div>
                       <span className={`dayEditPreparationStatus ${hasCurrentMovility ? "dayEditPreparationStatusLoaded" : ""}`}>
@@ -5519,7 +5519,7 @@ const dayEditThemeVars = useMemo(() => {
                         </>
                       ) : (
                         <>
-                          <span>Todavia no hay activacion/movilidad cargada</span>
+                          <span>Todavia no hay activación/movilidad cargada</span>
                         </>
                       )}
                     </span>
@@ -5604,24 +5604,24 @@ const dayEditThemeVars = useMemo(() => {
                     </ConfigProvider>
 
                     {/* Una sola hilera de iconos, sin titulo de seccion: la palabra
-                        "Dia" repetia lo que ya dice el cartel "Estas en: Dia X" que
+                        "Día" repetia lo que ya dice el cartel "Estás en: Día X" que
                         esta justo debajo. Al no haber texto visible, el nombre de
                         cada accion va en title (se ve al mantener apretado) y en
                         aria-label (lectores de pantalla). */}
-                    <section className="dayEditMobileDayActions" aria-label="Acciones de dia">
-                      <button type="button" onClick={addNewDay} title="Crear dia" aria-label="Crear dia">
+                    <section className="dayEditMobileDayActions" aria-label="Acciones de día">
+                      <button type="button" onClick={addNewDay} title="Crear día" aria-label="Crear día">
                         <AddIcon fontSize="small" />
                       </button>
-                      <button type="button" onClick={() => openEditNameDialog(currentDay)} title="Editar dia" aria-label="Editar dia">
+                      <button type="button" onClick={() => openEditNameDialog(currentDay)} title="Editar día" aria-label="Editar día">
                         <EditIcon fontSize="small" />
                       </button>
-                      <button type="button" onClick={openReorderDaysDialog} title="Reordenar dias" aria-label="Reordenar dias">
+                      <button type="button" onClick={openReorderDaysDialog} title="Reordenar días" aria-label="Reordenar días">
                         <DragIndicatorIcon fontSize="small" />
                       </button>
-                      <button type="button" onClick={copyDayToClipboard} title="Copiar dia" aria-label="Copiar dia">
+                      <button type="button" onClick={copyDayToClipboard} title="Copiar día" aria-label="Copiar día">
                         <ContentCopyIcon fontSize="small" />
                       </button>
-                      <button type="button" onClick={pasteDayFromClipboard} disabled={!hasDayClipboard} title="Pegar dia" aria-label="Pegar dia">
+                      <button type="button" onClick={pasteDayFromClipboard} disabled={!hasDayClipboard} title="Pegar día" aria-label="Pegar día">
                         <LibraryAddIcon fontSize="small" />
                       </button>
                       <button
@@ -5629,8 +5629,8 @@ const dayEditThemeVars = useMemo(() => {
                         className="isDanger"
                         onClick={handleDeleteDayClick}
                         disabled={!canDeleteDay}
-                        title="Eliminar dia"
-                        aria-label="Eliminar dia"
+                        title="Eliminar día"
+                        aria-label="Eliminar día"
                       >
                         <DeleteIcon fontSize="small" />
                       </button>
@@ -5662,7 +5662,7 @@ const dayEditThemeVars = useMemo(() => {
                 </button>
 
                 <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={() => incrementAllReps()} >
-                  <Tooltip placement="top" arrow title={ "Sumaras una repeticion a todos los ejercicios." } enterDelay={0} leaveDelay={0}>
+                  <Tooltip placement="top" arrow title={ "Sumaras una repetición a todos los ejercicios." } enterDelay={0} leaveDelay={0}>
                     <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
                       <PlusOneOutlined className="bulkAdjustHeaderIcon" />
                       <span>Sumar 1 rep</span>
@@ -5671,7 +5671,7 @@ const dayEditThemeVars = useMemo(() => {
                 </button>
 
                 <button className="bulkAdjustTriggerBtn rounded-2 text-start" onClick={AddBlock}>
-                  <Tooltip placement="top" arrow title={ "En vez de agregar un ejercicio, primero agregas un bloque para luego crear los ejercicios que desees dentro de el. Tu alumno vera el bloque. Por ejemplo, podes agregar un bloque de fuerza y luego otro de auxiliares." } enterDelay={0} leaveDelay={0}>
+                  <Tooltip placement="top" arrow title={ "En vez de agregar un ejercicio, primero agregas un bloque para luego crear los ejercicios que desees dentro de el. Tu alumno vera el bloque. Por ejemplo, podés agregar un bloque de fuerza y luego otro de auxiliares." } enterDelay={0} leaveDelay={0}>
                     <div className="btn px-2 py-1 style1Item bulkAdjustHeaderBtn">
                       <AddIcon className="bulkAdjustHeaderIcon" />
                       <span>Bloque de entrenamiento</span>
@@ -5824,7 +5824,7 @@ const dayEditThemeVars = useMemo(() => {
                 value={exercise.name}
                 suggestions={blockNameSuggestions}
                 dropdown
-                placeholder="Escribi o elegi un nombre"
+                placeholder="Escribi o elegí un nombre"
                 className="w-100 blockNameAutoComplete"
                 inputClassName="blockNameAutoCompleteInput"
                 completeMethod={(e) => {
@@ -6211,7 +6211,7 @@ const dayEditThemeVars = useMemo(() => {
                                                               "numberExercise"
                                                             );
                                                           }}
-                                                          placeholder="Seleccionar numero"
+                                                          placeholder="Seleccionar número"
                                                           optionLabel="label"
                                                           className="p-dropdown-group w-100 dayEditOrderDropdown"
                                                         />
@@ -6512,7 +6512,7 @@ const dayEditThemeVars = useMemo(() => {
 
           {firstWidth < 992 && (
             <>
-            <nav className="fixed-bottom dayEditMobileBar footerColor" aria-label="Acciones del dia">
+            <nav className="fixed-bottom dayEditMobileBar footerColor" aria-label="Acciones del día">
               {/* Las dos acciones frecuentes quedan al alcance del pulgar; el resto
                   vive en el menu "..." para no llenar la pantalla de botones. */}
               <button
@@ -6548,7 +6548,7 @@ const dayEditThemeVars = useMemo(() => {
             {/* Menu "Mas": SOLO contenido y vista.
                 Las acciones del dia (crear / editar / reordenar / copiar / pegar /
                 eliminar) viven en la hilera de iconos que esta arriba del cartel
-                "Estas en: Dia X"; tenerlas tambien aca era dos caminos para lo
+                "Estás en: Día X"; tenerlas tambien aca era dos caminos para lo
                 mismo. Estas si van con etiqueta: son menos frecuentes y menos
                 obvias de reconocer por el icono solo. */}
             {showMobileActionsMenu && (
@@ -6561,11 +6561,11 @@ const dayEditThemeVars = useMemo(() => {
                   className="dayEditMobileSheet"
                   role="dialog"
                   aria-modal="true"
-                  aria-label="Mas acciones"
+                  aria-label="Más acciones"
                   onClick={(event) => event.stopPropagation()}
                 >
                   <div className="dayEditMobileSheetHeader">
-                    <strong>Mas acciones</strong>
+                    <strong>Más acciones</strong>
                     <button
                       type="button"
                       onClick={() => setShowMobileActionsMenu(false)}
@@ -6599,7 +6599,19 @@ const dayEditThemeVars = useMemo(() => {
                         items: [
                           { icon: <Eye size={17} />, label: 'Vista alumno', onClick: run(() => setShowStudentPreviewDialog(true)) },
                           { icon: <RotateCcw size={17} />, label: 'Semanas anteriores', onClick: run(() => setDialogAllWeeks(true)) },
-                          { icon: <RectangleEllipsis size={17} />, label: 'Columnas', onClick: run(() => setShowColumnConfigDialog(true)) },
+                          /* "Columnas" no esta: en el telefono la tabla no
+                             muestra columnas configurables, asi que el dialogo
+                             no cambiaba nada de lo que se ve. */
+                        ],
+                      },
+                      {
+                        /* Los ajustes del editor -series y reps por defecto,
+                           densidad, confirmaciones- solo se podian abrir desde
+                           la barra de escritorio y en el telefono no habia
+                           ninguna forma de llegar. */
+                        title: 'Preferencias',
+                        items: [
+                          { icon: <SlidersHorizontal size={17} />, label: 'Ajustes del editor', onClick: run(() => setShowDayEditSettingsDialog(true)) },
                         ],
                       },
                     ];
@@ -6637,7 +6649,7 @@ const dayEditThemeVars = useMemo(() => {
                 <span className="coachDialogHeaderIcon"><Eye size={18} /></span>
                 <div>
                   <strong>Ver como alumno</strong>
-                  <span>Vista previa del dia</span>
+                  <span>Vista previa del día</span>
                 </div>
               </div>
             }
@@ -6654,7 +6666,7 @@ const dayEditThemeVars = useMemo(() => {
             </div>
             {studentPreviewDays.length > 1 && (
               <label className="dayEditStudentPreviewDayPicker">
-                <span>Dia a previsualizar</span>
+                <span>Día a previsualizar</span>
                 <select
                   value={studentPreviewDayId}
                   onChange={(event) => {
@@ -6664,7 +6676,7 @@ const dayEditThemeVars = useMemo(() => {
                 >
                   {studentPreviewDays.map((dayItem, dayIndex) => (
                     <option key={getStudentPreviewDayKey(dayItem, dayIndex)} value={getStudentPreviewDayKey(dayItem, dayIndex)}>
-                      {sanitizeBrokenText(dayItem?.name || `Dia ${dayIndex + 1}`)}
+                      {sanitizeBrokenText(dayItem?.name || `Día ${dayIndex + 1}`)}
                     </option>
                   ))}
                 </select>
@@ -6672,17 +6684,17 @@ const dayEditThemeVars = useMemo(() => {
             )}
             <div className={`dayEditStudentPreviewPhone ddp ${dayEditEditorTheme === "dark" ? "ddp-dark" : "ddp-light"}`}>
               <div className="dayEditStudentPreviewDayTitle">
-                {sanitizeBrokenText(studentPreviewDay?.name || "Dia sin nombre")}
+                {sanitizeBrokenText(studentPreviewDay?.name || "Día sin nombre")}
               </div>
-              {renderStudentPreviewAuxList("Activacion / movilidad", studentPreviewDay?.movility)}
+              {renderStudentPreviewAuxList("Activación / movilidad", studentPreviewDay?.movility)}
               {renderStudentPreviewAuxList("Entrada en calor", studentPreviewDay?.warmup)}
-              <h2 className="p-2 mb-0 text-start">Rutina del dia</h2>
+              <h2 className="p-2 mb-0 text-start">Rutina del día</h2>
               <div className="dayEditStudentPreviewList">
                 {groupStudentPreviewSupersets(Array.isArray(studentPreviewDay?.exercises) ? studentPreviewDay.exercises : []).map((item, index) =>
                   renderStudentPreviewItem(item, index)
                 )}
                 {!Array.isArray(studentPreviewDay?.exercises) || studentPreviewDay.exercises.length === 0 ? (
-                  <div className="dayEditStudentPreviewEmpty">Este dia no tiene ejercicios cargados.</div>
+                  <div className="dayEditStudentPreviewEmpty">Este día no tiene ejercicios cargados.</div>
                 ) : null}
               </div>
             </div>
@@ -6694,7 +6706,7 @@ const dayEditThemeVars = useMemo(() => {
                 <span className="coachDialogHeaderIcon"><SlidersHorizontal size={18} /></span>
                 <div>
                   <strong>Columnas del planificador</strong>
-                  <span>Elegi que ver y el ancho de cada una</span>
+                  <span>Elegí que ver y el ancho de cada una</span>
                 </div>
               </div>
             }
@@ -6784,15 +6796,15 @@ const dayEditThemeVars = useMemo(() => {
             <div className="dayEditSettingsList">
               <section className="dayEditSettingsSection">
                 <div className="dayEditSettingsSectionHead">
-                  <span>Visualizacion</span>
-                  <strong>Como queres ver el editor</strong>
+                  <span>Visualización</span>
+                  <strong>Como querés ver el editor</strong>
                 </div>
                 <div className="dayEditSettingsRow">
                   <div>
                     <strong>Notas de ejercicios</strong>
                     <span>Elegi si los campos de notas aparecen visibles por defecto. "Con texto" abre solo las que ya tienen algo escrito.</span>
                   </div>
-                  <div className="dayEditSettingsSegmented dayEditSettingsSegmentedThree" role="group" aria-label="Visualizacion de notas">
+                  <div className="dayEditSettingsSegmented dayEditSettingsSegmentedThree" role="group" aria-label="Visualización de notas">
                     <button type="button" className={notesVisibility === "closed" ? "is-active" : ""} onClick={() => setNotesVisibility("closed")}>
                       Cerradas
                     </button>
@@ -6809,7 +6821,7 @@ const dayEditThemeVars = useMemo(() => {
                     <strong>Aproximaciones y back off</strong>
                     <span>Define si esas herramientas se ven al pasar el mouse, siempre o nunca.</span>
                   </div>
-                  <div className="dayEditSettingsSegmented dayEditSettingsSegmentedThree" role="group" aria-label="Visualizacion de aproximaciones y back off">
+                  <div className="dayEditSettingsSegmented dayEditSettingsSegmentedThree" role="group" aria-label="Visualización de aproximaciones y back off">
                     <button type="button" className={approxBackoffVisibility === "hover" ? "is-active" : ""} onClick={() => setApproxBackoffVisibility("hover")}>
                       Hover
                     </button>
@@ -6824,7 +6836,7 @@ const dayEditThemeVars = useMemo(() => {
                 <div className="dayEditSettingsRow">
                   <div>
                     <strong>Densidad visual</strong>
-                    <span>Compacto muestra mas ejercicios en pantalla. Comodo agrega mas aire.</span>
+                    <span>Compacto muestra más ejercicios en pantalla. Cómodo agrega más aire.</span>
                   </div>
                   <div className="dayEditSettingsSegmented" role="group" aria-label="Densidad visual">
                     <button type="button" className={editorDensity === "compact" ? "is-active" : ""} onClick={() => setEditorDensity("compact")}>
@@ -6853,7 +6865,7 @@ const dayEditThemeVars = useMemo(() => {
                   </label>
                   <label className="dayEditSettingsField">
                     <span>Peso</span>
-                    <input type="text" value={defaultPesoValue} onChange={(event) => setDefaultPesoValue(event.target.value)} placeholder="Vacio" />
+                    <input type="text" value={defaultPesoValue} onChange={(event) => setDefaultPesoValue(event.target.value)} placeholder="Vacío" />
                   </label>
                   <div className="dayEditSettingsField">
                     <span>Rest</span>
@@ -6890,7 +6902,7 @@ const dayEditThemeVars = useMemo(() => {
                 <div className="dayEditSettingsRow">
                   <div>
                     <strong>Confirmar antes de eliminar</strong>
-                    <span>Si lo desactivas, borrar ejercicios sera inmediato.</span>
+                    <span>Si lo desactivas, borrar ejercicios será inmediato.</span>
                   </div>
                   <div className="dayEditSettingsSegmented" role="group" aria-label="Confirmar antes de eliminar">
                     <button type="button" className={confirmBeforeDelete ? "is-active" : ""} onClick={() => setConfirmBeforeDelete(true)}>
@@ -6917,8 +6929,8 @@ const dayEditThemeVars = useMemo(() => {
           <ConfirmDialog
             visible={showDeleteDayDialog}
             onHide={() => setShowDeleteDayDialog(false)}
-            message="Queres eliminar este dia? Podes cancelar despues y revertir esta accion."
-            header="Eliminar dia"
+            message="Querés eliminar este día? Podés cancelar después y revertir esta acción."
+            header="Eliminar día"
             icon="pi pi-exclamation-triangle"
             acceptLabel="Si"
             rejectLabel="No"
@@ -6933,8 +6945,8 @@ const dayEditThemeVars = useMemo(() => {
           <ConfirmDialog
             visible={showCancelDialog}
             onHide={() => setShowCancelDialog(false)}
-            message="Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
-            header="Confirmacion"
+            message="Estás seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+            header="Confirmación"
             icon="pi pi-exclamation-triangle"
             acceptLabel="Si"
             rejectLabel="No"
@@ -6949,7 +6961,7 @@ const dayEditThemeVars = useMemo(() => {
                 <span className="coachDialogHeaderIcon coachDialogHeaderIconDanger"><Trash2 size={18} /></span>
                 <div>
                   <strong>Eliminar ejercicio</strong>
-                  <span>Esta accion no se puede deshacer</span>
+                  <span>Esta acción no se puede deshacer</span>
                 </div>
               </div>
             }
@@ -7101,8 +7113,8 @@ const dayEditThemeVars = useMemo(() => {
               <div className="coachDialogHeader">
                 <span className="coachDialogHeaderIcon"><Pencil size={18} /></span>
                 <div>
-                  <strong>Editar nombre del dia</strong>
-                  <span>Elegi como se va a llamar este dia</span>
+                  <strong>Editar nombre del día</strong>
+                  <span>Elegí como se va a llamar este día</span>
                 </div>
               </div>
             }
@@ -7143,7 +7155,7 @@ const dayEditThemeVars = useMemo(() => {
                 <span className="coachDialogHeaderIcon"><Pencil size={18} /></span>
                 <div>
                   <strong>Editar nombre de la semana</strong>
-                  <span>Elegi como se va a llamar esta semana</span>
+                  <span>Elegí como se va a llamar esta semana</span>
                 </div>
               </div>
             }
@@ -7183,7 +7195,7 @@ const dayEditThemeVars = useMemo(() => {
               <div className="coachDialogHeader">
                 <span className="coachDialogHeaderIcon"><ArrowUpDown size={18} /></span>
                 <div>
-                  <strong>Reordenar dias</strong>
+                  <strong>Reordenar días</strong>
                   <span>Arrastra para cambiar el orden</span>
                 </div>
               </div>
@@ -7195,7 +7207,7 @@ const dayEditThemeVars = useMemo(() => {
             }}
             onHide={closeReorderDaysDialog}
           >
-            <p className="small mb-3 coachDialogMessage">Arrastra cada dia para cambiar el orden de la semana.</p>
+            <p className="small mb-3 coachDialogMessage">Arrastra cada día para cambiar el orden de la semana.</p>
 
             <DragDropContext onDragEnd={handleDayOrderDragEnd}>
               <Droppable droppableId="reorder-days-list">
@@ -7225,7 +7237,7 @@ const dayEditThemeVars = useMemo(() => {
                               >
                                 <DragIndicatorIcon fontSize="small" />
                               </span>
-                              <span>{sanitizeBrokenText(d?.name || `Dia ${idx + 1}`)}</span>
+                              <span>{sanitizeBrokenText(d?.name || `Día ${idx + 1}`)}</span>
                             </div>
                             {/* "Posicion N" en vez de un numero suelto: aclara que el badge
                                 indica el orden en la semana, no el nombre del dia. */}
@@ -7279,7 +7291,7 @@ const dayEditThemeVars = useMemo(() => {
     <div className="coachDialogHeader">
       <span className="coachDialogHeaderIcon"><Move size={18} /></span>
       <div>
-        <strong>Bloque de activacion / movilidad</strong>
+        <strong>Bloque de activación / movilidad</strong>
         <span>{sanitizeBrokenText(currentDay && currentDay.name)}</span>
       </div>
     </div>
@@ -7299,29 +7311,32 @@ const dayEditThemeVars = useMemo(() => {
         </Dialog>
 
       <OverlayPanel ref={backoffOverlayRef} className={`dayEditDarkOverlayPanel dayEditEditorTheme-${dayEditEditorTheme} ${firstWidth > 992 ? 'w-25' : 'w-75'}`}>
-        <div className="p-3">
+        {/* Mismo lenguaje que el resto del editor: encabezado, filas numeradas
+            en tarjeta y los botones de siempre. Antes eran controles sueltos de
+            Bootstrap y quedaba como una pantalla de otra epoca. */}
+        <div className="dayEditSeriesOverlay">
+          <div className="dayEditSeriesOverlayHead">
+            <strong>Back off</strong>
+            <span>Series de descarga después del trabajo principal.</span>
+          </div>
 
-          <div className="form-check mb-3">
+          <label className="dayEditSeriesOverlayCheck" htmlFor="customTitleCheckbox">
             <input
               type="checkbox"
               id="customTitleCheckbox"
-              className="form-check-input"
               checked={useCustomTitle}
               onChange={(e) => setUseCustomTitle(e.target.checked)}
             />
-            <label htmlFor="customTitleCheckbox" className="form-check-label fontSizeNotBack">
-              No es un back off. Personaliza el nombre de la seccion.
-            </label>
-          </div>
+            <span>No es un back off. Personalizar el nombre de la sección.</span>
+          </label>
 
-          {/* SI ESTA TILDADO, MOSTRAMOS EL INPUT */}
           {useCustomTitle && (
-            <div className="mb-3">
-              <label htmlFor="backoffTitleInput" className="form-label fontSizeNotBack ">Titulo personalizado</label>
+            <div className="dayEditSeriesOverlayField">
+              <label htmlFor="backoffTitleInput">Título personalizado</label>
               <input
                 id="backoffTitleInput"
                 type="text"
-                className="form-control dayEditFieldInput"
+                className="dayEditSeriesOverlayInput"
                 value={backoffTitleName}
                 onChange={(e) => setBackoffTitleName(e.target.value)}
                 placeholder="Ingresa el nombre"
@@ -7329,54 +7344,59 @@ const dayEditThemeVars = useMemo(() => {
             </div>
           )}
 
-          {/* AQUI TU MAP DE backoffData (igual que antes) */}
-          {backoffData.map((line, idx) => (
-            <div key={idx} className="row mb-2 align-items-end">
-              {["sets", "reps", "peso"].map((f) => (
-                <div key={f} className="col-3 px-0">
-                  <label className={'fs07em'}>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
-                  <input
-                    type={f === "peso" || f === "reps" ? "text" : "number"}
-                    className="form-control styleInputBackOffs text-center dayEditFieldInput"
-                    value={line[f]}
-                    onChange={(e) => {
-                      const arr = [...backoffData];
-                      arr[idx][f] = e.target.value;
-                      setBackoffData(arr);
-                      saveBackoffInternally(arr);
-                    }}
-                  />
-                </div>
-              ))}
-              <div className="col-3">
-                <IconButton
-                  aria-label="delete"
-                  className="mt-4"
+          <div className="dayEditSeriesOverlayList">
+            {backoffData.map((line, idx) => (
+              <div key={idx} className="dayEditSeriesOverlayRow">
+                <span className="dayEditSeriesOverlayRowNum">{idx + 1}</span>
+
+                {["sets", "reps", "peso"].map((f) => (
+                  <div key={f} className="dayEditSeriesOverlayField">
+                    <label htmlFor={`backoff-${idx}-${f}`}>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
+                    <input
+                      id={`backoff-${idx}-${f}`}
+                      type={f === "peso" || f === "reps" ? "text" : "number"}
+                      className="dayEditSeriesOverlayInput"
+                      value={line[f]}
+                      onChange={(e) => {
+                        const arr = [...backoffData];
+                        arr[idx][f] = e.target.value;
+                        setBackoffData(arr);
+                        saveBackoffInternally(arr);
+                      }}
+                    />
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="dayEditSeriesOverlayRemove"
+                  aria-label={`Quitar el back off ${idx + 1}`}
                   onClick={() => removeBackoffLine(idx)}
                 >
-                  <CancelIcon className="text-danger" />
-                </IconButton>
+                  <Trash2 size={15} />
+                </button>
               </div>
-            </div>
-          ))}
-
-          {/* Botones de añadir linea, cerrar y guardar */}
-          <div className="text-center mb-3">
-            <button
-              className="btn btn-outline-dark fs09em py-0 px-2"
-              onClick={() => setBackoffData([...backoffData, { sets: "", reps: "", peso: "" }])}
-            >
-              Añadir otro back off
-            </button>
+            ))}
           </div>
-          <div className="text-center">
+
+          <button
+            type="button"
+            className="dayEditSeriesOverlayAdd"
+            onClick={() => setBackoffData([...backoffData, { sets: "", reps: "", peso: "" }])}
+          >
+            <Plus size={15} />
+            <span>Añadir otro back off</span>
+          </button>
+
+          <div className="dayEditSeriesOverlayActions">
             <button
-              className="btn btn-secondary me-2"
+              type="button"
+              className="coachDialogBtn coachDialogBtnSecondary"
               onClick={() => backoffOverlayRef.current.hide()}
             >
               Cerrar
             </button>
-            <button className="btn btn-dark" onClick={handleSaveBackoff}>
+            <button type="button" className="coachDialogBtn coachDialogBtnPrimary" onClick={handleSaveBackoff}>
               Seguir editando
             </button>
           </div>
@@ -7384,74 +7404,89 @@ const dayEditThemeVars = useMemo(() => {
       </OverlayPanel>
 
     <OverlayPanel ref={approxOverlayRef} className={`dayEditDarkOverlayPanel dayEditEditorTheme-${dayEditEditorTheme} ${ firstWidth > 992 ? 'w-25' : 'w-75' }`}>
-      <div className="">
-
-        {/* Cada linea con su numero de aproximacion */}
-        { approxData.map((line, idx) => (
-          <div key={idx} className="mb-2">
-            <div className="small text-muted fs07em mb-0 dayEditApproxLineLabel">
-              {`${idx+1} aproximacion`}
-            </div>
-            <div className="row g-1 align-items-end">
-              <div className="col-5">
-                <label className="form-label  fs07em mb-0">Reps</label>
-                <input type="text" className="form-control text-center styleInputBackOffs dayEditFieldInput"
-                      value={line.reps}
-                      onChange={e => {
-                        const arr = [...approxData];
-                        arr[idx].reps = e.target.value;
-                        setApproxData(arr);
-                        saveApproxInternally(arr);
-                      }} />
-              </div>
-              <div className="col-5">
-                <label className="form-label  fs07em mb-0">Peso</label>
-                <input type="text" className="form-control text-center styleInputBackOffs dayEditFieldInput"
-                      value={line.peso}
-                      onChange={e => {
-                        const arr = [...approxData];
-                        arr[idx].peso = e.target.value;
-                        setApproxData(arr);
-                        saveApproxInternally(arr);
-                      }} />
-              </div>
-              <div className="col-2 text-end">
-                <IconButton size="small"
-                            onClick={() => removeApproxLine(idx)}>
-                  <CancelIcon fontSize="small" className="text-danger" />
-                </IconButton>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Boton añadir linea */}
-        <div className="text-center mb-3">
-          <button className="btn btn-outline-dark py-0 px-2 fs09em"
-                  onClick={() => setApproxData([...approxData, { reps:"", peso:"" }])}>
-            Añadir otra aproximacion
-          </button>
+      <div className="dayEditSeriesOverlay">
+        <div className="dayEditSeriesOverlayHead">
+          <strong>Aproximaciones</strong>
+          <span>Series de entrada antes del trabajo principal.</span>
         </div>
 
-        {/* Botones Cerrar / Guardar */}
-        <div className="text-center">
-          <button className="btn btn-secondary btn-sm me-2"
-                  onClick={() => approxOverlayRef.current.hide()}>
+        <div className="dayEditSeriesOverlayList">
+          {approxData.map((line, idx) => (
+            <div key={idx} className="dayEditSeriesOverlayRow">
+              <span className="dayEditSeriesOverlayRowNum">{idx + 1}</span>
+
+              <div className="dayEditSeriesOverlayField">
+                <label htmlFor={`approx-${idx}-reps`}>Reps</label>
+                <input
+                  id={`approx-${idx}-reps`}
+                  type="text"
+                  className="dayEditSeriesOverlayInput"
+                  value={line.reps}
+                  onChange={(e) => {
+                    const arr = [...approxData];
+                    arr[idx].reps = e.target.value;
+                    setApproxData(arr);
+                    saveApproxInternally(arr);
+                  }}
+                />
+              </div>
+
+              <div className="dayEditSeriesOverlayField">
+                <label htmlFor={`approx-${idx}-peso`}>Peso</label>
+                <input
+                  id={`approx-${idx}-peso`}
+                  type="text"
+                  className="dayEditSeriesOverlayInput"
+                  value={line.peso}
+                  onChange={(e) => {
+                    const arr = [...approxData];
+                    arr[idx].peso = e.target.value;
+                    setApproxData(arr);
+                    saveApproxInternally(arr);
+                  }}
+                />
+              </div>
+
+              <button
+                type="button"
+                className="dayEditSeriesOverlayRemove"
+                aria-label={`Quitar la aproximación ${idx + 1}`}
+                onClick={() => removeApproxLine(idx)}
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="dayEditSeriesOverlayAdd"
+          onClick={() => setApproxData([...approxData, { reps: "", peso: "" }])}
+        >
+          <Plus size={15} />
+          <span>Añadir otra aproximación</span>
+        </button>
+
+        <div className="dayEditSeriesOverlayActions">
+          <button
+            type="button"
+            className="coachDialogBtn coachDialogBtnSecondary"
+            onClick={() => approxOverlayRef.current.hide()}
+          >
             Cerrar
           </button>
-          <button className="btn btn-dark btn-sm"
-                  onClick={handleSaveApprox}>
+          <button type="button" className="coachDialogBtn coachDialogBtnPrimary" onClick={handleSaveApprox}>
             Seguir editando
           </button>
         </div>
-
       </div>
     </OverlayPanel>
 
     <ConfirmDialog
       visible={showDeleteCircuitDialog}
       onHide={() => setShowDeleteCircuitDialog(false)}
-      message={`Estas seguro de que deseas eliminar el circuito "${circuitToDelete?.name}"?`}
+      message={`Estás seguro de que deseas eliminar el circuito "${circuitToDelete?.name}"?`}
       header="Eliminar circuito"
       icon="pi pi-exclamation-triangle"
       acceptLabel="Si"
@@ -7464,7 +7499,7 @@ const dayEditThemeVars = useMemo(() => {
       <ConfirmDialog
           visible={showDeleteExerciseInCircuitDialog}
           onHide={() => setShowDeleteExerciseInCircuitDialog(false)}
-          message={`Estas seguro de que deseas eliminar el ejercicio "${exerciseToDeleteInCircuit?.exerciseName}"?`}
+          message={`Estás seguro de que deseas eliminar el ejercicio "${exerciseToDeleteInCircuit?.exerciseName}"?`}
           header="Eliminar ejercicio"
           icon="pi pi-exclamation-triangle"
           acceptLabel="Si"
@@ -7477,7 +7512,7 @@ const dayEditThemeVars = useMemo(() => {
         <ConfirmDialog
           visible={showDeleteBlockDialog}
           onHide={() => setShowDeleteBlockDialog(false)}
-          message={`Estas seguro de que deseas eliminar el bloque "${blockToDelete.name}"?`}
+          message={`Estás seguro de que deseas eliminar el bloque "${blockToDelete.name}"?`}
           header="Eliminar bloque"
           icon="pi pi-exclamation-triangle"
           acceptLabel="Si"

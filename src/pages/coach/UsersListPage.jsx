@@ -82,7 +82,7 @@ function UsersListPage({ editorTheme = "light" }) {
   const CATEGORIES = ["Alumno casual", "Alumno dedicado", "Atleta iniciante", "Atleta avanzado"];
   const MODE_OPTIONS = [
     { label: "Anuncio unico", value: "once" },
-    { label: "Programar dias", value: "repeat" },
+    { label: "Programar días", value: "repeat" },
     { label: "Cada X del mes", value: "monthly" },
   ];
 
@@ -166,23 +166,23 @@ function UsersListPage({ editorTheme = "light" }) {
       },
       {
         title: "Cantidad de alumnos.",
-        description: "Numero de alumnos que tenes actualmente.",
+        description: "Número de alumnos que tenés actualmente.",
         target: () => document.getElementById("alumnos"),
         placement: "right",
         prevButtonProps: { children: "« Anterior" },
         nextButtonProps: { children: "Siguiente »" },
       },
       {
-        title: "Administracion de anuncios",
-        description: "Boton para administrar anuncios. Estos son mensajes generales para tus alumnos.",
+        title: "Administración de anuncios",
+        description: "Botón para administrar anuncios. Estos son mensajes generales para tus alumnos.",
         target: () => document.getElementById("anuncios"),
         placement: "right",
         prevButtonProps: { children: "« Anterior" },
         nextButtonProps: { children: "Siguiente »" },
       },
       {
-        title: "Creacion de alumnos",
-        description: "Este boton te permitira crear el usuario para tu alumno.",
+        title: "Creación de alumnos",
+        description: "Este botón te permitira crear el usuario para tu alumno.",
         target: () => document.getElementById("crearAlumno"),
         placement: "right",
         prevButtonProps: { children: "« Anterior" },
@@ -368,7 +368,7 @@ useEffect(() => {
           {/* AYUDA */}
           <div className="usersListSidebarModernHelp">
             <button type="button" onClick={() => setShowGeneralSettings(true)}>
-              <Settings size={15} /> {!collapsed && "Configuracion"}
+              <Settings size={15} /> {!collapsed && "Configuración"}
             </button>
             <button type="button" onClick={() => setTourVisible(true)}>
               <HelpCircle size={15} /> {!collapsed && "Ayuda"}
@@ -385,7 +385,7 @@ useEffect(() => {
         >
           <div className="col-12 col-sm-11 usersListPageHeading">
             <h1>Lista de alumnos</h1>
-            <p>Gestiona y segui el progreso de tus alumnos</p>
+            <p>Gestiona y seguí el progreso de tus alumnos</p>
           </div>
 
           {/* CARD + TABLA */}
@@ -574,9 +574,9 @@ useEffect(() => {
   {/* -------- Formulario -------- */}
   <div className="p-fluid">
     <div className="usersListFieldGroup">
-      <label>Titulo del anuncio *</label>
+      <label>Título del anuncio *</label>
       <InputText
-        placeholder="Ingrese el titulo del anuncio"
+        placeholder="Ingrese el título del anuncio"
         value={announcementForm.title}
         onChange={(e) =>
           setAnnouncementForm({ ...announcementForm, title: e.target.value })
@@ -585,7 +585,7 @@ useEffect(() => {
     </div>
 
     <div className="usersListFieldGroup">
-      <label>Descripcion *</label>
+      <label>Descripción *</label>
       <InputTextarea
         rows={3}
         placeholder="Escriba el contenido del anuncio..."
@@ -711,8 +711,8 @@ useEffect(() => {
             />
             <Card
               value="repeat"
-              title="Programar dias"
-              subtitle="Repetir cada X dias"
+              title="Programar días"
+              subtitle="Repetir cada X días"
             />
             <Card
               value="monthly"
@@ -755,7 +755,7 @@ useEffect(() => {
 
     {announcementForm.mode === "repeat" && (
       <div className="usersListFieldGroup">
-        <label>Dia de la semana</label>
+        <label>Día de la semana</label>
         <p className="text-muted small mb-0">
           Por ejemplo, si selecciona el viernes, todos los viernes se mostrara
           este anuncio.
@@ -766,7 +766,7 @@ useEffect(() => {
           onChange={(e) =>
             setAnnouncementForm({ ...announcementForm, repeat_day: e.value })
           }
-          placeholder="Seleccionar dia"
+          placeholder="Seleccionar día"
           disabled={editMode && isModeLocked()}
           className="w-100"
         />
@@ -775,7 +775,7 @@ useEffect(() => {
 
     {announcementForm.mode === "monthly" && (
       <div className="usersListFieldGroup">
-        <label>Dia del mes</label>
+        <label>Día del mes</label>
         <p className="text-muted small mb-0">
           Por ejemplo, si selecciona el 1, todos los meses en el dia 1 se
           mostrara este anuncio.
@@ -789,7 +789,7 @@ useEffect(() => {
           onChange={(e) =>
             setAnnouncementForm({ ...announcementForm, day_of_month: e.value })
           }
-          placeholder="Seleccionar dia"
+          placeholder="Seleccionar día"
           disabled={editMode && isModeLocked()}
           className="w-100"
         />
@@ -798,14 +798,14 @@ useEffect(() => {
 
     {/* Categoria / Destinatarios */}
     <div className="usersListFieldGroup">
-      <label>Categoria</label>
+      <label>Categoría</label>
       <MultiSelect
         value={announcementForm.target_categories}
         options={CATEGORIES}
         onChange={(e) =>
             setAnnouncementForm({ ...announcementForm, target_categories: e.value })
         }
-        placeholder="Seleccionar categoria"
+        placeholder="Seleccionar categoría"
         className="w-100"
       />
     </div>
@@ -862,8 +862,8 @@ useEffect(() => {
         visible={!!announcementToDelete}
         onHide={() => setAnnouncementToDelete(null)}
         className={`usersListConfirmDialog usersListTheme-${editorTheme}`}
-        message="?Estas seguro que deseas eliminar este anuncio?"
-        header="Confirmar eliminacion"
+        message="?Estás seguro que deseas eliminar este anuncio?"
+        header="Confirmar eliminación"
         icon="pi pi-exclamation-triangle"
         acceptLabel="Si, eliminar"
         rejectLabel="Cancelar"

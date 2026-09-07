@@ -1,7 +1,7 @@
 import { apiFetch, requestRefreshSession } from './apiFetch.js'
 
 const CREDENCIALES_INVALIDAS =
-  'La contrasena o el email son incorrectos. Por favor ingrese una cuenta valida.'
+  'La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.'
 const SERVIDOR_CAIDO =
   'No pudimos conectarnos con el servidor. Revisa tu conexion o intenta de nuevo en unos minutos.'
 
@@ -35,7 +35,7 @@ async function logout() {
   const res = await apiFetch('/api/users/logout', {
     method: 'POST'
   })
-  if (!res.ok) throw new Error('No se pudo cerrar sesion')
+  if (!res.ok) throw new Error('No se pudo cerrar sesión')
   return res.json()
 }
 

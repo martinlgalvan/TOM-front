@@ -28,14 +28,14 @@ export async function subscribeUserToPush() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array('BAkoeYGPjfM34YiwIG_EAXYhKAweaFX1Xh0hAU1hHhEvryswLlMcDgAf9HrVUquQkm33cgZgOvi1QENlA5tP8oU')
       });
-      console.log("Suscripcion exitosa:", subscription);
+      console.log("Suscripción exitosa:", subscription);
       // Aqui debes enviar la suscripcion a tu backend para guardarla
       return subscription;
     } catch (error) {
       console.error("Error al suscribirse a las notificaciones push:", error);
     }
   } else {
-    console.warn("Push Notifications no estan soportadas en este navegador.");
+    console.warn("Push Notifications no están soportadas en este navegador.");
   }
 }
 

@@ -36,7 +36,7 @@ function DeleteWeek({ visible, onHide, week_id, name, onDelete, editorTheme = 'l
           <span className="routineWeeksDialogHeaderIcon"><Trash2 size={18} /></span>
           <div>
             <strong>Eliminar semana</strong>
-            <span>Esta accion no se puede deshacer</span>
+            <span>Esta acción no se puede deshacer</span>
           </div>
         </div>
       }
@@ -53,7 +53,7 @@ function DeleteWeek({ visible, onHide, week_id, name, onDelete, editorTheme = 'l
         </div>
       }
     >
-      <p className="mb-0">?Estas seguro de eliminar <b>"{name}"</b>?</p>
+      <p className="mb-0">?Estás seguro de eliminar <b>"{name}"</b>?</p>
     </Dialog>
   );
   }

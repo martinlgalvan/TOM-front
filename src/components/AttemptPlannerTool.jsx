@@ -264,7 +264,7 @@ function AttemptPlannerTool({
         </div>
         <small className="ath-tool-muted d-block mt-1">
           {readOnly
-            ? 'Esta informacion la carga tu entrenador.'
+            ? 'Esta información la carga tu entrenador.'
             : saveState?.pending
             ? 'Sin sincronizar: se guardo localmente y se reintentara.'
             : 'Se guarda en tu perfil y en este dispositivo.'}
@@ -356,7 +356,7 @@ function AttemptPlannerTool({
               rows={2}
               value={plan.lifts[lift.key].notes}
               onChange={(e) => updateLiftNotes(lift.key, e.target.value)}
-              placeholder="Cue tecnico, ajuste de intento, observacion rapida."
+              placeholder="Cue técnico, ajuste de intento, observación rápida."
               disabled={readOnly}
             />
           </div>

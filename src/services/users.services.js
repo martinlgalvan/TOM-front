@@ -46,7 +46,7 @@ async function createAlumno(id, user) {
       response.status === 403
         ? (mensaje || 'Limite de usuarios alcanzado.')
         : response.status === 400
-          ? (duplicado ? 'El email ya existe. Usa otro.' : (mensaje || 'Error de validacion.'))
+          ? (duplicado ? 'El email ya existe. Usa otro.' : (mensaje || 'Error de validación.'))
           : (mensaje || 'Ocurrio un error inesperado.')
     );
   }
@@ -139,7 +139,7 @@ async function findDays(id) {
                 return response.json()
             }
             else {
-                throw new Error('No se pudo obtener los dias')
+                throw new Error('No se pudo obtener los días')
             }
         })
 }
@@ -509,7 +509,7 @@ async function changeStudentPassword(userId, password, revokeSessions = true) {
 
   if (!response.ok) {
     // El back manda { message } con el motivo real (muy corta, sin permiso, etc.).
-    let message = 'No se pudo cambiar la contrasena';
+    let message = 'No se pudo cambiar la contraseña';
     try {
       const body = await response.json();
       if (body?.message) message = body.message;

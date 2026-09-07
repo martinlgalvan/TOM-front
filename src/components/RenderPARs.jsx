@@ -82,7 +82,7 @@ useEffect(() => {
     const designWeekToUser = useCallback((weekData, userId) => {
         PARService.createPARroutine(weekData, userId)
             .then((data) => {
-                Notify.instantToast('PAR creado con exito');
+                Notify.instantToast('PAR creado con éxito');
             })
     }, [id]);
 
@@ -137,14 +137,14 @@ useEffect(() => {
               className="btn btn-outline-dark  my-2"
               onClick={AddNewExercise}
             >
-              <AddIcon /> Anadir ejercicio
+              <AddIcon /> Añadir ejercicio
             </button>
             <button
               aria-label="video"
               className="btn btn-outline-dark  my-2"
               onClick={AddNewCircuit}
             >
-              <AddIcon /> Anadir circuito
+              <AddIcon /> Añadir circuito
             </button>
           </div>
         </div>
@@ -390,7 +390,7 @@ useEffect(() => {
                               onChange={(e) =>
                                 changeModifiedData(i, e.target.value, "numberExercise")
                               }
-                              placeholder="Seleccioanr numero"
+                              placeholder="Seleccioanr número"
                               optionLabel="label"
                               className="p-dropdown-group w-100"
                             />
@@ -413,7 +413,7 @@ useEffect(() => {
                           >
                             <AddIcon />
                             <span className="font-icons me-1">
-                              Anadir Ejercicio al Circuito
+                              Añadir Ejercicio al Circuito
                             </span>
                           </IconButton>
                         </div>
@@ -450,14 +450,14 @@ useEffect(() => {
               className="btn btn-outline-dark  my-2 "
               onClick={AddNewExercise}
             >
-              <AddIcon /> Anadir ejercicio
+              <AddIcon /> Añadir ejercicio
             </button>
             <button
               aria-label="video"
               className="btn btn-outline-dark  my-2 "
               onClick={AddNewCircuit}
             >
-              <AddIcon /> Anadir circuito
+              <AddIcon /> Añadir circuito
             </button>
           </div>
         </div>

@@ -8,10 +8,10 @@ function CardFontSizeTool({ value, onChange, isDark }) {
   return (
     <div className={`cardFontTool ${isDark ? 'cardFontTool-dark' : ''}`}>
       <p className="cardFontToolHint">
-        Ajusta el tamano del texto de los ejercicios. Se guarda en este dispositivo.
+        Ajusta el tamaño del texto de los ejercicios. Se guarda en este dispositivo.
       </p>
 
-      <div className="cardFontToolSteps" role="radiogroup" aria-label="Tamano de letra">
+      <div className="cardFontToolSteps" role="radiogroup" aria-label="Tamaño de letra">
         {CARD_FONT_STEPS.map((paso) => {
           const activo = Math.abs(paso.value - value) < 0.001;
           return (

@@ -115,7 +115,7 @@ function Randomizer() {
   const [allDays, setAllDays] = useState([
     {
       _id: new ObjectId().toString(),
-      name: "Dia 1",
+      name: "Día 1",
       lastEdited: new Date().toISOString(),
       exercises: [
         {
@@ -313,7 +313,7 @@ const sanitizeWeekForClipboard = (week) => {
    const copy = JSON.parse(JSON.stringify(d || {}));
    // Nuevos IDs locales para editor
    copy._id = new ObjectId().toString();
-   copy.name = copy.name || copy.title || `Dia ${idx + 1}`;
+   copy.name = copy.name || copy.title || `Día ${idx + 1}`;
    if (Array.isArray(copy.exercises)) {
      copy.exercises = copy.exercises.map((ex, i) => ({
        ...ex,
@@ -339,7 +339,7 @@ const sanitizeWeekForClipboard = (week) => {
  try {
    const sanitized = sanitizeWeekForClipboard(week);
    if (!sanitized || !sanitized.routine?.length) {
-     Notify.instantToast('No se pudo copiar: la semana no tiene dias.');
+     Notify.instantToast('No se pudo copiar: la semana no tiene días.');
      return;
    }
    localStorage.setItem('userWeek', JSON.stringify(sanitized));
@@ -362,7 +362,7 @@ const sanitizeWeekForClipboard = (week) => {
    }
    const data = JSON.parse(raw);
    if (!Array.isArray(data.routine) || data.routine.length === 0) {
-     Notify.instantToast('El contenido copiado no tiene dias para pegar');
+     Notify.instantToast('El contenido copiado no tiene días para pegar');
      return;
    }
 
@@ -370,7 +370,7 @@ const sanitizeWeekForClipboard = (week) => {
    const newDays = data.routine.map((d, idx) => {
      const dayCopy = JSON.parse(JSON.stringify(d));
      dayCopy._id = new ObjectId().toString();
-     dayCopy.name = dayCopy.name || dayCopy.title || `Dia ${idx + 1}`;
+     dayCopy.name = dayCopy.name || dayCopy.title || `Día ${idx + 1}`;
      dayCopy.lastEdited = new Date().toISOString();
      dayCopy.exercises = Array.isArray(dayCopy.exercises)
        ? dayCopy.exercises.map((ex, i) => ({
@@ -488,7 +488,7 @@ const removeApproxLine = (idx) => {
  const copyCurrentDay = () => {
    if (!currentDay) return;
    setDayClipboard(JSON.parse(JSON.stringify(currentDay)));
-   Notify.instantToast('Dia copiado');
+   Notify.instantToast('Día copiado');
  };
 
  const pasteAsNewDay = () => {
@@ -504,7 +504,7 @@ const removeApproxLine = (idx) => {
    const updated = [...allDays, clone];
    setAllDays(updated); setDay(updated); setModifiedDay(updated);
    setCurrentDay(clone); setIndexDay(updated.length - 1);
-   Notify.instantToast('Dia pegado');
+   Notify.instantToast('Día pegado');
  };
 
 
@@ -604,7 +604,7 @@ const removeApproxLine = (idx) => {
     // Asigna un PAR a un usuario
     PARService.createPARroutine(weekData, userId)
       .then(() => {
-        Notify.instantToast('PAR creado con exito');
+        Notify.instantToast('PAR creado con éxito');
         PARService.getPAR(id).then((newData) => {
           setAllWeeks(newData);
         });
@@ -662,7 +662,7 @@ const removeApproxLine = (idx) => {
       // Si no existe un dia actual, creamos el dia 1 vacio
       const defaultDay = {
         _id: new ObjectId().toString(),
-        name: "Dia 1",
+        name: "Día 1",
         lastEdited: new Date().toISOString(),
         exercises: [],
       };
@@ -691,7 +691,7 @@ const removeApproxLine = (idx) => {
       // Si no hay un dia actual, crea un dia por defecto
       const defaultDay = {
         _id: new ObjectId().toString(),
-        name: "Dia 1",
+        name: "Día 1",
         lastEdited: new Date().toISOString(),
         exercises: [],
       };
@@ -783,7 +783,7 @@ const removeApproxLine = (idx) => {
     setAllDays(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Ejercicio creado con exito!");
+    Notify.instantToast("Ejercicio creado con éxito!");
   };
 
   // Circuitos
@@ -813,7 +813,7 @@ const removeApproxLine = (idx) => {
     setDay(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Circuito anadido con exito!");
+    Notify.instantToast("Circuito anadido con éxito!");
   };
 
   const AddExerciseToCircuit = (circuitIndex) => {
@@ -829,7 +829,7 @@ const removeApproxLine = (idx) => {
     setDay(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Ejercicio anadido con exito!");
+    Notify.instantToast("Ejercicio anadido con éxito!");
   };
 
   const deleteCircuit = (name, circuitIndex) => {
@@ -838,7 +838,7 @@ const removeApproxLine = (idx) => {
     updatedDays[indexDay].exercises.splice(circuitIndex, 1);
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    Notify.instantToast(`${name} Eliminado con exito`);
+    Notify.instantToast(`${name} Eliminado con éxito`);
   };
 
   const handleOpenBackoffOverlay = (e, index) => {
@@ -1251,7 +1251,7 @@ const hasBackoff = (exercise) => {
 
     const newDay = {
       _id: new ObjectId().toString(),
-      name: `Dia ${nextDayIndex}`,
+      name: `Día ${nextDayIndex}`,
       lastEdited: new Date().toISOString(),
       exercises: [
         {
@@ -1273,7 +1273,7 @@ const hasBackoff = (exercise) => {
     setAllDays(updatedDays);
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    Notify.instantToast("Dia creado con exito");
+    Notify.instantToast("Día creado con éxito");
   };
 
   const handleDeleteDayClick = () => {
@@ -1338,7 +1338,7 @@ const hasBackoff = (exercise) => {
     setWeekName(newWeekName);
     setWeekCategory(newWeekCategory || '');
     setIsEditingWeekName(false);
-    Notify.instantToast("Nombre de la semana editado con exito!");
+    Notify.instantToast("Nombre de la semana editado con éxito!");
   };
 
   /* --------------------------------------
@@ -1354,7 +1354,7 @@ const hasBackoff = (exercise) => {
     console.log('[applyChanges] payload enviado:', newRoutine);
     PARService.createPAR(newRoutine, id).then(() => {
       setIsEditing(false);
-      Notify.instantToast("Rutina guardada con exito (PAR)!");
+      Notify.instantToast("Rutina guardada con éxito (PAR)!");
       // Recargamos la data
       PARService.getPAR(id).then((newData) => {
         setAllWeeks(newData);
@@ -1418,13 +1418,13 @@ const removeBackoffLine = (index) => {
           <div className="col-6">
             <button className="btn btn-outline-dark" onClick={AddNewExercise}>
               <AddIcon />
-              <span className="me-1">Anadir ejercicio</span>
+              <span className="me-1">Añadir ejercicio</span>
             </button>
           </div>
           <div className="col-6">
             <button className="btn btn-outline-dark" onClick={AddNewCircuit}>
               <AddIcon />
-              <span className="me-1">Anadir circuito</span>
+              <span className="me-1">Añadir circuito</span>
             </button>
           </div>
         </div>
@@ -1625,7 +1625,7 @@ const removeBackoffLine = (index) => {
                                       >
                                         <AddIcon />
                                         <span className="font-icons me-1">
-                                          Anadir Ejercicio al Circuito
+                                          Añadir Ejercicio al Circuito
                                         </span>
                                       </IconButton>
                                     </td>
@@ -1729,13 +1729,13 @@ const removeBackoffLine = (index) => {
           <div className="col-6">
             <button className="btn btn-outline-dark" onClick={AddNewExercise}>
               <AddIcon />
-              <span className="me-1">Anadir ejercicio</span>
+              <span className="me-1">Añadir ejercicio</span>
             </button>
           </div>
           <div className="col-6">
             <button className="btn btn-outline-dark" onClick={AddNewCircuit}>
               <AddIcon />
-              <span className="me-1">Anadir circuito</span>
+              <span className="me-1">Añadir circuito</span>
             </button>
           </div>
         </div>
@@ -1817,7 +1817,7 @@ const removeBackoffLine = (index) => {
          </div>
          <div id="agregarDia"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={addNewDay}>
             <div className=' col-1'><AddIcon /></div>
-            <div className='text-center col-10'><strong >Agregar dia</strong></div>
+            <div className='text-center col-10'><strong >Agregar día</strong></div>
          </div>
         
           <div id="editarDia" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => openEditNameDialog(currentDay)}>
@@ -1833,18 +1833,18 @@ const removeBackoffLine = (index) => {
 
             <div id="addEjercicio"  className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewExercise()}>
               <div className=' col-1'><AddIcon  className="me-2" /></div>
-              <div className='text-center col-10'><strong >Anadir ejercicio</strong></div>
+              <div className='text-center col-10'><strong >Añadir ejercicio</strong></div>
             </div>
 
             <div id="addCircuit" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => AddNewCircuit()} >
               <div className=' col-1'><AddIcon /></div>
-              <div className='text-center col-10'><strong >Anadir circuito</strong></div>
+              <div className='text-center col-10'><strong >Añadir circuito</strong></div>
             </div>
 
           </div>
         
        </div>
-       <div className="p-3 mt-auto small text-center text-light">TOM - Planificacion digital</div>
+       <div className="p-3 mt-auto small text-center text-light">TOM - Planificación digital</div>
      </div>
    </div>
 
@@ -1855,7 +1855,7 @@ const removeBackoffLine = (index) => {
           <div className="row justify-content-center">
             <div className="col-10 col-lg-6 text-center">
               <h2>Bienvenido a tu planificador.</h2>
-              <h3 className="fs-4 my-3">Aca podras armar - ver - editar tus rutinas pre-armadas.</h3>
+              <h3 className="fs-4 my-3">Acá podrás armar - ver - editar tus rutinas pre-armadas.</h3>
               <p className="m-0 pb-3 pt-1">
                 Esta herramienta, sirve para que cargues las bases de tus entrenamientos, ya sea estructuras para distintos tipos de atletas, o niveles. Por ejemplo:
                 Rutina para principiantes hombres, rutina para para principiantes mujeres, etc.
@@ -1882,7 +1882,7 @@ const removeBackoffLine = (index) => {
               <div className="col-12 col-lg-6 text-start mt-3">
                   <div id="movility" className="ps-3  bgItemsDropdown py-3" onClick={handleShowMovility}>
                     <CircleIcon  className="me-2 badgeMovility" />
-                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activacion/movilidad</strong> <span className="small">- {currentDay && currentDay.name} </span> </span>
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activación/movilidad</strong> <span className="small">- {currentDay && currentDay.name} </span> </span>
                     <span className="d-block stylesSpanBloqs">Haz click para editar</span>
                   </div>
                
@@ -1903,7 +1903,7 @@ const removeBackoffLine = (index) => {
             {firstWidth < 992 && <div id="addEjercicio" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewExercise()}>
               <button className="btn p-2">
                 <AddIcon  className="me-2" />
-                <span className=" me-1">Anadir ejercicio</span>
+                <span className=" me-1">Añadir ejercicio</span>
               </button>
             </div>}
 
@@ -1918,7 +1918,7 @@ const removeBackoffLine = (index) => {
              <div id="addCircuit" className="col-3 btn mx-2 mb-4 boxData" onClick={() => AddNewCircuit()}>
               <button className="btn p-2 ">
                 <AddIcon  className="me-2" />
-                <span className=" me-1">Anadir circuito</span>
+                <span className=" me-1">Añadir circuito</span>
               </button>
             </div>}
 
@@ -1970,7 +1970,7 @@ const removeBackoffLine = (index) => {
                             onClick={addNewDay}
                         >
                             <AddIcon className="" />
-                            <span className="font-icons me-1">Crear dia</span>
+                            <span className="font-icons me-1">Crear día</span>
                         </IconButton>
 
                         <IconButton
@@ -2039,7 +2039,7 @@ const removeBackoffLine = (index) => {
                                       onChange={(e) => {
                                         changeModifiedData(i, e.target.value, "numberExercise");
                                       }}
-                                      placeholder="Seleccionar numero"
+                                      placeholder="Seleccionar número"
                                       optionLabel="label"
                                       className="p-dropdown-group w-100"
                                     />
@@ -2205,7 +2205,7 @@ const removeBackoffLine = (index) => {
                                                   onClick={() => AddExerciseToCircuit(i)}
                                                 >
                                                   <AddIcon />
-                                                  <span className="me-1">Anadir ejercicio</span>
+                                                  <span className="me-1">Añadir ejercicio</span>
                                                 </button>
                                               </td>
                                             </tr>
@@ -2253,8 +2253,8 @@ const removeBackoffLine = (index) => {
           <ConfirmDialog
             visible={showDeleteDayDialog}
             onHide={() => setShowDeleteDayDialog(false)}
-            message="Queres eliminar este dia? Podras cancelar despues y revertir esta accion."
-            header="Eliminar dia"
+            message="Querés eliminar este día? Podras cancelar después y revertir esta acción."
+            header="Eliminar día"
             icon="pi pi-exclamation-triangle"
             acceptLabel="Si"
             rejectLabel="No"
@@ -2269,8 +2269,8 @@ const removeBackoffLine = (index) => {
           <ConfirmDialog
             visible={showCancelDialog}
             onHide={() => setShowCancelDialog(false)}
-            message="?Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
-            header="Confirmacion"
+            message="?Estás seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+            header="Confirmación"
             icon="pi pi-exclamation-triangle"
             acceptLabel="Si"
             rejectLabel="No"
@@ -2306,7 +2306,7 @@ const removeBackoffLine = (index) => {
 
           {/* Editar nombre del dia */}
           <Dialog
-            header="Editar Nombre del Dia"
+            header="Editar Nombre del Día"
             className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={isEditingName}
             style={firstWidth > 968 ? { width: "35vw" } : { width: "75vw" }}
@@ -2363,8 +2363,8 @@ const removeBackoffLine = (index) => {
                  renderInput={(params) => (
                    <TextField
                      {...params}
-                     label="Categoria"
-                     placeholder="Escribe o selecciona una categoria"
+                     label="Categoría"
+                     placeholder="Escribe o selecciona una categoría"
                    />
                  )}
                />
@@ -2431,7 +2431,7 @@ const removeBackoffLine = (index) => {
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value)}
           >
-            <option value="date">Fecha de creacion</option>
+            <option value="date">Fecha de creación</option>
             <option value="name">Nombre</option>
           </select>
         </div>
@@ -2453,7 +2453,7 @@ const removeBackoffLine = (index) => {
 
         {/* Categoria */}
         <div className="col-12 col-md-4">
-          <label className="form-label mb-1">Categoria</label>
+          <label className="form-label mb-1">Categoría</label>
           <select
             className="form-select"
             value={categoryFilter}
@@ -2529,7 +2529,7 @@ const removeBackoffLine = (index) => {
                   {total === 0
                     ? "Sin progresiones"
                     : total === 1
-                    ? "1 progresion"
+                    ? "1 progresión"
                     : `${total} progresiones`}
                 </small>
 
@@ -2604,7 +2604,7 @@ const removeBackoffLine = (index) => {
                   color: getContrastForHex(getCategoryColor(week.category))
                 }}
               >
-                {week.category ? week.category : 'Sin categoria'}
+                {week.category ? week.category : 'Sin categoría'}
               </p>
             </div>
 
@@ -2627,7 +2627,7 @@ const removeBackoffLine = (index) => {
             className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
             contentClassName={"colorDialog"}
             headerClassName={"colorDialog"}
-            header="Bloque de Activacion"
+            header="Bloque de Activación"
             visible={movilityVisible}
             scrollable={"true"}
             modal={false}
@@ -2702,7 +2702,7 @@ const removeBackoffLine = (index) => {
 
     <div className="text-center mb-3">
       <button className="btn btn-outline-dark" onClick={() => setBackoffData([...backoffData, { sets: '', reps: '', peso: '' }])}>
-        Anadir linea
+        Añadir linea
       </button>
     </div>
     <div className="text-center">
@@ -2774,7 +2774,7 @@ const removeBackoffLine = (index) => {
         className="btn btn-outline-dark"
         onClick={() => setApproxData([...approxData, { sets: "", reps: "", peso: "" }])}
       >
-        Anadir linea
+        Añadir linea
       </button>
     </div>
     <div className="text-center">
@@ -2798,7 +2798,7 @@ const removeBackoffLine = (index) => {
                     <ArrowBackIcon />
                   </IconButton>
                 </Link>
-                <span className="col-12 text-light pt-4">Ir atras</span>
+                <span className="col-12 text-light pt-4">Ir atrás</span>
               </div>
 
               <div className="row justify-content-center text-center">

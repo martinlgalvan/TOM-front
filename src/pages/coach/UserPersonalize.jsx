@@ -6,7 +6,7 @@ import * as UsersService from "../../services/users.services.js";
 
 const PLAN_LIMITS = [
     { name: "Gratuito", props: { limit: 5, price: "Gratuito"}},
-    { name: "Basico", props: { limit: 20, price: 24000}},
+    { name: "Básico", props: { limit: 20, price: 24000}},
     { name: "Profesional", props: { limit: 55, price: 34000}},
     { name: "Elite", props: { limit: 95, price: 40000}},
     { name: "Empresarial", props: { limit: 140, price: 50000}},
@@ -75,7 +75,7 @@ function UsersListPage() {
                         <p>Datos bancarios</p>
                         <p>Alias: plani.tom.uala</p>
                         <p>CVU: 0000007900204282114220</p>
-                        <p>Envia el comprobante aca</p>
+                        <p>Envia el comprobante acá</p>
                         <a href="https://wa.me/message/6PSH46QCW4OTP1" target="_blank" class="whatsapp-btn">WhatsApp</a>
 
                     </div>
@@ -119,7 +119,7 @@ function UsersListPage() {
 
 
                     <div className="col-10 text-center my-5">
-                        <h2>Mas personalizacion pronto...</h2>
+                        <h2>Mas personalización pronto...</h2>
                     </div>
 
                 </div>

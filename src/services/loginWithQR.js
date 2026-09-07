@@ -12,7 +12,7 @@ async function generateQR(user_id) {
                 return response.json()
             }
             else {
-                throw Error('La contrasena o el email son incorrectos. Por favor ingrese una cuenta valida.')
+                throw Error('La contraseña o el email son incorrectos. Por favor ingrese una cuenta válida.')
             }
         })
 }
@@ -28,7 +28,7 @@ async function generateQR(user_id) {
 
   if (!res.ok) {
     // si el back manda { message }, lo mostramos
-    let msg = 'Error al iniciar sesion con QR.';
+    let msg = 'Error al iniciar sesión con QR.';
     try {
       const data = await res.json();
       if (data?.message) msg = data.message;

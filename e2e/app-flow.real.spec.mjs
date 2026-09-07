@@ -558,8 +558,11 @@ test.describe("Real application flow", () => {
 
     const primaryRow = athleteRow(page, athletePrimary.name);
     await expect(primaryRow).toBeVisible({ timeout: 30000 });
-    await primaryRow.locator("button[title='QR de acceso']").click();
-    const qrDialog = page.locator(".p-dialog:has-text('Codigo QR'):visible, .p-dialog:has-text('Código QR'):visible");
+    /* El QR salio de la fila: ahora se abre desde adentro del perfil. */
+    await primaryRow.locator("button[title='Perfil']").click();
+    await page.locator(".p-dialog:has-text('Perfil'):visible")
+      .getByRole("button", { name: /Mostrar el QR/i }).click();
+    const qrDialog = page.locator(".p-dialog:has-text('digo QR'):visible");
     await expect(qrDialog).toBeVisible();
     await expect(qrDialog.locator("img")).toBeVisible();
     await qrDialog.locator(".p-dialog-header-close").click();
@@ -639,8 +642,10 @@ test.describe("Real application flow", () => {
     await expect(athleteRow(page, athletePrimary.name)).toBeVisible({ timeout: 30000 });
 
     const row = athleteRow(page, athletePrimary.name);
-    await row.locator("button[title='QR de acceso']").click();
-    const qrDialog = page.locator(".p-dialog:has-text('Codigo QR'):visible, .p-dialog:has-text('Código QR'):visible");
+    await row.locator("button[title='Perfil']").click();
+    await page.locator(".p-dialog:has-text('Perfil'):visible")
+      .getByRole("button", { name: /Mostrar el QR/i }).click();
+    const qrDialog = page.locator(".p-dialog:has-text('digo QR'):visible");
     await expect(qrDialog).toBeVisible();
     await expect(qrDialog.locator("img")).toBeVisible();
   });
@@ -1004,20 +1009,20 @@ test.describe("Real application flow", () => {
     }
 
     await page.locator("#agregarDia").click();
-    await expect(page.locator("#dias")).toContainText(/Dia 2/i);
+    await expect(page.locator("#dias")).toContainText(/D[ií]a 2/i);
 
     await page.locator("#editarDia").click();
-    const dayNameDialog = page.locator(".p-dialog:has-text('Editar nombre del dia'):visible");
+    const dayNameDialog = page.locator(".p-dialog:has-text('Editar nombre del'):visible");
     await dayNameDialog.locator("#dayName").fill("Dia QA 2");
     await dayNameDialog.getByRole("button", { name: /Confirmar/i }).click({ force: true });
     await expect(dayNameDialog).not.toBeVisible();
-    await expect(page.locator("#dias")).toContainText(/Dia QA 2/i);
+    await expect(page.locator("#dias")).toContainText(/D[ií]a QA 2/i);
 
     await page.locator("#copiarDia").click();
     await page.locator("#pegarDia").click();
 
     await page.locator("#reordenarDias").click();
-    const reorderDialog = page.locator(".p-dialog:has-text('Reordenar dias'):visible");
+    const reorderDialog = page.locator(".p-dialog:has-text('Reordenar'):visible");
     await expect(reorderDialog).toBeVisible();
     const dragItems = reorderDialog.locator(".list-group-item");
     if ((await dragItems.count()) >= 2) {

@@ -30,8 +30,8 @@ const sanitizeDisplayText = (value) => {
   let text = String(value || "");
 
   text = text
-    .replace(/D\u00C3\u00ADa/gi, "Dia")
-    .replace(/D\u00C3a/gi, "Dia")
+    .replace(/D\u00C3\u00ADa/gi, "Día")
+    .replace(/D\u00C3a/gi, "Día")
     .replace(/\u00C3\u00B1/g, "n")
     .replace(/\u00C3\u0091/g, "N")
     .replace(/\u00C3\u00A1/g, "a")
@@ -121,7 +121,7 @@ const getStructureTags = (context, supSuffix) => {
 
 const getDayLabel = (day, idx) => {
   if (day?.name && String(day.name).trim()) return sanitizeDisplayText(day.name);
-  return `Dia ${idx + 1}`;
+  return `Día ${idx + 1}`;
 };
 
 const normalizeRirIfNeeded = (scale, numeric) => {

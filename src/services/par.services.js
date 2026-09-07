@@ -34,7 +34,7 @@ async function createPAR(routine, user_id) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear el día')
         }
     })
 }
@@ -93,13 +93,13 @@ async function createPARroutine(routine, user_id) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear el día')
         }
     })
 }
 
 async function createProgressionsPARToUsers(template, userIds) {
-    return apiFetch(`${API_BASE}/api/routine/progression/multi`, {
+    return apiFetch(`${API_BASE}/api/routine/progressión/multi`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ async function createProgressionsPARToUsers(template, userIds) {
 }
 
 async function createProgressionFromPAR(par_id) {
-    return apiFetch(`${API_BASE}/api/par/${par_id}/progression`, {
+    return apiFetch(`${API_BASE}/api/par/${par_id}/progressión`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -139,7 +139,7 @@ async function createProgressionFromPAR(par_id) {
             /* response.text() devuelve una promesa: sin await, lo que llegaba a
                la pantalla era "[object Promise]" en vez del motivo del fallo. */
             const detalle = await response.text().catch(() => '');
-            throw new Error(detalle || 'No se pudo crear la progresion.');
+            throw new Error(detalle || 'No se pudo crear la progresión.');
         }
     })
 }

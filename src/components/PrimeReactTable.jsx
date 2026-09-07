@@ -21,7 +21,7 @@ import Tooltip from "@mui/material/Tooltip"; // ✅ MUI Tooltip
 
 import dayjs from "dayjs";
 import { CheckCircle2, AlertTriangle, AlertOctagon, Info } from "lucide-react";
-import { UserRound, Pencil, Trash2, QrCode, ArrowUpDown, Plus, Search, CircleX, KeyRound, RefreshCw, Copy, Eye, EyeOff, MoreHorizontal } from "lucide-react";
+import { UserRound, Pencil, Trash2, QrCode, ArrowUpDown, Plus, Search, CircleX, KeyRound, RefreshCw, Copy, Eye, EyeOff } from "lucide-react";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
@@ -46,8 +46,6 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
   const [id_user, setId_user] = useState([]);
   const [profileData, setProfileData] = useState(undefined);
   const [widthPage, setWidthPage] = useState(window.innerWidth);
-  // Alumno cuyo menu de acciones esta abierto (solo en mobile).
-  const [moreActionsUser, setMoreActionsUser] = useState(null);
   const [inputValue, setInputValue] = useState("");
   const isInputValid = inputValue === "ELIMINAR";
   const [first, setFirst] = useState(parseInt(localStorage.getItem("userCurrentPage") || "0", 10));
@@ -274,7 +272,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
         setSelectedProfileId(user._id);
         setSelectedProfileName(user.name);
         setProfileDialogVisible(true);
-        Notify.instantToast("Perfil cargado con exito!");
+        Notify.instantToast("Perfil cargado con éxito!");
       })
       .catch(async () => {
         setProfileData({});
@@ -292,7 +290,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
     // Una sola request: el backend guarda el perfil y la categoria juntos.
     UserServices.editProfile(selectedProfileId, updatedProfile)
       .then(() => {
-        Notify.instantToast("Perfil actualizado con exito!");
+        Notify.instantToast("Perfil actualizado con éxito!");
         setProfileDialogVisible(false);
         refresh();
       })
@@ -328,7 +326,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
   const categoryPill = (user) => {
     const palette = editorTheme === "dark" ? categoryPaletteDark : categoryPalette;
     const pal = palette[user.category] || palette.default;
-    const label = user.category || "Sin categoria";
+    const label = user.category || "Sin categoría";
     return (
       <div className="usersListModernCategoryCell">
         <button
@@ -336,7 +334,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
           className={`usersListModernCategoryPill usersListCategoryPill-${categoryClassByLabel[label] || "none"}`}
           onClick={() => openProfileDialog(user)}
           style={{ background: pal.pillBg, color: pal.pillText, borderColor: pal.pillBorder }}
-          title="Ver perfil y categoria"
+          title="Ver perfil y categoría"
         >
           {label}
         </button>
@@ -405,7 +403,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
     if (!passwordUser?._id) return;
 
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setPasswordError(`La contrasena debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
+      setPasswordError(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
       return;
     }
 
@@ -420,8 +418,8 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
 
       Notify.instantToast(
         result?.sessionsRevoked
-          ? `Contrasena actualizada. ${passwordUser.name} debera volver a iniciar sesion.`
-          : "Contrasena actualizada."
+          ? `Contraseña actualizada. ${passwordUser.name} debera volver a iniciar sesión.`
+          : "Contraseña actualizada."
       );
 
       // Cierre directo: closePasswordDialog corta si passwordSaving sigue true.
@@ -430,104 +428,52 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
       setPasswordUser(null);
       setPasswordCopied(false);
     } catch (err) {
-      setPasswordError(err?.message || "No se pudo cambiar la contrasena");
+      setPasswordError(err?.message || "No se pudo cambiar la contraseña");
     } finally {
       setPasswordSaving(false);
     }
   };
 
-  // Ancho a partir del cual se muestran los iconos sueltos. Por debajo, los
-  // cinco quedaban en 24x24 con 2px de separacion —muy por debajo del minimo
-  // tactil de 44— y "Eliminar" caia pegado al borde de la pantalla.
-  const usaMenuDeAcciones = widthPage <= 992;
-
+  /* En la fila quedan las tres acciones de uso diario. Cambiar contraseña y ver
+     el QR pasaron adentro del perfil: se usan de a una por alumno y en el
+     telefono los cinco iconos no dejaban leer el nombre. */
   const accionesDelAlumno = (user) => [
     { clave: 'perfil', etiqueta: 'Perfil', Icono: UserRound, onSelect: () => openProfileDialog(user) },
     { clave: 'rutina', etiqueta: 'Editar rutina', Icono: Pencil, to: `/user/routine/${user._id}/${user.name}` },
-    { clave: 'pass', etiqueta: 'Cambiar contrasena', Icono: KeyRound, onSelect: () => openPasswordDialog(user) },
-    { clave: 'qr', etiqueta: 'QR de acceso', Icono: QrCode, onSelect: () => showQrDialog(user) },
     { clave: 'baja', etiqueta: 'Eliminar', Icono: Trash2, peligro: true, onSelect: () => showDialogDelete(user._id, user.name) },
   ];
 
-  const actionsTemplate = (user) =>
-    usaMenuDeAcciones ? (
-      <div className="usersListModernActions">
-        <button
-          type="button"
-          className="usersListActionsMore"
-          title="Acciones"
-          aria-label={`Acciones de ${user.name}`}
-          onClick={() => setMoreActionsUser(user)}
-        >
-          <MoreHorizontal size={20} strokeWidth={2} />
-        </button>
-      </div>
-    ) : (
+  /* Las cinco acciones se ven sueltas en cualquier ancho, tambien en el
+     telefono. Antes debajo de 992px se reemplazaban por un boton "..." que
+     abria una hoja; se volvio atras porque obligaba a dos toques para todo. En
+     mobile los botones crecen por CSS para que se puedan tocar. */
+  const actionsTemplate = (user) => (
     <div className="usersListModernActions">
-      <button className="btn p-1" title="Perfil" onClick={() => openProfileDialog(user)}>
-        <UserRound size={18} className="text-secondary" strokeWidth={1.75} />
-      </button>
-
-      <Link className="LinkDays" to={`/user/routine/${user._id}/${user.name}`} onClick={() => localStorage.setItem("actualUsername", user.name)}>
-        <button className="btn p-1" title="Editar rutina">
-          <Pencil size={18} className="text-secondary" strokeWidth={1.75} />
-        </button>
-      </Link>
-
-      <button className="btn p-1" title="Cambiar contrasena" onClick={() => openPasswordDialog(user)}>
-        <KeyRound size={18} className="text-secondary" strokeWidth={1.75} />
-      </button>
-
-      <button className="btn p-1" title="QR de acceso" onClick={() => showQrDialog(user)}>
-        <QrCode size={18} className="text-secondary" strokeWidth={1.75} />
-      </button>
-
-      <button className="btn p-1" title="Eliminar" onClick={() => showDialogDelete(user._id, user.name)}>
-        <Trash2 size={18} className="text-danger" strokeWidth={1.75} />
-      </button>
-    </div>
-  );
-
-  /* Hoja de acciones para mobile: filas grandes y etiquetadas, con Eliminar
-     separado del resto para que no se toque por error. */
-  const dialogoDeAcciones = (
-    <Dialog
-      header={moreActionsUser ? moreActionsUser.name : ""}
-      visible={Boolean(moreActionsUser)}
-      onHide={() => setMoreActionsUser(null)}
-      dismissableMask
-      className="usersListActionsSheet"
-      style={{ width: "92%", maxWidth: "420px" }}
-    >
-      <div className="usersListActionsSheetBody">
-        {moreActionsUser && accionesDelAlumno(moreActionsUser).map(({ clave, etiqueta, Icono, onSelect, to, peligro }) =>
-          to ? (
-            <Link
-              key={clave}
-              to={to}
-              className={`usersListActionsSheetItem${peligro ? " isDanger" : ""}`}
-              onClick={() => {
-                localStorage.setItem("actualUsername", moreActionsUser.name);
-                setMoreActionsUser(null);
-              }}
-            >
-              <Icono size={19} strokeWidth={1.75} />
-              <span>{etiqueta}</span>
-            </Link>
-          ) : (
-            <button
-              key={clave}
-              type="button"
-              className={`usersListActionsSheetItem${peligro ? " isDanger" : ""}`}
-              onClick={() => { setMoreActionsUser(null); onSelect(); }}
-            >
-              <Icono size={19} strokeWidth={1.75} />
-              <span>{etiqueta}</span>
+      {accionesDelAlumno(user).map(({ clave, etiqueta, Icono, onSelect, to, peligro }) =>
+        to ? (
+          <Link
+            key={clave}
+            className="LinkDays"
+            to={to}
+            onClick={() => localStorage.setItem("actualUsername", user.name)}
+          >
+            <button className="btn p-1" type="button" title={etiqueta}>
+              <Icono size={18} className="text-secondary" strokeWidth={1.75} />
             </button>
-          )
-        )}
-      </div>
-    </Dialog>
+          </Link>
+        ) : (
+          <button
+            key={clave}
+            type="button"
+            className="btn p-1"
+            title={etiqueta}
+            onClick={onSelect}
+          >
+            <Icono size={18} className={peligro ? "text-danger" : "text-secondary"} strokeWidth={1.75} />
+          </button>
+        )
+      )}
+    </div>
   );
 
   const handleAccept = () => {
@@ -729,8 +675,8 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
       ? new Date(f.iso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
       : "-";
 
-    const ageStr = f.days == null ? "" : (f.days === 0 ? "hoy" : `hace ${f.days} dia${f.days > 1 ? "s" : ""}`);
-    const tooltip = f.iso ? `Ultima edicion: ${dateStr} • ${ageStr}` : "Sin planificacion registrada";
+    const ageStr = f.days == null ? "" : (f.days === 0 ? "hoy" : `hace ${f.days} día${f.days > 1 ? "s" : ""}`);
+    const tooltip = f.iso ? `Última edición: ${dateStr} • ${ageStr}` : "Sin planificación registrada";
 
     return (
       <Tooltip title={tooltip} arrow placement="top" enterDelay={200} enterNextDelay={200}>
@@ -832,8 +778,8 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
               body={(row) => categoryPill(row)}
               header={
                 <div className="usersListModernSortableHeader">
-                  <span>Categoria</span>
-                  <button onClick={sortByCategory} title={`Categoria prioritaria: ${headerCategory}. Click para cambiar`}>
+                  <span>Categoría</span>
+                  <button onClick={sortByCategory} title={`Categoría prioritaria: ${headerCategory}. Click para cambiar`}>
                     <ArrowUpDown size={12} />
                   </button>
                 </div>
@@ -849,7 +795,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
               header={
                 <div className="usersListModernSortableHeader">
                   <span className="fw-semibold">Ult. vez editado</span>
-                  <button onClick={sortByLastEdited} title="Ordenar por ultima edicion">
+                  <button onClick={sortByLastEdited} title="Ordenar por última edición">
                     <ArrowUpDown size={12} />
                   </button>
                 </div>
@@ -902,7 +848,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
           <div className="usersListDialogHeader">
             <span className="usersListDialogHeaderIcon"><KeyRound size={18} /></span>
             <div>
-              <strong>Cambiar contrasena</strong>
+              <strong>Cambiar contraseña</strong>
               <span>{passwordUser?.name || ""}</span>
             </div>
           </div>
@@ -927,25 +873,25 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
               onClick={handleSavePassword}
               disabled={passwordSaving || newPassword.length < MIN_PASSWORD_LENGTH}
             >
-              {passwordSaving ? "Guardando..." : "Guardar contrasena"}
+              {passwordSaving ? "Guardando..." : "Guardar contraseña"}
             </button>
           </div>
         }
       >
         <p className="usersListPasswordIntro">
-          Defini la nueva contrasena de <b>{passwordUser?.name}</b>. Vas a tener que pasarsela vos:
+          Defini la nueva contraseña de <b>{passwordUser?.name}</b>. Vas a tener que pasarsela vos:
           por seguridad no se puede volver a ver despues de guardarla.
         </p>
 
         <div className="usersListFieldGroup">
-          <label htmlFor="new-student-password">Nueva contrasena</label>
+          <label htmlFor="new-student-password">Nueva contraseña</label>
           <div className="usersListPasswordRow">
             <InputText
               id="new-student-password"
               type={showPassword ? "text" : "password"}
               value={newPassword}
               autoComplete="new-password"
-              placeholder={`Minimo ${MIN_PASSWORD_LENGTH} caracteres`}
+              placeholder={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres`}
               onChange={(e) => {
                 setNewPassword(e.target.value);
                 setPasswordError(null);
@@ -961,8 +907,8 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
               type="button"
               className="usersListPasswordIconButton"
               onClick={() => setShowPassword((v) => !v)}
-              title={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
-              aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+              title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -971,8 +917,8 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
               className="usersListPasswordIconButton"
               onClick={handleCopyPassword}
               disabled={!newPassword}
-              title="Copiar contrasena"
-              aria-label="Copiar contrasena"
+              title="Copiar contraseña"
+              aria-label="Copiar contraseña"
             >
               <Copy size={16} />
             </button>
@@ -995,14 +941,12 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
           />
           <span>
             Cerrar las sesiones activas del alumno
-            <small>Si esta abierta la app en su celular, se le va a pedir iniciar sesion de nuevo.</small>
+            <small>Si esta abierta la app en su celular, se le va a pedir iniciar sesión de nuevo.</small>
           </span>
         </label>
 
         {passwordError && <p className="usersListPasswordError">{passwordError}</p>}
       </Dialog>
-
-      {dialogoDeAcciones}
 
       {/* ---- QR ---- */}
       <Dialog
@@ -1010,7 +954,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
           <div className="usersListDialogHeader">
             <span className="usersListDialogHeaderIcon"><QrCode size={18} /></span>
             <div>
-              <strong>Codigo QR</strong>
+              <strong>Código QR</strong>
               <span>{currentQrUser?.name || ""}</span>
             </div>
           </div>
@@ -1029,7 +973,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
                 Este es el codigo QR para que <b>{currentQrUser?.name}</b> inicie sesion.
               </p>
               <div className="usersListQrCard">
-                <img src={qrImage} alt="Codigo QR" width={180} height={180} />
+                <img src={qrImage} alt="Código QR" width={180} height={180} />
               </div>
               <a
                 href={qrImage}
@@ -1077,6 +1021,28 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
       >
         {profileData !== undefined && (
           <div>
+            {/* Arriba de todo, los dos accesos que antes eran iconos sueltos en
+                la fila. Abren los mismos dialogos de siempre. */}
+            <div className="usersListProfileShortcuts">
+              <button
+                type="button"
+                className="usersListProfileShortcut"
+                onClick={() => openPasswordDialog({ _id: selectedProfileId, name: selectedProfileName })}
+              >
+                <span className="usersListProfileShortcutIcon"><KeyRound size={17} strokeWidth={1.9} /></span>
+                <span>Cambiar contraseña</span>
+              </button>
+
+              <button
+                type="button"
+                className="usersListProfileShortcut"
+                onClick={() => showQrDialog({ _id: selectedProfileId, name: selectedProfileName })}
+              >
+                <span className="usersListProfileShortcutIcon"><QrCode size={17} strokeWidth={1.9} /></span>
+                <span>Mostrar el QR</span>
+              </button>
+            </div>
+
             <div className="usersListFieldGroup">
               <label><PersonOutlineOutlinedIcon fontSize="inherit" className="me-1" />Altura (cm)</label>
               <input
@@ -1110,7 +1076,7 @@ export default function PrimeReactTable({ id, users, refresh, collapsed, editorT
             </div>
 
             <div className="usersListFieldGroup">
-              <label><LocalOfferOutlinedIcon fontSize="inherit" className="me-1" />Categoria</label>
+              <label><LocalOfferOutlinedIcon fontSize="inherit" className="me-1" />Categoría</label>
               <Dropdown
                 value={editedProfile.category}
                 options={nivelOptions}

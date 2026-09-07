@@ -77,17 +77,17 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose, edit
        "El email ya existe", que manda a buscar un duplicado que no hay. */
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
       setTouched((prev) => ({ ...prev, email: true }));
-      setError("El email no tiene un formato valido.");
+      setError("El email no tiene un formato válido.");
       return;
     }
 
     if (!parentId) {
-      setError("No se proporciono un ID valido para crear el alumno.");
+      setError("No se proporciono un ID válido para crear el alumno.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Las contrasenas no coinciden.");
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -182,7 +182,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose, edit
 
             {/* Password */}
             <li className="list-group-item">
-              <label className="form-label" htmlFor="nuevo-alumno-password">Contrasena *</label>
+              <label className="form-label" htmlFor="nuevo-alumno-password">Contraseña *</label>
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <LockOutlinedIcon fontSize="small" />
@@ -207,7 +207,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose, edit
 
             {/* Confirm Password */}
             <li className="list-group-item">
-              <label className="form-label" htmlFor="nuevo-alumno-password-2">Confirmar contrasena *</label>
+              <label className="form-label" htmlFor="nuevo-alumno-password-2">Confirmar contraseña *</label>
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
                   <LockOutlinedIcon fontSize="small" />
@@ -232,7 +232,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose, edit
 
             {/* NUEVO SELECT (MUI) */}
             <li className="list-group-item">
-              <label className="form-label d-block">Categoria *</label>
+              <label className="form-label d-block">Categoría *</label>
 
               <div className="input-group">
                 <span className="input-group-text colorBackGround border-end-0">
@@ -247,7 +247,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose, edit
                   onBlur={() => setTouched(prev => ({ ...prev, category: true }))}
                   required
                 >
-                  <option value="" disabled>Seleccione una categoria</option>
+                  <option value="" disabled>Seleccione una categoría</option>
                   {nivelOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -257,7 +257,7 @@ export default function UserRegister({ refresh, dialogg, parentId, onClose, edit
               </div>
 
               {touched.category && !category && (
-                <small className="text-danger">Debe seleccionar una categoria.</small>
+                <small className="text-danger">Debe seleccionar una categoría.</small>
               )}
             </li>
 

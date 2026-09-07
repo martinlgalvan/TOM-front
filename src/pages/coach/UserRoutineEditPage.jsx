@@ -267,41 +267,41 @@ function UserRoutineEditPage({ editorTheme = 'light' }) {
   useEffect(() => {
     setTourSteps([
       { title: 'Switch de semana',
-        description: 'Este switch permite que crees las semanas de manera numerica ( semana 1, semana 2, etc..) o, la creacion de semanas a partir de la fecha actual.',
+        description: 'Este switch permite que crees las semanas de manera numérica ( semana 1, semana 2, etc..) o, la creación de semanas a partir de la fecha actual.',
         target: () => document.getElementById('switchWeek'),
         placement: 'right',
         nextButtonProps: { children: 'Siguiente >>' } },
       { title: 'Resumen semanal',
-        description: 'Estos datos son rellenados por el alumno. La idea es que los llene semana a semana para poder trabajar con mas informacion.',
+        description: 'Estos datos son rellenados por el alumno. La idea es que los llene semana a semana para poder trabajar con más información.',
         target: () => document.getElementById('resumen'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' } },
-      { title: 'Devolucion',
-        description: 'Este boton sirve para poder cargar la correccion al alumno. El la vera cuando entre a la seccion de "Ver Rutina"',
+      { title: 'Devolución',
+        description: 'Este botón sirve para poder cargar la corrección al alumno. El la vera cuando entre a la sección de "Ver Rutina"',
         target: () => document.getElementById('correcciones'),
         placement: 'right',
         nextButtonProps: { children: 'Siguiente >>' } },
       { title: 'Drive',
-        description: 'Cuando el usuario suba su link de drive, podras ingresar a su carpeta. La idea es manejar los videos mediante este sistema, para que tengas todo centralizado.',
+        description: 'Cuando el usuario suba su link de drive, podrás ingresar a su carpeta. La idea es manejar los videos mediante este sistema, para que tengas todo centralizado.',
         target: () => document.getElementById('drive'),
         placement: 'right',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' } },
       { title: 'Crear semana de 0',
-        description: 'Este boton crea una semana de 0, ideal para comenzar un nuevo bloque.',
+        description: 'Este botón crea una semana de 0, ideal para comenzar un nuevo bloque.',
         target: () => document.getElementById('week0'),
         placement: 'top',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' } },
       { title: 'Continuar con la rutina',
-        description: 'Este boton crea una copia de la ultima semana. Ideal para continuar el bloque de entrenamiento.',
+        description: 'Este botón crea una copia de la última semana. Ideal para continuar el bloque de entrenamiento.',
         target: () => document.getElementById('continueWeek'),
         placement: 'top',
         prevButtonProps: { children: '<< Anterior' },
         nextButtonProps: { children: 'Siguiente >>' } },
       { title: 'Pegar rutina del portapapeles',
-        description: 'Boton para pegar una rutina, previamente copiada. Puede ser una rutina, tanto de otro alumno, como del que se encuentra.',
+        description: 'Botón para pegar una rutina, previamente copiada. Puede ser una rutina, tanto de otro alumno, como del que se encuentra.',
         target: () => document.getElementById('paste'),
         placement: 'top',
         prevButtonProps: { children: '<< Anterior' },
@@ -426,7 +426,7 @@ function UserRoutineEditPage({ editorTheme = 'light' }) {
           : prev
       );
 
-     NotifyHelper.instantToast("Bloque asignado con exito");
+     NotifyHelper.instantToast("Bloque asignado con éxito");
    } catch (err) {
      console.error("Error actualizando bloque", err);
      NotifyHelper.instantToast("Error al guardar el bloque");
@@ -730,7 +730,7 @@ const cancelDeleteWeek = () => {
 
       if (w.dupesVisual?.length) {
         warnings.push({
-          dayName: d.name || '(Dia sin nombre)',
+          dayName: d.name || '(Día sin nombre)',
           type: 'visual-duplicates',
           items: w.dupesVisual.map(v => ({
             key: v.key,
@@ -771,7 +771,7 @@ const cancelDeleteWeek = () => {
       // 2) avisos UX: posibles duplicados "visuales"
       if (warnings.length) {
         // Un toast corto y log extenso a consola para debug
-        NotifyHelper.instantToast('Atencion: se detectaron ejercicios con mismo numero/nombre (posibles superseries duplicadas). Revisa el dia pegado.');
+        NotifyHelper.instantToast('Atención: se detectaron ejercicios con mismo número/nombre (posibles superseries duplicadas). Revisa el día pegado.');
         console.warn('Posibles duplicados visuales al pegar semana:', warnings);
       }
 
@@ -790,7 +790,7 @@ const cancelDeleteWeek = () => {
 
     } catch (err) {
       console.error('Error al cargar desde localStorage: ', err);
-      NotifyHelper.instantToast('Contenido invalido en portapapeles');
+      NotifyHelper.instantToast('Contenido inválido en portapapeles');
     }
   };
 
@@ -822,7 +822,7 @@ const cancelDeleteWeek = () => {
 
     UserServices.editProfile(id, updatedProfile)
       .then(() => {
-        NotifyHelper.instantToast('Devolucion actualizada con exito!');
+        NotifyHelper.instantToast('Devolución actualizada con éxito!');
         setProfile(prev => ({
           ...prev,
           devolucion: correctionsText,
@@ -831,9 +831,9 @@ const cancelDeleteWeek = () => {
         setShowCorrectionsDialog(false);
       })
       .catch((err) => {
-        console.error("Codigo de error:", err.status);
+        console.error("Código de error:", err.status);
         console.error("Detalle del error:", err.data);
-        NotifyHelper.instantToast('Error al guardar la devolucion');
+        NotifyHelper.instantToast('Error al guardar la devolución');
       });
   };
 
@@ -872,7 +872,7 @@ const cancelDeleteWeek = () => {
     // meta de dias segun la semana
     const daysMeta = (w.routine || []).map((d, idx) => ({
       _id: String(d._id),
-      label: d?.name || d?.title || `Dia ${idx + 1}`,
+      label: d?.name || d?.title || `Día ${idx + 1}`,
     }));
     setCommentsDaysMeta(daysMeta);
 
@@ -1150,7 +1150,7 @@ function FabMenu({ id, items, position = "left" }) {
       );
 
       setShowWeekCommentsDialog(false);
-      NotifyHelper.instantToast("Comentarios guardados con exito");
+      NotifyHelper.instantToast("Comentarios guardados con éxito");
     } catch (err) {
       console.error("Error guardando comentarios", err);
       NotifyHelper.instantToast("Error al guardar los comentarios");
@@ -1354,7 +1354,7 @@ const rightDialItems = [
             <span>{String(username || 'A').trim().charAt(0).toUpperCase()}</span>
             <div>
               <strong>{username || 'Alumno'}</strong>
-              <small>Planificacion del alumno</small>
+              <small>Planificación del alumno</small>
             </div>
           </div>
 
@@ -1450,7 +1450,7 @@ const rightDialItems = [
             <div className="routineWeeksTop">
               <div className="routineWeeksHeading">
                 <h1>Semanas de {username || 'alumno'}</h1>
-                <p>Organiza la planificacion, los bloques y el seguimiento semanal.</p>
+                <p>Organiza la planificación, los bloques y el seguimiento semanal.</p>
               </div>
 
               <div className="row justify-content-end routineWeeksActions">
@@ -1783,7 +1783,7 @@ const rightDialItems = [
             <div className="week-mobile-dock-menu is-right">
               <button type="button" onClick={() => { setShowModeDialog(true); setIsToolsDialVisible(false); }}>
                 <ToggleLeft size={16} />
-                <span>Modo fecha / numerico</span>
+                <span>Modo fecha / numérico</span>
               </button>
             </div>
           )}
@@ -1795,11 +1795,13 @@ const rightDialItems = [
               setIsResumenDialVisible(false);
               setIsWeeksDialVisible(false);
             }}
-            aria-label="Ajustes"
+            aria-label="Herramientas"
             aria-expanded={isToolsDialVisible}
           >
             {isToolsDialVisible ? <X size={22} /> : <Pencil size={20} />}
-            <span className="week-mobile-dock-label">Ajustes</span>
+            {/* Decia "Ajustes", pero lo que abre son herramientas de la vista,
+                no preferencias guardadas. */}
+            <span className="week-mobile-dock-label">Herramientas</span>
           </button>
 </div>
 
@@ -1828,7 +1830,7 @@ const rightDialItems = [
                 <strong>Resumen semanal</strong>
                 <span>
                   {weeklySummary.lastSaved
-                    ? `Ultima actualizacion: ${new Date(weeklySummary.lastSaved).toLocaleString()}`
+                    ? `Última actualización: ${new Date(weeklySummary.lastSaved).toLocaleString()}`
                     : 'Sin actualizaciones todavia'}
                 </span>
               </div>
@@ -1863,7 +1865,7 @@ const rightDialItems = [
         >
           <div className="routineWeeksSummaryList">
             {[
-              ['Alimentacion', weeklySummary.selection1],
+              ['Alimentación', weeklySummary.selection1],
               ['NEAT', weeklySummary.selection2],
               ['Sensaciones', weeklySummary.selection3],
               ['Descanso / Sueno', weeklySummary.selection4],
@@ -1897,7 +1899,7 @@ const rightDialItems = [
         </Dialog>
 
         <Dialog
-          header="Correcciones / Devolucion"
+          header="Correcciones / Devolución"
           visible={showCorrectionsDialog}
           className={`routineWeeksDialog routineWeeksFeedbackDialog routineWeeksTheme-${editorTheme}`}
           onHide={() => setShowCorrectionsDialog(false)}
@@ -1918,7 +1920,7 @@ const rightDialItems = [
               rows="5" 
               value={correctionsText} 
               onChange={(e) => setCorrectionsText(e.target.value)}
-              placeholder="Ingrese las correcciones o devolucion..."
+              placeholder="Ingrese las correcciones o devolución..."
             />
           </div>
           <div className="routineWeeksDialogActions">
@@ -1942,7 +1944,7 @@ const rightDialItems = [
               <AddToDriveIcon fontSize="small" />
             </div>
             <strong>No hay link cargado</strong>
-            <p>Pedile a tu alumno que suba el link de su Drive para poder ver sus videos desde aca.</p>
+            <p>Pedile a tu alumno que suba el link de su Drive para poder ver sus videos desde acá.</p>
           </div>
           <div className="routineWeeksDialogActions">
             <button className="routineWeeksDialogButton routineWeeksDialogButtonPrimary" onClick={() => setShowDriveLinkDialog(false)}>
@@ -1988,7 +1990,7 @@ const rightDialItems = [
               <span className="routineWeeksDialogHeaderIcon"><MessageSquare size={18} /></span>
               <div>
                 <strong>Comentarios de la semana</strong>
-                <span>Dejale a tu alumno una devolucion general o dia por dia</span>
+                <span>Dejale a tu alumno una devolución general o día por día</span>
               </div>
             </div>
           }
@@ -2018,7 +2020,7 @@ const rightDialItems = [
           draggable
         >
           <div className="routineWeeksFieldGroup mb-3">
-            <label htmlFor="comments-title">Titulo</label>
+            <label htmlFor="comments-title">Título</label>
             <InputText
               id="comments-title"
               value={commentsTitle}
@@ -2057,12 +2059,12 @@ const rightDialItems = [
                 onChange={(e) => setCommentsDescription(e.target.value)}
                 className="w-100"
                 rows={5}
-                placeholder="Escribi aqui los comentarios para tu alumno..."
+                placeholder="Escribi aquí los comentarios para tu alumno..."
               />
             </div>
           ) : (
             <div className="routineWeeksFieldGroup">
-              <label>Comentarios por dia</label>
+              <label>Comentarios por día</label>
               {commentsDaysMeta.length ? (
                 <div className="routineWeeksDayCommentsList">
                   {commentsDaysMeta.map((d) => (
@@ -2087,8 +2089,8 @@ const rightDialItems = [
               ) : (
                 <div className="routineWeeksEmptyState">
                   <span className="routineWeeksEmptyIcon"><Info size={18} /></span>
-                  <strong>Sin dias cargados</strong>
-                  <p>Esta semana no tiene dias cargados todavia.</p>
+                  <strong>Sin días cargados</strong>
+                  <p>Esta semana no tiene días cargados todavia.</p>
                 </div>
               )}
             </div>
@@ -2105,19 +2107,19 @@ const rightDialItems = [
 >
   <div className="routineWeeksSettingsDialog">
     <div className="routineWeeksSettingsIntro">
-      <strong>Personaliza esta seccion.</strong>
+      <strong>Personaliza esta sección.</strong>
       <span>Estos ajustes cambian como trabajas con las semanas de este alumno.</span>
     </div>
 
     <div className="routineWeeksSettingsSection">
       <div>
-        <h6>Creacion de semanas</h6>
-        <p>Elegi si las nuevas semanas nacen con nombre numerico o basado en fecha.</p>
+        <h6>Creación de semanas</h6>
+        <p>Elegí si las nuevas semanas nacen con nombre numérico o basado en fecha.</p>
       </div>
 
       <div id="switchWeek" className="routineWeeksSettingRow">
         <div className="routineWeeksSettingText">
-          <span>{useDate ? 'Modo fecha' : 'Modo numerico'}</span>
+          <span>{useDate ? 'Modo fecha' : 'Modo numérico'}</span>
           <small>
             {useDate
               ? 'Ejemplo: Semana - 01/01/2025'
@@ -2131,7 +2133,7 @@ const rightDialItems = [
           onClick={handleToggleUseDate}
           role="switch"
           aria-checked={useDate}
-          aria-label="Alternar modo de creacion de semanas"
+          aria-label="Alternar modo de creación de semanas"
         >
           <span />
         </button>
@@ -2163,11 +2165,11 @@ const rightDialItems = [
 
     <div className="routineWeeksSettingsSection">
       <div>
-        <h6>Semanas por pagina</h6>
+        <h6>Semanas por página</h6>
         <p>Elegí cuantas semanas querés ver antes de paginar.</p>
       </div>
 
-      <div className="routineWeeksSegmentedControl routineWeeksSegmentedControlGrid" role="group" aria-label="Semanas por pagina">
+      <div className="routineWeeksSegmentedControl routineWeeksSegmentedControlGrid" role="group" aria-label="Semanas por página">
         {[
           { label: '8', value: 8 },
           { label: '12', value: 12 },
@@ -2195,7 +2197,7 @@ const rightDialItems = [
       <div className="routineWeeksSegmentedControl" role="group" aria-label="Densidad visual">
         {[
           { label: 'Compacto', value: 'compact' },
-          { label: 'Comodo', value: 'comfortable' },
+          { label: 'Cómodo', value: 'comfortable' },
         ].map((option) => (
           <button
             key={option.value}
@@ -2333,7 +2335,7 @@ const rightDialItems = [
 </Dialog>
 
 <Dialog
-  header="Confirmar eliminacion"
+  header="Confirmar eliminación"
   visible={confirmDeleteOpen}
   appendTo={document.body}
   className={`routineWeeksDialog routineWeeksTheme-${editorTheme}`}
@@ -2353,8 +2355,8 @@ const rightDialItems = [
 >
   <p className="mb-0">
     {weekPendingDelete
-      ? <>Queres eliminar la <strong>{weekPendingDelete.name || 'semana'}</strong>? Esta accion no se puede deshacer.</>
-      : 'Queres eliminar esta semana?'}
+      ? <>Querés eliminar la <strong>{weekPendingDelete.name || 'semana'}</strong>? Esta acción no se puede deshacer.</>
+      : 'Querés eliminar esta semana?'}
   </p>
 </Dialog>
 

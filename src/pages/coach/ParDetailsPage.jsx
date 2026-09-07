@@ -205,9 +205,9 @@ function handleCreateProgression() {
   PARService.createProgressionFromPAR(baseId)
     .then(newProg => {
       setProgressions(prev => [...prev, newProg]);
-      Notify.instantToast("Progresion creada desde la semana madre");
+      Notify.instantToast("Progresión creada desde la semana madre");
     })
-    .catch(() => Notify.instantToast("No se pudo crear la progresion"));
+    .catch(() => Notify.instantToast("No se pudo crear la progresión"));
 }
 
   
@@ -524,7 +524,7 @@ const copyWeekToClipboard = () => {
     const cleaned = cleanRoutineFields(routine);
     cleaned.category = weekCategory || '';   // en vez de routine?.category
     localStorage.setItem("userWeek", JSON.stringify(cleaned));
-    Notify.instantToast("Estructura copiada con exito");
+    Notify.instantToast("Estructura copiada con éxito");
   } catch (err) {
     console.error(err);
     Notify.instantToast("No se pudo copiar la estructura");
@@ -535,16 +535,16 @@ const copyWeekToClipboard = () => {
 const copyCurrentDayToClipboard = () => {
   try {
     if (!currentDay) {
-      Notify.instantToast("No hay dia para copiar");
+      Notify.instantToast("No hay día para copiar");
       return;
     }
     // clon profundo del dia actual
     const dayClone = JSON.parse(JSON.stringify(currentDay));
     localStorage.setItem("userDay", JSON.stringify(dayClone));
-    Notify.instantToast(`Dia "${currentDay.name}" copiado con exito`);
+    Notify.instantToast(`Día "${currentDay.name}" copiado con éxito`);
   } catch (err) {
     console.error(err);
-    Notify.instantToast("No se pudo copiar el dia");
+    Notify.instantToast("No se pudo copiar el día");
   }
 };
 
@@ -553,12 +553,12 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
   try {
     const raw = localStorage.getItem("userDay");
     if (!raw) {
-      Notify.instantToast("No hay un dia copiado para pegar");
+      Notify.instantToast("No hay un día copiado para pegar");
       return;
     }
     const dayTemplate = JSON.parse(raw);
     if (!dayTemplate || !Array.isArray(dayTemplate.exercises)) {
-      Notify.instantToast("El formato del dia copiado es invalido");
+      Notify.instantToast("El formato del día copiado es inválido");
       return;
     }
 
@@ -584,10 +584,10 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
 
     setCurrentDay({ ...updatedDays[indexDay] });
     setIsEditing(true);
-    Notify.instantToast("Dia pegado con exito");
+    Notify.instantToast("Día pegado con éxito");
   } catch (err) {
     console.error(err);
-    Notify.instantToast("No se pudo pegar el dia");
+    Notify.instantToast("No se pudo pegar el día");
   }
 };
 // ------------------ END COPY / PASTE ------------------
@@ -698,7 +698,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
     );
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    Notify.instantToast("Ejercicio eliminado con exito");
+    Notify.instantToast("Ejercicio eliminado con éxito");
   };
 
   const handleDeleteConfirm = () => {
@@ -738,7 +738,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
     setDay(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Ejercicio creado con exito!");
+    Notify.instantToast("Ejercicio creado con éxito!");
   };
 
   /* ------------------------------------------------------------------
@@ -756,7 +756,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
       };
 
       PARService.updatePAR(routine._id, updatedPar).then(() => {
-        Notify.instantToast("Rutina guardada con exito (PAR)!");
+        Notify.instantToast("Rutina guardada con éxito (PAR)!");
         setIsEditing(false);
       });
     };
@@ -778,7 +778,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
 
     const newDay = {
       _id: new ObjectId().toString(),
-      name: `Dia ${nextDayIndex}`,
+      name: `Día ${nextDayIndex}`,
       lastEdited: new Date().toISOString(),
       exercises: [
         {
@@ -800,7 +800,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
     setAllDays(updatedDays);
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    Notify.instantToast("Dia creado con exito");
+    Notify.instantToast("Día creado con éxito");
   };
 
   // Eliminar dia
@@ -874,7 +874,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
     setDay(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Circuito anadido con exito!");
+    Notify.instantToast("Circuito anadido con éxito!");
   };
 
   const AddExerciseToCircuit = (circuitIndex) => {
@@ -890,7 +890,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
     setDay(updatedDays);
     setModifiedDay(updatedDays);
     setCurrentDay(updatedDays[indexDay]);
-    Notify.instantToast("Ejercicio anadido con exito!");
+    Notify.instantToast("Ejercicio anadido con éxito!");
   };
 
   const deleteCircuit = (name, circuitIndex) => {
@@ -899,7 +899,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
     updatedDays[indexDay].exercises.splice(circuitIndex, 1);
     setDay(updatedDays);
     setModifiedDay(updatedDays);
-    Notify.instantToast(`${name} Eliminado con exito`);
+    Notify.instantToast(`${name} Eliminado con éxito`);
   };
 
   // Para type, typeOfSets, notas => similar a tu snippet
@@ -1169,7 +1169,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
     if(routine.parent_par_id){
         PARService.createProgressionsPARToUsers(template, userIds)
           .then(() => {
-            Notify.instantToast(`Rutina asignada a usuario con exito`);
+            Notify.instantToast(`Rutina asignada a usuario con éxito`);
           })
           .catch((err) => {
             console.error(`Error asignando a usuario :`, err);
@@ -1182,7 +1182,7 @@ const pasteDayIntoCurrentDayFromClipboard = () => {
       userIds.forEach(userId => {
         PARService.createPARroutine(template, userId)
           .then(() => {
-            Notify.instantToast(`Rutina asignada a ${name} con exito`);
+            Notify.instantToast(`Rutina asignada a ${name} con éxito`);
           })
           .catch((err) => {
             console.error(`Error asignando a usuario ${name}:`, err);
@@ -1407,7 +1407,7 @@ const tableMobile = () => {
                                   className="bgColor rounded-2 text-light"
                                   onClick={() => AddExerciseToCircuit(i)}
                                 >
-                                  <AddIcon /> Anadir ejercicio
+                                  <AddIcon /> Añadir ejercicio
                                 </IconButton>
                               </div>
                             </div>
@@ -1462,7 +1462,7 @@ const tableMobile = () => {
 
   const deletePAR = (idToDelete) => {
     return PARService.deletePAR(idToDelete).then(() => {
-      Notify.instantToast("PAR eliminado con exito");
+      Notify.instantToast("PAR eliminado con éxito");
       setTimeout(() => {
         window.location.href = `/planificator/${parent_id}`;
       }, 1000);
@@ -1591,7 +1591,7 @@ const tableMobile = () => {
       <div className="text-muted small">
         <div className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={addNewDay}>
           <div className='col-1'><AddIcon /></div>
-          <div className='text-center col-10'><strong>Agregar dia  </strong></div>
+          <div className='text-center col-10'><strong>Agregar día  </strong></div>
         </div>
 
         <div className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={() => openEditNameDialog(currentDay)}>
@@ -1609,12 +1609,12 @@ const tableMobile = () => {
       <div className="text-muted small mt-5">
         <div id="addEjercicio" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={AddNewExercise}>
           <div className='col-1'><AddIcon /></div>
-          <div className='text-center col-10'><strong>Anadir ejercicio</strong></div>
+          <div className='text-center col-10'><strong>Añadir ejercicio</strong></div>
         </div>
 
         <div id="addCircuit" className="bgItemsDropdown stylePointer rounded mx-2 row justify-content-center mb-3" onClick={AddNewCircuit}>
           <div className='col-1'><AddIcon /></div>
-          <div className='text-center col-10'><strong>Anadir circuito</strong></div>
+          <div className='text-center col-10'><strong>Añadir circuito</strong></div>
         </div>
       </div>
     </div>
@@ -1733,7 +1733,7 @@ const tableMobile = () => {
                 <div className="col-12 col-lg-6 text-start mt-3">
                   <div id="movility" className="ps-3  bgItemsDropdown py-3" onClick={handleShowMovility}>
                     <CircleIcon  className="me-2 badgeMovility" />
-                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activacion/movilidad</strong> <span className="small">- {currentDay && currentDay.name} </span> </span>
+                    <span className=" me-1 stylesSpanTitles">Bloque de <strong>activación/movilidad</strong> <span className="small">- {currentDay && currentDay.name} </span> </span>
                     <span className="d-block stylesSpanBloqs">Haz click para editar</span>
                   </div>
                
@@ -1785,7 +1785,7 @@ const tableMobile = () => {
                             onClick={addNewDay}
                         >
                             <AddIcon className="" />
-                            <span className="font-icons me-1">Crear dia</span>
+                            <span className="font-icons me-1">Crear día</span>
                         </IconButton>
 
                         <IconButton
@@ -1815,7 +1815,7 @@ const tableMobile = () => {
               <Dropdown
                 value={selectedBlock?._id || null}
                 options={[
-                  { name: 'Anadir/editar bloques', _id: 'add-new-block' },
+                  { name: 'Añadir/editar bloques', _id: 'add-new-block' },
                   { name: 'Sin bloque', _id: null },
                   ...blocks,
                 ]}
@@ -2049,7 +2049,7 @@ const tableMobile = () => {
                                                   >
                                                     <AddIcon />
                                                     <span className="me-1">
-                                                      Anadir Ejercicio al Circuito
+                                                      Añadir Ejercicio al Circuito
                                                     </span>
                                                   </button>
                                                 </td>
@@ -2092,8 +2092,8 @@ const tableMobile = () => {
           <ConfirmDialog
             visible={showDeleteDayDialog}
             onHide={() => setShowDeleteDayDialog(false)}
-            message="Queres eliminar este dia? Podes cancelar despues y revertir esta accion."
-            header="Eliminar dia"
+            message="Querés eliminar este día? Podés cancelar después y revertir esta acción."
+            header="Eliminar día"
             icon="pi pi-exclamation-triangle"
             acceptLabel="Si"
             rejectLabel="No"
@@ -2108,8 +2108,8 @@ const tableMobile = () => {
           <ConfirmDialog
             visible={showCancelDialog}
             onHide={() => setShowCancelDialog(false)}
-            message="?Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
-            header="Confirmacion"
+            message="?Estás seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+            header="Confirmación"
             icon="pi pi-exclamation-triangle"
             acceptLabel="Si"
             rejectLabel="No"
@@ -2163,7 +2163,7 @@ const tableMobile = () => {
               className={`col-12 col-md-10 h-75 ${collapsed ? 'marginSidebarClosed' : 'marginSidebarOpen'}`}
               contentClassName="colorDialog"
               headerClassName="colorDialog"
-              header="Bloque de Activacion"
+              header="Bloque de Activación"
               visible={movilityVisible}
               modal={false}
               onHide={() => setMovilityVisible(false)}
@@ -2179,7 +2179,7 @@ const tableMobile = () => {
 
           {/* Editar nombre del dia */}
           <Dialog
-            header="Editar Nombre del Dia"
+            header="Editar Nombre del Día"
             className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
             visible={isEditingName}
             style={{
@@ -2247,8 +2247,8 @@ const tableMobile = () => {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Categoria"
-                        placeholder="Escribe o selecciona una categoria"
+                        label="Categoría"
+                        placeholder="Escribe o selecciona una categoría"
                       />
                     )}
                   />
@@ -2262,7 +2262,7 @@ const tableMobile = () => {
                     setWeekCategory(finalCat);                 // â† GUARDA LA CATEGORIA EDITADA
                     setIsEditing(true);                        // marca edicion pendiente
                     setIsEditingWeekName(false);
-                    Notify.instantToast("Nombre/categoria editados localmente");
+                    Notify.instantToast("Nombre/categoría editados localmente");
                   }}
                 >
                   Confirmar
@@ -2281,7 +2281,7 @@ const tableMobile = () => {
               visible={showDeleteParDialog}
               className={`${collapsed ? 'marginSidebarOpen' : 'marginSidebarClosed'}`}
               onHide={() => setShowDeleteParDialog(false)}
-              message="?Estas seguro de que deseas eliminar este PAR? Esta accion no se puede deshacer."
+              message="?Estás seguro de que deseas eliminar este PAR? Esta acción no se puede deshacer."
               header="Eliminar PAR"
               icon="pi pi-exclamation-triangle"
               acceptLabel="Si, eliminar"
@@ -2304,7 +2304,7 @@ const tableMobile = () => {
                     <AddIcon />
                   </IconButton>
                 </div>
-                <span className='col-12 text-light fontTextNavBar'>Anadir circuito</span>
+                <span className='col-12 text-light fontTextNavBar'>Añadir circuito</span>
               </div>
               
 
@@ -2314,7 +2314,7 @@ const tableMobile = () => {
                     <EditIcon />
                   </IconButton>
                 </div>
-                <span className={`col-12 text-light fontTextNavBar ${editMode && "activeButton"}`} >Modo edicion</span>
+                <span className={`col-12 text-light fontTextNavBar ${editMode && "activeButton"}`} >Modo edición</span>
               </div>
 
               <div className="row justify-content-center text-center ">
@@ -2323,7 +2323,7 @@ const tableMobile = () => {
                     <AddIcon />
                   </IconButton>
                 </div>
-                <span className='col-12 text-light fontTextNavBar'>Anadir ejercicio</span>
+                <span className='col-12 text-light fontTextNavBar'>Añadir ejercicio</span>
                 
               </div>
 
@@ -2368,7 +2368,7 @@ const tableMobile = () => {
         className="btn btn-outline-dark"
         onClick={() => setBackoffData([...backoffData, { sets: '', reps: '', peso: '' }])}
       >
-        Anadir linea
+        Añadir linea
       </button>
     </div>
     <div className="text-center">
@@ -2411,9 +2411,9 @@ const tableMobile = () => {
                   // â¬…ï¸ CAMBIO: si es la progresion actual, le agregamos glow-bg
                   className={`btn col-2 ${isCurrent ? 'btn-dark glow-bg' : 'btn-outline-dark'}`}
                   onClick={() => enterProgression(prog._id)}
-                  title={isCurrent ? 'Estas aqui' : 'Ir a progresion'}
+                  title={isCurrent ? 'Estas aquí' : 'Ir a progresión'}
                 >
-                  {`Progresion ${idx + 1}`}
+                  {`Progresión ${idx + 1}`}
                 </button>
               );
             })
@@ -2495,7 +2495,7 @@ const tableMobile = () => {
         className="btn btn-outline-dark"
         onClick={() => setApproxData([...approxData, { sets: '', reps: '', peso: '' }])}
       >
-        Anadir linea
+        Añadir linea
       </button>
     </div>
     <div className="text-center">

@@ -34,7 +34,7 @@ function Profile() {
     ];
 
     const diasOptions = Array.from({ length: 7 }, (_, i) => ({
-        label: `${i + 1} dias`,
+        label: `${i + 1} días`,
         value: i + 1
     }));
 
@@ -59,7 +59,7 @@ function Profile() {
         UserServices.editProfile(id, userDetails)
             .then(() => {
                 setSuccess(true);
-                NotifyHelper.instantToast("Perfil actualizado con exito!");
+                NotifyHelper.instantToast("Perfil actualizado con éxito!");
             })
             .catch((error) => {
                 console.error('Error al actualizar el perfil:', error);
@@ -184,7 +184,7 @@ function Profile() {
                     <div>
                         <div>
                             <h3>Que es la fatiga?</h3>
-                            <p>Es la sensacion de cansancio, determinada por la disminucion del rendimiento deportivo.</p>
+                            <p>Es la sensación de cansancio, determinada por la disminución del rendimiento deportivo.</p>
                         </div>
                         <div>
                             <h3>Que es el NEAT?</h3>
@@ -192,14 +192,14 @@ function Profile() {
                         </div>
                         <div>
                             <h3>Que son los DOMS?</h3>
-                            <p>Son molestias musculares que aparecen aproximadamente 24 hs despues de entrenar.</p>
+                            <p>Son molestias musculares que aparecen aproximadamente 24 hs después de entrenar.</p>
                         </div>
                         <div>
                             <h3>Que es el estres?</h3>
-                            <p>Es una reaccion fisica o emocional a una demanda. Cada persona lo vive diferente.</p>
+                            <p>Es una reacción fisica o emocional a una demanda. Cada persona lo vive diferente.</p>
                         </div>
                         <div>
-                            <h3>Que es la alimentacion?</h3>
+                            <h3>Que es la alimentación?</h3>
                             <p>Es la calidad del alimento que ingeris para entrenar mejor y alcanzar tus objetivos.</p>
                         </div>
                     </div>

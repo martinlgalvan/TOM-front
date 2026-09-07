@@ -22872,3 +22872,360 @@ html[data-tom-admin-theme="dark"] .user-routine-week-card .fs07em {
   min-height: 36px;
   padding-inline: 12px;
 }
+
+/* ==========================================================================
+   LISTA DE ALUMNOS EN MOBILE — LAS TRES ACCIONES, SUELTAS
+   ==========================================================================
+   Debajo de 992px los iconos se reemplazaban por un boton "..." que abria una
+   hoja, porque a 24x24 no habia como tocarlos. Ahora se ven sueltos: quedaron
+   tres -contraseña y QR se fueron adentro del perfil-, los botones pasan a
+   38x38 y el ultimo deja aire contra el borde para no tocar "Eliminar" sin
+   querer.
+
+   Va al final de la hoja a proposito: pisa por orden lo que definen los
+   bloques de mas arriba dentro de la misma media query. */
+@media (max-width: 991px) {
+  .usersListModernTable .p-datatable-thead > tr > th:nth-child(1),
+  .usersListModernTable .p-datatable-tbody > tr > td:nth-child(1) {
+    width: calc(100% - 140px) !important;
+  }
+
+  .usersListModernTable .p-datatable-thead > tr > th:last-child,
+  .usersListModernTable .p-datatable-tbody > tr > td:last-child {
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 140px !important;
+    padding-right: 6px !important;
+  }
+
+  .usersListModernActions {
+    justify-content: flex-end !important;
+    gap: 2px !important;
+    opacity: 1 !important;
+  }
+
+  .usersListModernActions .btn,
+  .usersListModernActions .LinkDays {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .usersListModernActions .LinkDays .btn {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+  }
+
+  .usersListModernActions svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+}
+
+/* Pantallas angostas de verdad: los mismos cinco, un punto mas chicos. */
+@media (max-width: 360px) {
+  .usersListModernTable .p-datatable-thead > tr > th:nth-child(1),
+  .usersListModernTable .p-datatable-tbody > tr > td:nth-child(1) {
+    width: calc(100% - 122px) !important;
+  }
+
+  .usersListModernTable .p-datatable-thead > tr > th:last-child,
+  .usersListModernTable .p-datatable-tbody > tr > td:last-child {
+    width: 122px !important;
+    min-width: 122px !important;
+    max-width: 122px !important;
+  }
+
+  .usersListModernActions .btn,
+  .usersListModernActions .LinkDays {
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+  }
+}
+
+/* ==========================================================================
+   APROXIMACIONES Y BACK OFF
+   ==========================================================================
+   Los dos paneles usaban controles sueltos de Bootstrap -form-control,
+   btn-secondary, btn-dark- y quedaban con el aspecto viejo dentro de un editor
+   que ya no se ve asi. Comparten estructura: encabezado, filas numeradas en
+   tarjeta, un boton para sumar y el pie de acciones.
+
+   Se define todo colgando de .dayEditDarkOverlayPanel porque el panel se monta
+   en un portal fuera de .ddp: las variables del editor no llegan hasta aca. */
+.dayEditDarkOverlayPanel{
+  --seriesov-surface: #f7f9fc;
+  --seriesov-border: #e2e8f0;
+  --seriesov-text: #102132;
+  --seriesov-muted: #64748b;
+  --seriesov-field: #ffffff;
+  --seriesov-accent: #0ea5e9;
+  --seriesov-danger: #b42318;
+  --seriesov-danger-bg: #fef3f2;
+}
+
+.dayEditDarkOverlayPanel.dayEditEditorTheme-dark{
+  --seriesov-surface: #111c2b;
+  --seriesov-border: #33445c;
+  --seriesov-text: #dce8f7;
+  --seriesov-muted: #9fb0c7;
+  --seriesov-field: #0d141e;
+  --seriesov-accent: #38bdf8;
+  --seriesov-danger: #fda29b;
+  --seriesov-danger-bg: rgba(180, 35, 24, 0.16);
+}
+
+.dayEditSeriesOverlay{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--seriesov-text);
+}
+
+.dayEditSeriesOverlayHead{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--seriesov-border);
+}
+
+.dayEditSeriesOverlayHead strong{
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--seriesov-text);
+}
+
+.dayEditSeriesOverlayHead span{
+  font-size: 0.74rem;
+  color: var(--seriesov-muted);
+}
+
+.dayEditSeriesOverlayCheck{
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--seriesov-muted);
+  cursor: pointer;
+}
+
+.dayEditSeriesOverlayCheck input{
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  flex: 0 0 15px;
+  accent-color: var(--seriesov-accent);
+}
+
+.dayEditSeriesOverlayList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* El numero adelante y el tacho al final: entre medio los campos se reparten
+   el ancho, asi entran tres en el telefono sin apretarse. */
+.dayEditSeriesOverlayRow{
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--seriesov-border);
+  border-radius: 12px;
+  background: var(--seriesov-surface);
+}
+
+.dayEditSeriesOverlayRowNum{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 32px;
+  flex: 0 0 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--seriesov-muted);
+}
+
+.dayEditSeriesOverlayField{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.dayEditSeriesOverlayField label{
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--seriesov-muted);
+  margin: 0;
+}
+
+.dayEditDarkOverlayPanel .dayEditSeriesOverlayInput{
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--seriesov-border) !important;
+  border-radius: 9px;
+  background: var(--seriesov-field) !important;
+  color: var(--seriesov-text) !important;
+  font-size: 0.84rem;
+  text-align: center;
+}
+
+.dayEditDarkOverlayPanel .dayEditSeriesOverlayInput:focus{
+  outline: none;
+  border-color: var(--seriesov-accent) !important;
+}
+
+.dayEditSeriesOverlayRemove{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--seriesov-danger);
+}
+
+.dayEditSeriesOverlayRemove:hover,
+.dayEditSeriesOverlayRemove:active{
+  background: var(--seriesov-danger-bg);
+  border-color: var(--seriesov-border);
+}
+
+/* Borde punteado: se lee como "sumar otra" y no compite con Guardar. */
+.dayEditSeriesOverlayAdd{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px dashed var(--seriesov-border);
+  border-radius: 11px;
+  background: transparent;
+  color: var(--seriesov-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.dayEditSeriesOverlayAdd:hover{
+  color: var(--seriesov-text);
+  border-color: var(--seriesov-accent);
+}
+
+.dayEditSeriesOverlayActions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--seriesov-border);
+}
+
+.dayEditSeriesOverlayActions .coachDialogBtn{
+  min-width: 0;
+  flex: 1 1 0;
+  padding: 9px 12px;
+}
+
+.dayEditDarkOverlayPanel.dayEditEditorTheme-dark .coachDialogBtnSecondary{
+  background: var(--seriesov-field);
+  border-color: var(--seriesov-border);
+  color: var(--seriesov-text);
+}
+
+/* ==========================================================================
+   PERFIL DEL ALUMNO — ACCESOS A CONTRASEÑA Y QR
+   ==========================================================================
+   Cambiar la contraseña y ver el QR salieron de la fila de la lista, donde eran
+   dos de cinco iconos, y entraron arriba del perfil. Abren los mismos dialogos
+   que antes; esto es solo la puerta. */
+.usersListProfileShortcuts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e4ecf4;
+}
+
+.usersListProfileShortcut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #d3deea;
+  border-radius: 10px;
+  background: #f6f9fc;
+  color: #243b53;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.usersListProfileShortcut:hover {
+  background: #eef4fb;
+  border-color: #b9cbe0;
+  transform: translateY(-1px);
+}
+
+.usersListProfileShortcutIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+}
+
+/* En pantallas angostas van uno debajo del otro: en dos columnas el texto
+   "Cambiar contraseña" se partia en tres renglones. */
+@media (max-width: 480px) {
+  .usersListProfileShortcuts {
+    grid-template-columns: 1fr;
+  }
+
+  .usersListProfileShortcut {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+
+.usersListTheme-dark .usersListProfileShortcuts {
+  border-bottom-color: #26364b;
+}
+
+.usersListTheme-dark .usersListProfileShortcut {
+  background: #111c2b;
+  border-color: #33445c;
+  color: #dce8f7;
+}
+
+.usersListTheme-dark .usersListProfileShortcut:hover {
+  background: #16243a;
+  border-color: #46597a;
+}
+
+.usersListTheme-dark .usersListProfileShortcutIcon {
+  color: #60a5fa;
+}

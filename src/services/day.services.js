@@ -19,7 +19,7 @@ async function createDay(name, week_id) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear el día')
         }
     })
 }
@@ -44,7 +44,7 @@ async function editDay(week_id, day_id, name) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo editar el dia')
+            throw new Error('No se pudo editar el día')
         }
     })
 }
@@ -65,7 +65,7 @@ async function deleteDay(week_id, day_id) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo eliminar el dia')
+            throw new Error('No se pudo eliminar el día')
         }
     })
 }

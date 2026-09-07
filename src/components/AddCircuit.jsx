@@ -263,7 +263,7 @@ useEffect(() => {
             </div>
 
             <div className="col-6 text-center">
-              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className={`input-group-text btn border ${textColor == 'false' ? "bbb" : "blackColor"} mt-3`} style={{ "backgroundColor": `black` }}>Anadir ejercicio</button>
+              <button onClick={(e) => addExerciseToAmrap({name,reps,peso,video, idRefresh})} className={`input-group-text btn border ${textColor == 'false' ? "bbb" : "blackColor"} mt-3`} style={{ "backgroundColor": `black` }}>Añadir ejercicio</button>
             </div>      
           </div>
 

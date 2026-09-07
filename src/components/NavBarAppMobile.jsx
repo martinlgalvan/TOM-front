@@ -16,7 +16,7 @@ function NavBarAppMobile(){
                     </IconButton>
 
                 </Link>
-                <span>Atras</span>
+                <span>Atrás</span>
             </div>
 
             <div>

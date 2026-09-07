@@ -41,7 +41,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   const [filteredExercises, setFilteredExercises] = useState(null);
   const [exercisesDatabase, setExercisesDatabase] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [dataWeek, setDataweek] = useState(false); // Estado para el "Modo Edicion"
+  const [dataWeek, setDataweek] = useState(false); // Estado para el "Modo Edición"
   const [statusCancel, setStatusCancel] = useState(1); // Manejo de renderizado
 
   const [color, setColor] = useState(localStorage.getItem("color"));
@@ -83,7 +83,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       setModifiedWarmup(week); // Array de objetos inicial (los ejercicios)
       setWarmup(week);
     } else {
-      console.log("La semana o la rutina no estan disponibles");
+      console.log("La semana o la rutina no están disponibles");
     }
   }, [week, day_id, statusCancel]);
 
@@ -114,7 +114,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
 
   const applyChanges = () => {
       if (!hasValidWarmupDay) {
-        Notify.instantToast("No hay dia seleccionado para editar warmup.");
+        Notify.instantToast("No hay día seleccionado para editar warmup.");
         return;
       }
       WeekService.editWeek(week_id, modifiedWarmup)
@@ -122,7 +122,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
           setWarmup(modifiedWarmup);
           setIsEditing(false);
           editAndClose();
-          Notify.instantToast("Guardado con exito");
+          Notify.instantToast("Guardado con éxito");
         })
         .catch((error) => {
           console.error("Error al guardar cambios:", error);
@@ -234,7 +234,7 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   // Funcion para agregar un nuevo ejercicio de warmup
   const addNewWarmupExercise = () => {
     if (!hasValidWarmupDay) {
-      Notify.instantToast("No hay dia seleccionado para agregar warmup.");
+      Notify.instantToast("No hay día seleccionado para agregar warmup.");
       return;
     }
     setIsEditing(true);
@@ -274,8 +274,8 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
   const deleteWarmup = (event, index, name) => {
     confirmDialog({
       className: `coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`,
-      message: "Estas seguro de que deseas eliminar este ejercicio?",
-      header: "Confirmacion",
+      message: "Estás seguro de que deseas eliminar este ejercicio?",
+      header: "Confirmación",
       icon: "pi pi-exclamation-triangle",
       acceptLabel: "Si, eliminar",
       rejectLabel: "No",
@@ -429,8 +429,8 @@ function ModalCreateWarmup({ isPAR, editAndClose, user_id, week, week_id, day_id
       <ConfirmDialog
         visible={showCancelDialog}
         onHide={() => setShowCancelDialog(false)}
-        message="Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
-        header="Confirmacion"
+        message="Estás seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+        header="Confirmación"
         icon="pi pi-exclamation-triangle"
         acceptLabel="Si"
         rejectLabel="No"

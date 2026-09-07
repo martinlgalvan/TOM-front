@@ -181,7 +181,7 @@ function OpenersPlanEditor({
               rows={2}
               value={plan.lifts[lift.key].notes}
               onChange={(e) => updateLiftNotes(lift.key, e.target.value)}
-              placeholder="Cue tecnico y ajustes."
+              placeholder="Cue técnico y ajustes."
               disabled={readOnly}
             />
           </div>

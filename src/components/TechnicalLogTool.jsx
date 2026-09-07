@@ -158,7 +158,7 @@ function TechnicalLogTool({
     <div className={`ath-tool-wrap ${isDark ? "ath-tool-dark" : "ath-tool-light"}`}>
       <div className="ath-tool-card">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <strong>Bitacora tecnica</strong>
+          <strong>Bitácora técnica</strong>
           <small className="ath-tool-muted">{entries.length} registros</small>
         </div>
         <small className="ath-tool-muted d-block mt-1">
@@ -252,7 +252,7 @@ function TechnicalLogTool({
             />
           </div>
           <div className="col-12">
-            <label className="form-label mb-1 small">Cue para proximo intento</label>
+            <label className="form-label mb-1 small">Cue para próximo intento</label>
             <textarea
               className="form-control form-control-sm"
               rows={2}
@@ -297,7 +297,7 @@ function TechnicalLogTool({
 
       <div className="ath-tool-card">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <strong>Historial tecnico</strong>
+          <strong>Historial técnico</strong>
           <div className="d-flex gap-2">
             <select
               className="form-select form-select-sm"

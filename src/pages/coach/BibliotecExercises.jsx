@@ -37,7 +37,7 @@ function BibliotecExercises() {
             <section className="container">
                 <h2 className="text-center my-4">Biblioteca de Ejercicios</h2>
 
-                <p className="text-center mt-2 mb-3">En caso de que quieras anadir ejercicios propios, junto a sus videos, comunicate con el administrador para hacerlo.</p>
+                <p className="text-center mt-2 mb-3">En caso de que quieras añadir ejercicios propios, junto a sus videos, comunicate con el administrador para hacerlo.</p>
 
                 {exercises.map((category) => (
                     <Accordion key={category.label} sx={{ backgroundColor: "#ffffff", marginBottom: 2 }}>

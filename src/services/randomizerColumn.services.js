@@ -33,7 +33,7 @@ async function createColumn(data, user_id) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear el día')
         }
     })
 }
@@ -55,7 +55,7 @@ async function editColumn(column_id, updatedData) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo editar el dia')
+            throw new Error('No se pudo editar el día')
         }
     })
 }
@@ -73,7 +73,7 @@ async function deleteColumn(column_id) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo eliminar el dia')
+            throw new Error('No se pudo eliminar el día')
         }
     })
 }
@@ -94,7 +94,7 @@ async function createExerciseInColumn(column_id, data) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear el día')
         }
     })
 }
@@ -115,7 +115,7 @@ async function editExerciseInColumn(column_id, exercise_id, exercise) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo crear el dia')
+            throw new Error('No se pudo crear el día')
         }
     })
 }
@@ -134,7 +134,7 @@ async function deleteExerciseInColumn(idColumn, idExercise) {
             return response.json()
         }
         else {
-            throw new Error('No se pudo eliminar el dia')
+            throw new Error('No se pudo eliminar el día')
         }
     })
 }

@@ -521,7 +521,7 @@ const handleDismissAnnouncement = async () => {
           setIsAutenticated(false);
         }
       } catch (error) {
-        console.error('No se pudo restaurar la sesion', error);
+        console.error('No se pudo restaurar la sesión', error);
         if (isMounted) {
           setIsAutenticated(false);
         }
@@ -553,7 +553,7 @@ const handleDismissAnnouncement = async () => {
       document.body.style.color = '';
 
       localStorage.clear();
-      toast.info('Tu sesion expiro. Volve a iniciar sesion.', {
+      toast.info('Tu sesión expiro. Volvé a iniciar sesión.', {
         position: 'bottom-center',
         autoClose: 2500,
         hideProgressBar: true,
@@ -567,7 +567,7 @@ const handleDismissAnnouncement = async () => {
 
   // ---- Title dinamico (solo en contexto de usuario y no excluido) ----
   useEffect(() => {
-    const baseTitle = "TOM - Planificacion digital";
+    const baseTitle = "TOM - Planificación digital";
     if (inUserContext && currentUsername && !excludedForTitle) {
       document.title = `TOM - ${currentUsername}`;
     } else {
@@ -643,13 +643,13 @@ const handleDismissAnnouncement = async () => {
         />
 
         <Dialog
-          header="Sesion"
+          header="Sesión"
           visible={openDialogLogout}
           onHide={() => setOpenDialogLogout(false)}
         >
           <div className="row justify-content-center">
             <div className="p-field">
-              <p>Estas seguro que deseas cerrar sesion?</p>
+              <p>Estás seguro que deseas cerrar sesión?</p>
             </div>
             <div className="p-field text-end">
               <button className="btn btn-danger mx-2 mt-2" onClick={onLogout}>
@@ -698,7 +698,7 @@ const handleDismissAnnouncement = async () => {
             {isAutenticated && isAdmin() && location.pathname !== '/' && (
               <button type="button" onClick={() => navigate(-1)} className="tomTopNavBack">
                 <ChevronLeft size={15} />
-                <span>Atras</span>
+                <span>Atrás</span>
               </button>
             )}
           </div>
@@ -809,7 +809,7 @@ const handleDismissAnnouncement = async () => {
                 <li className="nav-item m-auto">
                   <button className="nav-link btn btn-link tomTopNavLogout" onClick={onLogout}>
                     <LogOut size={14} />
-                    <span>Cerrar sesion</span>
+                    <span>Cerrar sesión</span>
                   </button>
                 </li>
               )}
@@ -1133,13 +1133,13 @@ const handleDismissAnnouncement = async () => {
       </footer>
 
       <Dialog
-        header="Sesion"
+        header="Sesión"
         visible={openDialogLogout}
         onHide={() => setOpenDialogLogout(false)}
       >
         <div className="row justify-content-center">
           <div className="p-field">
-            <p>Estas seguro que deseas cerrar sesion?</p>
+            <p>Estás seguro que deseas cerrar sesión?</p>
           </div>
           <div className="p-field text-end">
             <button className="btn btn-danger mx-2 mt-2" onClick={onLogout}>

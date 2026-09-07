@@ -290,8 +290,8 @@ const CustomInputNumber = React.forwardRef(
                     onClick={handleRemoveLast}
                     disabled={disabled}
                     className="customInputMultipleBtn"
-                    title="Quitar ultima serie"
-                    aria-label="Quitar ultima serie"
+                    title="Quitar última serie"
+                    aria-label="Quitar última serie"
                   >
                     <RemoveIcon className="fontAddIconMultiple" />
                   </button>

@@ -226,7 +226,7 @@ export default function PrimeReactTable_Routines({
         )
       );
 
-      NotifyHelper.instantToast("Bloque asignado con exito");
+      NotifyHelper.instantToast("Bloque asignado con éxito");
     } catch (err) {
       console.error("Error actualizando bloque", err);
       NotifyHelper.instantToast("Error al guardar el bloque");
@@ -368,8 +368,8 @@ export default function PrimeReactTable_Routines({
 
   const getVisibilityTooltip = (isHidden) =>
     isHidden
-      ? "Al apretar este boton, volveras a mostrar esta semana al alumno. Tambien, le aparecera la fecha de cuando hiciste visible la rutina, no cuando la creaste. Tambien, respetara el orden que vos ves en las semanas. Asi tal cual, las vera tu alumno."
-      : "Al apretar este boton, tu alumno no vera la rutina cargada. Sin embargo, podras trabajar libremente sobre ella.";
+      ? "Al apretar este botón, volverás a mostrar esta semana al alumno. También, le aparecera la fecha de cuando hiciste visible la rutina, no cuando la creaste. También, respetara el orden que vos ves en las semanas. Asi tal cual, las vera tu alumno."
+      : "Al apretar este botón, tu alumno no vera la rutina cargada. Sin embargo, podrás trabajar libremente sobre ella.";
 
   const getContrastYIQ = (hexcolor) => {
     if (!hexcolor) return "black";
@@ -398,7 +398,7 @@ export default function PrimeReactTable_Routines({
     // meta de dias (label por dia)
     const daysMeta = (row.routine || []).map((d, idx) => ({
       _id: String(d._id),
-      label: d?.name || d?.title || `Dia ${idx + 1}`,
+      label: d?.name || d?.title || `Día ${idx + 1}`,
     }));
     setCommentsDaysMeta(daysMeta);
 
@@ -485,7 +485,7 @@ export default function PrimeReactTable_Routines({
       );
 
       setShowCommentsDialog(false);
-      NotifyHelper.instantToast("Comentarios guardados con exito");
+      NotifyHelper.instantToast("Comentarios guardados con éxito");
     } catch (err) {
       console.error("Error guardando comentarios", err);
       NotifyHelper.instantToast("Error al guardar los comentarios");
@@ -581,7 +581,7 @@ export default function PrimeReactTable_Routines({
       localStorage.setItem("userWeek", JSON.stringify(data));
       setCopyWeekStorage(JSON.stringify(data));
       copyRoutine(data);
-      NotifyHelper.instantToast("Copiado con exito!");
+      NotifyHelper.instantToast("Copiado con éxito!");
     } catch (err) {
       console.error("Error al guardar en localStorage: ", err);
     }
@@ -716,7 +716,7 @@ export default function PrimeReactTable_Routines({
           <button
             type="button"
             className="routineWeeksBulkToolbarClose"
-            aria-label="Cancelar seleccion"
+            aria-label="Cancelar selección"
             onClick={clearSelection}
           >
             <X size={16} />
@@ -807,7 +807,7 @@ export default function PrimeReactTable_Routines({
             <span className="routineWeeksDialogHeaderIcon"><Trash2 size={18} /></span>
             <div>
               <strong>Eliminar semanas seleccionadas</strong>
-              <span>Esta accion no se puede deshacer</span>
+              <span>Esta acción no se puede deshacer</span>
             </div>
           </div>
         }
@@ -838,7 +838,7 @@ export default function PrimeReactTable_Routines({
           Estás a punto de eliminar <b>{selectedWeeks.length}</b> semana{selectedWeeks.length === 1 ? "" : "s"}. Esta acción no se puede deshacer.
         </p>
         <p className="mb-2 text-muted fs-sm">
-          Escribe <b>"{fraseDeConfirmacion}"</b> para confirmar:
+          Escribe <b>"{fraseDeConfirmación}"</b> para confirmar:
         </p>
         <input
           type="text"
@@ -937,7 +937,7 @@ export default function PrimeReactTable_Routines({
             <span className="routineWeeksDialogHeaderIcon"><MessageSquareText size={18} /></span>
             <div>
               <strong>Comentarios de la semana</strong>
-              <span>Dejale a tu alumno una devolucion general o dia por dia</span>
+              <span>Dejale a tu alumno una devolución general o día por día</span>
             </div>
           </div>
         }
@@ -965,7 +965,7 @@ export default function PrimeReactTable_Routines({
         }
       >
         <div className="routineWeeksFieldGroup mb-3">
-          <label htmlFor="comments-title">Titulo</label>
+          <label htmlFor="comments-title">Título</label>
           <InputText
             id="comments-title"
             value={commentsTitle}
@@ -1005,12 +1005,12 @@ export default function PrimeReactTable_Routines({
               className="w-100"
               rows={5}
               autoResize
-              placeholder="Escribi aqui los comentarios para tu alumno..."
+              placeholder="Escribi aquí los comentarios para tu alumno..."
             />
           </div>
         ) : (
           <div className="routineWeeksFieldGroup">
-            <label>Comentarios por dia</label>
+            <label>Comentarios por día</label>
             {commentsDaysMeta.length ? (
               <div className="routineWeeksDayCommentsList">
                 {commentsDaysMeta.map((d) => (
@@ -1035,8 +1035,8 @@ export default function PrimeReactTable_Routines({
             ) : (
               <div className="routineWeeksEmptyState">
                 <span className="routineWeeksEmptyIcon"><Info size={18} /></span>
-                <strong>Sin dias cargados</strong>
-                <p>Esta semana no tiene dias cargados todavia.</p>
+                <strong>Sin días cargados</strong>
+                <p>Esta semana no tiene días cargados todavia.</p>
               </div>
             )}
           </div>

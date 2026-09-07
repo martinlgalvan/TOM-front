@@ -164,7 +164,7 @@ const AutoComplete = React.forwardRef(({ defaultValue = '', onChange, isProgress
         disabled={isProgression}
         onBlur={handleBlur}
         className="form-control styleNameInput"
-        placeholder={`${isProgression ? 'Progresion' : 'Selecciona un ejercicio...'}`}
+        placeholder={`${isProgression ? 'Progresión' : 'Selecciona un ejercicio...'}`}
         style={{ zIndex: 1 }}
       />
 

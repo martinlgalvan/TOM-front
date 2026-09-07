@@ -85,7 +85,7 @@ const AddUserProfile = ({ user_id }) => {
             .then((data) => {
                 setIsEditing(false);
                 setStatus(idRefresh);
-                NotifyHelper.instantToast("Perfil actualizado con exito!")
+                NotifyHelper.instantToast("Perfil actualizado con éxito!")
             })
             .catch((error) => {
                 console.error('Error updating profile:', error);
@@ -163,7 +163,7 @@ const AddUserProfile = ({ user_id }) => {
                         />
                     </div>
                     <div className="col-10 text-center p-2">
-                        <label className='d-block' htmlFor={`${day}-nutrition`}>Alimentacion</label>
+                        <label className='d-block' htmlFor={`${day}-nutrition`}>Alimentación</label>
                         <Dropdown
                             id={`${day}-nutrition`}
                             value={dayDetails.nutrition}

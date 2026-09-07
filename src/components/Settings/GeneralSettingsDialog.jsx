@@ -40,7 +40,7 @@ export default function GeneralSettingsDialog({ visible, onHide, trainerId, edit
     <Dialog
       visible={visible}
       onHide={closeWithoutSaving}
-      header="Configuracion general"
+      header="Configuración general"
       className={`generalSettingsDialog generalSettingsDialog-${editorTheme}`}
       draggable={false}
     >

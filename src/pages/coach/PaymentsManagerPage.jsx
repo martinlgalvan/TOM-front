@@ -154,16 +154,16 @@ const initials = (name = '') => {
 const formatRemainingVsToday = (daysVsToday) => {
   if (daysVsToday === null || daysVsToday === undefined) return null;
   if (daysVsToday === 0) return 'Vence hoy';
-  if (daysVsToday < 0) return `Vencido hace ${Math.abs(daysVsToday)} dias`;
-  return `Restan ${daysVsToday} dias`;
+  if (daysVsToday < 0) return `Vencido hace ${Math.abs(daysVsToday)} días`;
+  return `Restan ${daysVsToday} días`;
 };
 
 const daysBadge = (days, status) => {
   if (days === null || days === undefined) return { text: '-', color: 'text.secondary' };
   if (days === 0) return { text: 'Hoy', color: status === 'vencida' ? 'error.main' : 'warning.main' };
-  if (days < 0) return { text: `${Math.abs(days)} dias venc.`, color: 'error.main' };
-  if (status === 'por_vencer') return { text: `${days} dias`, color: 'warning.main' };
-  return { text: `${days} dias`, color: 'success.main' };
+  if (days < 0) return { text: `${Math.abs(days)} días venc.`, color: 'error.main' };
+  if (status === 'por_vencer') return { text: `${days} días`, color: 'warning.main' };
+  return { text: `${days} días`, color: 'success.main' };
 };
 
 const sanitizeMonthly = (data) => ({
@@ -284,7 +284,7 @@ const [editing, setEditing] = useState({
       const r1 = await fetch('https://api.bluelytics.com.ar/v2/latest');
       const j1 = await r1.json();
       const sell = Number(j1?.blue?.value_sell || j1?.blue?.value_avg);
-      if (!sell || Number.isNaN(sell)) throw new Error('Bluelytics invalido');
+      if (!sell || Number.isNaN(sell)) throw new Error('Bluelytics inválido');
       setBlueRate(sell);
       setBlueUpdated(new Date());
       return;
@@ -295,11 +295,11 @@ const [editing, setEditing] = useState({
         const blue = (j2 || []).find(x => (x?.casa?.nombre || '').toLowerCase().includes('blue'));
         const ventaStr = blue?.casa?.venta || '';
         const venta = Number(ventaStr.replace('.', '').replace(',', '.'));
-        if (!venta || Number.isNaN(venta)) throw new Error('Dolarsi invalido');
+        if (!venta || Number.isNaN(venta)) throw new Error('Dolarsi inválido');
         setBlueRate(venta);
         setBlueUpdated(new Date());
       } catch {
-        setBlueError('No se pudo obtener la cotizacion automaticamente');
+        setBlueError('No se pudo obtener la cotización automaticamente');
       }
     }
   }, []);
@@ -620,7 +620,7 @@ const ownerId = id; // viene de useParams()
       return;
     }
     if (!savedPwd) {
-      Notify.instantToast('No hay contrasena configurada');
+      Notify.instantToast('No hay contraseña configurada');
       return;
     }
     if (gatePasswordInput === savedPwd) {
@@ -630,7 +630,7 @@ const ownerId = id; // viene de useParams()
       setGatePasswordInput('');
       Notify.instantToast('Acceso concedido');
     } else {
-      Notify.instantToast('Contrasena incorrecta');
+      Notify.instantToast('Contraseña incorrecta');
     }
   }, [gateEnabled, gatePasswordInput, currentOwnerPaymentInfo, gateSessionKey]);
 
@@ -656,9 +656,9 @@ const saveNewGatePassword = useCallback(async () => {
       await loadOwnerSecurity();
       setNewPwdInput('');
       setSetPwdOpen(false);
-      Notify.instantToast('Contrasena actualizada');
+      Notify.instantToast('Contraseña actualizada');
     } catch {
-      Notify.instantToast('Error al actualizar la contrasena');
+      Notify.instantToast('Error al actualizar la contraseña');
     }
   }, [ownerId, newPwdInput, currentOwnerPaymentInfo, loadOwnerSecurity]);
 
@@ -996,9 +996,9 @@ const closeBreakdown = () => setBreakdownOpen(false);
         delete next[renewRowId];
         return next;
       });
-      Notify.instantToast('Renovacion guardada');
+      Notify.instantToast('Renovación guardada');
     } catch {
-      Notify.instantToast('Error al guardar la renovacion');
+      Notify.instantToast('Error al guardar la renovación');
     }
   };
 
@@ -1021,7 +1021,7 @@ const closeBreakdown = () => setBreakdownOpen(false);
     activeFilterChips.push({ label });
   }
   if (filters.selects.goal !== null) activeFilterChips.push({ label: `Objetivo: ${filters.selects.goal}` });
-  if (filters.selects.nutricion !== null) activeFilterChips.push({ label: `Nutricion: ${filters.selects.nutricion ? 'Si' : 'No'}` });
+  if (filters.selects.nutricion !== null) activeFilterChips.push({ label: `Nutrición: ${filters.selects.nutricion ? 'Si' : 'No'}` });
   if (filters.selects.plan !== null) activeFilterChips.push({ label: `Plan: ${filters.selects.plan}` });
 
 
@@ -1061,7 +1061,7 @@ return (
             <Typography variant="h6">Acceso protegido</Typography>
           </Stack>
           <Typography variant="body2" color="text.secondary">
-            Ingresa la contrasena para gestionar pagos.
+            Ingresa la contraseña para gestionar pagos.
           </Typography>
           <InputText
             value={gatePasswordInput}
@@ -1069,7 +1069,7 @@ return (
             onKeyDown={e => {
               if (e.key === 'Enter') tryUnlockGate();
             }}
-            placeholder="Contrasena"
+            placeholder="Contraseña"
             type="password"
             className="p-inputtext-sm w-full"
           />
@@ -1096,7 +1096,7 @@ return (
         <Stack spacing={2}>
           <Stack direction="row" spacing={1} alignItems="center">
             <Password />
-            <Typography variant="h6">Poner contrasena</Typography>
+            <Typography variant="h6">Poner contraseña</Typography>
           </Stack>
           <Typography variant="body2" color="text.secondary">
             Introducí la contraseña para ingresar a esta información.
@@ -1104,7 +1104,7 @@ return (
           <InputText
             value={newPwdInput}
             onChange={e => setNewPwdInput(e.target.value)}
-            placeholder="Nueva contrasena"
+            placeholder="Nueva contraseña"
             type="password"
             className="p-inputtext-sm w-full"
           />
@@ -1131,7 +1131,7 @@ return (
       <Paper className='p-2 flex-grow-1' elevation={3} sx={{ borderLeft: 4, borderColor: 'warning.main' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack spacing={0}>
-            <Typography variant='caption'>Por Vencer (≤7 dias)</Typography>
+            <Typography variant='caption'>Por Vencer (≤7 días)</Typography>
             <Typography variant='h6' className="pmColorWarning" sx={{ color: 'warning.main' }}>{kpis.porVencer}</Typography>
           </Stack>
           <AccessTime fontSize="small" sx={{ color: 'warning.main' }} />
@@ -1170,7 +1170,7 @@ return (
           <Stack spacing={0}>
             <div>
               <Typography variant='caption'>Ingresos en USD (Dolar blue)</Typography>
-              <Tooltip title={`Estimacion con dolar blue (venta). 1 USD = ${blueRate || '-'} ARS`}>
+              <Tooltip title={`Estimación con dolar blue (venta). 1 USD = ${blueRate || '-'} ARS`}>
                 <HelpOutline fontSize="inherit" className='ms-2' />
               </Tooltip>
             </div>
@@ -1187,7 +1187,7 @@ return (
     {/* ====== Selector de meses ====== */}
     <Paper className='p-2 mb-3' elevation={1} sx={{ borderLeft: 4, borderColor: 'info.main' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ gap: 1, flexWrap: 'wrap' }}>
-        <Typography variant='caption' sx={{ fontWeight: 600 }}>Meses (ultimos 12)</Typography>
+        <Typography variant='caption' sx={{ fontWeight: 600 }}>Meses (últimos 12)</Typography>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ overflowX: 'auto', py: 0.5 }}>
           {monthsWindow.map((d) => {
             const isSel = monthKey(d) === selectedMonthKey;
@@ -1245,7 +1245,7 @@ return (
           startIcon={<Password />}
           onClick={() => setSetPwdOpen(true)}
         >
-          Poner contrasena
+          Poner contraseña
         </Button>
         {gateEnabled && (
           <Button size="small" variant='text' color='error' onClick={clearGateForThisTab} startIcon={<Lock />}>
@@ -1314,9 +1314,9 @@ return (
           />
           <Dropdown
             value={filters.selects.nutricion}
-            options={[{ label: 'Nutricion', value: null }, ...nutricionOptions]}
+            options={[{ label: 'Nutrición', value: null }, ...nutricionOptions]}
             onChange={(e) => setFilters(prev=>({...prev,selects:{...prev.selects,nutricion:e.value}}))}
-            placeholder="Nutricion"
+            placeholder="Nutrición"
             className="px-1"
             optionLabel="label"
             optionValue="value"
@@ -1362,11 +1362,11 @@ return (
               </Box>
             </th>
             <th style={{ width: '10%' }}>Objetivo</th>
-            <th style={{ width: '8%' }}>Nutricion</th>
+            <th style={{ width: '8%' }}>Nutrición</th>
             <th style={{ width: '8%' }}>Plan</th>
             <th style={{ width: '12%' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-                <span style={{ fontWeight: 600 }}>Dias</span>
+                <span style={{ fontWeight: 600 }}>Días</span>
                 <Dropdown
                   value={daysMode}
                   options={modeOptions}
@@ -1377,8 +1377,8 @@ return (
                 />
                 <Tooltip title={
                   daysMode === 'fijo'
-                    ? 'Modo fijo: vencimiento el dia 10; respeta plan (1/3/6/12 meses).'
-                    : 'Modo individual: vencimiento el mismo dia del pago; respeta el plan (1/3/6/12).'
+                    ? 'Modo fijo: vencimiento el día 10; respeta plan (1/3/6/12 meses).'
+                    : 'Modo individual: vencimiento el mismo día del pago; respeta el plan (1/3/6/12).'
                 }>
                   <HelpOutline fontSize="inherit" />
                 </Tooltip>
@@ -1527,7 +1527,7 @@ return (
                       value={row.nutricion}
                       options={nutricionOptions}
                       onChange={(e) => handleEditChange(row._id, 'nutricion', e.value)}
-                      placeholder="Nutricion"
+                      placeholder="Nutrición"
                       optionLabel="label"
                       optionValue="value"
                     />
@@ -1588,7 +1588,7 @@ return (
           <span className="coachDialogHeaderIcon"><Autorenew fontSize="small" /></span>
           <div>
             <strong>Renovar mes</strong>
-            <span>Registra el pago del proximo periodo</span>
+            <span>Registra el pago del próximo periodo</span>
           </div>
         </div>
       }
@@ -1655,7 +1655,7 @@ return (
     >
       <div className="row g-3">
         <div className="col-12 col-md-6">
-          <label className="form-label">Categoria</label>
+          <label className="form-label">Categoría</label>
           <Dropdown
             value={expenseForm.categoria}
             options={expenseCategoryOptions}
@@ -1663,7 +1663,7 @@ return (
             optionValue="value"
             onChange={(e) => setExpenseForm(f => ({ ...f, categoria: e.value }))}
             className="w-100"
-            placeholder="Categoria"
+            placeholder="Categoría"
           />
         </div>
         <div className="col-12 col-md-6">
@@ -1685,7 +1685,7 @@ return (
           />
         </div>
         <div className="col-12">
-          <label className="form-label">Descripcion</label>
+          <label className="form-label">Descripción</label>
           <InputText
             className="form-control"
             value={expenseForm.descripcion}
@@ -1696,7 +1696,7 @@ return (
 
         <div className="col-12 d-flex justify-content-between mt-2">
           {editing.expenseId ? (
-            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditExpense}>Cancelar edicion</button>
+            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditExpense}>Cancelar edición</button>
           ) : <span />}
           <div className="d-flex gap-2">
             <button type="button" className="coachDialogBtn coachDialogBtnSecondary" onClick={() => { setExpenseOpen(false); cancelEditExpense(); }}>Cerrar</button>
@@ -1715,7 +1715,7 @@ return (
             <thead className='table-light'>
               <tr>
                 <th>Fecha</th>
-                <th>Categoria</th>
+                <th>Categoría</th>
                 <th>Nombre</th>
                 <th className='text-end'>Monto</th>
                 <th className='text-center' style={{ width: 120 }}>Acciones</th>
@@ -1802,7 +1802,7 @@ return (
           </button>
         </div>
         <div className="col-12">
-          <label className="form-label">Descripcion</label>
+          <label className="form-label">Descripción</label>
           <InputText
             className="form-control"
             value={cashflowForm.descripcion}
@@ -1812,7 +1812,7 @@ return (
         </div>
         {editing.cashflowId && (
           <div className="col-12 d-flex justify-content-end">
-            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditCashflow}>Cancelar edicion</button>
+            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditCashflow}>Cancelar edición</button>
           </div>
         )}
       </div>
@@ -1900,7 +1900,7 @@ return (
         </div>
         <div className="col-12 d-flex justify-content-between mt-2">
           {editing.extraSaleId ? (
-            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditExtraSale}>Cancelar edicion</button>
+            <button type="button" className="coachDialogBtn coachDialogBtnDanger" onClick={cancelEditExtraSale}>Cancelar edición</button>
           ) : <span />}
           <div className="d-flex gap-2">
             <button type="button" className="coachDialogBtn coachDialogBtnSecondary" onClick={() => { setExtraSaleOpen(false); cancelEditExtraSale(); }}>Cerrar</button>

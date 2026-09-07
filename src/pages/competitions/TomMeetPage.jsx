@@ -93,7 +93,7 @@ const liftLabels = {
 
 const resultLabels = {
   pending: "Pendiente",
-  good: "Valido",
+  good: "Válido",
   noLift: "Nulo"
 };
 
@@ -398,7 +398,7 @@ function TomMeetPage() {
   };
 
   const exportCsv = () => {
-    const header = ["Nombre", "Equipo", "Flight", "Lote", "Peso corporal", "Division", "Categoria", "SQ1", "SQ2", "SQ3", "BP1", "BP2", "BP3", "DL1", "DL2", "DL3", "Total"];
+    const header = ["Nombre", "Equipo", "Flight", "Lote", "Peso corporal", "División", "Categoría", "SQ1", "SQ2", "SQ3", "BP1", "BP2", "BP3", "DL1", "DL2", "DL3", "Total"];
     const rows = meet.athletes.map((athlete) => [
       athlete.name,
       athlete.team,
@@ -443,7 +443,7 @@ function TomMeetPage() {
         <div className="tomMeetPanel tomMeetSetupPanel">
           <div className="tomMeetPanelHeader">
             <ShieldCheck size={20} />
-            <h2>Preparacion</h2>
+            <h2>Preparación</h2>
           </div>
           <div className="tomMeetFormGrid">
             <label>
@@ -554,7 +554,7 @@ function TomMeetPage() {
                     );
                   })}
                   <strong className={judgeGoodCount >= 2 ? "isGood" : judgeNoLiftCount >= 2 ? "isNoLift" : ""}>
-                    {judgeGoodCount >= 2 ? "Intento valido" : judgeNoLiftCount >= 2 ? "Intento nulo" : "Esperando luces"}
+                    {judgeGoodCount >= 2 ? "Intento válido" : judgeNoLiftCount >= 2 ? "Intento nulo" : "Esperando luces"}
                   </strong>
                 </div>
               )}
@@ -650,12 +650,12 @@ function TomMeetPage() {
                   <input value={selectedAthlete.division || ""} onChange={(e) => updateAthlete(selectedAthlete.id, "division", e.target.value)} />
                 </label>
                 <TomMeetSuggestField
-                  label="Categoria"
+                  label="Categoría"
                   value={selectedAthlete.weightClass || ""}
                   options={meet.categories}
                   onChange={(value) => updateAthlete(selectedAthlete.id, "weightClass", value)}
                   onCommit={ensureCategory}
-                  placeholder="Categoria"
+                  placeholder="Categoría"
                 />
                 <label>
                   Rack SQ
@@ -704,7 +704,7 @@ function TomMeetPage() {
                               onChange={(e) => updateAttempt(selectedAthlete.id, lift, index, "result", e.target.value)}
                             >
                               <option value="pending">Pend.</option>
-                              <option value="good">Valido</option>
+                              <option value="good">Válido</option>
                               <option value="noLift">Nulo</option>
                             </select>
                           </td>
@@ -747,15 +747,15 @@ function TomMeetPage() {
           <div className="tomMeetModal" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
             <div className="tomMeetModalHeader">
               <div>
-                <p className="tomMeetEyebrow">Categorias</p>
-                <h2>Configurar categorias y equipos</h2>
+                <p className="tomMeetEyebrow">Categorías</p>
+                <h2>Configurar categorías y equipos</h2>
               </div>
               <button type="button" onClick={() => setShowCategoriesDialog(false)}>Cerrar</button>
             </div>
 
             <div className="tomMeetModalGrid">
               <div>
-                <h3>Categorias disponibles</h3>
+                <h3>Categorías disponibles</h3>
                 <div className="tomMeetAddRow">
                   <input
                     value={newCategory}

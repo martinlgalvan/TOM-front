@@ -47,7 +47,6 @@ import PlateCounterTool from "../../components/PlateCounterTool.jsx";
 import CardFontSizeTool from "../../components/CardFontSizeTool.jsx";
 import { readCardFontScale, applyCardFontScale } from "../../helpers/cardFontScale.js";
 import AttemptPlannerTool from "../../components/AttemptPlannerTool.jsx";
-import TechnicalLogTool from "../../components/TechnicalLogTool.jsx";
 import ImageIcon from '@mui/icons-material/Image';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -85,11 +84,10 @@ import { normalizeOpenersPlans } from "../../helpers/openersPlanner.js";
 const ATHLETE_TOOL_OPTIONS = [
   { label: "Calculadora", value: "calculator" },
   { label: "Contador de discos", value: "plates" },
-  { label: "Estadisticas", value: "stats" },
+  { label: "Estadísticas", value: "stats" },
   { label: "1RM estimado", value: "pr" },
   { label: "Plan de competencia", value: "openers" },
-  { label: "Bitacora tecnica", value: "technical_log" },
-  { label: "Tamano de letra", value: "fontsize" },
+  { label: "Tamaño de letra", value: "fontsize" },
 ];
 
 const parseColorToRgb = (color) => {
@@ -408,11 +406,14 @@ useEffect(() => {
   });
   const [showFreeTimerSetup, setShowFreeTimerSetup] = useState(false);
 
+/* La bitacora tecnica salio de las herramientas, asi que ya no cuenta como
+   cambio pendiente: si contara, un borrador viejo dejaria el aviso puesto para
+   siempre y no habria pantalla donde ir a resolverlo. */
 useEffect(() => {
-  if (!(exercisesPending || weeklyPending || drivePending || technicalLogPending)) {
+  if (!(exercisesPending || weeklyPending || drivePending)) {
     setDismissUnsavedBanner(false);
   }
-}, [exercisesPending, weeklyPending, drivePending, technicalLogPending]);
+}, [exercisesPending, weeklyPending, drivePending]);
 
 useEffect(() => {
   return () => {
@@ -430,7 +431,7 @@ const CIRCUIT_EXPLANATIONS = {
         Trabajo <b>libre</b> sin estructura fija de intervalos.
       </div>
       <ul className="mb-2 ps-3">
-        <li>Segui las indicaciones del entrenador sobre <b>series</b>, <b>reps</b> y <b>descansos</b>.</li>
+        <li>Seguí las indicaciones del entrenador sobre <b>series</b>, <b>reps</b> y <b>descansos</b>.</li>
       </ul>
     </div>
   ),
@@ -455,7 +456,7 @@ const CIRCUIT_EXPLANATIONS = {
       </div>
       <ul className="mb-2 ps-3">
         <li>Al inicio de <b>cada minuto</b> haces lo indicado; <b>descansas</b> con el tiempo restante.</li>
-        <li><b>Ejemplo:</b> Tenes 2 ejercicios. Logras realizar el ejercicio A y B en 30s, por lo tanto te quedan 30s de descanso.</li>
+        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 30s, por lo tanto te quedan 30s de descanso.</li>
       </ul>
     </div>
   ),
@@ -467,7 +468,7 @@ const CIRCUIT_EXPLANATIONS = {
       </div>
       <ul className="mb-2 ps-3">
         <li>Al inicio de <b>cada 2 minutos</b> haces lo indicado; <b>descansas</b> con el tiempo restante.</li>
-        <li><b>Ejemplo:</b> Tenes 2 ejercicios. Logras realizar el ejercicio A y B en 1min, por lo tanto te queda 1min de descanso.</li>
+        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 1min, por lo tanto te queda 1min de descanso.</li>
       </ul>
     </div>
   ),
@@ -479,7 +480,7 @@ const CIRCUIT_EXPLANATIONS = {
       </div>
       <ul className="mb-2 ps-3">
         <li>Al inicio de <b>cada 3 minutos</b> haces lo indicado; <b>descansas</b> con el tiempo restante.</li>
-        <li><b>Ejemplo:</b> Tenes 2 ejercicios. Logras realizar el ejercicio A y B en 2min, por lo tanto te queda 1min de descanso.</li>
+        <li><b>Ejemplo:</b> Tenés 2 ejercicios. Logras realizar el ejercicio A y B en 2min, por lo tanto te queda 1min de descanso.</li>
       </ul>
     </div>
   ),
@@ -897,7 +898,7 @@ useEffect(() => {
     
 const saveDriveLink = async () => {
   if (!driveLink.startsWith("https://drive.google.com")) {
-    Notify.instantToast("Debe ser un link valido de Google Drive");
+    Notify.instantToast("Debe ser un link válido de Google Drive");
     return;
   }
 
@@ -964,7 +965,7 @@ const persistTechnicalLog = React.useCallback(async (entries) => {
     setTechnicalLogLastFail('');
     if (technicalLogDraftKey) lsRemove(technicalLogDraftKey);
   } catch (error) {
-    console.error('Error al guardar la bitacora tecnica', error);
+    console.error('Error al guardar la bitácora técnica', error);
     setTechnicalLogEntries(safeEntries);
     setTechnicalLogPending(true);
     const failAt = new Date().toISOString();
@@ -996,8 +997,8 @@ const handleTechnicalLogChange = React.useCallback((entries) => {
     useEffect(() => {
         setTourSteps([
             {
-                title: 'Numero de serie',
-                description: 'Este numero indica el orden de los ejercicios. Tambien puede haber super series (3-A, por ejemplo)',
+                title: 'Número de serie',
+                description: 'Este número indica el orden de los ejercicios. También puede haber super series (3-A, por ejemplo)',
                 target: () => document.getElementById('numeroSerie'),
                 placement: 'top',
                 nextButtonProps: { children: 'Siguiente >>' }
@@ -1020,7 +1021,7 @@ const handleTechnicalLogChange = React.useCallback((entries) => {
             },
             {
                 title: 'Series',
-                description: 'Numero de series a realizar',
+                description: 'Número de series a realizar',
                 target: () => document.getElementById('series'),
                 placement: 'top',
                 prevButtonProps: { children: '<< Anterior' },
@@ -1028,7 +1029,7 @@ const handleTechnicalLogChange = React.useCallback((entries) => {
             },
             {
                 title: 'Repeticiones',
-                description: 'Numero de repeticiones a realizar. Tambien pueden ser segundos.',
+                description: 'Número de repeticiones a realizar. También pueden ser segundos.',
                 target: () => document.getElementById('reps'),
                 placement: 'top',
                 prevButtonProps: { children: '<< Anterior' },
@@ -1052,14 +1053,14 @@ const handleTechnicalLogChange = React.useCallback((entries) => {
             },
             {
                 title: 'Video/imagen',
-                description: 'Aca podes encontrar una imagen o video representativo del ejercicio',
+                description: 'Acá podés encontrar una imagen o video representativo del ejercicio',
                 target: () => document.getElementById('video'),
                 placement: 'top',
                 prevButtonProps: { children: '<< Anterior' },
                 nextButtonProps: { children: 'Siguiente >>' }
             },
             {
-                title: 'Edicion',
+                title: 'Edición',
                 description: 'Esta es la forma de comunicarle a tu entrenador las cosas: tanto el peso, observaciones, o subir videos a su drive.',
                 target: () => document.getElementById('edicion'),
                 placement: 'top',
@@ -1228,7 +1229,7 @@ const handleUpdateExercise = () => {
     // âœ… ENVIAR PAYLOAD LIMPIO, NO newExercises
     .editExercise(week_id, day_id, payload)
     .then(() => {
-      Notify.instantToast('Rutina actualizada con exito!');
+      Notify.instantToast('Rutina actualizada con éxito!');
       setEditExerciseMobile(false);
       setBlockEditIndices({ blockIndex: null, exerciseIndex: null });
 
@@ -1408,7 +1409,7 @@ const headerInfo = (c0 = {}) => {
       const title = cleanUiText((c.type && String(c.type).trim()) || c.typeOfSets || 'Libre');
       const fc = c.freeConfig;
       if (fc) {
-        if (fc.mode === 'chrono') return { title, meta: 'Cronometro' };
+        if (fc.mode === 'chrono') return { title, meta: 'Cronómetro' };
         if (fc.schema === 'amrap') return { title, meta: cleanUiText(`AMRAP - ${String(fc.totalMinutes).padStart(2, '0')}:00`) };
         return { title, meta: cleanUiText(`${fc.workSec}s / ${fc.restSec}s x ${fc.totalRounds}`) };
       }
@@ -1514,7 +1515,7 @@ const fmtMMSS = (sec = 0) => {
 
 const cleanUiText = (value) =>
   String(value ?? "")
-    .replace(/DÃ­a|DÃa/gi, "Dia")
+    .replace(/DÃ­a|DÃa/gi, "Día")
     .replace(/Ã¡/g, "a")
     .replace(/Ã©/g, "e")
     .replace(/Ã­/g, "i")
@@ -1595,7 +1596,7 @@ const circuitSubtitle = (c = {}) => {
       const libreLabel = cleanUiText(c?.type?.trim() ? c.type : 'Libre');
       const fc = c.freeConfig;
       if (fc) {
-        if (fc.mode === 'chrono') return `${libreLabel} - Cronometro`;
+        if (fc.mode === 'chrono') return `${libreLabel} - Cronómetro`;
         if (fc.schema === 'amrap') return cleanUiText(`${libreLabel} - AMRAP - ${String(fc.totalMinutes).padStart(2, '0')}:00`);
         return cleanUiText(`${libreLabel} - ${fc.workSec}s / ${fc.restSec}s x ${fc.totalRounds}`);
       }
@@ -1750,7 +1751,7 @@ const TimerDialog = ({ circuit, onClose, prepSeconds = 10, onOpenInfo  }) => {
         if (!isLibre) return [];
         if (isChrono) {
           // Cronometro: sin plan de cuenta regresiva
-          return [{ phase: 'chrono', duration: 0, label: 'Cronometro' }];
+          return [{ phase: 'chrono', duration: 0, label: 'Cronómetro' }];
         }
         // Temporizador configurable
         if (free.schema === 'amrap') {
@@ -2542,7 +2543,7 @@ const flushPendingDrafts = React.useCallback(async ({ notify = false } = {}) => 
           setTechnicalLogPending(false);
           setTechnicalLogLastFail('');
           lsRemove(technicalLogDraftKey);
-          saved.push('bitacora');
+          saved.push('bitácora');
         } catch {
           setTechnicalLogPending(true);
           setTechnicalLogLastFail(draft?.lastFail || new Date().toISOString());
@@ -2560,7 +2561,7 @@ const flushPendingDrafts = React.useCallback(async ({ notify = false } = {}) => 
           await ExercisesService.editExercise(week_id, draftDayId, cleaned);
 
           lsRemove(key);
-          saved.push(`dia:${draftDayId}`);
+          saved.push(`día:${draftDayId}`);
 
           setAllDays((prev) =>
             (prev || []).map((day) =>
@@ -2585,7 +2586,7 @@ const flushPendingDrafts = React.useCallback(async ({ notify = false } = {}) => 
     }
 
     if (notify && saved.length) {
-      Notify.instantToast('Cambios pendientes guardados automatico');
+      Notify.instantToast('Cambios pendientes guardados automático');
     }
   } finally {
     offlineFlushInFlightRef.current = false;
@@ -2823,7 +2824,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
 
           {currentWeekIndex !== 0 && (
             <small className="d-block mt-1 mx-3 text-">
-              <span className=" shadow rounded-1 p-2 d-block mx-5 mb-2">Atencion!</span> Para que no te confundas, te avisamos que estas en una semana anterior. 
+              <span className=" shadow rounded-1 p-2 d-block mx-5 mb-2">Atención!</span> Para que no te confundas, te avisamos que estas en una semana anterior. 
             </small>
           )}
         </div>
@@ -2865,7 +2866,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
 
             {currentMovility.length > 0 && (
             <>
-              <div className="text-start athleteSectionTitle athleteIn athleteIn--5"><span>Activacion / movilidad</span></div>
+              <div className="text-start athleteSectionTitle athleteIn athleteIn--5"><span>Activación / movilidad</span></div>
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 loop
@@ -2924,7 +2925,7 @@ const currentWarmup = Array.isArray(currentDayData?.warmup) ? currentDayData.war
             
               <div className="row m-auto px-0 ">
                 
-                <h2 className="p-2 mb-0 text-start athleteSectionTitle athleteIn athleteIn--5">Rutina del dia</h2>
+                <h2 className="p-2 mb-0 text-start athleteSectionTitle athleteIn athleteIn--5">Rutina del día</h2>
               
                 {groupSupersets(modifiedDay).map((element, idx) => {
   const sourceIndex = element._origIndex ?? idx;
@@ -3646,15 +3647,6 @@ if (isInnerCircuit) {
                 />
               </div>
             )}
-            {selectedTool === "technical_log" && (
-              <TechnicalLogTool
-                athleteId={id}
-                isDark={isDark}
-                initialEntries={technicalLogEntries}
-                onChange={handleTechnicalLogChange}
-                saveState={{ pending: technicalLogPending, lastFail: technicalLogLastFail }}
-              />
-            )}
           </div>
         </Dialog>
 
@@ -3811,7 +3803,7 @@ if (isInnerCircuit) {
                 </Dialog>
 
          {/* ===== Banner cambios sin guardar (cerrable) ===== */}
-{(exercisesPending || weeklyPending || drivePending || technicalLogPending) && !dismissUnsavedBanner && (
+{(exercisesPending || weeklyPending || drivePending) && !dismissUnsavedBanner && (
   <div
     className="alert alert-warning m-0 rounded-0 border-top border-warning"
     style={{
@@ -3824,12 +3816,11 @@ if (isInnerCircuit) {
   >
     <div className="d-flex align-items-start justify-content-between gap-3">
       <div>
-        <div className="fw-semibold">Tenes cambios sin guardar.</div>
+        <div className="fw-semibold">Tenés cambios sin guardar.</div>
         <div className="small">
-          {exercisesPending ? '- Rutina del dia (peso/notas) ' : ''}
+          {exercisesPending ? '- Rutina del día (peso/notas) ' : ''}
           {weeklyPending ? '- Resumen semanal ' : ''}
           {drivePending ? '- Link de Drive ' : ''}
-          {technicalLogPending ? '- Bitacora tecnica ' : ''}
         </div>
         <div className="small text-muted mt-1">
           Si fallo por conexion, tus cambios quedaron guardados localmente. Cuando puedas, volve a guardar.
@@ -3842,11 +3833,7 @@ if (isInnerCircuit) {
           onClick={() => {
             if (weeklyPending) setShowWeeklySummaryModal(true);
             else if (drivePending) setShowDriveDialog(true);
-            else if (technicalLogPending) {
-              setSelectedTool('technical_log');
-              setShowToolsDialog(true);
-            }
-            else Notify.instantToast('Abri un ejercicio y toca "Guardar" para confirmar cambios.');
+            else Notify.instantToast('Abrí un ejercicio y toca "Guardar" para confirmar cambios.');
           }}
         >
           Revisar
@@ -3964,7 +3951,7 @@ if (isInnerCircuit) {
                       <li className="list-group-item bg-transparent">Entra a tu carpeta, presiona en este icono <IconButton className="py-0"><MoreVertIcon /></IconButton>y hace click en "Compartir"</li>
                       <li className="list-group-item bg-transparent">Presiona en administrar/gestionar acceso, luego, en acceso general y, si esta en restringido, cambialo a "Cualquier persona que tenga el vinculo/enlace"</li>
                       <li className="list-group-item bg-transparent">Lo importante es que no sea privado, asi tu entrenador puede ver tu carpeta.</li>
-                      <li className="list-group-item bg-transparent">Apreta en el icono <IconButton className="py-0"><LinkIcon /></IconButton> copia el vinculo, y pegalo aca.</li>
+                      <li className="list-group-item bg-transparent">Apreta en el icono <IconButton className="py-0"><LinkIcon /></IconButton> copia el vinculo, y pegalo acá.</li>
                     </ul>
                   </div>
 
@@ -3996,19 +3983,19 @@ if (isInnerCircuit) {
                   <div className={`weekly-summary-shell ${isDark ? "weekly-summary-shell-dark" : ""}`}>
                     <div className="weekly-summary-updated text-center">
                       <span className="fs09em">
-                        <strong>Ultima actualizacion:</strong>{" "}
+                        <strong>Última actualización:</strong>{" "}
                         {weeklySummary.lastSaved ? new Date(weeklySummary.lastSaved).toLocaleString() : "-"}
                       </span>
                     </div>
 
                     <div className="weekly-summary-grid">
                       {[
-                        { label: "Alimentacion", key: "selection1" },
+                        { label: "Alimentación", key: "selection1" },
                         {
                           label: "NEAT",
                           key: "selection2",
                           tooltip:
-                            "NEAT se refiere a la energia que gastas en tus actividades cotidianas.",
+                            "NEAT se refiere a la energía que gastas en tus actividades cotidianas.",
                         },
                         { label: "Sensaciones", key: "selection3" },
                         { label: "Descanso / sueno", key: "selection4" },
@@ -4064,7 +4051,7 @@ if (isInnerCircuit) {
                         value={weeklySummary.comments || ""}
                         onChange={(e) => setWeeklySummary((prev) => ({ ...prev, comments: e.target.value }))}
                         className="form-control fs09em weekly-summary-textarea"
-                        placeholder="Escribi aca tus comentarios..."
+                        placeholder="Escribi acá tus comentarios..."
                       />
                       <div className="weekly-summary-actions">
                         <Button
@@ -4161,7 +4148,7 @@ if (isInnerCircuit) {
   draggable
 >
   <div className="mb-3">
-    <label className="form-label">Segundos de preparacion</label>
+    <label className="form-label">Segundos de preparación</label>
     <input
       type="number"
       min={1}
@@ -4195,7 +4182,7 @@ if (isInnerCircuit) {
               type="button"
               className={`btn btn-sm ${freeTimerConfig.mode === 'chrono' ? 'btn-dark' : 'btn-outline-secondary'}`}
               onClick={() => setFreeTimerConfig(v => ({ ...v, mode: 'chrono' }))}
-            >Cronometro</button>
+            >Cronómetro</button>
           </div>
         </div>
 
@@ -4213,7 +4200,7 @@ if (isInnerCircuit) {
                   type="button"
                   className={`btn btn-sm ${freeTimerConfig.schema === 'amrap' ? 'btn-dark' : 'btn-outline-secondary'}`}
                   onClick={() => setFreeTimerConfig(v => ({ ...v, schema: 'amrap' }))}
-                >AMRAP (duracion)</button>
+                >AMRAP (duración)</button>
               </div>
             </div>
 
@@ -4293,7 +4280,7 @@ if (isInnerCircuit) {
     <ol className="ps-3 mb-3">
       <li className="mb-1">Hace todas las repeticiones del ejercicio <strong>A</strong>.</li>
       <li className="mb-1">Pasa enseguida al <strong>B</strong>, sin parar.</li>
-      <li className="mb-1">Recien al terminar el ultimo, descansa el tiempo indicado.</li>
+      <li className="mb-1">Recien al terminar el último, descansa el tiempo indicado.</li>
       <li>Eso es <strong>una serie</strong>. Repeti hasta completar las series pedidas.</li>
     </ol>
     <p className="mb-0">

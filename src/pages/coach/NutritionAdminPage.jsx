@@ -32,7 +32,7 @@ const sideSectionWidths = {
 };
 
 const sectionLabels = {
-  days: "Dias",
+  days: "Días",
   objectives: "Objetivos",
   meals: "Comidas",
   foods: "Base de alimentos"
@@ -60,7 +60,7 @@ const makeDefaultPlan = () => ({
   customTargets: [],
   days: Array.from({ length: 7 }, (_, index) => ({
     id: `day-${index + 1}`,
-    name: `Dia ${index + 1}`,
+    name: `Día ${index + 1}`,
     notes: "",
     meals: defaultMeals.map((meal) => ({ ...meal, foods: [] }))
   })),
@@ -105,7 +105,7 @@ const nutrientDigits = (unit) => (unit === "mg" || unit === "µg" || unit === "k
 
 const saraSections = [
   {
-    title: "Energia y macros",
+    title: "Energía y macros",
     headers: [0, 1, 2, 3, 14, 15, 18, 19, 20].map((index) => nutrientHeaders[index]).filter(Boolean)
   },
   {
@@ -169,8 +169,8 @@ const NutrientTotalsDialog = ({ totals, targets, featuredNutrients, onToggleFeat
       <div className="nutritionModal nutritionNutrientModal">
       <div className="nutritionModalHead">
         <div>
-          <p>Informacion nutricional</p>
-          <h2>Resumen completo del dia</h2>
+          <p>Información nutricional</p>
+          <h2>Resumen completo del día</h2>
         </div>
         <button type="button" onClick={onClose} aria-label="Cerrar">
           x
@@ -198,7 +198,7 @@ const NutrientTotalsDialog = ({ totals, targets, featuredNutrients, onToggleFeat
 
       <div className="nutritionFeaturedConfig">
         <button type="button" onClick={() => setShowFeaturedConfig((value) => !value)}>
-          {showFeaturedConfig ? "Ocultar configuracion" : "Configurar destacados"}
+          {showFeaturedConfig ? "Ocultar configuración" : "Configurar destacados"}
         </button>
         {showFeaturedConfig ? (
           <div className="nutritionFeaturedOptions">
@@ -638,13 +638,13 @@ export default function NutritionAdminPage() {
         day: selectedDay
       })
     );
-    setStatus("Dia copiado");
+    setStatus("Día copiado");
   };
 
   const pasteDay = () => {
     const raw = localStorage.getItem(CLIPBOARD_KEY);
     if (!raw) {
-      setStatus("No hay dia copiado");
+      setStatus("No hay día copiado");
       return;
     }
     try {
@@ -653,9 +653,9 @@ export default function NutritionAdminPage() {
         ...prev,
         days: prev.days.map((day) => (day.id === selectedDayId ? cloneDayForTarget(clipboard.day, day) : day))
       }));
-      setStatus("Dia pegado");
+      setStatus("Día pegado");
     } catch {
-      setStatus("No se pudo pegar el dia");
+      setStatus("No se pudo pegar el día");
     }
   };
 
@@ -689,7 +689,7 @@ export default function NutritionAdminPage() {
       }
     });
     setShowCopyModal(false);
-    setStatus(`${copySourceDayIds.length} dia${copySourceDayIds.length === 1 ? "" : "s"} copiado${copySourceDayIds.length === 1 ? "" : "s"} a ${copied} alumno${copied === 1 ? "" : "s"}`);
+    setStatus(`${copySourceDayIds.length} día${copySourceDayIds.length === 1 ? "" : "s"} copiado${copySourceDayIds.length === 1 ? "" : "s"} a ${copied} alumno${copied === 1 ? "" : "s"}`);
   };
 
   const toggleCopyTargetUser = (userId) => {
@@ -769,7 +769,7 @@ export default function NutritionAdminPage() {
       className="nutritionSectionDragHandle"
       draggable
       aria-label={`Mover ${sectionLabels[sectionId]}`}
-      title="Arrastrar seccion"
+      title="Arrastrar sección"
       onDragStart={(event) => {
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("text/plain", sectionId);
@@ -813,7 +813,7 @@ export default function NutritionAdminPage() {
   if (!hasNutritionAccess) {
     return (
       <div className="nutritionAdminPage">
-        <div className="nutritionEmptyState">Esta herramienta no esta habilitada para este usuario.</div>
+        <div className="nutritionEmptyState">Esta herramienta no está habilitada para este usuario.</div>
       </div>
     );
   }
@@ -822,7 +822,7 @@ export default function NutritionAdminPage() {
     <div className="nutritionAdminPage">
       <div className="nutritionTopbar">
         <div>
-          <p className="nutritionEyebrow">Nutricion TOM</p>
+          <p className="nutritionEyebrow">Nutrición TOM</p>
           <h1>Planificador nutricional</h1>
         </div>
         <div className="nutritionActions">
@@ -842,7 +842,7 @@ export default function NutritionAdminPage() {
             <option value="">Seleccionar alumno</option>
             {sortedUsers.map((user) => (
               <option key={user._id} value={user._id}>
-                {nutritionEnabled(user) ? "[Nutricion] " : ""}
+                {nutritionEnabled(user) ? "[Nutrición] " : ""}
                 {userLabel(user)}
               </option>
             ))}
@@ -853,7 +853,7 @@ export default function NutritionAdminPage() {
           {selectedUser ? (
             <strong>
               {userLabel(selectedUser)}
-              {nutritionEnabled(selectedUser) ? <span className="nutritionActiveBadge">Nutricion activa</span> : null}
+              {nutritionEnabled(selectedUser) ? <span className="nutritionActiveBadge">Nutrición activa</span> : null}
             </strong>
           ) : null}
         </div>
@@ -862,7 +862,7 @@ export default function NutritionAdminPage() {
       {!selectedUserId ? (
         <div className="nutritionEmptyState">
           <Database size={28} />
-          <h2>Informacion nutricional cargada</h2>
+          <h2>Información nutricional cargada</h2>
           <p>Hay {saraFoods.length} alimentos disponibles. Elegi un alumno para crear su plan.</p>
         </div>
       ) : (
@@ -873,7 +873,7 @@ export default function NutritionAdminPage() {
             {...sectionDropProps("days")}
           >
             {renderSectionHandle("days")}
-            <div className="nutritionRailTitle">Dias</div>
+            <div className="nutritionRailTitle">Días</div>
             {plan.days.map((day) => {
               const dayTotals = calcDayTotals(day);
               return (
@@ -922,7 +922,7 @@ export default function NutritionAdminPage() {
               <div className="nutritionTargetsHeader">
                 <div>
                   <p>Objetivos</p>
-                  <h2>Metas del dia</h2>
+                  <h2>Metas del día</h2>
                 </div>
                 <button type="button" onClick={() => setShowTargetModal(true)}>
                   <Plus size={15} /> Agregar objetivo
@@ -1116,7 +1116,7 @@ export default function NutritionAdminPage() {
             <div className="nutritionFinderHead">
               <div>
                 <p>Base de alimentos</p>
-                <h2>Informacion nutricional</h2>
+                <h2>Información nutricional</h2>
               </div>
               <span>{filteredFoods.length} resultados</span>
             </div>
@@ -1176,7 +1176,7 @@ export default function NutritionAdminPage() {
                   {selectedFoodInfo?.id === food.id ? (
                     <div className="nutritionInlineFoodSheet" onClick={(event) => event.stopPropagation()}>
                       <div>
-                        <p>Informacion nutricional</p>
+                        <p>Información nutricional</p>
                         <strong>{food.name}</strong>
                       </div>
                       <SaraAccordion values={food.values} />
@@ -1293,7 +1293,7 @@ export default function NutritionAdminPage() {
             <div className="nutritionModalHead">
               <div>
                 <p>Copia multiple</p>
-                <h2>Copiar dias a alumnos</h2>
+                <h2>Copiar días a alumnos</h2>
               </div>
               <button type="button" onClick={() => setShowCopyModal(false)} aria-label="Cerrar">
                 x
@@ -1302,7 +1302,7 @@ export default function NutritionAdminPage() {
             <div className="nutritionCopyModalGrid">
               <section>
                 <div className="nutritionModalSubhead">
-                  <strong>Dias a copiar</strong>
+                  <strong>Días a copiar</strong>
                   <button type="button" onClick={selectAllCopyDays}>
                     {copySourceDayIds.length === plan.days.length ? "Limpiar" : "Todos"}
                   </button>
@@ -1344,7 +1344,7 @@ export default function NutritionAdminPage() {
                         onChange={() => toggleCopyTargetUser(user._id)}
                       />
                       <span>{userLabel(user)}</span>
-                      {nutritionEnabled(user) ? <em>Nutricion</em> : null}
+                      {nutritionEnabled(user) ? <em>Nutrición</em> : null}
                     </label>
                   ))}
                 </div>

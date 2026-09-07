@@ -30,12 +30,12 @@ export default function QrLogin({ onLogin }) {
         }
       })
       .catch((err) => {
-        console.error('Error al iniciar sesion:', err?.message || err);
-        setError('Error al iniciar sesion. Intenta nuevamente.');
+        console.error('Error al iniciar sesión:', err?.message || err);
+        setError('Error al iniciar sesión. Intenta nuevamente.');
         navigate('/');
       });
   }, [navigate, onLogin]);
 
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
-  return <p>Procesando tu inicio de sesion...</p>;
+  return <p>Procesando tu inicio de sesión...</p>;
 }

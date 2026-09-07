@@ -71,12 +71,12 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id, editorTheme 
       setIndexMovilityA(safeIndex);
       const dayData = safeIndex >= 0 ? week[safeIndex] : null;
       // Si existe una propiedad "movilityName" en el dia se utiliza, sino se usa el nombre del dia o se asigna "Bloque de Activacion" por defecto.
-      const name = dayData?.movilityName || dayData?.name || "Bloque de Activacion";
+      const name = dayData?.movilityName || dayData?.name || "Bloque de Activación";
       setMovilityName(name);
       setModifiedMovility(week); // Guardamos la copia completa para trabajar sobre ella
       setMovility(week);
     } else {
-      console.warn("La semana no esta disponible");
+      console.warn("La semana no está disponible");
     }
   }, [week, day_id]);
 
@@ -108,7 +108,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id, editorTheme 
   // Funcion para aplicar y guardar los cambios
   const applyChanges = () => {
     if (!hasValidMovilityDay) {
-      Notify.instantToast("No hay dia seleccionado para editar movilidad.");
+      Notify.instantToast("No hay día seleccionado para editar movilidad.");
       return;
     }
     const updatedMovility = [...modifiedMovility];
@@ -119,7 +119,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id, editorTheme 
         setMovility(updatedMovility);
         setIsEditing(false);
         editAndClose();
-        Notify.instantToast("Guardado con exito");
+        Notify.instantToast("Guardado con éxito");
       })
       .catch((error) => {
         console.error("Error al guardar cambios:", error);
@@ -226,7 +226,7 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id, editorTheme 
   // Funcion para agregar un nuevo ejercicio al bloque de activacion
   const addNewMovilityExercise = () => {
     if (!hasValidMovilityDay) {
-      Notify.instantToast("No hay dia seleccionado para agregar movilidad.");
+      Notify.instantToast("No hay día seleccionado para agregar movilidad.");
       return;
     }
     setIsEditing(true);
@@ -266,8 +266,8 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id, editorTheme 
   const deleteMovility = (event, index, name) => {
     confirmDialog({
       className: `coachConfirmDialog dayEditUtilityConfirmDialog dayEditEditorTheme-${editorTheme}`,
-      message: "Estas seguro de que deseas eliminar este ejercicio?",
-      header: "Confirmacion",
+      message: "Estás seguro de que deseas eliminar este ejercicio?",
+      header: "Confirmación",
       icon: "pi pi-exclamation-triangle",
       acceptLabel: "Si, eliminar",
       rejectLabel: "No",
@@ -430,8 +430,8 @@ function ModalCreateMovility({ editAndClose, week, week_id, day_id, editorTheme 
       <ConfirmDialog
         visible={showCancelDialog}
         onHide={() => setShowCancelDialog(false)}
-        message="Estas seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
-        header="Confirmacion"
+        message="Estás seguro de que deseas cancelar los cambios? Se perderan todos los cambios no guardados."
+        header="Confirmación"
         icon="pi pi-exclamation-triangle"
         acceptLabel="Si"
         rejectLabel="No"

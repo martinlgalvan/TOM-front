@@ -200,7 +200,7 @@ function SportsCalendarManager({ visible, onHide, coachId, users = [], editorThe
   const openAssignDialog = ({ plan, template = null }) => {
     const { ids, targetUsers: nextTargetUsers } = resolveAssignTargets();
     if (!ids.length) {
-      Notify.instantToast("Selecciona al menos una categoria o un alumno.");
+      Notify.instantToast("Selecciona al menos una categoría o un alumno.");
       return;
     }
     setAssignDialog({
@@ -255,7 +255,7 @@ function SportsCalendarManager({ visible, onHide, coachId, users = [], editorThe
             <span className="usersListDialogHeaderIcon"><Calendar1 size={18} /></span>
             <div>
               <strong>Calendario deportivo</strong>
-              <span>Planificacion de competencias</span>
+              <span>Planificación de competencias</span>
             </div>
           </div>
         }
@@ -316,8 +316,8 @@ function SportsCalendarManager({ visible, onHide, coachId, users = [], editorThe
 
             <div className="col-12 col-xl-4">
               <div className="border rounded-3 p-3 mb-3">
-                <strong className="d-block mb-2">Descripcion y plantilla</strong>
-                <label className="form-label mb-1">Descripcion de plantilla (opcional)</label>
+                <strong className="d-block mb-2">Descripción y plantilla</strong>
+                <label className="form-label mb-1">Descripción de plantilla (opcional)</label>
                 <input
                   className="form-control"
                   value={draftDescription}
@@ -411,22 +411,22 @@ function SportsCalendarManager({ visible, onHide, coachId, users = [], editorThe
             </div>
             <div className="col-12 col-xl-4">
               <div className="border rounded-3 p-3 mb-3">
-                <label className="form-label mb-1">Descripcion (opcional)</label>
+                <label className="form-label mb-1">Descripción (opcional)</label>
                 <input
                   className="form-control"
                   value={templateEditorDialog.template.description || ""}
                   onChange={(e) => updateTemplateEditor({ description: e.target.value })}
-                  placeholder="Descripcion para entrenadores"
+                  placeholder="Descripción para entrenadores"
                 />
               </div>
               <div className="border rounded-3 p-3">
                 <strong className="d-block mb-2">Asignar a alumnos</strong>
-                <label className="form-label mb-1">Categoria</label>
+                <label className="form-label mb-1">Categoría</label>
                 <MultiSelect
                   value={targetCategories}
                   options={CATEGORY_OPTIONS}
                   onChange={(e) => syncTargetCategories(e.value || [])}
-                  placeholder="Seleccionar categoria"
+                  placeholder="Seleccionar categoría"
                   className="w-100 mb-2"
                 />
                 <label className="form-label mb-1">Alumnos especificos</label>
@@ -496,7 +496,7 @@ function SportsCalendarManager({ visible, onHide, coachId, users = [], editorThe
       </Dialog>
 
       <Dialog
-        header="Confirmar asignacion"
+        header="Confirmar asignación"
         visible={assignDialog.visible}
         onHide={() =>
           setAssignDialog({ visible: false, plan: null, template: null, targetIds: [], targetUsers: [] })
@@ -538,7 +538,7 @@ function SportsCalendarManager({ visible, onHide, coachId, users = [], editorThe
         onHide={() => setDeleteTemplateDialog({ visible: false, templateId: "" })}
         className="col-11 col-lg-5"
       >
-        <p className="mb-3">Esta accion elimina la plantilla guardada. No afecta planes ya asignados.</p>
+        <p className="mb-3">Esta acción elimina la plantilla guardada. No afecta planes ya asignados.</p>
         <div className="d-flex justify-content-end gap-2">
           <button
             type="button"

@@ -125,7 +125,7 @@ function onChangeName(event){
     });
   
     const progressObject = {
-      name: `Dia ${dayCount + 1}`,
+      name: `Día ${dayCount + 1}`,
       _id: generateMongoDBObjectId(),
       exercises: newProgress,
     };
@@ -254,7 +254,7 @@ function onChangeName(event){
 
         <div className="mt-2 custom-target-icon">
             <button disabled={!denied}  className={` col-6 col-lg-3 btn ${textColor == 'false' ? "bbb" : "blackColor"}  m-2`} style={{ "backgroundColor": `${color}` }} onClick={() => createProgress(namePAR)}>
-              Anadir dia
+              Añadir dia
             </button>
         </div>
 

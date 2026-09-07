@@ -137,7 +137,7 @@ function HomePage({ editorTheme = 'light' }) {
         <Logo isHomePage={true} editorTheme={editorTheme} />
       </div>
 
-      <section className="homeInfoStats" aria-label="TOM en numeros">
+      <section className="homeInfoStats" aria-label="TOM en números">
         <div className="homeInfoStatsGrid">
           {HOME_STATS.map((stat) => (
             <div className="homeInfoStatItem" key={stat.label}>
@@ -169,9 +169,9 @@ function HomePage({ editorTheme = 'light' }) {
               </div>
               <div className="homeInfoChoiceContent">
                 <span className="homeInfoChoiceEyebrow">Alumno</span>
-                <h2>{isLoged ? `Bienvenido ${username}` : 'Iniciar sesion'}</h2>
-                <p>{isLoged ? 'Entra ' : 'Inicia sesion'} y observa la planificacion que tu entrenador armo.</p>
-                <button className="homeInfoButton" onClick={(e) => { e.stopPropagation(); handleUserType('atleta'); }}>{isLoged ? 'Ver rutina' : 'Iniciar sesion'}</button>
+                <h2>{isLoged ? `Bienvenido ${username}` : 'Iniciar sesión'}</h2>
+                <p>{isLoged ? 'Entra ' : 'Inicia sesión'} y observa la planificacion que tu entrenador armo.</p>
+                <button className="homeInfoButton" onClick={(e) => { e.stopPropagation(); handleUserType('atleta'); }}>{isLoged ? 'Ver rutina' : 'Iniciar sesión'}</button>
               </div>
             </div>
 
@@ -186,7 +186,7 @@ function HomePage({ editorTheme = 'light' }) {
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleUserType('entrenador')}
             >
               <div className="homeInfoChoiceIconWrap">
-                <IconButton className='homeInfoChoiceIconButton' onClick={(e) => { e.stopPropagation(); handleUserType('entrenador'); }} aria-label="Ver informacion para entrenadores">
+                <IconButton className='homeInfoChoiceIconButton' onClick={(e) => { e.stopPropagation(); handleUserType('entrenador'); }} aria-label="Ver información para entrenadores">
                   <LaptopIcon className='homeInfoChoiceIcon' />
                 </IconButton>
               </div>
@@ -208,7 +208,7 @@ function HomePage({ editorTheme = 'light' }) {
               <span className="homeInfoSectionEyebrow">Software para entrenadores</span>
               <h2>¿QUE BRINDA NUESTRO SOFTWARE?</h2>
               <p>
-                Aca vas a encontrar todas las herramientas para <b>gestionar la planificacion de tus alumnos.</b> Nuestro software esta en continuo desarrollo, codo a codo junto a los entrenadores que la utilizan (podes ser uno), ya que nuestro objetivo es tu <b>comodidad</b>, un software hecho 100% para los entrenadores, para que planificar sea una tarea mucho mas <b>sencilla</b>. No nos interesa hacer un software y que cobres cuotas, o que gestiones turnos, <b>nos interesa que el trabajo que hagas, sea lo mas comodo y profesional posible.</b>
+                Aca vas a encontrar todas las herramientas para <b>gestionar la planificación de tus alumnos.</b> Nuestro software está en continuo desarrollo, codo a codo junto a los entrenadores que la utilizan (podés ser uno), ya que nuestro objetivo es tu <b>comodidad</b>, un software hecho 100% para los entrenadores, para que planificar sea una tarea mucho más <b>sencilla</b>. No nos interesa hacer un software y que cobres cuotas, o que gestiones turnos, <b>nos interesa que el trabajo que hagas, sea lo más cómodo y profesional posible.</b>
               </p>
             </section>
 
@@ -230,8 +230,8 @@ function HomePage({ editorTheme = 'light' }) {
                 <div className="col-11 col-md-10 col-lg-4 homeInfoStepCol">
                   <div className="homeInfoStepCard reveal">
                     <span className="homeInfoStepNumber">02</span>
-                    <h3>Diseña la planificacion</h3>
-                    <p>Arma semanas, dias, ejercicios, circuitos y super series a tu medida.</p>
+                    <h3>Diseña la planificación</h3>
+                    <p>Arma semanas, días, ejercicios, circuitos y super series a tu medida.</p>
                   </div>
                 </div>
 
@@ -256,15 +256,15 @@ function HomePage({ editorTheme = 'light' }) {
                   <div className="homeInfoFeatureCard reveal">
                     <div className="homeInfoFeatureIcon"><GroupIcon /></div>
                     <h3>Gestion de alumnos</h3>
-                    <p>Conta con un panel de alumnos, donde podes agregar, buscar o eliminar alumnos de forma sencilla.</p>
+                    <p>Conta con un panel de alumnos, donde podés agregar, buscar o eliminar alumnos de forma sencilla.</p>
                   </div>
                 </div>
 
                 <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
                   <div className="homeInfoFeatureCard reveal">
                     <div className="homeInfoFeatureIcon"><LaptopChromebookIcon /></div>
-                    <h3>Planificacion</h3>
-                    <p>Gestiona la planificacion de cada alumno, donde podes agregar semanas, e ir guardando el progreso de cada uno.</p>
+                    <h3>Planificación</h3>
+                    <p>Gestiona la planificación de cada alumno, donde podés agregar semanas, e ir guardando el progreso de cada uno.</p>
                   </div>
                 </div>
 
@@ -272,14 +272,14 @@ function HomePage({ editorTheme = 'light' }) {
                   <div className="homeInfoFeatureCard reveal">
                     <div className="homeInfoFeatureIcon"><SettingsIcon /></div>
                     <h3>Versatilidad</h3>
-                    <p>Crea semanas, dias, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
+                    <p>Crea semanas, días, rutinas, tanto como quieras, teniendo la posibilidad de agregar: <b>Entrada en calor - Ejercicios - Circuitos - Super series</b></p>
                   </div>
                 </div>
 
                 <div className="col-11 col-sm-6 col-xl-4 homeInfoFeatureCol">
                   <div className="homeInfoFeatureCard reveal">
                     <div className="homeInfoFeatureIcon"><MessageIcon /></div>
-                    <h3>Comunicacion con tus alumnos</h3>
+                    <h3>Comunicación con tus alumnos</h3>
                     <p>Tus alumnos te van a poder comentar sus sensaciones, tanto semanales, como en cada ejercicio.</p>
                   </div>
                 </div>
@@ -288,7 +288,7 @@ function HomePage({ editorTheme = 'light' }) {
                   <div className="homeInfoFeatureCard reveal">
                     <div className="homeInfoFeatureIcon"><MenuBookIcon /></div>
                     <h3>Biblioteca de ejercicios</h3>
-                    <p>Accede a nuestra biblioteca de ejercicios, con subdivisiones en los basicos, y grupo musculares. Tambien podras cargar la tuya propia.</p>
+                    <p>Accede a nuestra biblioteca de ejercicios, con subdivisiones en los básicos, y grupo musculares. También podrás cargar la tuya propia.</p>
                   </div>
                 </div>
 
@@ -296,7 +296,7 @@ function HomePage({ editorTheme = 'light' }) {
                   <div className="homeInfoFeatureCard reveal">
                     <div className="homeInfoFeatureIcon"><WorkIcon /></div>
                     <h3>Profesionalismo</h3>
-                    <p>Es tu carta de presentacion. Lleva tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificacion en su celular.</p>
+                    <p>Es tu carta de presentación. Lleva tus servicios a otro nivel, y brindales a tus alumnos un software para que tengan la planificación en su celular.</p>
                   </div>
                 </div>
               </div>

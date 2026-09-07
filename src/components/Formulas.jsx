@@ -21,7 +21,7 @@ const Formulas = ({ isDark = false }) => {
     <div className={`calc-container ${isDark ? "calc-theme-dark" : "calc-theme-light"}`}>
       <h2 className="title">
         🧮 <span className="highlight">1RM Estimado</span><br />
-        <small className="subtitle">Formulas mas utilizadas</small>
+        <small className="subtitle">Formulas más utilizadas</small>
       </h2>
 
       <div className="card-dark">
@@ -73,7 +73,7 @@ const Formulas = ({ isDark = false }) => {
           </div>
         </div>
       ) : (
-        <p className="text-light text-center mt-4">Ingresa un peso y repeticiones validas (1-36).</p>
+        <p className="text-light text-center mt-4">Ingresa un peso y repeticiones válidas (1-36).</p>
       )}
     </div>
   );
