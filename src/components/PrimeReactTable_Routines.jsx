@@ -838,7 +838,7 @@ export default function PrimeReactTable_Routines({
           Estás a punto de eliminar <b>{selectedWeeks.length}</b> semana{selectedWeeks.length === 1 ? "" : "s"}. Esta acción no se puede deshacer.
         </p>
         <p className="mb-2 text-muted fs-sm">
-          Escribe <b>"{fraseDeConfirmación}"</b> para confirmar:
+          Escribe <b>"{fraseDeConfirmacion}"</b> para confirmar:
         </p>
         <input
           type="text"

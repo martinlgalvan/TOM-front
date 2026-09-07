@@ -6,7 +6,10 @@ import * as UsersService from "../../services/users.services.js";
 
 const PLAN_LIMITS = [
     { name: "Gratuito", props: { limit: 5, price: "Gratuito"}},
-    { name: "Básico", props: { limit: 20, price: 24000}},
+    /* Sin tilde a proposito: este nombre se compara contra user.plan, que viene
+       de la base escrito asi. Con tilde no coincidia y el plan caia a Gratuito,
+       con limite de 5 alumnos en vez de 20. */
+    { name: "Basico", props: { limit: 20, price: 24000}},
     { name: "Profesional", props: { limit: 55, price: 34000}},
     { name: "Elite", props: { limit: 95, price: 40000}},
     { name: "Empresarial", props: { limit: 140, price: 50000}},

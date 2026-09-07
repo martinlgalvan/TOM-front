@@ -421,8 +421,8 @@ test("editor personalization tools open and persist without runtime errors", asy
   await page.getByRole("button", { name: /Ajustes/i }).first().click();
   const settingsDialog = page.locator(".p-dialog:has-text('Ajustes del editor'):visible");
   await expect(settingsDialog).toBeVisible();
-  await settingsDialog.getByRole("group", { name: /Visualizacion de notas/i }).getByRole("button", { name: /Abiertas/i }).click();
-  await settingsDialog.getByRole("group", { name: /Visualizacion de aproximaciones/i }).getByRole("button", { name: /Siempre/i }).click();
+  await settingsDialog.getByRole("group", { name: /Visualizaci[oó]n de notas/i }).getByRole("button", { name: /Abiertas/i }).click();
+  await settingsDialog.getByRole("group", { name: /Visualizaci[oó]n de aproximaciones/i }).getByRole("button", { name: /Siempre/i }).click();
   await settingsDialog.getByRole("group", { name: /Densidad visual/i }).getByRole("button", { name: /Compacto/i }).click();
   await settingsDialog.getByRole("group", { name: /Modo reps por defecto/i }).getByRole("button", { name: /Multiple/i }).click();
   await settingsDialog.getByRole("group", { name: /Confirmar antes de eliminar/i }).getByRole("button", { name: /^Si$/i }).click();
@@ -446,7 +446,7 @@ test("editor personalization tools open and persist without runtime errors", asy
   await page.getByRole("button", { name: /Ajustes/i }).first().click();
   const settingsAgain = page.locator(".p-dialog:has-text('Ajustes del editor'):visible");
   await expect(settingsAgain).toBeVisible();
-  await settingsAgain.getByRole("group", { name: /Visualizacion de notas/i })
+  await settingsAgain.getByRole("group", { name: /Visualizaci[oó]n de notas/i })
     .getByRole("button", { name: /Con texto/i }).click();
   await settingsAgain.getByRole("button", { name: /^Listo$/i }).click();
   await expect(settingsAgain).not.toBeVisible({ timeout: 15000 });
