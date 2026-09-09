@@ -1350,13 +1350,9 @@ const rightDialItems = [
       <div className={`sidebarPro colorMainAll routineSidebarModern routineWeeksTheme-${editorTheme}`}>
         <div className="d-flex flex-column colorMainAll shadow-sm routineSidebarModernInner">
 
-          <div className="routineSidebarIdentity">
-            <span>{String(username || 'A').trim().charAt(0).toUpperCase()}</span>
-            <div>
-              <strong>{username || 'Alumno'}</strong>
-              <small>Planificación del alumno</small>
-            </div>
-          </div>
+          {/* El nombre del alumno se movio a la barra de arriba, al lado del
+              boton de tema. Tenerlo tambien aca era decir dos veces lo mismo y
+              empujaba el resumen semanal hacia abajo. */}
 
           {weeklySummary && (
             <div  className="px-2">

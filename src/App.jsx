@@ -44,7 +44,7 @@ import NutritionAdminPage from './pages/coach/NutritionAdminPage.jsx'
 import { canAccessCompetitions, canAccessNutrition } from './helpers/nutritionAccess.js'
 import { applyStoredGeneralSettings } from './helpers/generalSettings.js'
 
-import { AlignJustify, ChevronLeft, LogOut, User } from 'lucide-react';
+import { AlignJustify, LogOut, User } from 'lucide-react';
 
 function RoutePrivate({ isAutenticate, children }) {
   return (
@@ -254,6 +254,16 @@ function App() {
     return last ? decodeURIComponent(last) : null;
   };
 
+  /* El id del alumno esta en la misma posicion en las dos rutas:
+       /user/routine/:id/:username
+       /routine/user/:id/week/:w/day/:d/:username
+     Sirve para que el nombre de la barra lleve a sus semanas. */
+  const getStudentIdFromUrl = (pathname) => {
+    if (!hasUserContext(pathname)) return null;
+    const partes = normalizePath(pathname).split('/').filter(Boolean);
+    return partes[2] || null;
+  };
+
   const isExcludedForUserTitle = (pathname) => {
     const p = normalizePath(pathname);
     if (p.startsWith(`/usuarios/${id}`)) return true;
@@ -264,6 +274,7 @@ function App() {
   };
 
   const currentUsername = getUsernameFromUrl(location.pathname);
+  const currentStudentId = getStudentIdFromUrl(location.pathname);
   const inUserContext = hasUserContext(location.pathname);
   const excludedForTitle = isExcludedForUserTitle(location.pathname);
 
@@ -692,14 +703,30 @@ const handleDismissAnnouncement = async () => {
               </button>
             )}
 
-            {/* "Atras" queda solo del lado del entrenador, que navega mucho entre
-                alumno, semanas y dias. En la vista del alumno ocupaba lugar en una
-                barra angosta y el gesto del telefono ya cubre volver. */}
-            {isAutenticated && isAdmin() && location.pathname !== '/' && (
-              <button type="button" onClick={() => navigate(-1)} className="tomTopNavBack">
-                <ChevronLeft size={15} />
-                <span>Atrás</span>
-              </button>
+            {/* El nombre del alumno reemplaza al boton "Atras".
+                Dentro del editor de dia no se veia en ninguna parte a quien se
+                le estaba planificando, y entre varios alumnos abiertos es facil
+                cargarle el entrenamiento al equivocado. Para volver quedan el
+                gesto del telefono y el boton del navegador. */}
+            {isAutenticated && isAdmin() && currentUsername && (
+              isCoachDayEditRoute && currentStudentId ? (
+                /* Dentro del dia el nombre lleva a las semanas del alumno, que
+                   es adonde se vuelve. En la pantalla de semanas no: seria un
+                   enlace a la pagina en la que ya estas. */
+                <Link
+                  className="tomTopNavStudent is-link"
+                  to={`/user/routine/${currentStudentId}/${encodeURIComponent(currentUsername)}`}
+                  title={`Volver a las semanas de ${currentUsername}`}
+                >
+                  <User size={13} />
+                  <span>{currentUsername}</span>
+                </Link>
+              ) : (
+                <span className="tomTopNavStudent" title={currentUsername}>
+                  <User size={13} />
+                  <span>{currentUsername}</span>
+                </span>
+              )
             )}
           </div>
 

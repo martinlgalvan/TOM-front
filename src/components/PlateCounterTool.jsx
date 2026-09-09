@@ -75,7 +75,10 @@ function PlateCounterTool({ isDark = false }) {
 
   const isCompetition = mode === "competition";
   const plates = isCompetition ? COMPETITION_PLATES : NORMAL_PLATES;
-  const barOptions = isCompetition ? ["20", "25"] : ["20", "15", "10"];
+  /* La de 25 kg tambien existe fuera de competencia -hay gimnasios que la
+     tienen-, y antes solo aparecia en el modo competencia. El modo competencia
+     queda como estaba. */
+  const barOptions = isCompetition ? ["20", "25"] : ["25", "20", "15", "10"];
 
   React.useEffect(() => {
     if (!barOptions.includes(String(barWeight))) {

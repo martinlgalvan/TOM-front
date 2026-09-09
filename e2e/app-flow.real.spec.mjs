@@ -356,6 +356,12 @@ async function createFreshWeekAndOpenPlanner(page, athleteUser) {
     }
   }
 
+  /* Esperar #dias no alcanza: la barra de botones existe antes que la tabla del
+     dia, y hasta que la tabla no esta el editor no opera. Sin esto, un
+     toHaveCount(0) pasaba de trampa -no habia tabla que contar- y el clic
+     siguiente en "Anadir ejercicio" no hacia nada. */
+  await expect(page.locator("table.ddp-table")).toBeVisible({ timeout: 60000 });
+
   await page.waitForTimeout(400);
   return latestWeek;
 }
@@ -428,11 +434,22 @@ function circuitItemRows(page, circuitTable) {
    surte efecto; se reintenta en vez de seguir como si hubiera funcionado. */
 async function addCircuitExercise(page, circuitTable, expectedCount) {
   const items = circuitItemRows(page, circuitTable);
+
   for (let intento = 0; intento < 3; intento += 1) {
-    await circuitTable.locator("button.circuitAddExerciseBtn").first().scrollIntoViewIfNeeded();
-    await circuitTable.locator("button.circuitAddExerciseBtn").first().click({ force: true });
+    /* Antes de reintentar hay que mirar si el clic anterior ya surtio efecto:
+       sin esto, un clic lento sumaba una fila igual y el reintento sumaba otra,
+       con lo cual la cuenta se pasaba y el test fallaba por exceso. */
+    if ((await items.count()) >= expectedCount) return;
+
+    /* Sin force: que Playwright espere a que el boton este quieto. La tabla del
+       circuito se vuelve a dibujar al agregar filas, y un clic forzado sobre un
+       elemento que React acaba de reemplazar no le llega a nadie. */
+    const boton = circuitTable.locator("button.circuitAddExerciseBtn").first();
+    await boton.scrollIntoViewIfNeeded();
+    await boton.click();
+
     try {
-      await expect(items).toHaveCount(expectedCount, { timeout: 5000 });
+      await expect(items).toHaveCount(expectedCount, { timeout: 8000 });
       return;
     } catch (error) {
       if (intento === 2) throw error;
@@ -566,6 +583,14 @@ test.describe("Real application flow", () => {
     await expect(qrDialog).toBeVisible();
     await expect(qrDialog.locator("img")).toBeVisible();
     await qrDialog.locator(".p-dialog-header-close").click();
+
+    /* Al cerrar el QR se vuelve al perfil, que sigue abierto detras. Hay que
+       cerrarlo tambien: mientras este puesto, su mascara tapa la pantalla y
+       cualquier clic siguiente se queda esperando para siempre. */
+    const profileDialog = page.locator(".p-dialog:has-text('Perfil'):visible");
+    await expect(profileDialog).toBeVisible();
+    await profileDialog.locator(".p-dialog-header-close").click();
+    await expect(profileDialog).toBeHidden();
 
     await page.getByRole("button", { name: /Administrar anuncios/i }).click();
     const announcementsDialog = page.locator(".p-dialog:has-text('Administrar anuncios'):visible");
@@ -1311,10 +1336,13 @@ test.describe("Real application flow", () => {
          una entrada aparte, la de abajo. */
       ["Calculadora", /Modo de c[aá]lculo|Porcentaje|Peso/i],
       ["Contador de discos", /discos por lado|No hacen falta discos|Por lado/i],
-      ["Estadisticas", /Metrica del grafico|Vista general|No hay una semana anterior para comparar|No se encontraron ejercicios comparables entre ambas semanas/i],
+      /* Los nombres se aceptan con y sin tilde: el texto de pantalla ya la
+         lleva, pero asi el test no depende de la ortografia. */
+      [/Estad[ií]sticas/i, /M[eé]trica del gr[aá]fico|Vista general|No hay una semana anterior para comparar|No se encontraron ejercicios comparables entre ambas semanas/i],
       ["1RM estimado", /1RM Estimado/i],
       ["Plan de competencia", hasAssignedPlan ? new RegExp(escapeRegex(`Meet E2E ${runId}`)) : /Competencia|torneo/i],
-      ["Bitacora tecnica", /Bitacora tecnica/i],
+      /* "Bitacora tecnica" ya no esta: se saco de las herramientas del alumno. */
+      [/Tama[ñn]o de letra/i, /Ajusta el tama[ñn]o del texto|Chica|Normal|Grande/i],
     ];
     for (const [label, assertion] of toolAssertions) {
       await toolsDialog.getByRole("button", { name: label }).click();

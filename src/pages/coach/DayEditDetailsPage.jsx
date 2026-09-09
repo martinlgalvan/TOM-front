@@ -511,14 +511,31 @@ function DayEditDetailsPage({ editorTheme }) {
     }
   });
   /**
-   * Una nota se ve abierta si el entrenador la abrio a mano, o si el ajuste lo
-   * pide: 'open' siempre, 'with-content' solo cuando ya tiene texto.
+   * Estado por defecto de una nota segun el ajuste elegido.
    */
-  const isNotesOpenFor = (notas, key) => {
-    if (openExerciseNotesKey === key) return true;
+  const notasAbiertasPorAjuste = (notas) => {
     if (notesVisibility === "open") return true;
     if (notesVisibility === "with-content") return Boolean(String(notas ?? "").trim());
     return false;
+  };
+
+  /**
+   * Una nota se ve abierta si el entrenador la abrio a mano; si no la toco,
+   * manda el ajuste.
+   *
+   * Antes, con el ajuste en "abiertas", esto devolvia true siempre y el boton
+   * para plegarla no hacia nada: el clic cambiaba el estado pero el resultado
+   * era el mismo. Ahora lo que decide el entrenador pisa al ajuste, en los dos
+   * sentidos.
+   */
+  const isNotesOpenFor = (notas, key) => {
+    if (key != null && key in notesOverrides) return notesOverrides[key];
+    return notasAbiertasPorAjuste(notas);
+  };
+
+  const toggleNotesFor = (notas, key) => {
+    if (key == null) return;
+    setNotesOverrides((prev) => ({ ...prev, [key]: !isNotesOpenFor(notas, key) }));
   };
 
   const [defaultRestValue, setDefaultRestValue] = useState(() => {
@@ -596,7 +613,9 @@ function DayEditDetailsPage({ editorTheme }) {
   const [showStudentPreviewDialog, setShowStudentPreviewDialog] = useState(false);
   const [studentPreviewDayId, setStudentPreviewDayId] = useState("");
   const [studentPreviewAuxSlide, setStudentPreviewAuxSlide] = useState({});
-  const [openExerciseNotesKey, setOpenExerciseNotesKey] = useState(null);
+  /* Que notas abrio o cerro el entrenador a mano. Solo estan las que toco: el
+     resto sigue lo que diga el ajuste. */
+  const [notesOverrides, setNotesOverrides] = useState({});
   /* El tema lo decide App y llega por prop. Se guarda igual en estado local para
      no cambiar las decenas de lugares que lo leen, y porque el editor tiene que
      seguir funcionando si algun dia se lo monta sin la prop. */
@@ -646,16 +665,11 @@ function DayEditDetailsPage({ editorTheme }) {
     confirmBeforeDelete,
     editorDensity,
   ]);
-  useEffect(() => {
-    if (!openExerciseNotesKey) return undefined;
-    const handleOutsideNotesClick = (event) => {
-      if (event.target?.closest?.(".dayEditNotesHoverCell")) return;
-      if (event.target?.closest?.(".dayEditInlineNotesRow")) return;
-      setOpenExerciseNotesKey(null);
-    };
-    document.addEventListener("mousedown", handleOutsideNotesClick);
-    return () => document.removeEventListener("mousedown", handleOutsideNotesClick);
-  }, [openExerciseNotesKey]);
+  /* Antes habia un manejador que cerraba las notas al hacer clic en cualquier
+     otro lado. Se saco: una nota abierta se cerraba sola apenas el entrenador
+     tocaba otra celda, justo cuando esta cargando el entrenamiento y necesita
+     leerla mientras completa el resto. Ahora lo que se abre queda abierto
+     hasta que se lo cierre a mano. */
   useEffect(() => {
     if (editorTheme) setDayEditEditorTheme(editorTheme);
   }, [editorTheme]);
@@ -1757,10 +1771,22 @@ function CircuitSmallNumberInput({ value, onChange, min = 1, title }) {
 
 function CircuitNotesTextarea({ value = "", onCommit, className = "" }) {
   const [draft, setDraft] = useState(value ?? "");
+  const areaRef = useRef(null);
 
   useEffect(() => {
     setDraft(value ?? "");
   }, [value]);
+
+  /* Crece con lo escrito. Antes eran dos renglones fijos y sin poder estirarlo,
+     asi que una nota larga quedaba recortada y no habia forma de leerla entera.
+     Se pone en auto antes de medir porque scrollHeight nunca baja del alto que
+     ya tiene: sin eso, el campo crece pero despues no se achica al borrar. */
+  useEffect(() => {
+    const area = areaRef.current;
+    if (!area) return;
+    area.style.height = "auto";
+    area.style.height = `${area.scrollHeight}px`;
+  }, [draft]);
 
   const commit = () => {
     if ((value ?? "") !== draft) {
@@ -1770,6 +1796,7 @@ function CircuitNotesTextarea({ value = "", onCommit, className = "" }) {
 
   return (
     <textarea
+      ref={areaRef}
       placeholder="Notas"
       value={draft}
       onChange={(event) => setDraft(event.target.value)}
@@ -5994,7 +6021,7 @@ const dayEditThemeVars = useMemo(() => {
                                                               aria-label="Ver o editar notas"
                                                               onClick={(event) => {
                                                                 event.stopPropagation();
-                                                                setOpenExerciseNotesKey((current) => current === blockExerciseNotesKey ? null : blockExerciseNotesKey);
+                                                                toggleNotesFor(ex.notas, blockExerciseNotesKey);
                                                               }}
                                                             >
                                                               <MessageSquare size={15} />
@@ -6322,7 +6349,7 @@ const dayEditThemeVars = useMemo(() => {
                                                               aria-label="Ver o editar notas"
                                                               onClick={(event) => {
                                                                 event.stopPropagation();
-                                                                setOpenExerciseNotesKey((current) => current === exercise.exercise_id ? null : exercise.exercise_id);
+                                                                toggleNotesFor(exercise.notas, exercise.exercise_id);
                                                               }}
                                                             >
                                                               <MessageSquare size={15} />

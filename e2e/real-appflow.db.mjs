@@ -12,7 +12,20 @@ apiRequire("dotenv").config({ path: path.join(apiRepoRoot, ".env") });
 const { MongoClient, ObjectId } = apiRequire("mongodb");
 const bcrypt = apiRequire("bcryptjs");
 
-const client = new MongoClient(process.env.MONGODB_URI, { keepAlive: true });
+/* La base exige TLS y el certificado lo firma una autoridad propia, asi que el
+   driver necesita conocerla. Viene en MONGODB_CA como base64, la misma variable
+   que usa la API. Sin esto, el suite real no puede conectarse y se cae entero
+   con "connection closed" antes del primer test.
+
+   Si la variable no esta, se conecta sin TLS: asi sigue sirviendo contra una
+   base local de desarrollo que no lo pida. */
+function opcionesDeTls() {
+  const ca = (process.env.MONGODB_CA || "").trim();
+  if (!ca) return {};
+  return { tls: true, ca: Buffer.from(ca, "base64") };
+}
+
+const client = new MongoClient(process.env.MONGODB_URI, { keepAlive: true, ...opcionesDeTls() });
 const db = client.db("TOM");
 
 const users = db.collection("Users");

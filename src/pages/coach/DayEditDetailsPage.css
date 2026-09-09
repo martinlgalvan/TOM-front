@@ -3859,3 +3859,22 @@
     min-height: 44px;
   }
 }
+
+/* ==========================================================================
+   SERIES PIRAMIDALES CON MAS DE CUATRO VALORES
+   ==========================================================================
+   La fila estaba pensada para cuatro celdas. Con mas, existia un
+   `overflow-x: auto` como red de seguridad, pero con la barra oculta
+   (`scrollbar-width: none`): se podia arrastrar, solo que nada lo indicaba.
+   Para el entrenador, el quinto valor simplemente no estaba.
+
+   Ahora la fila envuelve a un segundo renglon. Ocupa un poco mas de alto y a
+   cambio no esconde nada, que es lo que importa cuando se esta cargando el
+   entrenamiento. */
+.ddp .customInputMultiple,
+.ddp .dayEditMobileFieldControl .customInputMultiple {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  row-gap: 4px;
+  height: auto;
+}
