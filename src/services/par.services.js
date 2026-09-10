@@ -99,7 +99,7 @@ async function createPARroutine(routine, user_id) {
 }
 
 async function createProgressionsPARToUsers(template, userIds) {
-    return apiFetch(`${API_BASE}/api/routine/progressión/multi`, {
+    return apiFetch(`${API_BASE}/api/routine/progression/multi`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ async function createProgressionsPARToUsers(template, userIds) {
 }
 
 async function createProgressionFromPAR(par_id) {
-    return apiFetch(`${API_BASE}/api/par/${par_id}/progressión`, {
+    return apiFetch(`${API_BASE}/api/par/${par_id}/progression`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
